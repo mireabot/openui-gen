@@ -1,0 +1,178 @@
+{
+  "note": "Mirrors GROUND_RULES in ground-rules.ts exactly. Never add values that the ground rules don't list.",
+  "tokens": {
+    "baseGrid": 8,
+    "offGridSpacing": [
+      4,
+      12,
+      20,
+      28
+    ],
+    "screenInset": 24,
+    "sectionGap": 28,
+    "labelGap": 12,
+    "containerPadding": 16,
+    "innerGap": 16,
+    "listPadding": {
+      "v": 12,
+      "h": 20
+    },
+    "blockGaps": [
+      0,
+      12,
+      16,
+      28
+    ],
+    "radius": {
+      "container": 24,
+      "control": [
+        8,
+        12
+      ],
+      "inner": 4,
+      "allowed": [
+        4,
+        8,
+        12,
+        24
+      ]
+    },
+    "buttonHeight": 44,
+    "type": {
+      "pairs": [
+        [
+          14,
+          18
+        ],
+        [
+          16,
+          20
+        ],
+        [
+          18,
+          22
+        ],
+        [
+          20,
+          25
+        ],
+        [
+          22,
+          28
+        ],
+        [
+          24,
+          28
+        ],
+        [
+          28,
+          34
+        ]
+      ],
+      "roles": {
+        "footnote": [
+          14,
+          18
+        ],
+        "body": [
+          16,
+          20
+        ],
+        "headline": [
+          18,
+          22
+        ],
+        "title3": [
+          20,
+          25
+        ],
+        "title2": [
+          22,
+          28
+        ],
+        "display": [
+          24,
+          28
+        ],
+        "title1": [
+          28,
+          34
+        ]
+      },
+      "max": 28
+    },
+    "fontWeights": [
+      "normal",
+      "medium",
+      "semibold"
+    ],
+    "iconSizes": {
+      "inline": 16,
+      "nav": 24,
+      "list": 28
+    },
+    "avatarSizes": [
+      20,
+      40,
+      56,
+      80
+    ]
+  },
+  "rules": [
+    {
+      "id": "spacing.scale",
+      "severity": "error",
+      "rule": "Margins, paddings and gaps sit on the 8px base grid, or are one of the ground-rule values 4 (button text padding), 12 (labels, lists, button stacks), 20 (list padding) or 28 (sections)."
+    },
+    {
+      "id": "inset.screen",
+      "severity": "error",
+      "rule": "A screen-level block is inset 24px from the screen edge, or is full-bleed (0) with its content inset 24px inside."
+    },
+    {
+      "id": "gap.block",
+      "severity": "warn",
+      "rule": "Space above a screen-level block is 0, 12 (label to content), 16 (inner spacing) or 28px (between sections)."
+    },
+    {
+      "id": "radius.allowed",
+      "severity": "warn",
+      "rule": "Corner radii are 24 (containers, inputs, images), 8 or 12 (buttons, controls, banners), 4 (inner elements, static badges) or fully round (icon buttons, avatars, pills). Nothing else."
+    },
+    {
+      "id": "type.size",
+      "severity": "error",
+      "rule": "Text uses a type role: footnote 14, body 16, headline 18, title3 20, title2 22, display 24 (hero numbers), title1 28. 28 is the cap."
+    },
+    {
+      "id": "type.leading",
+      "severity": "warn",
+      "rule": "Text keeps its pair: 14/18, 16/20, 18/22, 20/25, 22/28, 24/28, 28/34."
+    },
+    {
+      "id": "type.weight",
+      "severity": "warn",
+      "rule": "Regular, Medium and Semibold only; no bold."
+    },
+    {
+      "id": "control.height",
+      "severity": "warn",
+      "rule": "Buttons and tappable controls are 44px tall (touch target)."
+    },
+    {
+      "id": "rail.fullBleed",
+      "severity": "error",
+      "rule": "A horizontal rail runs edge to edge: no outer margin, 24px inset as padding inside."
+    },
+    {
+      "id": "dock.blur",
+      "severity": "warn",
+      "rule": "A docked bar over scrolling content sits on a progressive blur or a solid surface."
+    },
+    {
+      "id": "placeholder.flat",
+      "severity": "error",
+      "rule": "Photos, artwork, avatars and posters are one flat colour: no gradients, shapes or text recreating the image. Maps (abstract grid) and charts are not image placeholders."
+    }
+  ]
+}

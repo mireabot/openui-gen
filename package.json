@@ -1,0 +1,43 @@
+{
+  "name": "openui-gen",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "OpenUI Lang generation for stocks screens, with a preview.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/src/server.js",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "preview": "npm --prefix preview run dev",
+    "preview:build": "npm --prefix preview run build",
+    "openui:export": "node --import tsx scripts/export-openui.ts",
+    "sf-symbols": "tsx scripts/sf-symbols.ts",
+    "check:closure": "node --import tsx scripts/check-closure.ts",
+    "check:compiler": "node --import tsx scripts/check-compiler.ts",
+    "check:ask-screen": "node --import tsx scripts/check-ask-screen.ts",
+    "check:anthropic": "node --import tsx scripts/check-anthropic.ts",
+    "check:lang": "node --import tsx scripts/check-lang.ts",
+    "check:stocks-schema": "node --import tsx scripts/check-stocks-schema.ts",
+    "check:stocks-fetch-scope": "node --import tsx scripts/check-stocks-fetch-scope.ts",
+    "check:stock-assets": "node --import tsx scripts/check-stock-assets.ts",
+    "check:all": "npm run typecheck && npm run check:closure && npm run check:compiler && npm run check:ask-screen && npm run check:anthropic && npm run check:lang && npm run check:stocks-schema && npm run check:stocks-fetch-scope && npm run check:stock-assets && npm run openui:export -- --check"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "@hono/node-server": "^1.19.9",
+    "@openrouter/sdk": "^1.3.14",
+    "@openuidev/lang-core": "1.0.0",
+    "ajv": "^8.20.0",
+    "hono": "^4.13.8",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "tsx": "^4.20.7",
+    "typescript": "^5.9.3"
+  }
+}

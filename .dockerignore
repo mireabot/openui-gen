@@ -1,0 +1,13 @@
+.git
+.env
+.env.*
+!.env.example
+node_modules
+**/node_modules
+**/.next
+preview/out
+dist
+data
+traces
+*.tsbuildinfo
+.DS_Store

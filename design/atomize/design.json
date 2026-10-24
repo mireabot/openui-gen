@@ -1,0 +1,960 @@
+{
+  "version": 0,
+  "source": "Atomize PRO 3.4 (Figma PxlcDhfnLw4gVSNhRymZlV) via design/atomize/raw/*, bound by hand; check with npm run design:check",
+  "precedence": "Ground rules decide sizes, spacing, type and radii (SF Pro, 44 controls, 8-grid). Atomize decides colour, surfaces, outlines, blur and component anatomy. No shadows: containers separate from the screen by fill (Radix gray neutrals), and controls by fill or outline.",
+  "defaultTheme": "purple",
+  "themes": {
+    "purple": {
+      "appearance": "light",
+      "ink": {
+        "primary": "#202020",
+        "secondary": "#646464",
+        "tertiary": "#838383",
+        "onBrand": "#ffffff",
+        "brand": "#6f61ff",
+        "brandStrong": "#5548d8"
+      },
+      "surface": {
+        "screen": "#f0f0f0",
+        "card": "#ffffff",
+        "filled": "#e8e8e8",
+        "grouped": "#ffffff",
+        "glass": "#ffffffb8",
+        "control": "#e8e8e8",
+        "brand": "#6f61ff",
+        "brandSoft": "#6f61ff1f",
+        "brandGradient": [
+          "#b5aeff",
+          "#9187ff"
+        ],
+        "skeleton": "#e8e8e8",
+        "skeletonHighlight": "#f9f9f9"
+      },
+      "outline": {
+        "subtle": "#d9d9d9",
+        "control": "#cecece",
+        "controlBottom": "#cecece"
+      },
+      "tone": {
+        "good": {
+          "fg": "#409b3f",
+          "bg": "#409b3f1f"
+        },
+        "warn": {
+          "fg": "#b07d00",
+          "bg": "#ffc30a1f"
+        },
+        "bad": {
+          "fg": "#df2917",
+          "bg": "#ed40301f"
+        },
+        "info": {
+          "fg": "#008ece",
+          "bg": "#06b1f11f"
+        },
+        "neutral": {
+          "fg": "#5b616d",
+          "bg": "#ececf0b8"
+        }
+      },
+      "shadow": {
+        "base": "#00000005",
+        "low": "#0000000a",
+        "high": "#00000052",
+        "highlightLow": "#ffffff14",
+        "highlightMed": "#ffffff1f"
+      }
+    },
+    "orange": {
+      "appearance": "light",
+      "ink": {
+        "primary": "#202020",
+        "secondary": "#646464",
+        "tertiary": "#838383",
+        "onBrand": "#ffffff",
+        "brand": "#f74e03",
+        "brandStrong": "#c63e02"
+      },
+      "surface": {
+        "screen": "#f0f0f0",
+        "card": "#ffffff",
+        "filled": "#e8e8e8",
+        "grouped": "#ffffff",
+        "glass": "#ffffffb8",
+        "control": "#e8e8e8",
+        "brand": "#f74e03",
+        "brandSoft": "#f74e031f",
+        "brandGradient": [
+          "#ffa27a",
+          "#f9733a"
+        ],
+        "skeleton": "#e8e8e8",
+        "skeletonHighlight": "#f9f9f9"
+      },
+      "outline": {
+        "subtle": "#d9d9d9",
+        "control": "#cecece",
+        "controlBottom": "#cecece"
+      },
+      "tone": {
+        "good": {
+          "fg": "#409b3f",
+          "bg": "#409b3f1f"
+        },
+        "warn": {
+          "fg": "#b07d00",
+          "bg": "#ffc30a1f"
+        },
+        "bad": {
+          "fg": "#df2917",
+          "bg": "#ed40301f"
+        },
+        "info": {
+          "fg": "#008ece",
+          "bg": "#06b1f11f"
+        },
+        "neutral": {
+          "fg": "#5b616d",
+          "bg": "#ececf0b8"
+        }
+      },
+      "shadow": {
+        "base": "#00000005",
+        "low": "#0000000a",
+        "high": "#00000052",
+        "highlightLow": "#ffffff14",
+        "highlightMed": "#ffffff1f"
+      }
+    },
+    "pink": {
+      "appearance": "dark",
+      "ink": {
+        "primary": "#eeeeee",
+        "secondary": "#b4b4b4",
+        "tertiary": "#7b7b7b",
+        "onBrand": "#ffffff",
+        "brand": "#f83ce9",
+        "brandStrong": "#fb7cf1"
+      },
+      "surface": {
+        "screen": "#111111",
+        "card": "#222222",
+        "filled": "#2a2a2a",
+        "grouped": "#222222",
+        "glass": "#2a2a2ab8",
+        "control": "#313131",
+        "brand": "#f83ce9",
+        "brandSoft": "#f83ce92e",
+        "brandGradient": [
+          "#fb8af2",
+          "#f83ce9"
+        ],
+        "skeleton": "#2a2a2a",
+        "skeletonHighlight": "#313131"
+      },
+      "outline": {
+        "subtle": "#3a3a3a",
+        "control": "#484848",
+        "controlBottom": "#484848"
+      },
+      "tone": {
+        "good": {
+          "fg": "#5cc95b",
+          "bg": "#409b3f2e"
+        },
+        "warn": {
+          "fg": "#ffc30a",
+          "bg": "#ffc30a2e"
+        },
+        "bad": {
+          "fg": "#ff6a5c",
+          "bg": "#ed40302e"
+        },
+        "info": {
+          "fg": "#33c3ff",
+          "bg": "#06b1f12e"
+        },
+        "neutral": {
+          "fg": "#ffffffb8",
+          "bg": "#ffffff14"
+        }
+      },
+      "shadow": {
+        "base": "#00000014",
+        "low": "#0000001f",
+        "high": "#0000007a",
+        "highlightLow": "#ffffff14",
+        "highlightMed": "#ffffff1f"
+      }
+    },
+    "dark": {
+      "appearance": "dark",
+      "ink": {
+        "primary": "#eeeeee",
+        "secondary": "#b4b4b4",
+        "tertiary": "#7b7b7b",
+        "onBrand": "#111111",
+        "brand": "#ffffff",
+        "brandStrong": "#ffffff"
+      },
+      "surface": {
+        "screen": "#111111",
+        "card": "#222222",
+        "filled": "#2a2a2a",
+        "grouped": "#222222",
+        "glass": "#2a2a2ab8",
+        "control": "#313131",
+        "brand": "#ffffff",
+        "brandSoft": "#ffffff1f",
+        "brandGradient": [
+          "#ffffff",
+          "#d6d6d6"
+        ],
+        "skeleton": "#2a2a2a",
+        "skeletonHighlight": "#313131"
+      },
+      "outline": {
+        "subtle": "#3a3a3a",
+        "control": "#484848",
+        "controlBottom": "#484848"
+      },
+      "tone": {
+        "good": {
+          "fg": "#5cc95b",
+          "bg": "#409b3f2e"
+        },
+        "warn": {
+          "fg": "#ffc30a",
+          "bg": "#ffc30a2e"
+        },
+        "bad": {
+          "fg": "#ff6a5c",
+          "bg": "#ed40302e"
+        },
+        "info": {
+          "fg": "#33c3ff",
+          "bg": "#06b1f12e"
+        },
+        "neutral": {
+          "fg": "#ffffffb8",
+          "bg": "#ffffff14"
+        }
+      },
+      "shadow": {
+        "base": "#00000005",
+        "low": "#0000001f",
+        "high": "#0000007a",
+        "highlightLow": "#ffffff14",
+        "highlightMed": "#ffffff1f"
+      }
+    }
+  },
+  "unverified": {
+    "purple": [
+      "tone.warn.fg"
+    ],
+    "orange": [
+      "ink.brandStrong",
+      "surface.brandSoft",
+      "surface.brandGradient",
+      "tone.warn.fg",
+      "surface.filled",
+      "surface.grouped",
+      "ink.secondary",
+      "ink.tertiary"
+    ],
+    "pink": [
+      "ink.brandStrong",
+      "surface.screen",
+      "surface.brandSoft",
+      "surface.brandGradient",
+      "surface.glass",
+      "surface.control",
+      "outline.subtle",
+      "tone",
+      "shadow.high"
+    ],
+    "dark": [
+      "ink.onBrand",
+      "ink.brand",
+      "ink.brandStrong",
+      "surface.screen",
+      "surface.card",
+      "surface.brand",
+      "surface.brandSoft",
+      "surface.brandGradient",
+      "surface.glass",
+      "surface.control",
+      "outline.subtle",
+      "tone",
+      "shadow.low",
+      "shadow.high"
+    ],
+    "note": "Values not read from Figma for that brand: copied from the light (purple) or dark (pink) capture, or derived from the brand colour. Dark brand: Figma resolves Surface/primary-med-em to #151515, which vanishes on dark surfaces, so the brand is bound to white on dark here. Re-read with the Dev Mode MCP and replace."
+  },
+  "effects": {
+    "component": "inset 0 3px 3px 0 {shadow.highlightMed}, 0 1px 1px -0.5px {shadow.base}",
+    "componentSecondary": "inset 0 1px 2px 0 {shadow.highlightLow}, 0 2px 1.5px -0.5px {shadow.base}",
+    "e1": "0 1px 1px -0.5px {shadow.low}",
+    "e2": "0 3px 3px -1.5px {shadow.low}, 0 1px 1px -0.5px {shadow.low}",
+    "e5": "0 1px 0.5px 0 {shadow.low}, 0 3px 1.5px 0 {shadow.low}, 0 20px 10px 0 {shadow.low}, 0 32px 16px 0 {shadow.base}, 0 56px 28px 0 {shadow.base}",
+    "cardInner": "inset 0 -1px 3px 0 {surface.glass}",
+    "pressed": "0 0 0 3px {surface.brandSoft}",
+    "blur": 24
+  },
+  "primitives": {
+    "Button": {
+      "figma": {
+        "set": "Button",
+        "nodeId": "8003:300"
+      },
+      "size": {
+        "height": 44,
+        "paddingX": 16,
+        "radius": 12,
+        "gap": 4,
+        "label": {
+          "role": "body",
+          "weight": "medium"
+        },
+        "icon": 16
+      },
+      "styles": {
+        "primary": {
+          "atomize": "type=primary",
+          "fill": "surface.brand",
+          "ink": "ink.onBrand",
+          "border": "outline.control",
+          "effect": null
+        },
+        "secondary": {
+          "atomize": "type=primary-light",
+          "fill": "surface.brandSoft",
+          "ink": "ink.brandStrong",
+          "border": null,
+          "effect": null
+        },
+        "outline": {
+          "atomize": "type=secondary",
+          "fill": "surface.card",
+          "ink": "ink.brand",
+          "border": "surface.brandSoft",
+          "effect": null
+        },
+        "text": {
+          "atomize": "type=quaternary",
+          "fill": null,
+          "ink": "ink.brand",
+          "border": null,
+          "effect": null
+        }
+      },
+      "states": {
+        "pressed": {
+          "atomize": "state=pressed (8008:491)",
+          "effect": null
+        },
+        "disabled": {
+          "atomize": "state=disabled (8008:546)",
+          "opacity": 0.4
+        }
+      }
+    },
+    "IconButton": {
+      "figma": {
+        "set": "Icon-button",
+        "nodeId": "10078:2975"
+      },
+      "size": {
+        "diameter": 44,
+        "icon": 24,
+        "shape": "round"
+      },
+      "styles": {
+        "plain": {
+          "atomize": "type=quaternary",
+          "fill": null,
+          "ink": "ink.primary",
+          "border": null,
+          "effect": null
+        },
+        "filled": {
+          "atomize": "type=secondary",
+          "fill": "surface.control",
+          "ink": "ink.primary",
+          "border": "outline.control",
+          "effect": null
+        }
+      }
+    },
+    "Badge": {
+      "figma": {
+        "set": "Tag",
+        "nodeId": "10106:4651"
+      },
+      "size": {
+        "height": 24,
+        "paddingX": 8,
+        "radius": 4,
+        "label": {
+          "role": "footnote",
+          "weight": "medium"
+        },
+        "icon": 16
+      },
+      "tones": {
+        "neutral": {
+          "atomize": "type=secondary",
+          "fill": "tone.neutral.bg",
+          "ink": "ink.primary"
+        },
+        "good": {
+          "atomize": "type=success",
+          "fill": "tone.good.bg",
+          "ink": "tone.good.fg"
+        },
+        "warn": {
+          "atomize": "type=warning",
+          "fill": "tone.warn.bg",
+          "ink": "tone.warn.fg"
+        },
+        "bad": {
+          "atomize": "type=danger",
+          "fill": "tone.bad.bg",
+          "ink": "tone.bad.fg"
+        }
+      }
+    },
+    "Chip": {
+      "figma": {
+        "set": "Chip",
+        "nodeId": "10005:4414"
+      },
+      "size": {
+        "height": 32,
+        "hitHeight": 44,
+        "paddingX": 12,
+        "radius": "pill",
+        "label": {
+          "role": "footnote",
+          "weight": "medium"
+        },
+        "icon": 16
+      },
+      "styles": {
+        "unselected": {
+          "atomize": "type=unselected",
+          "fill": "surface.control",
+          "ink": "ink.primary"
+        },
+        "selected": {
+          "atomize": "type=selected",
+          "fill": "surface.brandSoft",
+          "ink": "ink.brandStrong"
+        }
+      }
+    },
+    "SegmentedControl": {
+      "figma": {
+        "set": "Top-nav / Top-nav-item",
+        "nodeId": "10004:2719"
+      },
+      "size": {
+        "height": 44,
+        "padding": 4,
+        "radius": "pill",
+        "label": {
+          "role": "body",
+          "weight": "medium"
+        }
+      },
+      "track": {
+        "fill": "surface.control"
+      },
+      "item": {
+        "selected": {
+          "atomize": "type=active-primary",
+          "fill": "surface.brand",
+          "ink": "ink.onBrand",
+          "effect": null
+        },
+        "unselected": {
+          "fill": null,
+          "ink": "ink.secondary"
+        }
+      }
+    },
+    "Toggle": {
+      "figma": {
+        "set": "Toggle",
+        "nodeId": "10023:1125"
+      },
+      "size": {
+        "width": 52,
+        "height": 32,
+        "hitHeight": 44,
+        "radius": "pill"
+      },
+      "on": {
+        "atomize": "state=switch-on",
+        "fill": "surface.brand"
+      },
+      "off": {
+        "atomize": "state=switch-off",
+        "fill": "surface.control"
+      },
+      "knob": {
+        "fill": "#ffffff",
+        "effect": null
+      }
+    },
+    "Avatar": {
+      "figma": {
+        "set": "Avatar",
+        "nodeId": "10010:1415"
+      },
+      "size": {
+        "shape": "round"
+      },
+      "monogram": {
+        "atomize": "type=text",
+        "fill": "surface.brand",
+        "ink": "ink.onBrand"
+      },
+      "icon": {
+        "atomize": "type=icon",
+        "fill": "surface.brandSoft",
+        "ink": "ink.brandStrong"
+      }
+    },
+    "IconTile": {
+      "figma": {
+        "set": "Feature-icon",
+        "nodeId": "12051:4447"
+      },
+      "size": {
+        "radius": 12,
+        "icon": 24
+      },
+      "styles": {
+        "brand": {
+          "atomize": "type=primary",
+          "fill": "surface.brand",
+          "ink": "ink.onBrand",
+          "border": "outline.control",
+          "effect": null
+        },
+        "soft": {
+          "atomize": "type=primary-light",
+          "fill": "surface.brandSoft",
+          "ink": "ink.brandStrong"
+        },
+        "neutral": {
+          "atomize": "type=secondary",
+          "fill": "surface.control",
+          "ink": "ink.primary",
+          "effect": null
+        }
+      }
+    },
+    "Card": {
+      "figma": {
+        "set": "Item_list (instance in Settings example)",
+        "nodeId": "55759:6555"
+      },
+      "size": {
+        "radius": 24,
+        "padding": 16,
+        "gap": 16,
+        "radiusControl": 12
+      },
+      "surfaces": {
+        "card": {
+          "fill": "surface.card",
+          "effect": null
+        },
+        "filled": {
+          "fill": "surface.filled",
+          "effect": null
+        },
+        "grouped": {
+          "atomize": "Item_list",
+          "fill": "surface.grouped",
+          "effect": null
+        },
+        "none": {
+          "fill": null,
+          "effect": null
+        },
+        "outlined": {
+          "fill": "surface.card",
+          "border": "outline.control",
+          "effect": null
+        }
+      },
+      "selected": {
+        "border": "surface.brand",
+        "effect": null
+      }
+    },
+    "Row": {
+      "figma": {
+        "set": "List",
+        "nodeId": "10063:2066"
+      },
+      "size": {
+        "minHeight": 44,
+        "paddingY": 12,
+        "gap": 12
+      },
+      "title": {
+        "role": "body",
+        "weight": "regular",
+        "ink": "ink.primary"
+      },
+      "subtitle": {
+        "role": "footnote",
+        "weight": "regular",
+        "ink": "ink.tertiary"
+      },
+      "trailing": {
+        "ink": "ink.secondary"
+      }
+    },
+    "KeyValue": {
+      "figma": {
+        "set": "List"
+      },
+      "label": {
+        "role": "body",
+        "ink": "ink.secondary"
+      },
+      "value": {
+        "role": "body",
+        "weight": "medium",
+        "ink": "ink.primary"
+      },
+      "link": {
+        "ink": "ink.brand"
+      }
+    },
+    "Section": {
+      "figma": {
+        "set": "Header / Text_wrap (example screens)"
+      },
+      "title": {
+        "role": "headline",
+        "weight": "semibold",
+        "ink": "ink.primary"
+      },
+      "subtitle": {
+        "role": "footnote",
+        "weight": "regular",
+        "ink": "ink.tertiary"
+      },
+      "footnote": {
+        "role": "footnote",
+        "weight": "regular",
+        "ink": "ink.tertiary"
+      }
+    },
+    "Note": {
+      "figma": {
+        "set": "Info-note",
+        "nodeId": "12126:4670"
+      },
+      "size": {
+        "radius": 12,
+        "padding": 12,
+        "gap": 12,
+        "icon": 24,
+        "text": {
+          "role": "footnote",
+          "weight": "medium"
+        }
+      },
+      "tones": {
+        "neutral": {
+          "atomize": "state=default",
+          "fill": "surface.filled",
+          "ink": "ink.secondary"
+        },
+        "brand": {
+          "atomize": "state=brand",
+          "fill": "surface.brandSoft",
+          "ink": "ink.brandStrong"
+        },
+        "good": {
+          "atomize": "state=success",
+          "fill": "tone.good.bg",
+          "ink": "tone.good.fg"
+        },
+        "warn": {
+          "atomize": "state=warning",
+          "fill": "tone.warn.bg",
+          "ink": "tone.warn.fg"
+        },
+        "bad": {
+          "atomize": "state=danger",
+          "fill": "tone.bad.bg",
+          "ink": "tone.bad.fg"
+        }
+      }
+    },
+    "Progress": {
+      "track": {
+        "fill": "surface.control"
+      },
+      "bar": {
+        "fill": "surface.brand"
+      },
+      "tones": "tone.*.fg"
+    },
+    "Bars": {
+      "bar": {
+        "fill": "surface.control"
+      },
+      "selected": {
+        "fill": "surface.brand"
+      }
+    },
+    "ShareBar": {
+      "parts": "ink accents from the data; track surface.control"
+    },
+    "Divider": {
+      "fill": "outline.subtle"
+    },
+    "Text": {
+      "ink": {
+        "primary": "ink.primary",
+        "secondary": "ink.secondary",
+        "tertiary": "ink.tertiary",
+        "inverse": "ink.onBrand"
+      }
+    },
+    "Number": {
+      "ink": "as Text"
+    },
+    "Dock": {
+      "fill": "surface.screen",
+      "blur": 24,
+      "effect": null
+    },
+    "NavBar": {
+      "styles": {
+        "plain": {
+          "fill": null,
+          "ink": "ink.primary"
+        },
+        "filled": {
+          "atomize": "Icon-button type=secondary",
+          "fill": "surface.control",
+          "ink": "ink.primary",
+          "effect": null
+        }
+      }
+    },
+    "Screen": {
+      "fill": "surface.screen"
+    },
+    "Pill": {
+      "figma": {
+        "set": "Tag",
+        "nodeId": "10106:4651"
+      },
+      "size": {
+        "height": 28,
+        "paddingX": 12,
+        "radius": "pill",
+        "gap": 8,
+        "label": {
+          "role": "footnote",
+          "weight": "regular"
+        },
+        "value": {
+          "role": "footnote",
+          "weight": "medium"
+        }
+      },
+      "style": {
+        "atomize": "type=secondary",
+        "fill": "surface.filled",
+        "ink": "ink.primary"
+      },
+      "label": {
+        "ink": "ink.secondary"
+      },
+      "value": {
+        "ink": "ink.primary"
+      }
+    },
+    "ZStack": {
+      "scrim": {
+        "fill": "#0000008c"
+      },
+      "ink": "#ffffff"
+    }
+  },
+  "deviations": [
+    {
+      "primitive": "Button",
+      "prop": "height",
+      "atomize": 40,
+      "groundRule": 44,
+      "why": "controls are 44"
+    },
+    {
+      "primitive": "Button",
+      "prop": "paddingX",
+      "atomize": 10,
+      "groundRule": 16,
+      "why": "button padding 16"
+    },
+    {
+      "primitive": "Button",
+      "prop": "radius",
+      "atomize": 10,
+      "groundRule": 12,
+      "why": "radii 8/12 for buttons; 10 is not allowed"
+    },
+    {
+      "primitive": "Button",
+      "prop": "label type",
+      "atomize": "UI/body-1/medium 13/24 Open Sauce Two",
+      "groundRule": "body 16/20 medium SF Pro",
+      "why": "type scale and family"
+    },
+    {
+      "primitive": "Button",
+      "prop": "icon",
+      "atomize": 18,
+      "groundRule": 16,
+      "why": "inline icons 16"
+    },
+    {
+      "primitive": "IconButton",
+      "prop": "shape",
+      "atomize": "rounded square, radius 10, 40",
+      "groundRule": "round, 44",
+      "why": "icon buttons fully round, 44 tap target"
+    },
+    {
+      "primitive": "Badge",
+      "prop": "radius",
+      "atomize": 8,
+      "groundRule": 4,
+      "why": "static badges radius 4"
+    },
+    {
+      "primitive": "Badge",
+      "prop": "height / paddingX",
+      "atomize": "28 / 6",
+      "groundRule": "24 / 8",
+      "why": "8-grid"
+    },
+    {
+      "primitive": "Chip",
+      "prop": "radius",
+      "atomize": "8 (sm) / 10 (md)",
+      "groundRule": "pill",
+      "why": "selections are pills"
+    },
+    {
+      "primitive": "Chip",
+      "prop": "paddingX",
+      "atomize": 8,
+      "groundRule": 12,
+      "why": "spacing scale"
+    },
+    {
+      "primitive": "SegmentedControl",
+      "prop": "height / item radius",
+      "atomize": "40 / 10",
+      "groundRule": "44 / pill",
+      "why": "controls 44, selections pills"
+    },
+    {
+      "primitive": "IconTile",
+      "prop": "size / radius",
+      "atomize": "48 / 10",
+      "groundRule": "40 or 56 / 12",
+      "why": "avatar sizes 20·40·56·80; radius 12"
+    },
+    {
+      "primitive": "IconTile",
+      "prop": "icon",
+      "atomize": 28,
+      "groundRule": 24,
+      "why": "icon 24 in tiles"
+    },
+    {
+      "primitive": "Card",
+      "prop": "radius / padding",
+      "atomize": "28 / 8",
+      "groundRule": "24 / 16",
+      "why": "containers radius 24, padding 16"
+    },
+    {
+      "primitive": "Row",
+      "prop": "type",
+      "atomize": "UI/para/medium 13/20, caption-2 12/16",
+      "groundRule": "body 16/20, footnote 14/18",
+      "why": "type scale"
+    },
+    {
+      "primitive": "Note",
+      "prop": "type",
+      "atomize": "UI/para/medium 13/20",
+      "groundRule": "footnote 14/18 medium",
+      "why": "type scale"
+    },
+    {
+      "primitive": "*",
+      "prop": "font family",
+      "atomize": "Open Sauce Two / Geist / Zalando Sans Expanded / Greed Narrow",
+      "groundRule": "SF Pro only",
+      "why": "SF Pro only"
+    },
+    {
+      "primitive": "*",
+      "prop": "backdrop blur",
+      "atomize": "12 (literal) / Blur/24 / Blur/48",
+      "groundRule": "24",
+      "why": "one blur value for surfaces; docks use the progressive blur rule"
+    },
+    {
+      "primitive": "Pill",
+      "prop": "radius / padding",
+      "atomize": "8 / 4·6",
+      "groundRule": "pill / 12",
+      "why": "legend chips are pills (c06 reference); spacing scale"
+    },
+    {
+      "primitive": "Card",
+      "prop": "radius (tiles)",
+      "atomize": "14/16",
+      "groundRule": "12",
+      "why": "control radius 12 for small tiles"
+    },
+    {
+      "primitive": "*",
+      "prop": "effect",
+      "atomize": "Elevation e1–e5, component highlights",
+      "groundRule": "none",
+      "why": "containers separate by fill, not shadow; neutrals from Radix gray (screen #f0f0f0 / #111111, card #ffffff / #222222)"
+    }
+  ],
+  "notYetBound": [
+    "Input-field / Input-cell (text fields)",
+    "Checkbox",
+    "Radio",
+    "Table-cell",
+    "Datepicker",
+    "Alert",
+    "Toast",
+    "Tooltip",
+    "Modal (sheet)",
+    "Avatar-group sizes",
+    "Button Group"
+  ]
+}

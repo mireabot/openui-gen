@@ -1,0 +1,24 @@
+import { StocksLive } from "@/components/primitives/stocks-live";
+import { appearanceOf, readDesignWithKino, themeVars } from "@/lib/primitives/design";
+
+/**
+ * Live OpenUI generation for stocks: a prompt, the streamed program rendered in an iPhone frame
+ * with the Kino theme, and the program text. Built as a static page; the theme is read from
+ * design/ at build time.
+ */
+export default function Home() {
+  const design = readDesignWithKino();
+  const brand = design?.defaultTheme ?? "";
+  const appearance = design ? appearanceOf(design, brand) : "dark";
+  const theme = design ? themeVars(design, brand, appearance) : undefined;
+
+  return (
+    <main className="flex h-full flex-col gap-6 overflow-y-auto p-8">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-[18px] leading-[22px] font-medium">OpenUI generation</h1>
+        <p className="text-[14px] leading-[18px] text-muted-foreground">Stocks, funds and positions, streamed as OpenUI Lang from POST /lang/stocks/stream.</p>
+      </header>
+      <StocksLive theme={theme} specs={design?.primitives} appearance={appearance} />
+    </main>
+  );
+}

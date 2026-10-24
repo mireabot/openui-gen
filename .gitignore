@@ -1,0 +1,10 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.env
+.env.local
+# Runtime state: Massive cache, OpenUI snapshots and documents, traces.
+data/
+traces/
+.DS_Store
+.vscode/

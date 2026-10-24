@@ -1,0 +1,1550 @@
+{
+  "version": 1,
+  "langCore": "1.0.0",
+  "digest": "0db0d1a33190697ff656b49019dccec28b4ddb428343b9ed5c89f46fe28d45e7",
+  "primitives": [
+    {
+      "name": "Screen",
+      "args": [
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 1
+        },
+        {
+          "name": "placement",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "appearance",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Calculation",
+      "args": [
+        {
+          "name": "values",
+          "optional": false,
+          "role": "data",
+          "kind": "record"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 1
+        },
+        {
+          "name": "model",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Stack",
+      "args": [
+        {
+          "name": "axis",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "gap",
+          "optional": false,
+          "role": "token",
+          "token": "space"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 1
+        },
+        {
+          "name": "align",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "justify",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "overlap",
+          "optional": true,
+          "role": "token",
+          "token": "space",
+          "note": "children after the first overlap the previous one by this much (poster over a still)"
+        },
+        {
+          "name": "divided",
+          "optional": true,
+          "role": "copy",
+          "note": "hairline between children (lists)"
+        }
+      ]
+    },
+    {
+      "name": "Grid",
+      "args": [
+        {
+          "name": "columns",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "gap",
+          "optional": false,
+          "role": "token",
+          "token": "space"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 2
+        }
+      ]
+    },
+    {
+      "name": "Rail",
+      "args": [
+        {
+          "name": "gap",
+          "optional": false,
+          "role": "token",
+          "token": "space",
+          "note": "12, the rail standard"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 2
+        },
+        {
+          "name": "width",
+          "optional": true,
+          "role": "copy",
+          "note": "each item's width in points; 170 is the rail standard"
+        }
+      ]
+    },
+    {
+      "name": "Card",
+      "args": [
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 1
+        },
+        {
+          "name": "surface",
+          "optional": true,
+          "role": "token",
+          "token": "surface",
+          "note": "default card"
+        },
+        {
+          "name": "radius",
+          "optional": true,
+          "role": "copy",
+          "note": "container 24 (default) · control 12 for small tiles"
+        },
+        {
+          "name": "padding",
+          "optional": true,
+          "role": "token",
+          "token": "space",
+          "note": "default 16"
+        },
+        {
+          "name": "selected",
+          "optional": true,
+          "role": "copy",
+          "note": "bindable per item (p.selected): brand outline"
+        }
+      ]
+    },
+    {
+      "name": "Section",
+      "args": [
+        {
+          "name": "title",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 1
+        },
+        {
+          "name": "subtitle",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "trailing",
+          "optional": true,
+          "role": "node",
+          "accepts": [
+            "Button",
+            "IconButton",
+            "Chip",
+            "Text"
+          ]
+        },
+        {
+          "name": "footnote",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "collapsible",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "sticky",
+          "optional": true,
+          "role": "copy",
+          "note": "header sticks while its content scrolls"
+        }
+      ]
+    },
+    {
+      "name": "Divider",
+      "args": [
+        {
+          "name": "inset",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "bleed",
+          "optional": true,
+          "role": "copy",
+          "note": "edge to edge across the 24 screen inset"
+        }
+      ]
+    },
+    {
+      "name": "Spacer",
+      "args": [
+        {
+          "name": "size",
+          "optional": false,
+          "role": "token",
+          "token": "space"
+        }
+      ]
+    },
+    {
+      "name": "ZStack",
+      "args": [
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 2
+        },
+        {
+          "name": "alignment",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "inset",
+          "optional": true,
+          "role": "token",
+          "token": "space",
+          "note": "distance of the upper layers from the aligned edges"
+        },
+        {
+          "name": "scrim",
+          "optional": true,
+          "role": "copy",
+          "note": "darkens the first layer under the others for legible text"
+        }
+      ]
+    },
+    {
+      "name": "Disclosure",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": "any",
+          "min": 1
+        },
+        {
+          "name": "open",
+          "optional": true,
+          "role": "copy",
+          "note": "starts expanded; bind per item (p.open) to open one row among closed ones"
+        },
+        {
+          "name": "subtitle",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "trailing",
+          "optional": true,
+          "role": "node",
+          "accepts": [
+            "Text",
+            "Number",
+            "Badge",
+            "Pill"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Show",
+      "args": [
+        {
+          "name": "when",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "child",
+          "optional": false,
+          "role": "node",
+          "accepts": "any"
+        }
+      ]
+    },
+    {
+      "name": "Text",
+      "args": [
+        {
+          "name": "content",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "role",
+          "optional": false,
+          "role": "token",
+          "token": "type"
+        },
+        {
+          "name": "weight",
+          "optional": true,
+          "role": "token",
+          "token": "weight"
+        },
+        {
+          "name": "ink",
+          "optional": true,
+          "role": "token",
+          "token": "ink"
+        },
+        {
+          "name": "lines",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "align",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "tone",
+          "optional": true,
+          "role": "token",
+          "token": "tone",
+          "note": "colour by meaning (good / bad / warn / neutral), e.g. a verdict; overrides ink; bindable"
+        },
+        {
+          "name": "reserve",
+          "optional": true,
+          "role": "copy",
+          "note": "keep the height of `lines` lines even when the text is shorter, so cards in a set match"
+        }
+      ]
+    },
+    {
+      "name": "Number",
+      "args": [
+        {
+          "name": "value",
+          "optional": false,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal"
+        },
+        {
+          "name": "format",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "role",
+          "optional": false,
+          "role": "token",
+          "token": "type"
+        },
+        {
+          "name": "weight",
+          "optional": true,
+          "role": "token",
+          "token": "weight"
+        },
+        {
+          "name": "ink",
+          "optional": true,
+          "role": "token",
+          "token": "ink"
+        },
+        {
+          "name": "roll",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "signed",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "compact",
+          "optional": true,
+          "role": "copy",
+          "note": "$4.5K, $10.7B"
+        },
+        {
+          "name": "suffix",
+          "optional": true,
+          "role": "copy",
+          "note": "unit after the figure, e.g. \"B\" or \"pts\""
+        }
+      ]
+    },
+    {
+      "name": "Icon",
+      "args": [
+        {
+          "name": "name",
+          "optional": false,
+          "role": "copy",
+          "kind": "icon"
+        },
+        {
+          "name": "size",
+          "optional": true,
+          "role": "token",
+          "token": "iconSize"
+        },
+        {
+          "name": "ink",
+          "optional": true,
+          "role": "token",
+          "token": "ink"
+        }
+      ]
+    },
+    {
+      "name": "Image",
+      "args": [
+        {
+          "name": "src",
+          "optional": false,
+          "role": "data",
+          "kind": "image"
+        },
+        {
+          "name": "aspect",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "rounded",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "width",
+          "optional": true,
+          "role": "token",
+          "token": "avatarSize",
+          "note": "fixed width (posters, thumbnails); default fills its column"
+        },
+        {
+          "name": "ring",
+          "optional": true,
+          "role": "copy",
+          "note": "stroke in the screen colour, for an image overlapping another (poster over a still)"
+        }
+      ]
+    },
+    {
+      "name": "Avatar",
+      "args": [
+        {
+          "name": "name",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "size",
+          "optional": false,
+          "role": "token",
+          "token": "avatarSize"
+        },
+        {
+          "name": "image",
+          "optional": true,
+          "role": "data",
+          "kind": "image"
+        },
+        {
+          "name": "tint",
+          "optional": true,
+          "role": "token",
+          "token": "ink"
+        },
+        {
+          "name": "shape",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "IconTile",
+      "args": [
+        {
+          "name": "icon",
+          "optional": false,
+          "role": "copy",
+          "kind": "icon"
+        },
+        {
+          "name": "size",
+          "optional": false,
+          "role": "token",
+          "token": "avatarSize"
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "AvatarStack",
+      "args": [
+        {
+          "name": "people",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "size",
+          "optional": false,
+          "role": "token",
+          "token": "avatarSize"
+        },
+        {
+          "name": "max",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Slider",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "value",
+          "optional": false,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal"
+        },
+        {
+          "name": "min",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "max",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "step",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "unit",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "ChoiceTags",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "options",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "value",
+          "optional": false,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal"
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Button",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "action",
+          "optional": false,
+          "role": "copy",
+          "kind": "action"
+        },
+        {
+          "name": "style",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "icon",
+          "optional": true,
+          "role": "copy",
+          "kind": "icon"
+        },
+        {
+          "name": "wide",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "disabled",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "iconTrailing",
+          "optional": true,
+          "role": "copy",
+          "note": "icon after the label (→)"
+        }
+      ]
+    },
+    {
+      "name": "IconButton",
+      "args": [
+        {
+          "name": "icon",
+          "optional": false,
+          "role": "copy",
+          "kind": "icon"
+        },
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "action",
+          "optional": false,
+          "role": "copy",
+          "kind": "action"
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "disabled",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Pill",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "value",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "dot",
+          "optional": true,
+          "role": "token",
+          "token": "ink"
+        }
+      ]
+    },
+    {
+      "name": "Badge",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "tone",
+          "optional": false,
+          "role": "token",
+          "token": "tone"
+        },
+        {
+          "name": "icon",
+          "optional": true,
+          "role": "copy",
+          "kind": "icon"
+        }
+      ]
+    },
+    {
+      "name": "Chip",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "action",
+          "optional": true,
+          "role": "copy",
+          "kind": "action"
+        },
+        {
+          "name": "selected",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "icon",
+          "optional": true,
+          "role": "copy",
+          "kind": "icon"
+        }
+      ]
+    },
+    {
+      "name": "SegmentedControl",
+      "args": [
+        {
+          "name": "options",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "selected",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "panels",
+          "optional": true,
+          "role": "nodes",
+          "accepts": "any",
+          "note": "one panel per option, or one @Each: only the selected item renders"
+        },
+        {
+          "name": "contentFirst",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Toggle",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "on",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "caption",
+          "optional": true,
+          "role": "copy",
+          "note": "secondary line under the label"
+        },
+        {
+          "name": "disabled",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Stepper",
+      "args": [
+        {
+          "name": "value",
+          "optional": false,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal"
+        },
+        {
+          "name": "unit",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "step",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Progress",
+      "args": [
+        {
+          "name": "value",
+          "optional": false,
+          "role": "data",
+          "kind": "number",
+          "format": "percent"
+        },
+        {
+          "name": "style",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "tone",
+          "optional": true,
+          "role": "token",
+          "token": "tone"
+        },
+        {
+          "name": "label",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "caption",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Bars",
+      "args": [
+        {
+          "name": "series",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "selectable",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "average",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "selected",
+          "optional": true,
+          "role": "copy",
+          "note": "index of the selected bar (wider, brand)"
+        },
+        {
+          "name": "values",
+          "optional": true,
+          "role": "copy",
+          "note": "compact amounts above the bars"
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "style",
+          "record": "bar",
+          "fields": {
+            "orientation": {
+              "values": [
+                "vertical",
+                "horizontal"
+              ],
+              "swift": "BarMark x/y swap"
+            },
+            "corners": {
+              "values": [
+                "pill",
+                "soft",
+                "square"
+              ],
+              "swift": "BarMark.cornerRadius pill · 4 · 0"
+            },
+            "highlight": {
+              "values": [
+                "selected",
+                "max",
+                "last",
+                "none"
+              ],
+              "swift": "brand fill on one bar"
+            },
+            "axis": {
+              "values": [
+                "none",
+                "x",
+                "y",
+                "both"
+              ],
+              "swift": "chartXAxis / chartYAxis(.hidden | AxisMarks), labels footnote tertiary"
+            },
+            "grid": {
+              "values": [
+                "true",
+                "false"
+              ],
+              "swift": "AxisGridLine on the y axis, outline.subtle"
+            },
+            "ink": {
+              "values": [
+                "primary",
+                "secondary",
+                "tertiary",
+                "inverse",
+                "red",
+                "orange",
+                "yellow",
+                "green",
+                "mint",
+                "teal",
+                "cyan",
+                "blue",
+                "indigo",
+                "purple",
+                "pink"
+              ],
+              "swift": "foregroundStyle(ink)"
+            }
+          },
+          "note": "chart look"
+        }
+      ]
+    },
+    {
+      "name": "ShareBar",
+      "args": [
+        {
+          "name": "parts",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "legend",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "selectable",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "style",
+          "record": "share",
+          "fields": {
+            "shape": {
+              "values": [
+                "bar",
+                "donut",
+                "pie"
+              ],
+              "swift": "SectorMark(angle:, innerRadius: .ratio(0.62 | 0), angularInset: 1.5).cornerRadius(4)"
+            }
+          },
+          "note": "bar (default), donut or pie"
+        }
+      ]
+    },
+    {
+      "name": "Rating",
+      "args": [
+        {
+          "name": "value",
+          "optional": false,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal"
+        },
+        {
+          "name": "count",
+          "optional": true,
+          "role": "data",
+          "kind": "number",
+          "format": "count"
+        },
+        {
+          "name": "max",
+          "optional": true,
+          "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "Sparkline",
+      "args": [
+        {
+          "name": "points",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "baseline",
+          "optional": true,
+          "role": "copy",
+          "note": "dotted line at the first value"
+        },
+        {
+          "name": "reference",
+          "optional": true,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal",
+          "note": "a dashed line at this value; with fill, the zones split here"
+        },
+        {
+          "name": "fill",
+          "optional": true,
+          "role": "copy",
+          "note": "gradient zone under the line: good above the reference, bad below (direction colour without a reference)"
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "style",
+          "record": "line",
+          "fields": {
+            "curve": {
+              "values": [
+                "linear",
+                "monotone",
+                "smooth",
+                "step"
+              ],
+              "swift": "interpolationMethod(.linear | .monotone | .catmullRom | .stepCenter)"
+            },
+            "weight": {
+              "values": [
+                "thin",
+                "regular",
+                "bold"
+              ],
+              "swift": "lineStyle(StrokeStyle(lineWidth: 1 | 2 | 3))"
+            },
+            "area": {
+              "values": [
+                "none",
+                "gradient",
+                "solid"
+              ],
+              "swift": "AreaMark with a vertical LinearGradient (0.24 → 0) or a flat 0.12 tint"
+            },
+            "points": {
+              "values": [
+                "none",
+                "last",
+                "ends",
+                "all"
+              ],
+              "swift": "PointMark, symbol circle 8"
+            },
+            "axis": {
+              "values": [
+                "none",
+                "x",
+                "y",
+                "both"
+              ],
+              "swift": "chartXAxis / chartYAxis(.hidden | AxisMarks), labels footnote tertiary"
+            },
+            "grid": {
+              "values": [
+                "true",
+                "false"
+              ],
+              "swift": "AxisGridLine on the y axis, outline.subtle"
+            },
+            "domain": {
+              "values": [
+                "auto",
+                "zero"
+              ],
+              "swift": "chartYScale(domain: .automatic(includesZero:))"
+            },
+            "ink": {
+              "values": [
+                "primary",
+                "secondary",
+                "tertiary",
+                "inverse",
+                "red",
+                "orange",
+                "yellow",
+                "green",
+                "mint",
+                "teal",
+                "cyan",
+                "blue",
+                "indigo",
+                "purple",
+                "pink"
+              ],
+              "swift": "foregroundStyle(ink)"
+            }
+          },
+          "note": "line look (axis and grid are ignored at sparkline size)"
+        }
+      ]
+    },
+    {
+      "name": "PriceChart",
+      "args": [
+        {
+          "name": "points",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "height",
+          "optional": true,
+          "role": "copy",
+          "note": "compact 120 · regular 200 (default)"
+        },
+        {
+          "name": "reference",
+          "optional": true,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal",
+          "note": "value of the dashed reference line"
+        },
+        {
+          "name": "referenceLabel",
+          "optional": true,
+          "role": "copy",
+          "note": "label at the line's end, e.g. \"Prev close\""
+        },
+        {
+          "name": "tone",
+          "optional": true,
+          "role": "copy",
+          "note": "direction (default): one colour from first vs last · threshold: good above the reference, bad below"
+        },
+        {
+          "name": "annotate",
+          "optional": true,
+          "role": "copy",
+          "note": "write the high and low on the line"
+        },
+        {
+          "name": "measure",
+          "optional": true,
+          "role": "copy",
+          "note": "tap pins a start point, drag reads the move from it"
+        },
+        {
+          "name": "comparison",
+          "optional": true,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "comparisonLabel",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "unit",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "style",
+          "record": "line",
+          "fields": {
+            "curve": {
+              "values": [
+                "linear",
+                "monotone",
+                "smooth",
+                "step"
+              ],
+              "swift": "interpolationMethod(.linear | .monotone | .catmullRom | .stepCenter)"
+            },
+            "weight": {
+              "values": [
+                "thin",
+                "regular",
+                "bold"
+              ],
+              "swift": "lineStyle(StrokeStyle(lineWidth: 1 | 2 | 3))"
+            },
+            "area": {
+              "values": [
+                "none",
+                "gradient",
+                "solid"
+              ],
+              "swift": "AreaMark with a vertical LinearGradient (0.24 → 0) or a flat 0.12 tint"
+            },
+            "points": {
+              "values": [
+                "none",
+                "last",
+                "ends",
+                "all"
+              ],
+              "swift": "PointMark, symbol circle 8"
+            },
+            "axis": {
+              "values": [
+                "none",
+                "x",
+                "y",
+                "both"
+              ],
+              "swift": "chartXAxis / chartYAxis(.hidden | AxisMarks), labels footnote tertiary"
+            },
+            "grid": {
+              "values": [
+                "true",
+                "false"
+              ],
+              "swift": "AxisGridLine on the y axis, outline.subtle"
+            },
+            "domain": {
+              "values": [
+                "auto",
+                "zero"
+              ],
+              "swift": "chartYScale(domain: .automatic(includesZero:))"
+            },
+            "ink": {
+              "values": [
+                "primary",
+                "secondary",
+                "tertiary",
+                "inverse",
+                "red",
+                "orange",
+                "yellow",
+                "green",
+                "mint",
+                "teal",
+                "cyan",
+                "blue",
+                "indigo",
+                "purple",
+                "pink"
+              ],
+              "swift": "foregroundStyle(ink)"
+            }
+          },
+          "note": "line look"
+        },
+        {
+          "name": "sessions",
+          "optional": true,
+          "role": "copy",
+          "note": "auto (default): shade the points' pre-market and after-hours stretches · off"
+        }
+      ]
+    },
+    {
+      "name": "Change",
+      "args": [
+        {
+          "name": "value",
+          "optional": false,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal"
+        },
+        {
+          "name": "percent",
+          "optional": false,
+          "role": "data",
+          "kind": "number",
+          "format": "decimal",
+          "note": "percent points, e.g. 1.4 for +1.4%"
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "copy",
+          "note": "pill (default) · text · percent: arrow + %"
+        },
+        {
+          "name": "role",
+          "optional": true,
+          "role": "token",
+          "token": "type",
+          "note": "default footnote"
+        }
+      ]
+    },
+    {
+      "name": "SplitBar",
+      "args": [
+        {
+          "name": "sides",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "size",
+          "optional": true,
+          "role": "copy",
+          "note": "regular 8 (default) · thin 6 · micro 4 (40 wide, for chips)"
+        },
+        {
+          "name": "dim",
+          "optional": true,
+          "role": "copy",
+          "note": "losing sides at 35%"
+        },
+        {
+          "name": "legend",
+          "optional": true,
+          "role": "copy",
+          "note": "side label and count under each end"
+        }
+      ]
+    },
+    {
+      "name": "Note",
+      "args": [
+        {
+          "name": "text",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "tone",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "title",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "icon",
+          "optional": true,
+          "role": "copy",
+          "kind": "icon"
+        }
+      ]
+    },
+    {
+      "name": "Row",
+      "args": [
+        {
+          "name": "title",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "subtitle",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "leading",
+          "optional": true,
+          "role": "node",
+          "accepts": [
+            "Icon",
+            "Avatar",
+            "Image"
+          ]
+        },
+        {
+          "name": "trailing",
+          "optional": true,
+          "role": "node",
+          "accepts": [
+            "Text",
+            "Number",
+            "Badge",
+            "Chip",
+            "Pill",
+            "Stack",
+            "Toggle",
+            "Icon",
+            "IconButton",
+            "Button",
+            "Change",
+            "Sparkline"
+          ]
+        },
+        {
+          "name": "action",
+          "optional": true,
+          "role": "copy",
+          "kind": "action"
+        }
+      ]
+    },
+    {
+      "name": "KeyValue",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "value",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "action",
+          "optional": true,
+          "role": "copy",
+          "kind": "action"
+        }
+      ]
+    },
+    {
+      "name": "NavBar",
+      "args": [
+        {
+          "name": "title",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "leading",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "trailing",
+          "optional": true,
+          "role": "nodes",
+          "accepts": [
+            "IconButton"
+          ],
+          "min": 0,
+          "max": 2
+        },
+        {
+          "name": "style",
+          "optional": true,
+          "role": "copy",
+          "note": "filled: round 44 buttons on a tinted disc"
+        }
+      ]
+    },
+    {
+      "name": "Dock",
+      "args": [
+        {
+          "name": "children",
+          "optional": false,
+          "role": "nodes",
+          "accepts": [
+            "Button",
+            "Stack",
+            "Text",
+            "Number"
+          ],
+          "min": 1
+        }
+      ]
+    }
+  ]
+}

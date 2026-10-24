@@ -1,0 +1,41 @@
+{
+  "source": "Legacy stocks field contracts captured before the OpenUI schema migration on 2026-10-19. Order is ignored; paths, kinds and formats are preserved.",
+  "cases": {
+    "stock": {
+      "count": 47,
+      "sha256": "b3923443cbda93a2f475772db53fbf3381f9e5413baa78f56974a3511552f415"
+    },
+    "earnings": {
+      "count": 10,
+      "sha256": "974bf17b842c93ffabd5a4fdae7504edd28ec6eaeb7048f20b47fc454607ddf9"
+    },
+    "benchmark": {
+      "count": 16,
+      "sha256": "77caa57156bc15b93f0527066a28f91a9de1ed069af8d7431d642b2f62f19571"
+    },
+    "etfExposure": {
+      "count": 11,
+      "sha256": "ada84f30876630ad75a7f54de077ffe2fd88d4b1344a4a9a99a9dcd5ac4d91ed"
+    },
+    "consensus": {
+      "count": 32,
+      "sha256": "d6a459ab9ff036933ce11144ac9d38a960cac1a7c299783f7c9798c0f4218c19"
+    },
+    "consensusSet": {
+      "count": 17,
+      "sha256": "f9716532f7a7c5f1945dce54cfa863f93c740dcbda4e0cc56ed5159fe87553ec"
+    },
+    "basket": {
+      "count": 73,
+      "sha256": "7af74796ac7afc72325d4569916c57f94172a31c77f2da0936414da54a89a1c8"
+    },
+    "baskets": {
+      "count": 73,
+      "sha256": "063ef2adc79ff22227b455b694ea0dc2a8a2c926edd0e66eb849a60a4d9b21f9"
+    },
+    "expectation": {
+      "count": 41,
+      "sha256": "e9cd1d17a08507f11553a7d2c90639a6ca0f449c9fd79b41bd49a931703f667b"
+    }
+  }
+}
