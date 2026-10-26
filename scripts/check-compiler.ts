@@ -185,6 +185,14 @@ calls = Card([Text(d.answers.q2.summary, "body")])
   assert.doesNotMatch(left.program, /pick1/);
 }
 
+// 7e. Adding a question to a saved screen: a new part that only shows an answer the kept parts already show is dropped.
+{
+  const first = await compileScreen(source(), pack, scripted(`quarters = Stack("v", 12, @Each(d.answers.q1.periods, "p", Quarter(p)))\ncalls = Card([Text(d.answers.q2.summary, "body")])\n`));
+  const base = first.parts.map(p => basePart(p.id, Object.fromEntries([...p.statements].map(([name, expr]) => [name, printStatement(name, expr)]))));
+  const added = await compileScreen(source({ base, required: [{ id: "q3", text: "Holding estimate" }] }), pack, scripted(`again = Card([Text(d.answers.q2.summary, "headline")])\nestimate = Estimate()\n`));
+  assert.deepEqual(added.parts.map(p => [p.id, p.origin.kind]), [["pick1", "kept"], ["pick2", "kept"], ["pick4", "writer"]]);
+}
+
 // 8. Statement splitting survives brackets and quoted newlines.
 {
   const stream = new StatementStream();

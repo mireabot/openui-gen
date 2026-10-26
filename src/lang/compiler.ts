@@ -291,6 +291,7 @@ class Screen {
 
   finish(usage: WriterUsage, run: { written: number; repairRounds: number; writerCalled: boolean }): CompiledScreen {
     for (const part of this.open()) this.report(fail("part-incomplete", `Dropped: missing ${part.missing.join(", ") || "its part statement"}`, part.name));
+    for (const part of this.finished().filter(p => this.repeats(p))) this.report({ source: "coverage", code: "repeated-part", message: `${part.id} only repeats answers the saved screen already shows; it was dropped`, statementId: part.id });
     for (const q of this.gaps()) {
       this.report({ source: "coverage", code: "question-fallback", message: `${q.id} was not shown by the writer; the server added its default part`, statementId: q.id });
       const expr = this.pack.fallback(q.id, this.source.values);
@@ -369,7 +370,14 @@ class Screen {
       return this.stale.has(base.id) ? [] : [{ id: base.id, statements: base.statements, evidence: evidenceOf(base.statements.values(), this.source.values, this.pack), origin: { kind: "kept" } }];
     });
     const keptIds = new Set(kept.map(p => p.id));
-    return [...kept, ...[...written.values()].filter(p => !keptIds.has(p.id)), ...this.fallbacks];
+    return [...kept, ...[...written.values()].filter(p => !keptIds.has(p.id) && !this.repeats(p)), ...this.fallbacks];
+  }
+
+  /** On a follow-up, a new part showing only questions this turn does not ask for repeats the saved screen. */
+  private repeats(part: CompiledPart): boolean {
+    if (!this.source.base.length || this.source.base.some(b => b.id === part.id)) return false;
+    const shown = [...part.evidence.keys()];
+    return shown.length > 0 && !shown.some(q => this.source.required.some(r => r.id === q));
   }
 
   private evidence(parts: readonly Evidence[]): Map<QuestionId, DataPath[]> {
@@ -647,12 +655,13 @@ function writerMessages(source: ScreenSource, pack: ScreenPack, allowNew: boolea
   const signatures = generateSystemPrompt(slotLibrary(WRITER_PRIMITIVES).library.toSpec());
   // The signatures name token types; these are their only values (the closed ground rules).
   const tokens = (Object.keys(TOKEN_SCHEMA) as (keyof typeof TOKEN_SCHEMA)[]).map(key => `${TOKEN_IDS[key]} = ${((z.toJSONSchema(TOKEN_SCHEMA[key]) as { enum?: unknown[] }).enum ?? []).map(v => JSON.stringify(v)).join(" | ")}`).join("\n");
-  const editing = source.editable.size ? `\nThis turn edits a saved screen. You may rewrite these existing parts by writing their own names (${[...source.editable].join(", ")}, with sub-statements ${[...source.editable].map(id => `${id}_x`).join(", ")}); a rewritten part replaces the old one completely. Every other existing part stays as it is; new parts use new labels and go after them.` : "";
+  const rewrite = source.editable.size ? ` You may rewrite these existing parts by writing their own names (${[...source.editable].join(", ")}, with sub-statements ${[...source.editable].map(id => `${id}_x`).join(", ")}); a rewritten part replaces the old one completely.` : "";
+  const editing = source.base.length ? `\nThis turn edits a saved screen. Its parts stay as they are and already show the other answers: never show those again in a new part.${rewrite} New parts use new labels and go after the existing ones.` : "";
   const current = source.base.filter(part => source.editable.has(part.id)).map(part => [...part.statements].map(([name, expr]) => printStatement(name, expr)).join("\n")).join("\n\n");
   return [{ role: "system", content: `You compose a mobile screen in OpenUI Lang that answers the user's request from the supplied data.
 Write one statement per line. Each part of the screen is a statement named with a lowerCamel label (\`quarters = Section(...)\`); split a large part into sub-statements named label_name (\`quarters_table = Card(...)\`) and reference them by name from the part. Write the part statement first, then its sub-statements top-down. Parts appear in the order you write them. Never write root, d, Screen, queries, mutations, state or actions; never reference another part.
 Data props must reference the data: d.<path> or an @Each item (\`@Each(d.answers.q1.periods, "p", EarningsCard(p))\`); never type figures as literals in data props. Copy (titles, labels) is plain text; do not invent figures in it.
-Answer every question in the briefing: each must be shown by reading its answer data (d.answers.<id>). An answer marked partial or unavailable must show its note.
+Answer every required question (${source.required.map(q => q.id).join(", ") || "none"}): each must be shown by reading its answer data (d.answers.<id>). An answer marked partial or unavailable must show its note.
 Templates are optional: call one by name with data that fits it, or copy its structure and change it. Use only token values the signatures allow.
 At most ${LIMITS.parts} parts, ${LIMITS.statementsPerPart} statements per part, ${LIMITS.nodesPerPart} nodes per part after @Each expansion.${editing}
 
