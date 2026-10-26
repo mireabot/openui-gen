@@ -1,25 +1,28 @@
 # OpenUI Lang generation
 
-A stocks request becomes an OpenUI Lang program: a screen of standard OpenUI statements that the
+A sports request becomes an OpenUI Lang program: a screen of standard OpenUI statements that the
 server writes, checks and streams, and that every client (web preview, SwiftUI) evaluates with the
-same component library. This document describes the pipeline, the component library, follow-ups and
-the native renderer.
+same component library. This document describes the pipeline, the component library and the native
+renderer.
 
 ## The pipeline
 
 ```text
-prompt → plan questions → answer them → writer + compiler → program + dataset snapshot
+prompt → plan (Haiku) → answer every question at once (ESPN · Parallel + Sonnet) → dataset (Opus)
+       → writer (Opus) + compiler → program + dataset snapshot
 ```
 
 | Stage | Code | Result |
 | --- | --- | --- |
-| Plan | `src/stocks/questions.ts` `planQuestions` | Haiku reads the request once and breaks it into independent questions, each routed to a lookup (`peers`, `stats`, `earnings`, `consensus`, `quarters`, `web`, `basket`, `expectation`, …) plus the subject. |
-| Answer | `src/stocks/answers.ts` `answerQuestions` | Every question runs at once against Massive (FMP fallback) and cited web research. Each answer carries `status` (complete, partial, unavailable) and the note to show when it is not complete. Nothing throws for a provider failure except the subject's own prices. |
-| Snapshot | `src/lang/snapshots.ts` | The dataset `{subject, answers}` is stored under the run id. Programs read it through `Query("stocks_dataset", {run}, {})`. |
-| Compose | `src/lang/compiler.ts` `compileScreen` with `src/stocks/lang/screen.ts` `STOCKS_SCREEN` | The writer authors the screen as named statements; the compiler admits each one as it streams. |
+| Plan | `src/sports/plan.ts` `planSports` (`SPORTS_PLAN_MODEL`, Haiku 5.5) | Reads the request once: the subject and 1–5 questions, each routed to an ESPN feed (`standings`, `scoreboard`, `schedule`, `teams`) for the Premier League, LaLiga, Bundesliga and Serie A, or to cited web research with 2–3 search queries. |
+| Answer | `src/sports/research.ts` `answerSports` | Every question at once. ESPN feeds (`src/sports/espn.ts`) are read and trimmed directly. Web questions are parallel searches: Parallel's Search and Extract APIs find and read the pages, then Sonnet 5.5 (`SPORTS_SEARCH_MODEL`) turns them into one cited finding. A finding citing no page it read, or a failed question, comes back `unavailable` with a note. |
+| Dataset | `src/sports/dataset.ts` `designDataset` (`SPORTS_MODEL`, Opus 5.5) | Designs each answer's fields and values from the data (select, order, derive; never add figures). The server validates every field and value; a design that fails keeps the raw answer with inferred fields. |
+| Snapshot | `src/lang/snapshots.ts` | The dataset `{answers}` is stored under the run id. Programs read it through `Query("sports_dataset", {run}, {})`. |
+| Compose | `src/lang/compiler.ts` `compileScreen` with `src/sports/screen.ts` `SPORTS_SCREEN` | The writer (Opus 5.5) authors the screen as named statements; the compiler admits each one as it streams. |
 
 Search happens before composition. The writer receives sourced data and references it by path; it
-never types a price or a fact.
+never types a score or a fact. Opus 5.5 and Sonnet 5.5 calls opt into the API's server-side refusal
+fallback (`fallbacks: "default"`); Haiku has none.
 
 ## The component library
 
@@ -37,16 +40,16 @@ primitive name:
   (`Calculation` to `KinoCalculation`), using `@openuidev/react-lang`'s `Renderer`;
 - SwiftUI: `OpenUICompiler` and the Kino views (see below).
 
-Templates are server-side compositions the writer may call: `StockCard`, `PeerCards`,
-`EarningsCard`, `ConsensusSet`, `BasketCard`, `InvestmentExpectation`, `FindingCard`, `PeriodTable`
-and others in `src/stocks/lang/`. They are typed builders (`ui.Card(...)`) that expand to primitives
-when admitted, so clients never learn a template, only the 42 primitives.
+Templates are server-side compositions the writer may call, as typed builders (`ui.Card(...)`) that
+expand to primitives when admitted, so clients never learn a template, only the 42 primitives. The
+sports pack has none yet; the Sports components explored in ui-canvas (MatchCard, StatBar,
+Leaderboard, FixturesHeatmap, StatsCard) are the candidates.
 
 ```text
 root = Screen([pick1, pick2])
-d = Query("stocks_dataset", {run: "…"}, {})
-pick1 = Stack("v", 16, [...d.subject...])
-pick2 = Section("NVDA competitors", [Rail(12, @Each(d.answers.q1.items, "p", Card([...])), 170)])
+d = Query("sports_dataset", {run: "…"}, {})
+pick1 = Section("Premier League table", [Stack("v", 8, @Each(d.answers.q1.table, "row", Row(...)))])
+pick2 = Card([Text(d.answers.q2.title, "headline"), ...])
 ```
 
 ### The component schema index
@@ -54,11 +57,9 @@ pick2 = Section("NVDA competitors", [Rail(12, @Each(d.answers.q1.items, "p", Car
 `npm run openui:export` writes what native clients load:
 
 - `catalog/openui/primitives.json`: every primitive with its positional props and roles, and a
-  digest of the lang-core schema;
-- `catalog/openui/fixtures.json`: one program per template variant, compiled by the real compiler over
-  the recorded datasets in `eval/fixtures/`, with the element tree a renderer must produce.
+  digest of the lang-core schema. The iOS app bundles it directly.
 
-`--check` fails when either is stale; `--ios <dir>` also writes them into the app's Resources.
+`--check` fails when it is stale.
 `catalog/sf-symbols.json` (`npm run sf-symbols`) is the icon allowlist the compiler checks names against.
 
 ## The compiler
@@ -67,8 +68,7 @@ The writer writes lowercase statements (`peers = Section(...)`, `peers_cards = R
 statement the compiler:
 
 - parses it and expands template calls into primitives;
-- checks components, child slots, data paths and types, SF Symbols and the collection rule (a list
-  shows 1–5 items, a rail 6 or more, unless the user asked for a layout);
+- checks components, child slots, data paths and types, SF Symbols and the pack's collection rule;
 - links a part once every statement it references is admitted, renames it `pickN`, and records which
   questions it shows from the data it reads.
 
@@ -81,20 +81,20 @@ writer output.
 
 ## Streaming and client behavior
 
-`POST /lang/stocks/stream` with `{prompt, model?, timeZone?}` sends:
+`POST /lang/sports/stream` with `{prompt}` sends:
 
 | Event | Payload |
 | --- | --- |
 | `activity` | stage, status and detail for each step |
-| `data` | the dataset seed `{tool: "stocks_dataset", args: {run}, result}` |
+| `data` | the dataset seed `{tool: "sports_dataset", args: {run}, result}` |
 | `skeleton` | frames for the planned parts, before content |
 | `openui` | `{text}`: complete statements to append; later assignments to an id replace earlier ones |
 | `issue` | a recoverable problem with its statement id |
-| `done` | `{program, issues, holes, timings, model, ticker, document: {id, revision: 1}}` |
+| `done` | `{program, issues, holes, timings, model, document: {id, revision: 1}}`, sent after the screen is saved |
 | `failure` | `{error, message}` |
 
 The `data` event warms the client's tool provider. A client without the seed replays the query
-through `POST /tools/stocks_dataset` with `{run}`. Snapshots live in memory (bounded) and under
+through `POST /tools/sports_dataset` with `{run}`. Snapshots live in memory (bounded) and under
 `DATA_DIR/openui-snapshots`.
 
 `@Each` output can contain nested child arrays, which renderers flatten before laying out rails, grids
@@ -102,39 +102,36 @@ and segmented panels. Data arrays, such as chart points, stay data. Calculators 
 evaluated numbers no longer carry their binding paths, so the `Calculation` renderer reads its source
 subtree by statement id. This keeps local slider and choice edits independent per calculator.
 
-## Follow-ups edit the saved screen
+## Follow-ups
 
-When the first stream finishes, the server saves a document under `DATA_DIR/openui-documents`: the
-program, the snapshot, the subject, every question, the parts with the questions each shows, and the
-conversation turns. Its id is the first run id. Writes are atomic (temp file, then rename) and survive
-restarts.
+A screen is a document (`src/sports/documents.ts`): one JSON file per document under
+`DATA_DIR/openui-documents`, holding the latest revision's program, snapshot, subject, routed
+questions, parts (printed statements and the questions each shows) and the conversation turns. The
+document id is the first run's id.
 
-`POST /lang/stocks/:documentId/follow-up` takes `{prompt, baseRevision, targets?, model?, timeZone?}`.
+`POST /lang/sports/:documentId/follow-up` with `{prompt, baseRevision, targets?}`:
 
-1. Haiku reads the follow-up against the saved questions and parts (`planFollowUp`) and returns new
-   questions (each may `replace` a saved one), parts to `restyle`, parts to remove, and the
-   standalone request.
-2. Only the new questions are answered. Answers are write-once under new ids, so the new snapshot is
-   the union of saved and fresh answers.
-3. The compiler runs with the saved parts as its base. Parts that read a replaced question or are
-   restyled may be rewritten; every other part is kept byte for byte with its id.
-
-While it works the route sends only `activity`. After the new revision is stored it sends `data`,
-`openui {text, replace: true}` with the complete program, and `done` with `document: {id, revision}`.
-A missing document is 404, a stale `baseRevision` 409, an unknown target 400, and a document saved
-before question planning 410. A failure appends no turns and leaves the revision unchanged.
-
-The full program is a new source revision, not an instruction to rebuild the view. Clients identify
-elements by statement id, position under that statement and `@Each` item, compare evaluated props,
-and publish only what changed. `OPENUI-FOLLOWUPS.md` has the native contract.
+1. Haiku reads the turns, the subject, the saved questions and what each part shows, and returns the
+   updated plan: every saved id is kept, revised (same id, new text and routing) or removed, and
+   new questions get fresh ids. A revision identical to the saved question counts as kept.
+2. Kept answers are reused from the saved snapshot. Revised and new questions are researched and
+   designed as on a first screen. Saved clubs keep their order in `d.clubs` and new ones are appended.
+3. The compiler gets the saved parts as `base`, minus parts that show only removed questions. Parts
+   showing a revised or removed question are `editable`: the writer may rewrite them under their id.
+   Every other part is kept byte for byte. A base part whose reads no longer resolve is dropped unless
+   rewritten, and its questions fall back.
+4. The next revision is committed atomically under a per-document lock. Only then does the stream send
+   `data`, `openui {text, replace: true}` and `done` with `document: {id, revision}`. A failure sends
+   `failure` and commits nothing. 404 for an unknown document, 409 `revision_conflict` when
+   `baseRevision` is stale, 400 `unknown_target` for a target that names no part.
 
 ## The SwiftUI renderer
 
-The app renders the same OpenUI program as the web. It keeps one set of view objects for the whole conversation and changes only the elements a new revision changes. The code lives in the FitnessGin app repository, in four layers.
+The app renders the same OpenUI program as the web. It keeps one set of view objects for the whole conversation and changes only the elements a new revision changes. The code lives in `ios/OpenUIGen/GenUI/` in this repository (ported from FitnessGin), in four layers.
 
 ### The compiler turns text into elements
 
-`OpenUICompiler` in `GenUIPrimitives/OpenUI` parses the program and evaluates it against the dataset seeds. The result is a scene: a list of root element ids and, for each element, its kind, evaluated properties, child slots, and the data path each property read.
+`OpenUICompiler` in `GenUI/Core/OpenUI` parses the program and evaluates it against the dataset seeds. The result is a scene: a list of root element ids and, for each element, its kind, evaluated properties, child slots, and the data path each property read.
 
 ```text
 program text + seeds → OpenUICompiler → scene {roots, elements by id}
@@ -146,7 +143,7 @@ The compiler also handles calculators. When a `Calculation` reads its input reco
 
 ### The session keeps the handles
 
-`OpenUISession` in `GenUIOpenUIRuntime` owns the program, the seeds, the local edits, and one handle per element. Views observe handles, not the scene.
+`OpenUISession` in `GenUI/Runtime` owns the program, the seeds, the local edits, and one handle per element. Views observe handles, not the scene.
 
 ```text
 program text + seeds → OpenUICompiler → scene
@@ -162,7 +159,7 @@ Each compile ends in one commit on the main actor. For every element in the new 
 
 ### The renderer draws handles
 
-`OpenUISceneView` in `GenUIPrimitiveRenderer` draws the root handle's children. Each child view receives its handle directly. `PrimitiveProps(handle:)` reads the handle's prepared properties, and `PrimitiveVisual` sends the kind to the same Kino views the old renderer used. A container reads its slot handle's children and draws each through the same path.
+`OpenUISceneView` in `GenUI/Renderer` draws the root handle's children. Each child view receives its handle directly. `PrimitiveProps(handle:)` reads the handle's prepared properties, and `PrimitiveVisual` sends the kind to the same Kino views the old renderer used. A container reads its slot handle's children and draws each through the same path.
 
 ```text
 scene → session.commit → handles → OpenUISceneView → Kino views
@@ -172,23 +169,15 @@ No view reads a whole tree or a whole dataset from the environment. A text view 
 
 ### The network layer and the Ask screen
 
-`OpenUIStreamService` in `FitnessGinNetworking` posts to `/lang/stocks/stream` for a first question and to `/lang/stocks/:documentId/follow-up` for later ones. It decodes the SSE events and turns a 409 into `staleRevision`.
+`OpenUIStreamService` in `GenUI/Streaming` posts to `/lang/sports/stream` and decodes the SSE events; a session with a document posts follow-ups to `/lang/sports/:documentId/follow-up` (409 → `staleRevision`).
 
 ```text
-StockDetailView Ask → OpenUISession.ask → OpenUIStreamService → backend
+AskView → AskModel → OpenUISession.ask → OpenUIStreamService → backend
                            │
                      scene → commit → handles → OpenUISceneView
 ```
 
-The stock Ask tray creates one session per stock page. `session.ask` starts a document the first time and sends a follow-up after that, with the saved document id and revision. The first question carries the ticker as a cashtag. Follow-ups go as typed, because the backend resolves the subject from the conversation.
-
-### A follow-up on the device
-
-The first answer streams. Each `openui` event appends statements, and the session recompiles and commits as they arrive, so the screen fills in.
-
-A follow-up is staged. While the backend works, the session records activity and the answer stays on screen, with a small badge showing the current step. Seeds and the replacement program are held until `done`. The session then checks that `done` names the same document and the next revision. It adds the new seed, compiles the new program, and commits once. If compiling fails, it restores the previous program and seeds and keeps the screen as it was.
-
-For "NVDA upcoming earnings" followed by "get the latest report rather than upcoming", the commit keeps the earnings card's handles. It writes new values into the texts that show the period, date, and summary. Nothing else on the screen gets a write.
+`AskModel` keeps one session; once `done` carries a `document`, the next prompt is a follow-up on it.
 
 ### What this does not do yet
 
@@ -197,7 +186,7 @@ For "NVDA upcoming earnings" followed by "get the latest report rather than upco
 - Calculator edits stay with their calculator across follow-ups only while the calculator keeps its id. There is no conflict marker when the server changes an input the user edited.
 - The session can export an `OpenUIArchive`, but History does not store it yet.
 - The OpenUI Ask answer shows the progress checklist before content, not the skeleton.
-- Nothing has proven the native follow-up on a device. The app builds with SwiftLint, and `FitnessGinUITests` drives the NVDA question and follow-up against a live backend. In the simulator the expanded Ask tray lays its content out below the screen, on `main` as well as on this branch, so the test cannot reach the input yet. There are no unit tests for the commit yet.
+- The iOS follow-up path is covered by `OpenUISessionTests` against a fake stream, not yet against the live server.
 
 The backend derives skeleton frames from the evaluated OpenUI frame; primitive skeleton
 descriptions remain strings.

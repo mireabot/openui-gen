@@ -2,21 +2,30 @@ import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { DataFieldSchema } from "../research/dataset-schema.js";
-import type { StocksDataset } from "../stocks/data.js";
+import type { DataField } from "../research/dataset-schema.js";
 
 export const SnapshotArgs = z.object({ run: z.string().regex(/^[A-Za-z0-9_-]{1,80}$/) }).strict();
 export const SnapshotSchema = z.object({
-  tool: z.literal("stocks_dataset"), args: SnapshotArgs, result: z.record(z.string(), z.json()),
-  fields: z.array(DataFieldSchema), asOf: z.string(), source: z.enum(["massive", "fmp", "mixed"]),
+  tool: z.enum(["sports_dataset"]), args: SnapshotArgs, result: z.record(z.string(), z.json()),
+  // web: cited research only; espn: ESPN feeds only; mixed: both.
+  fields: z.array(DataFieldSchema), asOf: z.string(), source: z.enum(["web", "espn", "mixed"]),
 });
+export type SnapshotTool = DatasetSnapshot["tool"];
+/** What a snapshot stores: the values a program reads, their fields, and where they came from. */
+export interface SnapshotDataset {
+  readonly values: Readonly<Record<string, unknown>>;
+  readonly fields: readonly DataField[];
+  readonly asOf: string;
+  readonly source: DatasetSnapshot["source"];
+}
 export type DatasetSnapshot = z.infer<typeof SnapshotSchema>;
 
 export class SnapshotStore {
   private readonly memory = new Map<string, DatasetSnapshot>();
   constructor(private readonly directory: string, private readonly capacity = 32) {}
 
-  async put(run: string, dataset: StocksDataset): Promise<DatasetSnapshot> {
-    const snapshot = SnapshotSchema.parse({ tool: "stocks_dataset", args: { run }, result: dataset.values, fields: dataset.fields, asOf: dataset.asOf, source: dataset.source });
+  async put(run: string, dataset: SnapshotDataset, tool: SnapshotTool = "sports_dataset"): Promise<DatasetSnapshot> {
+    const snapshot = SnapshotSchema.parse({ tool, args: { run }, result: dataset.values, fields: dataset.fields, asOf: dataset.asOf, source: dataset.source });
     await mkdir(this.directory, { recursive: true });
     const file = path.join(this.directory, `${run}.json`);
     const temporary = `${file}.${crypto.randomUUID()}.tmp`;

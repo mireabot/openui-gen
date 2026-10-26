@@ -1,0 +1,32 @@
+## Build output
+.build/
+build/
+DerivedData/
+SourcePackages/
+*.ipa
+*.dSYM.zip
+
+## Editors
+xcuserdata/
+*.swp
+buildServer.json
+
+## Tooling
+.mint/
+
+## Secrets — real values never get committed.
+OpenUIGen/Application/Resources/Secrets.xcconfig
+
+## Generated Xcode project.
+#
+# The project is regenerated from project.yml, so the pbxproj is not tracked and can
+# never produce a merge conflict. Package.resolved IS tracked once a remote package
+# is added: it keeps dependency resolution reproducible.
+OpenUIGen.xcodeproj/*
+!OpenUIGen.xcodeproj/project.xcworkspace/
+OpenUIGen.xcodeproj/project.xcworkspace/*
+!OpenUIGen.xcodeproj/project.xcworkspace/xcshareddata/
+OpenUIGen.xcodeproj/project.xcworkspace/xcshareddata/*
+!OpenUIGen.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/
+OpenUIGen.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/*
+!OpenUIGen.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved

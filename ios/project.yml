@@ -1,0 +1,128 @@
+# XcodeGen spec for the OpenUIGen app.
+#
+# Never edit OpenUIGen.xcodeproj directly: it is generated from this file and is
+# not tracked in git. Run `make project` from the repo root after changing it.
+
+name: OpenUIGen
+
+options:
+  deploymentTarget:
+    iOS: "26.0"
+  createIntermediateGroups: true
+  groupSortPosition: top
+  groupOrdering:
+    - order: [OpenUIGen, OpenUIGenTests]
+
+settings:
+  base:
+    SUPPORTED_PLATFORMS: "iphoneos iphonesimulator"
+    SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD: YES
+    SUPPORTS_MACCATALYST: NO
+    SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD: NO
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    SWIFT_UPCOMING_FEATURE_INFER_SENDABLE_FROM_CAPTURES: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+
+configFiles:
+  Debug: OpenUIGen/Application/Resources/AppStore.xcconfig
+  Release: OpenUIGen/Application/Resources/AppStore.xcconfig
+
+# Remote SPM packages, each also listed under the target's `dependencies:`.
+packages:
+  Nuke:
+    url: https://github.com/kean/Nuke.git
+    from: 12.8.0
+
+aggregateTargets:
+  SwiftLint:
+    buildScripts:
+      - name: Run SwiftLint
+        basedOnDependencyAnalysis: false
+        # Resolved at build time so this works on any Homebrew prefix.
+        script: |
+          MINT="$(command -v mint || echo "$(brew --prefix)/bin/mint")"
+          if [ -x "$MINT" ]; then
+            "$MINT" run swiftlint --quiet
+          else
+            echo "warning: mint not found; skipping SwiftLint. Run 'make bootstrap'."
+          fi
+
+targets:
+  OpenUIGen:
+    platform: iOS
+    type: application
+    sources:
+      - path: OpenUIGen
+        excludes:
+          - "**/*.xcconfig.example"
+      # Shared with the server and the preview, read from where they live in the repo
+      # (bundled flat: design.json, theme.json, primitives.json).
+      - path: ../design/atomize/design.json
+        group: OpenUIGen/Resources
+        buildPhase: resources
+      - path: ../design/kino/theme.json
+        group: OpenUIGen/Resources
+        buildPhase: resources
+      - path: ../catalog/openui/primitives.json
+        group: OpenUIGen/Resources
+        buildPhase: resources
+    settings:
+      base:
+        TARGETED_DEVICE_FAMILY: "1"
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID)
+        PRODUCT_NAME: OpenUIGen
+        CURRENT_PROJECT_VERSION: $(CURRENT_PROJECT_VERSION)
+        MARKETING_VERSION: $(MARKETING_VERSION)
+        INFOPLIST_FILE: OpenUIGen/Info.plist
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
+        CODE_SIGN_STYLE: Automatic
+      configs:
+        debug:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: ["DEBUG", "DEVELOPMENT"]
+        release:
+          SWIFT_ACTIVE_COMPILATION_CONDITIONS: ["RELEASE", "PRODUCTION"]
+    dependencies:
+      - package: Nuke
+        product: Nuke
+      - package: Nuke
+        product: NukeUI
+      - target: SwiftLint
+        embed: false
+
+  OpenUIGenTests:
+    platform: iOS
+    type: bundle.unit-test
+    sources:
+      - path: OpenUIGenTests
+      # The server's evaluated trees, which OpenUIFixtureTests checks the Swift compiler against.
+      - path: ../catalog/openui/fixtures.json
+        group: OpenUIGenTests/Resources
+        buildPhase: resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID).tests
+        GENERATE_INFOPLIST_FILE: YES
+    dependencies:
+      - target: OpenUIGen
+
+schemes:
+  OpenUIGen:
+    build:
+      targets:
+        OpenUIGen: all
+        OpenUIGenTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - OpenUIGenTests
+    profile:
+      config: Release
+    analyze:
+      config: Debug
+    archive:
+      config: Release

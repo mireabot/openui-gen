@@ -711,7 +711,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       return (
         <span
           className={cn("relative flex shrink-0 items-center justify-center overflow-hidden font-medium", p("shape") === "rounded" ? "rounded-[8px]" : "rounded-full")}
-          style={{ width: size, height: size, fontSize: size >= 40 ? 16 : 12, ...look(s, "monogram"), ...(p("tint") ? { background: color(p("tint")) } : {}) }}
+          style={{ width: size, height: size, fontSize: size >= 40 ? 16 : 12, ...look(s, "monogram"), ...(typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string) ? { background: p("color") as string } : p("tint") ? { background: color(p("tint")) } : {}) }}
         >
           {/* The monogram is the placeholder and the fallback; a logo fades in over it once loaded. */}
           {String(p("name") ?? "?").slice(0, 1)}
@@ -976,7 +976,9 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     }
     case "SplitBar": {
       const raw = p("sides");
-      const sides = (Array.isArray(raw) && raw.length ? raw : [{ label: "Buy", count: 9, tone: "good" }, { label: "Sell", count: 3, tone: "bad" }]) as { label?: string; count?: number; tone?: string }[];
+      const sides = (Array.isArray(raw) && raw.length ? raw : [{ label: "Buy", count: 9, tone: "good" }, { label: "Sell", count: 3, tone: "bad" }]) as { label?: string; count?: number; tone?: string; color?: string }[];
+      // A team's #hex wins over the tone.
+      const sideColor = (x: { tone?: string; color?: string }) => (x.color && /^#[0-9a-f]{3,8}$/i.test(x.color) ? x.color : tv(`tone.${x.tone ?? "neutral"}.fg`));
       const top = Math.max(...sides.map((x) => Number(x.count ?? 0)));
       const winners = sides.filter((x) => Number(x.count ?? 0) === top).length;
       const height = p("size") === "micro" ? 4 : p("size") === "thin" ? 6 : 8;
@@ -984,7 +986,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       const bar = (
         <span role="img" aria-label={sides.map((x) => `${x.label} ${x.count}`).join(", ")} className={cn("flex gap-0.5 overflow-hidden rounded-full", p("size") === "micro" ? "w-10 shrink-0" : "w-full min-w-0", axis === "h" && p("size") !== "micro" && "flex-1")} style={{ height }}>
           {shown.map((x, i) => (
-            <span key={i} className="h-full" style={{ flexGrow: Number(x.count), flexBasis: 0, background: tv(`tone.${x.tone ?? "neutral"}.fg`),
+            <span key={i} className="h-full" style={{ flexGrow: Number(x.count), flexBasis: 0, background: sideColor(x),
               opacity: p("dim") && winners === 1 && Number(x.count) !== top ? 0.35 : 1 }} />
           ))}
         </span>
@@ -994,7 +996,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
         <span className="flex w-full flex-col gap-2">
           {bar}
           <span className="flex justify-between tabular-nums" style={textStyle("footnote", "regular", undefined)}>
-            {shown.map((x, i) => <span key={i} style={{ color: tv(`tone.${x.tone ?? "neutral"}.fg`) }}>{x.label} {x.count}</span>)}
+            {shown.map((x, i) => <span key={i} style={{ color: sideColor(x) }}>{x.label} {x.count}</span>)}
           </span>
         </span>
       );

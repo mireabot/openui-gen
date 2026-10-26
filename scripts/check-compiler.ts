@@ -44,7 +44,7 @@ const source = (over: Partial<ScreenSource> = {}): ScreenSource => ({
   required: [{ id: "q1", text: "Last 8 quarters of EPS" }, { id: "q2", text: "Management commentary" }],
   base: [], editable: new Set(), explicitLayout: null, ...over,
 });
-const usage = { promptTokens: 1, completionTokens: 1, reasoningTokens: 0, cost: 0 };
+const usage = { promptTokens: 1, completionTokens: 1, cost: 0 };
 /** Each call takes the next script; a script of null throws (transport failure) after emitting `partial`. */
 const scripted = (...scripts: (string | { partial: string })[]): ProgramWriter => {
   let call = 0;
@@ -169,6 +169,28 @@ calls = Card([Text(d.answers.q2.summary, "body")])
   assert.equal(idle.writerCalled, false);
   const added = await compileScreen(source({ base, required: [{ id: "q3", text: "Holding estimate" }] }), pack, scripted(`estimate = Estimate()\n`));
   assert.deepEqual(added.parts.map(p => [p.id, p.origin.kind]), [["pick1", "kept"], ["pick2", "kept"], ["pick3", "writer"]]);
+}
+
+// 7d. A revised answer reshaped under the same id: its old part reads data that is gone. The writer's rewrite keeps the
+// part's place; with no rewrite the stale part is dropped and its question falls back, never shipped reading missing data.
+{
+  const first = await compileScreen(source(), pack, scripted(`quarters = Stack("v", 12, @Each(d.answers.q1.periods, "p", Quarter(p)))\ncalls = Card([Text(d.answers.q2.summary, "body")])\n`));
+  const base = first.parts.map(p => basePart(p.id, Object.fromEntries([...p.statements].map(([name, expr]) => [name, printStatement(name, expr)]))));
+  const reshaped = { ...values, answers: { ...values.answers, q1: { question: "Last 2 years of EPS", periods: values.answers.q1.periods.map(p => ({ year: p.label, eps: p.eps })) } } };
+  const revision = source({ values: reshaped, base, editable: new Set(["pick1"]), required: [{ id: "q1", text: "Last 2 years of EPS" }] });
+  const rewritten = await compileScreen(revision, pack, scripted(`pick1 = Stack("v", 12, @Each(d.answers.q1.periods, "p", Text(p.eps, "body")))\n`));
+  assert.deepEqual(rewritten.parts.map(p => [p.id, p.origin.kind]), [["pick1", "writer"], ["pick2", "kept"]]);
+  const left = await compileScreen(revision, pack, scripted(""));
+  assert.deepEqual(left.parts.map(p => [p.id, p.origin.kind]), [["pick2", "kept"], ["pick3", "fallback"]]);
+  assert.doesNotMatch(left.program, /pick1/);
+}
+
+// 7e. Adding a question to a saved screen: a new part that only shows an answer the kept parts already show is dropped.
+{
+  const first = await compileScreen(source(), pack, scripted(`quarters = Stack("v", 12, @Each(d.answers.q1.periods, "p", Quarter(p)))\ncalls = Card([Text(d.answers.q2.summary, "body")])\n`));
+  const base = first.parts.map(p => basePart(p.id, Object.fromEntries([...p.statements].map(([name, expr]) => [name, printStatement(name, expr)]))));
+  const added = await compileScreen(source({ base, required: [{ id: "q3", text: "Holding estimate" }] }), pack, scripted(`again = Card([Text(d.answers.q2.summary, "headline")])\nestimate = Estimate()\n`));
+  assert.deepEqual(added.parts.map(p => [p.id, p.origin.kind]), [["pick1", "kept"], ["pick2", "kept"], ["pick4", "writer"]]);
 }
 
 // 8. Statement splitting survives brackets and quoted newlines.

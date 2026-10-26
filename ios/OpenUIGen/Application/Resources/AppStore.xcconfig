@@ -1,0 +1,26 @@
+//
+//  AppStore.xcconfig
+//  OpenUIGen
+//
+//  Build settings that belong in version control. `make bump-patch` / `bump-minor` /
+//  `bump-major` rewrite MARKETING_VERSION here.
+
+// ===================
+// Versioning
+// ===================
+CURRENT_PROJECT_VERSION = 1
+MARKETING_VERSION = 0.1.0
+
+// ===================
+// Identity
+// ===================
+BUNDLE_ID = com.MKM.openuiGen
+BUNDLE_DISPLAY_NAME = OpenUIGen
+
+// ===================
+// Secrets
+// ===================
+// Secrets.xcconfig is gitignored. `make bootstrap` copies it from Secrets.xcconfig.example.
+// The `?` means the build still succeeds when the file is absent, so a fresh
+// clone compiles before anyone hands you the real values.
+#include? "Secrets.xcconfig"

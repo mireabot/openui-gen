@@ -1,5 +1,4 @@
 import { autoClose, generateSystemPrompt, parseExpression, split, tokenize } from "@openuidev/lang-core";
-import type { WriterUsage } from "../llm/openrouter-writer.js";
 import { iconProblem } from "../primitives/icons.js";
 import { z } from "zod";
 import { slotLibrary } from "./library.js";
@@ -14,7 +13,7 @@ import { programSkeleton, programTree } from "./tree.js";
  * each statement as it streams, expands template macros to primitives, links a part once every
  * sibling it references is admitted, renames it to `pickN`, and derives what the part answers from
  * the data it reads. Coverage is checked after admission; questions no part shows get the pack's
- * fallback part. Generic: everything about stocks comes through `ScreenPack`.
+ * fallback part. Generic: everything about a domain comes through `ScreenPack`.
  */
 
 export type PartId = `pick${number}`;
@@ -45,6 +44,8 @@ export interface ScreenPack {
   briefing(source: ScreenSource): string;
   /** Template signatures for the writer's system prompt. */
   readonly templates: string;
+  /** The tool the program's `d = Query(...)` reads its snapshot from. Defaults to "sports_dataset". */
+  readonly tool?: string;
 }
 
 export interface RequiredQuestion { readonly id: QuestionId; readonly text: string }
@@ -57,7 +58,7 @@ export interface ScreenSource {
   readonly values: DatasetValues;
   /** Questions that must be visible after this compile: every question first run, the revised and added ones on a follow-up. */
   readonly required: readonly RequiredQuestion[];
-  /** Existing parts in screen order; those not editable are kept byte for byte. */
+  /** Existing parts in screen order; those not editable are kept byte for byte. One reading data `values` no longer has is dropped unless the writer rewrites it. */
   readonly base: readonly BasePart[];
   /** Base parts the writer may rewrite by their own id. */
   readonly editable: ReadonlySet<PartId>;
@@ -94,6 +95,11 @@ export interface CompiledScreen {
 }
 
 type Message = { role: "system" | "user"; content: string };
+export interface WriterUsage {
+  readonly promptTokens: number;
+  readonly completionTokens: number;
+  readonly cost: number | undefined;
+}
 export type ProgramWriter = (messages: readonly Message[], onText: (delta: string) => void) => Promise<{ text: string; usage: WriterUsage }>;
 export interface CompileHooks {
   /** Program text to append on the wire; always a valid program once appended. */
@@ -138,7 +144,7 @@ const PICK = /^pick\d+$/;
 export async function compileScreen(source: ScreenSource, pack: ScreenPack, writer: ProgramWriter, hooks: CompileHooks = {}): Promise<CompiledScreen> {
   const issues: ProgramIssue[] = [];
   const report = (issue: ProgramIssue) => { issues.push(issue); hooks.issue?.(issue); };
-  const usage = { promptTokens: 0, completionTokens: 0, reasoningTokens: 0, cost: 0 as number | undefined };
+  const usage = { promptTokens: 0, completionTokens: 0, cost: 0 as number | undefined };
   source = { ...source, required: source.required.filter((q, i) => source.required.findIndex(other => other.id === q.id) === i) };
   const screen = new Screen(source, pack, report, hooks);
   hooks.skeleton?.(programSkeleton(screen.preview(source.required.map(q => q.id)), source.values));
@@ -154,7 +160,6 @@ export async function compileScreen(source: ScreenSource, pack: ScreenPack, writ
       stream.end().forEach(take);
       usage.promptTokens += response.usage.promptTokens;
       usage.completionTokens += response.usage.completionTokens;
-      usage.reasoningTokens += response.usage.reasoningTokens;
       usage.cost = (usage.cost ?? 0) + (response.usage.cost ?? 0);
     } catch (error) {
       writerFailed = true;
@@ -214,19 +219,26 @@ class Screen {
   private admitted = 0;
   private screenNodes = 0;
 
+  /** Base parts reading data this turn's values no longer have (their question was revised or removed): dropped unless the writer rewrites them. */
+  private readonly stale: ReadonlySet<PartId>;
+
   constructor(private readonly source: ScreenSource, private readonly pack: ScreenPack, private readonly report: (issue: ProgramIssue) => void, private readonly hooks: CompileHooks) {
     this.nextId = Math.max(0, ...source.base.map(part => Number(part.id.slice(4)))) + 1;
+    this.stale = new Set(source.base.filter(part => [...part.statements.values()].some(expr => readsOf(expr).some(path => !present(source.values, path)))).map(part => part.id));
   }
+
+  /** Base parts that stay on screen unless rewritten. */
+  private live(): readonly BasePart[] { return this.source.base.filter(part => !this.stale.has(part.id)); }
 
   /** The first text on the wire: kept base parts and the root over them. */
   opening(): string {
-    return [printStatement("d", query(this.source.run)), ...this.source.base.flatMap(part => [...part.statements].map(([name, expr]) => printStatement(name, expr))), this.root()].join("\n") + "\n";
+    return [printStatement("d", query(this.source.run, this.pack.tool)), ...this.live().flatMap(part => [...part.statements].map(([name, expr]) => printStatement(name, expr))), this.root()].join("\n") + "\n";
   }
 
   /** The deterministic screen the fallbacks would make: the skeleton before the writer starts. */
   preview(questions: readonly QuestionId[]): string {
     const parts = questions.map((q, i) => [`preview${i}`, this.pack.fallback(q, this.source.values)] as const);
-    return [`root = Screen([${parts.map(([id]) => id).join(", ")}])`, printStatement("d", query(this.source.run)), ...parts.map(([id, expr]) => printStatement(id, expr))].join("\n") + "\n";
+    return [`root = Screen([${parts.map(([id]) => id).join(", ")}])`, printStatement("d", query(this.source.run, this.pack.tool)), ...parts.map(([id, expr]) => printStatement(id, expr))].join("\n") + "\n";
   }
 
   admit(raw: string): void {
@@ -279,6 +291,7 @@ class Screen {
 
   finish(usage: WriterUsage, run: { written: number; repairRounds: number; writerCalled: boolean }): CompiledScreen {
     for (const part of this.open()) this.report(fail("part-incomplete", `Dropped: missing ${part.missing.join(", ") || "its part statement"}`, part.name));
+    for (const part of this.finished().filter(p => this.repeats(p))) this.report({ source: "coverage", code: "repeated-part", message: `${part.id} only repeats answers the saved screen already shows; it was dropped`, statementId: part.id });
     for (const q of this.gaps()) {
       this.report({ source: "coverage", code: "question-fallback", message: `${q.id} was not shown by the writer; the server added its default part`, statementId: q.id });
       const expr = this.pack.fallback(q.id, this.source.values);
@@ -286,8 +299,9 @@ class Screen {
       const statements = hoist(id, new Map([[id, expr]]));
       this.fallbacks.push({ id, statements, evidence: evidenceOf(statements.values(), this.source.values, this.pack), origin: { kind: "fallback", question: q.id } });
     }
+    for (const id of this.stale) if (!this.finished().some(p => p.id === id)) this.report({ source: "coverage", code: "stale-part", message: `${id} read data this turn no longer has and was not rewritten; it was dropped`, statementId: id });
     const parts = this.parts();
-    const program = [this.root(parts), printStatement("d", query(this.source.run)), ...parts.flatMap(p => [...p.statements].map(([name, expr]) => printStatement(name, expr)))].join("\n") + "\n";
+    const program = [this.root(parts), printStatement("d", query(this.source.run, this.pack.tool)), ...parts.flatMap(p => [...p.statements].map(([name, expr]) => printStatement(name, expr)))].join("\n") + "\n";
     programTree(program, this.source.values);
     const coverage = new Map<QuestionId, PartId[]>();
     for (const q of this.source.required) coverage.set(q.id, parts.filter(p => p.evidence.has(q.id)).map(p => p.id));
@@ -350,16 +364,27 @@ class Screen {
 
   private parts(): CompiledPart[] {
     const written = new Map(this.finished().map(p => [p.id, p]));
-    const kept = this.source.base.map(base => written.get(base.id) ?? { id: base.id, statements: base.statements, evidence: evidenceOf(base.statements.values(), this.source.values, this.pack), origin: { kind: "kept" } as const });
+    const kept = this.source.base.flatMap((base): CompiledPart[] => {
+      const rewritten = written.get(base.id);
+      if (rewritten) return [rewritten];
+      return this.stale.has(base.id) ? [] : [{ id: base.id, statements: base.statements, evidence: evidenceOf(base.statements.values(), this.source.values, this.pack), origin: { kind: "kept" } }];
+    });
     const keptIds = new Set(kept.map(p => p.id));
-    return [...kept, ...[...written.values()].filter(p => !keptIds.has(p.id)), ...this.fallbacks];
+    return [...kept, ...[...written.values()].filter(p => !keptIds.has(p.id) && !this.repeats(p)), ...this.fallbacks];
+  }
+
+  /** On a follow-up, a new part showing only questions this turn does not ask for repeats the saved screen. */
+  private repeats(part: CompiledPart): boolean {
+    if (!this.source.base.length || this.source.base.some(b => b.id === part.id)) return false;
+    const shown = [...part.evidence.keys()];
+    return shown.length > 0 && !shown.some(q => this.source.required.some(r => r.id === q));
   }
 
   private evidence(parts: readonly Evidence[]): Map<QuestionId, DataPath[]> {
     const union = new Map<QuestionId, DataPath[]>();
     // Base parts count until the writer replaces them; an editable part left alone still shows what it showed.
     const replaced = new Set(this.finished().map(p => p.id));
-    for (const evidence of [...this.source.base.filter(b => !replaced.has(b.id)).map(b => evidenceOf(b.statements.values(), this.source.values, this.pack)), ...parts])
+    for (const evidence of [...this.live().filter(b => !replaced.has(b.id)).map(b => evidenceOf(b.statements.values(), this.source.values, this.pack)), ...parts])
       for (const [q, reads] of evidence) union.set(q, [...(union.get(q) ?? []), ...reads]);
     return union;
   }
@@ -367,7 +392,7 @@ class Screen {
   /** The root over kept base parts and every writer part whose part statement is on the wire. */
   private root(parts?: readonly CompiledPart[]): string {
     const ids = parts ? parts.map(p => p.id) : [
-      ...this.source.base.map(b => b.id),
+      ...this.source.base.filter(b => !this.stale.has(b.id) || this.drafts.get(b.id)?.statements.has(null)).map(b => b.id),
       ...this.order.map(name => this.drafts.get(name)).filter((d): d is Draft => !!d && d.statements.has(null) && !this.source.base.some(b => b.id === d.id)).map(d => d.id),
     ];
     return `root = Screen([${ids.join(", ")}])`;
@@ -429,8 +454,8 @@ function mapExpr(expr: Expr, f: (e: Expr) => Expr): Expr {
   }
 }
 
-function query(run: string): Expr {
-  return { k: "Comp", name: "Query", args: [{ k: "Str", v: "stocks_dataset" }, { k: "Obj", entries: [["run", { k: "Str", v: run }]] }, { k: "Obj", entries: [] }] };
+function query(run: string, tool = "sports_dataset"): Expr {
+  return { k: "Comp", name: "Query", args: [{ k: "Str", v: tool }, { k: "Obj", entries: [["run", { k: "Str", v: run }]] }, { k: "Obj", entries: [] }] };
 }
 
 // ------------------------------------------------------------------ admission
@@ -545,10 +570,12 @@ function validate(raw: Expr, owner: string, source: ScreenSource, pack: ScreenPa
       const meta = spec.meta;
       if (meta.role === "node" || meta.role === "nodes") {
         if (meta.role === "node" && value.k === "Arr") report("type-mismatch", `${prop} accepts one child`, e.name, prop);
-        // An @Each counts as the items it renders.
+        // An @Each counts as the items it renders now for the maximum; for the minimum it is one slot, since an empty list is valid data.
         const width = (el: Expr) => { if (el.k !== "Comp" || el.name !== "Each" || !el.args[0]) return 1; try { const list = resolve(el.args[0], scope).value; return Array.isArray(list) ? list.length : 1; } catch { return 1; } };
-        const count = value.k === "Arr" ? value.els.reduce((n, el) => n + width(el), 0) : width(value);
-        if (meta.role === "nodes" && ((meta.min !== undefined && count < meta.min) || (meta.max !== undefined && count > meta.max))) report("slot-count", `Invalid child count for ${e.name}.${prop}`, e.name, prop);
+        const els = value.k === "Arr" ? value.els : [value];
+        const most = els.reduce((n, el) => n + width(el), 0);
+        const least = els.reduce((n, el) => n + Math.max(width(el), el.k === "Comp" && el.name === "Each" ? 1 : 0), 0);
+        if (meta.role === "nodes" && ((meta.min !== undefined && least < meta.min) || (meta.max !== undefined && most > meta.max))) report("slot-count", `Invalid child count for ${e.name}.${prop}`, e.name, prop);
         visit(value, scope, meta.accepts, e);
         return;
       }
@@ -605,6 +632,14 @@ function readsOf(expr: Expr): DataPath[] {
   return reads;
 }
 
+/** Whether a read resolves in the values; a null segment ("each item") must resolve in every item. */
+function present(value: unknown, path: DataPath): boolean {
+  if (!path.length) return true;
+  const [head, ...rest] = path;
+  if (head === null || head === undefined) return Array.isArray(value) && value.every(item => present(item, rest));
+  return value !== null && typeof value === "object" && Object.hasOwn(value, head) && present(Reflect.get(value, head), rest);
+}
+
 function groupEvidence(reads: readonly DataPath[], pack: ScreenPack): Evidence {
   const evidence = new Map<QuestionId, DataPath[]>();
   for (const path of reads) {
@@ -620,12 +655,13 @@ function writerMessages(source: ScreenSource, pack: ScreenPack, allowNew: boolea
   const signatures = generateSystemPrompt(slotLibrary(WRITER_PRIMITIVES).library.toSpec());
   // The signatures name token types; these are their only values (the closed ground rules).
   const tokens = (Object.keys(TOKEN_SCHEMA) as (keyof typeof TOKEN_SCHEMA)[]).map(key => `${TOKEN_IDS[key]} = ${((z.toJSONSchema(TOKEN_SCHEMA[key]) as { enum?: unknown[] }).enum ?? []).map(v => JSON.stringify(v)).join(" | ")}`).join("\n");
-  const editing = source.editable.size ? `\nThis turn edits a saved screen. You may rewrite these existing parts by writing their own names (${[...source.editable].join(", ")}, with sub-statements ${[...source.editable].map(id => `${id}_x`).join(", ")}); a rewritten part replaces the old one completely. Every other existing part stays as it is; new parts use new labels and go after them.` : "";
+  const rewrite = source.editable.size ? ` You may rewrite these existing parts by writing their own names (${[...source.editable].join(", ")}, with sub-statements ${[...source.editable].map(id => `${id}_x`).join(", ")}); a rewritten part replaces the old one completely.` : "";
+  const editing = source.base.length ? `\nThis turn edits a saved screen. Its parts stay as they are and already show the other answers: never show those again in a new part.${rewrite} New parts use new labels and go after the existing ones.` : "";
   const current = source.base.filter(part => source.editable.has(part.id)).map(part => [...part.statements].map(([name, expr]) => printStatement(name, expr)).join("\n")).join("\n\n");
   return [{ role: "system", content: `You compose a mobile screen in OpenUI Lang that answers the user's request from the supplied data.
 Write one statement per line. Each part of the screen is a statement named with a lowerCamel label (\`quarters = Section(...)\`); split a large part into sub-statements named label_name (\`quarters_table = Card(...)\`) and reference them by name from the part. Write the part statement first, then its sub-statements top-down. Parts appear in the order you write them. Never write root, d, Screen, queries, mutations, state or actions; never reference another part.
 Data props must reference the data: d.<path> or an @Each item (\`@Each(d.answers.q1.periods, "p", EarningsCard(p))\`); never type figures as literals in data props. Copy (titles, labels) is plain text; do not invent figures in it.
-Answer every question in the briefing: each must be shown by reading its answer data (d.answers.<id>). An answer marked partial or unavailable must show its note.
+Answer every required question (${source.required.map(q => q.id).join(", ") || "none"}): each must be shown by reading its answer data (d.answers.<id>). An answer marked partial or unavailable must show its note.
 Templates are optional: call one by name with data that fits it, or copy its structure and change it. Use only token values the signatures allow.
 At most ${LIMITS.parts} parts, ${LIMITS.statementsPerPart} statements per part, ${LIMITS.nodesPerPart} nodes per part after @Each expansion.${editing}
 

@@ -15,7 +15,7 @@ export const CalculationSchema = z.object({ path, operation: z.enum(["subtract",
 export type Calculation = z.infer<typeof CalculationSchema>;
 export type MockValue = string | number | boolean | null | MockValue[] | { [key: string]: MockValue };
 export interface MockDataset {
-  readonly source: "mock" | "web" | "massive" | "fmp" | "mixed";
+  readonly source: "mock" | "web" | "mixed";
   readonly fields: readonly DataField[];
   readonly values: { [key: string]: MockValue };
   readonly sources?: readonly WebSource[];

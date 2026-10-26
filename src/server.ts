@@ -8,13 +8,11 @@ import { assertCredentials, config } from "./config.js";
 import { log } from "./log.js";
 import { PROJECT_ROOT } from "./paths.js";
 import { health } from "./routes/health.js";
-import { stocksLangRoutes } from "./routes/lang.js";
-import { mediaRoutes } from "./routes/media.js";
+import { sportsRoutes } from "./routes/sports.js";
 
 const app = new Hono();
 app.route("/", health);
-app.route("/", stocksLangRoutes());
-app.route("/", mediaRoutes);
+app.route("/", sportsRoutes());
 
 /**
  * The preview is a static Next.js export served from the same origin, so the browser calls the
@@ -37,7 +35,7 @@ const cfg = config();
 assertCredentials();
 
 serve({ fetch: app.fetch, port: cfg.PORT }, (info) => {
-  log.info("listening", { port: info.port, model: cfg.OPENROUTER_MODEL, preview: existsSync(previewDir) });
+  log.info("listening", { port: info.port, model: cfg.SPORTS_MODEL, preview: existsSync(previewDir) });
 });
 
 export { app };

@@ -8,8 +8,8 @@ import { BE_URL } from "@/lib/be-url";
 import type { PNode, Value } from "@/lib/primitives/data";
 import { KinoCalculation, KinoPrimitive, KinoProvider } from "./render";
 
-export interface StocksDataSeed {
-  tool: "stocks_dataset";
+export interface DatasetSeed {
+  tool: "sports_dataset";
   args: { run: string };
   result: Record<string, unknown>;
 }
@@ -97,13 +97,13 @@ function calculationNodes(root: ElementNode, query: string): readonly PNode[] {
 
 function calculationsIn(program: string): ReadonlyMap<string, readonly PNode[]> {
   const parsed = PARSER.parse(program);
-  const query = parsed.queryStatements.find(statement => statement.toolAST?.k === "Str" && statement.toolAST.v === "stocks_dataset")?.statementId;
+  const query = parsed.queryStatements.find(statement => statement.toolAST?.k === "Str" && statement.toolAST.v === "sports_dataset")?.statementId;
   const found = new Map<string, readonly PNode[]>();
   function visit(value: unknown): void {
     if (Array.isArray(value)) { value.forEach(visit); return; }
     if (!element(value)) return;
     if (value.typeName === "Calculation") {
-      if (!value.statementId || !query) throw new Error("Calculation requires a named statement and stocks_dataset Query.");
+      if (!value.statementId || !query) throw new Error("Calculation requires a named statement and sports_dataset Query.");
       found.set(value.statementId, calculationNodes(value, query));
       return;
     }
@@ -156,21 +156,21 @@ class RenderBoundary extends Component<{ children: ReactNode; program: string },
   render() { return this.state.error ? <p role="alert" className="p-6 text-sm text-destructive">OpenUI rendering failed. {this.state.error}</p> : this.props.children; }
 }
 
-function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton }: { program: string; seed: StocksDataSeed | null; isStreaming: boolean; specs?: Record<string, Record<string, unknown>>; skeleton: boolean }) {
+function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton }: { program: string; seed: DatasetSeed | null; isStreaming: boolean; specs?: Record<string, Record<string, unknown>>; skeleton: boolean }) {
   const [dataset, setDataset] = useState<unknown>(undefined);
   const [errors, setErrors] = useState<OpenUIError[]>([]);
   const calculations = useMemo(() => calculationsIn(program), [program]);
   const toolProvider = useMemo(() => {
     const cache = new Map<string, Promise<unknown>>();
-    return { stocks_dataset: async (args: Record<string, unknown>) => {
-      if (typeof args.run !== "string") throw new Error("stocks_dataset requires a run ID.");
+    return { sports_dataset: async (args: Record<string, unknown>) => {
+      if (typeof args.run !== "string") throw new Error("sports_dataset requires a run ID.");
       const run = args.run;
       let result = cache.get(run);
       if (!result) {
-        result = seed?.args.run === run ? Promise.resolve(seed.result) : fetch(`${BE_URL}/tools/stocks_dataset`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ run }) }).then(async response => {
+        result = seed?.args.run === run ? Promise.resolve(seed.result) : fetch(`${BE_URL}/tools/sports_dataset`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ run }) }).then(async response => {
           const body: unknown = await response.json();
-          if (!response.ok) throw new Error(object(body) && typeof body.error === "string" ? body.error : `stocks_dataset failed (${response.status}).`);
-          if (!object(body)) throw new Error("stocks_dataset returned invalid data.");
+          if (!response.ok) throw new Error(object(body) && typeof body.error === "string" ? body.error : `sports_dataset failed (${response.status}).`);
+          if (!object(body)) throw new Error("sports_dataset returned invalid data.");
           return body;
         });
         result = result.catch(error => { cache.delete(run); throw error; });
@@ -187,6 +187,6 @@ function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton }: { progra
   </RuntimeCtx></KinoProvider>;
 }
 
-export function StocksOpenUI({ program, seed, theme, specs, isStreaming, skeleton = false }: { program: string; seed: StocksDataSeed | null; theme?: CSSProperties; specs?: Record<string, Record<string, unknown>>; isStreaming: boolean; skeleton?: boolean }) {
+export function OpenUIPreview({ program, seed, theme, specs, isStreaming, skeleton = false }: { program: string; seed: DatasetSeed | null; theme?: CSSProperties; specs?: Record<string, Record<string, unknown>>; isStreaming: boolean; skeleton?: boolean }) {
   return <div style={theme}><RenderBoundary program={program}><OpenUIRuntime program={program} seed={seed} specs={specs} isStreaming={isStreaming} skeleton={skeleton} /></RenderBoundary></div>;
 }

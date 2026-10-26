@@ -1,7 +1,7 @@
 {
   "version": 1,
   "langCore": "1.0.0",
-  "digest": "0db0d1a33190697ff656b49019dccec28b4ddb428343b9ed5c89f46fe28d45e7",
+  "digest": "b75055fa2035f3b7da50593c33c5c782e82af452e4911e9cd89a5d139fdd2f6c",
   "primitives": [
     {
       "name": "Screen",
@@ -536,6 +536,13 @@
           "name": "shape",
           "optional": true,
           "role": "copy"
+        },
+        {
+          "name": "color",
+          "optional": true,
+          "role": "data",
+          "kind": "color",
+          "note": "a club colour from the data; fills the disc, overrides tint"
         }
       ]
     },
