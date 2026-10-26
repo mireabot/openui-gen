@@ -122,14 +122,13 @@ export async function designDataset(plan: SportsPlan, answers: Record<string, Re
       const result = await structuredCompletion({
         stage: "data",
         request: {
-          model, stream: false, maxTokens: 16_000,
-          responseFormat: { type: "json_schema", jsonSchema: { name: "sports_dataset", strict: true, schema: z.toJSONSchema(Design) as Record<string, unknown> } },
+          model, maxTokens: 16_000, schema: z.toJSONSchema(Design) as Record<string, unknown>,
           messages: [{ role: "system", content: SCHEMA_SYSTEM }, { role: "user", content: JSON.stringify({
             subject: plan.subject, today: now.toISOString().slice(0, 10), clubs,
             answers: complete.map(q => ({ id: q.id, question: q.text, data: Object.fromEntries(Object.entries(answers[q.id]!).filter(([k]) => !(BASE_FIELDS as readonly string[]).includes(k) || k === "summary")) })),
           }) }],
         },
-        send: send ?? anthropicSender(model, { effort: "high", fallbacks: true }),
+        send: send ?? anthropicSender({ effort: "high", fallbacks: true }),
         // Every design is validated here, so a bad one regenerates the whole stage once.
         parse: text => {
           const design = Design.parse(JSON.parse(text));

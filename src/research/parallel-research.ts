@@ -4,11 +4,10 @@ import { publicSourceURL, type WebResearch, type WebSource } from "./web-researc
 
 /**
  * Cited web research on Parallel (docs.parallel.ai): the Search API finds and ranks pages, the
- * Extract API reads the best ones in full, and the result is the same `WebResearch` the OpenRouter
- * path returns, so the Haiku extraction and its citation checks downstream are unchanged.
+ * Extract API reads the best ones in full, and the result is a `WebResearch` whose findings cite
+ * each page's URL for the extraction downstream to check.
  *
- * Search needs 2–3 short keyword queries besides the objective. A caller that knows its topic passes
- * them (free and predictable); otherwise `plan` (Haiku) writes them from the question.
+ * Search needs 2–3 short keyword queries besides the objective; the caller passes them.
  */
 
 const BASE = "https://api.parallel.ai/v1";
@@ -26,10 +25,8 @@ const ExtractResponse = z.object({
 type Page = z.infer<typeof Result>;
 
 export interface ParallelResearchOptions {
-  /** 2–3 keyword queries of 3–6 words. Without them, `plan` writes them. */
-  readonly searchQueries?: readonly string[];
-  /** Writes keyword queries for a question (Haiku). Required when `searchQueries` is absent. */
-  readonly plan?: (objective: string) => Promise<readonly string[]>;
+  /** 2–3 keyword queries of 3–6 words. */
+  readonly searchQueries: readonly string[];
   /** Search mode: "fast" ~0.7 s, "advanced" ~3 s and the most thorough (default). */
   readonly mode?: "turbo" | "fast" | "basic" | "advanced";
   readonly maxResults?: number;
@@ -64,11 +61,10 @@ async function sendParallel(path: "search" | "extract", body: object): Promise<u
   return json;
 }
 
-export async function researchWithParallel(query: string, options: ParallelResearchOptions = {}): Promise<WebResearch> {
+export async function researchWithParallel(query: string, options: ParallelResearchOptions): Promise<WebResearch> {
   const send = options.send ?? sendParallel;
   const searchedAt = new Date().toISOString();
-  const queries = (options.searchQueries?.length ? options.searchQueries : await options.plan?.(query) ?? [])
-    .map(q => q.trim()).filter(Boolean).slice(0, 4);
+  const queries = options.searchQueries.map(q => q.trim()).filter(Boolean).slice(0, 4);
   if (!queries.length) throw new Error("search: no keyword queries for Parallel Search");
 
   const started = performance.now();
@@ -129,7 +125,7 @@ export async function researchWithParallel(query: string, options: ParallelResea
     sources.push({ url, title });
     sections.push(`### [${sources.length}] ${title}${isPreferred(url) ? " (preferred source)" : ""}\nURL: ${url}${date ? `\nPublished: ${date}` : ""}\n\n${excerpts}`);
   }
-  // The same guard as the OpenRouter path: no pages, no web data.
+  // No pages, no web data.
   if (!sources.length) throw new Error("search: Parallel returned no readable pages; refusing to present invented data as web results");
   return {
     query, searchedAt, sources: sources.slice(0, 20), model: "parallel/search",

@@ -5,7 +5,7 @@ import path from "node:path";
 import { compileScreen, type ProgramWriter } from "../src/lang/compiler.js";
 import { programTree } from "../src/lang/tree.js";
 import { SnapshotStore } from "../src/lang/snapshots.js";
-import type { CompletionEnvelope, CompletionSender } from "../src/llm/structured-completion.js";
+import type { Completion, CompletionSender } from "../src/llm/structured-completion.js";
 import type { ParallelTransport } from "../src/research/parallel-research.js";
 import { askSports } from "../src/sports/ask.js";
 import { espnLookup, type EspnTransport } from "../src/sports/espn.js";
@@ -52,10 +52,10 @@ const PAGE = "https://www.bbc.com/sport/football/scorers";
 const parallel: ParallelTransport = async kind => kind === "search"
   ? { search_id: "s", results: [{ url: PAGE, title: "Top scorers", excerpts: ["João Pedro 5 goals, Cole Palmer 3 goals"] }] }
   : { extract_id: "e", results: [], errors: [] };
-const envelope = (value: unknown): CompletionEnvelope => ({ model: "fake", choices: [{ finishReason: "stop", message: { content: JSON.stringify(value) } }], usage: { promptTokens: 0, completionTokens: 0, cost: 0 } });
+const completion = (value: unknown): Completion => ({ model: "fake", finishReason: "stop", text: JSON.stringify(value), usage: { promptTokens: 0, completionTokens: 0, costUSD: 0 } });
 const finding = (sourceUrls: string[]) => ({ title: "Top scorers", summary: "João Pedro leads Chelsea with five league goals.", columns: ["Goals"],
   rows: [{ label: "João Pedro", cells: ["5"] }, { label: "Cole Palmer", cells: ["3"] }], facts: [], asOf: "2026-10-25", sourceUrls });
-const extract = (sourceUrls: string[]): CompletionSender => async () => envelope(finding(sourceUrls));
+const extract = (sourceUrls: string[]): CompletionSender => async () => completion(finding(sourceUrls));
 
 const plan: SportsPlan = toPlan({
   subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "2026/27" },
@@ -65,12 +65,12 @@ const plan: SportsPlan = toPlan({
   ],
 });
 /** Opus's design: q1 trimmed to the focus row; q2 left to its raw answer (no design returned). */
-const schema = (q1: unknown): CompletionSender => async () => envelope({ answers: [{ id: "q1", title: "Chelsea in the table", fields: [
+const schema = (q1: unknown): CompletionSender => async () => completion({ answers: [{ id: "q1", title: "Chelsea in the table", fields: [
   { path: "position", kind: "number", format: "integer" }, { path: "points", kind: "number", format: "integer" }, { path: "gap", kind: "text", format: "none" },
 ], valuesJson: JSON.stringify(q1) }] });
 /** The writer shows q1 only; the compiler must add a default part for q2. */
 const PROGRAM = `standing = Card([Text(d.answers.q1.title, "headline"), Row("Position", null, null, Number(d.answers.q1.position, "integer", "body")), Row("Points", null, null, Number(d.answers.q1.points, "integer", "body"))])\n`;
-const write: ProgramWriter = async (_messages, emit) => { emit(PROGRAM); return { text: PROGRAM, usage: { promptTokens: 0, completionTokens: 0, reasoningTokens: 0, cost: 0 } }; };
+const write: ProgramWriter = async (_messages, emit) => { emit(PROGRAM); return { text: PROGRAM, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
 
 const dir = mkdtempSync(path.join(tmpdir(), "sports-check-"));
 try {
@@ -140,7 +140,7 @@ const componentValues = { answers: {
   q2: { status: "complete", question: "Shots", title: "Shots", source: "Source: ESPN",
     bars: [{ label: "Shots", homeDisplay: "12", awayDisplay: "18", sides: [{ label: "Chelsea", count: 12, tone: "neutral", color: "#034694" }, { label: "Manchester City", count: 18, tone: "good", color: "#99c5ea" }] }] },
 } };
-const callWriter: ProgramWriter = async (_m, emit) => { const text = "meeting = MatchCard(d.answers.q1.match)\n"; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, reasoningTokens: 0, cost: 0 } }; };
+const callWriter: ProgramWriter = async (_m, emit) => { const text = "meeting = MatchCard(d.answers.q1.match)\n"; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
 const composed = await compileScreen({ run: "components", request: "Chelsea v City", values: componentValues, required: [{ id: "q1", text: "Last meeting" }, { id: "q2", text: "Shots" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, callWriter);
 assert.equal(composed.parts.filter(p => p.origin.kind === "writer").length, 1, "the writer's MatchCard call is admitted");
 assert.equal(composed.stats.fallbacks, 1, "q2 gets a default part");

@@ -44,7 +44,7 @@ const source = (over: Partial<ScreenSource> = {}): ScreenSource => ({
   required: [{ id: "q1", text: "Last 8 quarters of EPS" }, { id: "q2", text: "Management commentary" }],
   base: [], editable: new Set(), explicitLayout: null, ...over,
 });
-const usage = { promptTokens: 1, completionTokens: 1, reasoningTokens: 0, cost: 0 };
+const usage = { promptTokens: 1, completionTokens: 1, cost: 0 };
 /** Each call takes the next script; a script of null throws (transport failure) after emitting `partial`. */
 const scripted = (...scripts: (string | { partial: string })[]): ProgramWriter => {
   let call = 0;

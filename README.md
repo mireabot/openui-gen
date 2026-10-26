@@ -40,7 +40,7 @@ library and the native renderer. Follow-ups are not built for sports yet.
 src/lang/       OpenUI Lang: primitives, library, compiler, printer, snapshots, documents
 src/sports/     plan (Haiku), ESPN client, parallel research (Parallel + Sonnet), dataset (Opus), screen pack
 src/research/   Parallel search, citations and dataset schema
-src/llm/        Anthropic and OpenRouter clients
+src/llm/        Anthropic client and structured completion
 src/routes/     HTTP routes
 preview/        Next.js preview (static export), Kino renderer for OpenUI
 catalog/        component schema index for clients (see catalog/README.md)

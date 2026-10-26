@@ -113,12 +113,11 @@ export async function planSports(prompt: string, now: Date, hooks?: StructuredCo
   const result = await structuredCompletion({
     stage: "summarize",
     request: {
-      model, stream: false, maxTokens: 1_500,
-      responseFormat: { type: "json_schema", jsonSchema: { name: "sports_plan", strict: true, schema: z.toJSONSchema(schema) as Record<string, unknown> } },
+      model, maxTokens: 1_500, schema: z.toJSONSchema(schema) as Record<string, unknown>,
       messages: [{ role: "system", content: planSystem(now.toISOString().slice(0, 10), clubs) }, { role: "user", content: prompt }],
     },
     // Haiku has no server-side refusal fallback; a short plan needs little thinking.
-    send: anthropicSender(model, { effort: "low" }),
+    send: anthropicSender({ effort: "low" }),
     parse: text => toPlan(schema.parse(JSON.parse(text)), clubs),
     ...(hooks ? { hooks } : {}),
   });

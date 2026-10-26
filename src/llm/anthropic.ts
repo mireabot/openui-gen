@@ -1,14 +1,12 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { ChatRequest } from "@openrouter/sdk/models";
-import { config, requireKey } from "../config.js";
-import { providerErrorDetail } from "./provider-error.js";
-import type { WriterUsage } from "./openrouter-writer.js";
+import { requireKey } from "../config.js";
+import type { WriterUsage } from "../lang/compiler.js";
 import { log } from "../log.js";
-import type { CompletionEnvelope, CompletionSender } from "./structured-completion.js";
+import type { Completion, CompletionSender } from "./structured-completion.js";
 
 /**
- * Claude through the Anthropic API. Call sites keep building the OpenRouter-shaped request; this
- * adapter maps it to Messages, marks the stable prefix for prompt caching, and prices the usage
+ * Claude through the Anthropic API. This adapter maps the stages' requests to Messages, marks the
+ * stable prefix for prompt caching, and prices the usage
  * (the API reports tokens, not dollars). The API keeps no conversation either: callers still replay
  * their stored turns, and the cache makes that replay cheap.
  */
@@ -35,12 +33,7 @@ export function anthropicCost(model: string, usage: Usage): number | undefined {
 /** Input as the monitor counts it: fresh, written and read prompt tokens together. */
 const promptTokens = (usage: Usage) => usage.input_tokens + (usage.cache_creation_input_tokens ?? 0) + (usage.cache_read_input_tokens ?? 0);
 
-/** Which provider serves the LLM stages: Anthropic once its key is set, unless LLM_PROVIDER says otherwise. */
-export const usesAnthropic = () => (config().LLM_PROVIDER ?? (config().ANTHROPIC_API_KEY ? "anthropic" : "openrouter")) === "anthropic";
-
-type Message = { readonly role: string; readonly content?: unknown };
-const text = (content: unknown): string => typeof content === "string" ? content
-  : Array.isArray(content) ? content.map(part => typeof part === "object" && part && "text" in part ? String(part.text) : "").join("") : "";
+type Message = { readonly role: "system" | "user" | "assistant"; readonly content: string };
 const CACHED = { type: "ephemeral" } as const;
 
 /**
@@ -51,13 +44,11 @@ const CACHED = { type: "ephemeral" } as const;
 export function anthropicMessages(messages: readonly Message[]): { system: Anthropic.TextBlockParam[]; messages: Anthropic.MessageParam[] } {
   const leading = messages.findIndex(message => message.role !== "system");
   const head = leading < 0 ? messages : messages.slice(0, leading);
-  const system = head.map(message => text(message.content)).filter(Boolean).join("\n\n");
+  const system = head.map(message => message.content).filter(Boolean).join("\n\n");
   const turns: { role: "user" | "assistant"; parts: string[] }[] = [];
   let pending: string[] = [];
-  for (const message of leading < 0 ? [] : messages.slice(leading)) {
-    const content = text(message.content);
-    if (message.role === "system") { pending.push(`<context>\n${content}\n</context>`); continue; }
-    const role = message.role === "assistant" ? "assistant" : "user";
+  for (const { role, content } of leading < 0 ? [] : messages.slice(leading)) {
+    if (role === "system") { pending.push(`<context>\n${content}\n</context>`); continue; }
     const parts = role === "user" ? [...pending, content] : [content];
     if (role === "user") pending = [];
     if (turns.at(-1)?.role === role) turns.at(-1)!.parts.push(...parts); else turns.push({ role, parts });
@@ -105,24 +96,24 @@ export interface ClaudeCallOptions {
 }
 const FALLBACK_BETA = "server-side-fallback-2026-07-01";
 
-/** A structured-completion transport on the Anthropic API, using `model` whatever the request names. */
-export function anthropicSender(model: string, options: ClaudeCallOptions = {}): CompletionSender {
-  return async (request: ChatRequest): Promise<CompletionEnvelope> => {
-    const { system, messages } = anthropicMessages(request.messages as readonly Message[]);
-    const format = request.responseFormat && "jsonSchema" in request.responseFormat ? request.responseFormat.jsonSchema.schema : undefined;
-    const output = format || options.effort ? { output_config: {
-      ...(format ? { format: { type: "json_schema" as const, schema: anthropicSchema(format) as Record<string, unknown> } } : {}),
+/** The structured-completion transport on the Anthropic API: the request's model, structured output. */
+export function anthropicSender(options: ClaudeCallOptions = {}): CompletionSender {
+  return async (request): Promise<Completion> => {
+    const { system, messages } = anthropicMessages(request.messages);
+    const params = { model: request.model, max_tokens: request.maxTokens, system, messages, output_config: {
+      format: { type: "json_schema" as const, schema: anthropicSchema(request.schema) as Record<string, unknown> },
       ...(options.effort ? { effort: options.effort } : {}),
-    } } : {};
-    const params = { model, max_tokens: request.maxTokens ?? 2_000, system, messages, ...output };
+    } };
     // A fallback answer is billed at the fallback model's rates: price it by the model that served it.
     const response = options.fallbacks
       ? await anthropic().beta.messages.create({ ...params, betas: [FALLBACK_BETA], fallbacks: "default" })
       : await anthropic().messages.create(params);
-    const content = response.content.flatMap(block => block.type === "text" ? [block.text] : []).join("");
-    const finishReason = response.stop_reason === "max_tokens" ? "length" : response.stop_reason === "refusal" ? "content_filter" : "stop";
-    return { model: response.model, choices: [{ finishReason, message: { content } }],
-      usage: { promptTokens: promptTokens(response.usage), completionTokens: response.usage.output_tokens, cost: anthropicCost(response.model, response.usage) ?? null } };
+    return {
+      model: response.model,
+      finishReason: response.stop_reason === "max_tokens" ? "length" : response.stop_reason === "refusal" ? "content_filter" : "stop",
+      text: response.content.flatMap(block => block.type === "text" ? [block.text] : []).join(""),
+      usage: { promptTokens: promptTokens(response.usage), completionTokens: response.usage.output_tokens, costUSD: anthropicCost(response.model, response.usage) },
+    };
   };
 }
 
@@ -147,9 +138,9 @@ export async function anthropicWriter(input: readonly { role: "system" | "user";
     if (message.stop_reason === "max_tokens") throw new Error("Model output reached its token limit before finishing the layout");
     if (message.stop_reason === "refusal") throw new Error("Model stopped with content_filter");
     if (!written.trim()) throw new Error("Model returned empty layout content");
-    return { text: written, usage: { promptTokens: promptTokens(message.usage), completionTokens: message.usage.output_tokens, reasoningTokens: 0, cost: anthropicCost(message.model, message.usage) } };
+    return { text: written, usage: { promptTokens: promptTokens(message.usage), completionTokens: message.usage.output_tokens, cost: anthropicCost(message.model, message.usage) } };
   } catch (error) {
-    const detail = providerErrorDetail(error);
+    const detail = error instanceof Error ? error.message : String(error);
     log.error("anthropic writer failed", { stage: "compose", model, detail });
     throw new Error(`compose: ${detail}`, { cause: error });
   }

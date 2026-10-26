@@ -1,5 +1,4 @@
 import { autoClose, generateSystemPrompt, parseExpression, split, tokenize } from "@openuidev/lang-core";
-import type { WriterUsage } from "../llm/openrouter-writer.js";
 import { iconProblem } from "../primitives/icons.js";
 import { z } from "zod";
 import { slotLibrary } from "./library.js";
@@ -96,6 +95,11 @@ export interface CompiledScreen {
 }
 
 type Message = { role: "system" | "user"; content: string };
+export interface WriterUsage {
+  readonly promptTokens: number;
+  readonly completionTokens: number;
+  readonly cost: number | undefined;
+}
 export type ProgramWriter = (messages: readonly Message[], onText: (delta: string) => void) => Promise<{ text: string; usage: WriterUsage }>;
 export interface CompileHooks {
   /** Program text to append on the wire; always a valid program once appended. */
@@ -140,7 +144,7 @@ const PICK = /^pick\d+$/;
 export async function compileScreen(source: ScreenSource, pack: ScreenPack, writer: ProgramWriter, hooks: CompileHooks = {}): Promise<CompiledScreen> {
   const issues: ProgramIssue[] = [];
   const report = (issue: ProgramIssue) => { issues.push(issue); hooks.issue?.(issue); };
-  const usage = { promptTokens: 0, completionTokens: 0, reasoningTokens: 0, cost: 0 as number | undefined };
+  const usage = { promptTokens: 0, completionTokens: 0, cost: 0 as number | undefined };
   source = { ...source, required: source.required.filter((q, i) => source.required.findIndex(other => other.id === q.id) === i) };
   const screen = new Screen(source, pack, report, hooks);
   hooks.skeleton?.(programSkeleton(screen.preview(source.required.map(q => q.id)), source.values));
@@ -156,7 +160,6 @@ export async function compileScreen(source: ScreenSource, pack: ScreenPack, writ
       stream.end().forEach(take);
       usage.promptTokens += response.usage.promptTokens;
       usage.completionTokens += response.usage.completionTokens;
-      usage.reasoningTokens += response.usage.reasoningTokens;
       usage.cost = (usage.cost ?? 0) + (response.usage.cost ?? 0);
     } catch (error) {
       writerFailed = true;

@@ -101,11 +101,10 @@ export async function answerSports(plan: SportsPlan, prompt: string, now: Date, 
       const extracted = await structuredCompletion({
         stage: "data",
         request: {
-          model: cfg.SPORTS_SEARCH_MODEL, stream: false, maxTokens: 8_000,
-          responseFormat: { type: "json_schema", jsonSchema: { name: "sports_finding", strict: true, schema: z.toJSONSchema(FindingSchema) as Record<string, unknown> } },
+          model: cfg.SPORTS_SEARCH_MODEL, maxTokens: 8_000, schema: z.toJSONSchema(FindingSchema) as Record<string, unknown>,
           messages: [{ role: "system", content: `${FINDING_SYSTEM}\nSub-question: ${question.text}` }, { role: "user", content: JSON.stringify({ findings: research.findings, sources: research.sources }) }],
         },
-        send: deps.extract ?? anthropicSender(cfg.SPORTS_SEARCH_MODEL, { effort: "medium", fallbacks: true }),
+        send: deps.extract ?? anthropicSender({ effort: "medium", fallbacks: true }),
         parse: text => FindingSchema.parse(JSON.parse(text)),
         hooks: { usage: ({ model, usage, attempt, ms }) => hooks.usage?.({ stage: "data", model, attempt, inputTokens: usage.promptTokens, outputTokens: usage.completionTokens, costUSD: usage.costUSD ?? 0, ms }) } satisfies StructuredCompletionHooks,
       });

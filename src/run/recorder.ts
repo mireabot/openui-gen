@@ -27,7 +27,6 @@ export interface RunStarted {
   readonly runId: string;
   readonly prompt: string;
   readonly model: string;
-  readonly vendor: string;
   readonly startedAt: string;
   readonly stages?: readonly Stage[];
   readonly summaryModel?: string;
@@ -76,7 +75,6 @@ export interface RunUsage {
   readonly stage: Stage;
   readonly engine: Engine;
   readonly model: string;
-  readonly vendor: string;
   readonly attempt?: number;
   readonly inputTokens: number;
   readonly outputTokens: number;
@@ -106,18 +104,7 @@ export interface RunFinished {
 export type RunEvent = RunStarted | RunStep | RunContent | RunUsage | RunFinished;
 
 /** The usage a generation reports, before the recorder stamps it with a run id. */
-export type UsageReport = Omit<RunUsage, "type" | "runId" | "vendor">;
-
-const VENDORS: Record<string, string> = {
-  anthropic: "Anthropic", openai: "OpenAI", google: "Google", "z-ai": "Z.ai", "meta-llama": "Meta",
-  mistralai: "Mistral", deepseek: "DeepSeek", "x-ai": "xAI", qwen: "Qwen", moonshotai: "Moonshot",
-};
-
-/** The vendor behind an OpenRouter model id, read from its author prefix. */
-export function vendorOf(model: string): string {
-  const author = model.split("/")[0] ?? model;
-  return VENDORS[author] ?? author;
-}
+export type UsageReport = Omit<RunUsage, "type" | "runId">;
 
 export function addCost(usages: readonly Pick<RunUsage, "engine" | "costUSD">[]): RunCost {
   const llm = usages.filter((u) => u.engine === "llm").reduce((n, u) => n + u.costUSD, 0);
@@ -136,8 +123,7 @@ export class RunRecorder {
   private readonly events: RunEvent[] = [];
 
   constructor(prompt: string, model: string, metadata: Pick<RunStarted, "stages" | "summaryModel" | "pack" | "generation" | "followUp"> = {}) {
-    this.events.push({ type: "run.started", runId: this.runId, prompt, model, vendor: vendorOf(model),
-      startedAt: new Date().toISOString(), ...metadata });
+    this.events.push({ type: "run.started", runId: this.runId, prompt, model, startedAt: new Date().toISOString(), ...metadata });
   }
 
   recorded(): readonly RunEvent[] {
@@ -153,7 +139,7 @@ export class RunRecorder {
   }
 
   usage(report: UsageReport): void {
-    const event: RunUsage = { type: "usage", runId: this.runId, vendor: vendorOf(report.model), ...report };
+    const event: RunUsage = { type: "usage", runId: this.runId, ...report };
     this.usages.push(event);
     this.events.push(event);
   }
