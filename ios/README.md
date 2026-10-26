@@ -52,3 +52,7 @@ The app bundles three files straight from the repo, so client and server never d
 `design/atomize/design.json` and `design/kino/theme.json` (tokens; Kino is the default brand,
 merged as the preview does) and `catalog/openui/primitives.json` (the component schema).
 
+`OpenUIFixtureTests` keeps the Swift compiler in step with the server. It compiles every program in
+`catalog/openui/fixtures.json` over that fixture's dataset and compares the result with the tree the
+server evaluated. Rerun it after `npm run openui:export`.
+

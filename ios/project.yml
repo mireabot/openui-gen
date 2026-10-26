@@ -97,6 +97,10 @@ targets:
     type: bundle.unit-test
     sources:
       - path: OpenUIGenTests
+      # The server's evaluated trees, which OpenUIFixtureTests checks the Swift compiler against.
+      - path: ../catalog/openui/fixtures.json
+        group: OpenUIGenTests/Resources
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID).tests

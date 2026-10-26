@@ -1,0 +1,2162 @@
+{
+  "version": 3,
+  "fixtures": [
+    {
+      "key": "MatchCard/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchCard/full\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 12, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.home.name, 20, d.answers.q1.record.home.logo, null, null, d.answers.q1.record.home.color), Text(d.answers.q1.record.home.name, \"body\", \"medium\", null, 1)], \"center\"), Text(d.answers.q1.record.home.score, \"headline\", \"semibold\", d.answers.q1.record.home.ink)], \"center\", \"between\"), Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.away.name, 20, d.answers.q1.record.away.logo, null, null, d.answers.q1.record.away.color), Text(d.answers.q1.record.away.name, \"body\", \"medium\", null, 1)], \"center\"), Text(d.answers.q1.record.away.score, \"headline\", \"semibold\", d.answers.q1.record.away.ink)], \"center\", \"between\")]), Stack(\"v\", 4, [Text(d.answers.q1.record.label, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.value, \"headline\", \"semibold\", null, null, \"end\")], \"end\")], \"center\"), Text(d.answers.q1.record.details, \"footnote\", null, \"secondary\", 1)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "MatchCard/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "MatchCard/full",
+              "title": "MatchCard/full",
+              "record": {
+                "home": {
+                  "name": "Chelsea",
+                  "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/363.png",
+                  "color": "#034694",
+                  "score": "0",
+                  "ink": "secondary"
+                },
+                "away": {
+                  "name": "Manchester City",
+                  "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/382.png",
+                  "color": "#99c5ea",
+                  "score": "3",
+                  "ink": "primary"
+                },
+                "label": "Sun, Apr 12",
+                "value": "FT",
+                "details": "Premier League · Stamford Bridge · Sky Sports"
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 16,
+                      "align": "center"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 12
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "justify": "between"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 12,
+                                        "align": "center"
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Avatar",
+                                            "properties": {
+                                              "name": "Chelsea",
+                                              "size": 20,
+                                              "image": "https://a.espncdn.com/i/teamlogos/soccer/500/363.png",
+                                              "color": "#034694"
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Chelsea",
+                                              "role": "body",
+                                              "weight": "medium",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "0",
+                                        "role": "headline",
+                                        "weight": "semibold",
+                                        "ink": "secondary"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "justify": "between"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 12,
+                                        "align": "center"
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Avatar",
+                                            "properties": {
+                                              "name": "Manchester City",
+                                              "size": 20,
+                                              "image": "https://a.espncdn.com/i/teamlogos/soccer/500/382.png",
+                                              "color": "#99c5ea"
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Manchester City",
+                                              "role": "body",
+                                              "weight": "medium",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "3",
+                                        "role": "headline",
+                                        "weight": "semibold",
+                                        "ink": "primary"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4,
+                            "align": "end"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Sun, Apr 12",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "FT",
+                                  "role": "headline",
+                                  "weight": "semibold",
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Text",
+                    "properties": {
+                      "content": "Premier League · Stamford Bridge · Sky Sports",
+                      "role": "footnote",
+                      "ink": "secondary",
+                      "lines": 1
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "MatchCard/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchCard/sparse\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 12, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.home.name, 20, d.answers.q1.record.home.logo, null, null, d.answers.q1.record.home.color), Text(d.answers.q1.record.home.name, \"body\", \"medium\", null, 1)], \"center\"), Text(d.answers.q1.record.home.score, \"headline\", \"semibold\", d.answers.q1.record.home.ink)], \"center\", \"between\"), Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.away.name, 20, d.answers.q1.record.away.logo, null, null, d.answers.q1.record.away.color), Text(d.answers.q1.record.away.name, \"body\", \"medium\", null, 1)], \"center\"), Text(d.answers.q1.record.away.score, \"headline\", \"semibold\", d.answers.q1.record.away.ink)], \"center\", \"between\")]), Stack(\"v\", 4, [Text(d.answers.q1.record.label, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.value, \"headline\", \"semibold\", null, null, \"end\")], \"end\")], \"center\"), Text(d.answers.q1.record.details, \"footnote\", null, \"secondary\", 1)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "MatchCard/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "MatchCard/sparse",
+              "title": "MatchCard/sparse",
+              "record": {
+                "home": {
+                  "name": "Everton",
+                  "logo": "",
+                  "color": "",
+                  "score": "",
+                  "ink": "primary"
+                },
+                "away": {
+                  "name": "Nottingham Forest",
+                  "logo": "",
+                  "color": "",
+                  "score": "",
+                  "ink": "primary"
+                },
+                "label": "",
+                "value": "6:30 PM",
+                "details": ""
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 16,
+                      "align": "center"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 12
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "justify": "between"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 12,
+                                        "align": "center"
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Avatar",
+                                            "properties": {
+                                              "name": "Everton",
+                                              "size": 20,
+                                              "image": "",
+                                              "color": ""
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Everton",
+                                              "role": "body",
+                                              "weight": "medium",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "",
+                                        "role": "headline",
+                                        "weight": "semibold",
+                                        "ink": "primary"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "justify": "between"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 12,
+                                        "align": "center"
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Avatar",
+                                            "properties": {
+                                              "name": "Nottingham Forest",
+                                              "size": 20,
+                                              "image": "",
+                                              "color": ""
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Nottingham Forest",
+                                              "role": "body",
+                                              "weight": "medium",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "",
+                                        "role": "headline",
+                                        "weight": "semibold",
+                                        "ink": "primary"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4,
+                            "align": "end"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "6:30 PM",
+                                  "role": "headline",
+                                  "weight": "semibold",
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Text",
+                    "properties": {
+                      "content": "",
+                      "role": "footnote",
+                      "ink": "secondary",
+                      "lines": 1
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "TeamDetail/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"TeamDetail/full\"}, {})\npick1 = Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color))\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "TeamDetail/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "TeamDetail/full",
+              "title": "TeamDetail/full",
+              "record": {
+                "name": "Barcelona",
+                "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/83.png",
+                "color": "#a50044",
+                "detail": "LaLiga · BAR"
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Row",
+              "properties": {
+                "title": "Barcelona",
+                "subtitle": "LaLiga · BAR"
+              },
+              "slots": {
+                "leading": [
+                  {
+                    "kind": "Avatar",
+                    "properties": {
+                      "name": "Barcelona",
+                      "size": 40,
+                      "image": "https://a.espncdn.com/i/teamlogos/soccer/500/83.png",
+                      "color": "#a50044"
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "TeamDetail/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"TeamDetail/sparse\"}, {})\npick1 = Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color))\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "TeamDetail/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "TeamDetail/sparse",
+              "title": "TeamDetail/sparse",
+              "record": {
+                "name": "Brentford",
+                "logo": "",
+                "color": "",
+                "detail": ""
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Row",
+              "properties": {
+                "title": "Brentford",
+                "subtitle": ""
+              },
+              "slots": {
+                "leading": [
+                  {
+                    "kind": "Avatar",
+                    "properties": {
+                      "name": "Brentford",
+                      "size": 40,
+                      "image": "",
+                      "color": ""
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "StatBar/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatBar/full\"}, {})\npick1 = Stack(\"v\", 8, [Stack(\"h\", 12, [Text(d.answers.q1.record.homeDisplay, \"body\", \"semibold\"), Text(d.answers.q1.record.label, \"footnote\", null, \"secondary\", null, \"center\"), Text(d.answers.q1.record.awayDisplay, \"body\", \"semibold\", null, null, \"end\")], \"center\", \"between\"), SplitBar(d.answers.q1.record.sides)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "StatBar/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "StatBar/full",
+              "title": "StatBar/full",
+              "record": {
+                "label": "Possession",
+                "homeDisplay": "37.3%",
+                "awayDisplay": "62.7%",
+                "sides": [
+                  {
+                    "label": "Chelsea",
+                    "count": 37.3,
+                    "tone": "neutral",
+                    "color": "#034694"
+                  },
+                  {
+                    "label": "Manchester City",
+                    "count": 62.7,
+                    "tone": "good",
+                    "color": "#99c5ea"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Stack",
+              "properties": {
+                "axis": "v",
+                "gap": 8
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "center",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "37.3%",
+                            "role": "body",
+                            "weight": "semibold"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "Possession",
+                            "role": "footnote",
+                            "ink": "secondary",
+                            "align": "center"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "62.7%",
+                            "role": "body",
+                            "weight": "semibold",
+                            "align": "end"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "SplitBar",
+                    "properties": {
+                      "sides": [
+                        {
+                          "label": "Chelsea",
+                          "count": 37.3,
+                          "tone": "neutral",
+                          "color": "#034694"
+                        },
+                        {
+                          "label": "Manchester City",
+                          "count": 62.7,
+                          "tone": "good",
+                          "color": "#99c5ea"
+                        }
+                      ]
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "StatBar/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatBar/sparse\"}, {})\npick1 = Stack(\"v\", 8, [Stack(\"h\", 12, [Text(d.answers.q1.record.homeDisplay, \"body\", \"semibold\"), Text(d.answers.q1.record.label, \"footnote\", null, \"secondary\", null, \"center\"), Text(d.answers.q1.record.awayDisplay, \"body\", \"semibold\", null, null, \"end\")], \"center\", \"between\"), SplitBar(d.answers.q1.record.sides)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "StatBar/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "StatBar/sparse",
+              "title": "StatBar/sparse",
+              "record": {
+                "label": "Corners",
+                "homeDisplay": "0",
+                "awayDisplay": "0",
+                "sides": [
+                  {
+                    "label": "Everton",
+                    "count": 0,
+                    "tone": "neutral",
+                    "color": ""
+                  },
+                  {
+                    "label": "Nottingham Forest",
+                    "count": 0,
+                    "tone": "neutral",
+                    "color": ""
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Stack",
+              "properties": {
+                "axis": "v",
+                "gap": 8
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "center",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "0",
+                            "role": "body",
+                            "weight": "semibold"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "Corners",
+                            "role": "footnote",
+                            "ink": "secondary",
+                            "align": "center"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "0",
+                            "role": "body",
+                            "weight": "semibold",
+                            "align": "end"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "SplitBar",
+                    "properties": {
+                      "sides": [
+                        {
+                          "label": "Everton",
+                          "count": 0,
+                          "tone": "neutral",
+                          "color": ""
+                        },
+                        {
+                          "label": "Nottingham Forest",
+                          "count": 0,
+                          "tone": "neutral",
+                          "color": ""
+                        }
+                      ]
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "Leaderboard/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Leaderboard/full\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 1), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.entries, \"e\", Row(e.name, e.detail, Avatar(e.name, 40, e.logo, null, null, e.color), Text(e.value, \"body\", \"semibold\"))), null, null, null, true)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "Leaderboard/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "Leaderboard/full",
+              "title": "Leaderboard/full",
+              "record": {
+                "title": "Top scorers · Premier League",
+                "metric": "Goals",
+                "entries": [
+                  {
+                    "name": "Erling Haaland",
+                    "detail": "Forward · Manchester City",
+                    "value": "11",
+                    "logo": "https://a.espncdn.com/i/headshots/soccer/players/full/253989.png",
+                    "color": "#99c5ea"
+                  },
+                  {
+                    "name": "João Pedro",
+                    "detail": "Forward · Chelsea",
+                    "value": "5",
+                    "logo": "",
+                    "color": "#034694"
+                  },
+                  {
+                    "name": "Nico O'Reilly",
+                    "detail": "",
+                    "value": "4",
+                    "logo": "",
+                    "color": ""
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "center",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "Top scorers · Premier League",
+                            "role": "footnote",
+                            "weight": "medium",
+                            "ink": "secondary",
+                            "lines": 1
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "Goals",
+                            "role": "footnote",
+                            "weight": "medium",
+                            "ink": "secondary"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 12,
+                      "divided": true
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Row",
+                          "properties": {
+                            "title": "Erling Haaland",
+                            "subtitle": "Forward · Manchester City"
+                          },
+                          "slots": {
+                            "leading": [
+                              {
+                                "kind": "Avatar",
+                                "properties": {
+                                  "name": "Erling Haaland",
+                                  "size": 40,
+                                  "image": "https://a.espncdn.com/i/headshots/soccer/players/full/253989.png",
+                                  "color": "#99c5ea"
+                                },
+                                "slots": {}
+                              }
+                            ],
+                            "trailing": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "11",
+                                  "role": "body",
+                                  "weight": "semibold"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Row",
+                          "properties": {
+                            "title": "João Pedro",
+                            "subtitle": "Forward · Chelsea"
+                          },
+                          "slots": {
+                            "leading": [
+                              {
+                                "kind": "Avatar",
+                                "properties": {
+                                  "name": "João Pedro",
+                                  "size": 40,
+                                  "image": "",
+                                  "color": "#034694"
+                                },
+                                "slots": {}
+                              }
+                            ],
+                            "trailing": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "5",
+                                  "role": "body",
+                                  "weight": "semibold"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Row",
+                          "properties": {
+                            "title": "Nico O'Reilly",
+                            "subtitle": ""
+                          },
+                          "slots": {
+                            "leading": [
+                              {
+                                "kind": "Avatar",
+                                "properties": {
+                                  "name": "Nico O'Reilly",
+                                  "size": 40,
+                                  "image": "",
+                                  "color": ""
+                                },
+                                "slots": {}
+                              }
+                            ],
+                            "trailing": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "4",
+                                  "role": "body",
+                                  "weight": "semibold"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "Leaderboard/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Leaderboard/sparse\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 1), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.entries, \"e\", Row(e.name, e.detail, Avatar(e.name, 40, e.logo, null, null, e.color), Text(e.value, \"body\", \"semibold\"))), null, null, null, true)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "Leaderboard/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "Leaderboard/sparse",
+              "title": "Leaderboard/sparse",
+              "record": {
+                "title": "Clean sheets",
+                "metric": "",
+                "entries": []
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "center",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "Clean sheets",
+                            "role": "footnote",
+                            "weight": "medium",
+                            "ink": "secondary",
+                            "lines": 1
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "",
+                            "role": "footnote",
+                            "weight": "medium",
+                            "ink": "secondary"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 12,
+                      "divided": true
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "FixturesHeatmap/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"FixturesHeatmap/full\"}, {})\npick1 = Card([Stack(\"v\", 4, [Text(d.answers.q1.record.value, \"display\", \"semibold\", null, null, \"center\"), Text(d.answers.q1.record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Stack(\"wrap\", 4, @Each(d.answers.q1.record.results, \"r\", Badge(r.label, r.tone)), null, \"center\"), Text(d.answers.q1.record.summary, \"footnote\", null, \"secondary\", null, \"center\")])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "FixturesHeatmap/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "FixturesHeatmap/full",
+              "title": "FixturesHeatmap/full",
+              "record": {
+                "value": "1.6",
+                "caption": "Points per game · Premier League 2026/27",
+                "summary": "4 won · 1 drawn · 3 lost",
+                "results": [
+                  {
+                    "label": "W",
+                    "tone": "good"
+                  },
+                  {
+                    "label": "D",
+                    "tone": "neutral"
+                  },
+                  {
+                    "label": "L",
+                    "tone": "bad"
+                  },
+                  {
+                    "label": "",
+                    "tone": "neutral"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 4,
+                      "align": "center"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "1.6",
+                            "role": "display",
+                            "weight": "semibold",
+                            "align": "center"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "Points per game · Premier League 2026/27",
+                            "role": "body",
+                            "ink": "secondary",
+                            "align": "center"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "wrap",
+                      "gap": 4,
+                      "justify": "center"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Badge",
+                          "properties": {
+                            "label": "W",
+                            "tone": "good"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Badge",
+                          "properties": {
+                            "label": "D",
+                            "tone": "neutral"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Badge",
+                          "properties": {
+                            "label": "L",
+                            "tone": "bad"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Badge",
+                          "properties": {
+                            "label": "",
+                            "tone": "neutral"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Text",
+                    "properties": {
+                      "content": "4 won · 1 drawn · 3 lost",
+                      "role": "footnote",
+                      "ink": "secondary",
+                      "align": "center"
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "FixturesHeatmap/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"FixturesHeatmap/sparse\"}, {})\npick1 = Card([Stack(\"v\", 4, [Text(d.answers.q1.record.value, \"display\", \"semibold\", null, null, \"center\"), Text(d.answers.q1.record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Stack(\"wrap\", 4, @Each(d.answers.q1.record.results, \"r\", Badge(r.label, r.tone)), null, \"center\"), Text(d.answers.q1.record.summary, \"footnote\", null, \"secondary\", null, \"center\")])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "FixturesHeatmap/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "FixturesHeatmap/sparse",
+              "title": "FixturesHeatmap/sparse",
+              "record": {
+                "value": "0 pts",
+                "caption": "",
+                "summary": "",
+                "results": []
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 4,
+                      "align": "center"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "0 pts",
+                            "role": "display",
+                            "weight": "semibold",
+                            "align": "center"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "",
+                            "role": "body",
+                            "ink": "secondary",
+                            "align": "center"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "wrap",
+                      "gap": 4,
+                      "justify": "center"
+                    },
+                    "slots": {}
+                  },
+                  {
+                    "kind": "Text",
+                    "properties": {
+                      "content": "",
+                      "role": "footnote",
+                      "ink": "secondary",
+                      "align": "center"
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "StatsCard/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/full\"}, {})\npick1 = Card([Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color)), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\"), Grid(\"3\", 16, @Each(d.answers.q1.record.stats, \"s\", Stack(\"v\", 4, [Text(s.value, \"headline\", \"semibold\", null, null, \"center\"), Text(s.label, \"footnote\", null, \"secondary\", null, \"center\")], \"center\")))])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "StatsCard/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "StatsCard/full",
+              "title": "StatsCard/full",
+              "record": {
+                "name": "Cole Palmer",
+                "detail": "Chelsea · Attacking Midfielder",
+                "logo": "https://a.espncdn.com/i/headshots/soccer/players/full/268406.png",
+                "color": "#034694",
+                "rating": {
+                  "value": "7.21",
+                  "tone": "good",
+                  "label": "Season rating",
+                  "caption": "Average of 6 matches"
+                },
+                "stats": [
+                  {
+                    "label": "Goals",
+                    "value": "5"
+                  },
+                  {
+                    "label": "Assists",
+                    "value": "3"
+                  },
+                  {
+                    "label": "Pass accuracy",
+                    "value": "86%"
+                  },
+                  {
+                    "label": "Shots",
+                    "value": "24"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Row",
+                    "properties": {
+                      "title": "Cole Palmer",
+                      "subtitle": "Chelsea · Attacking Midfielder"
+                    },
+                    "slots": {
+                      "leading": [
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Cole Palmer",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/soccer/players/full/268406.png",
+                            "color": "#034694"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 16,
+                      "align": "center"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Badge",
+                          "properties": {
+                            "label": "7.21",
+                            "tone": "good"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Season rating",
+                                  "role": "body",
+                                  "weight": "medium"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Average of 6 matches",
+                                  "role": "footnote",
+                                  "ink": "secondary"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Grid",
+                    "properties": {
+                      "columns": "3",
+                      "gap": 16
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4,
+                            "align": "center"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "5",
+                                  "role": "headline",
+                                  "weight": "semibold",
+                                  "align": "center"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Goals",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "center"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4,
+                            "align": "center"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "3",
+                                  "role": "headline",
+                                  "weight": "semibold",
+                                  "align": "center"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Assists",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "center"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4,
+                            "align": "center"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "86%",
+                                  "role": "headline",
+                                  "weight": "semibold",
+                                  "align": "center"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Pass accuracy",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "center"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4,
+                            "align": "center"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "24",
+                                  "role": "headline",
+                                  "weight": "semibold",
+                                  "align": "center"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Shots",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "center"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "StatsCard/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/sparse\"}, {})\npick1 = Card([Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color)), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\"), Grid(\"3\", 16, @Each(d.answers.q1.record.stats, \"s\", Stack(\"v\", 4, [Text(s.value, \"headline\", \"semibold\", null, null, \"center\"), Text(s.label, \"footnote\", null, \"secondary\", null, \"center\")], \"center\")))])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "StatsCard/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "StatsCard/sparse",
+              "title": "StatsCard/sparse",
+              "record": {
+                "name": "Unknown player",
+                "detail": "",
+                "logo": "",
+                "color": "",
+                "rating": {
+                  "value": "—",
+                  "tone": "neutral",
+                  "label": "Season rating",
+                  "caption": ""
+                },
+                "stats": []
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Row",
+                    "properties": {
+                      "title": "Unknown player",
+                      "subtitle": ""
+                    },
+                    "slots": {
+                      "leading": [
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Unknown player",
+                            "size": 40,
+                            "image": "",
+                            "color": ""
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 16,
+                      "align": "center"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Badge",
+                          "properties": {
+                            "label": "—",
+                            "tone": "neutral"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Season rating",
+                                  "role": "body",
+                                  "weight": "medium"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "",
+                                  "role": "footnote",
+                                  "ink": "secondary"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Grid",
+                    "properties": {
+                      "columns": "3",
+                      "gap": 16
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "Each/rows",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Each/rows\"}, {})\npick1 = Card([Stack(\"v\", 12, @Each(d.answers.q1.scorers, \"p\", Row(p.name, p.club, null, Number(p.goals, \"count\", \"body\"))), null, null, null, true)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "Each/rows"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "Each/rows",
+              "title": "Each/rows",
+              "scorers": [
+                {
+                  "name": "Erling Haaland",
+                  "club": "Manchester City",
+                  "goals": 11,
+                  "xg": 9.42
+                },
+                {
+                  "name": "João Pedro",
+                  "club": "Chelsea",
+                  "goals": 5,
+                  "xg": 3.1
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 12,
+                      "divided": true
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Row",
+                          "properties": {
+                            "title": "Erling Haaland",
+                            "subtitle": "Manchester City"
+                          },
+                          "slots": {
+                            "trailing": [
+                              {
+                                "kind": "Number",
+                                "properties": {
+                                  "value": 11,
+                                  "format": "count",
+                                  "role": "body"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Row",
+                          "properties": {
+                            "title": "João Pedro",
+                            "subtitle": "Chelsea"
+                          },
+                          "slots": {
+                            "trailing": [
+                              {
+                                "kind": "Number",
+                                "properties": {
+                                  "value": 5,
+                                  "format": "count",
+                                  "role": "body"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "Each/nested",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Each/nested\"}, {})\npick1 = Stack(\"v\", 16, @Each(d.answers.q1.groups, \"g\", Section(g.name, [Stack(\"v\", 8, @Each(g.clubs, \"c\", KeyValue(c.name, g.name)))])))\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "Each/nested"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "Each/nested",
+              "title": "Each/nested",
+              "groups": [
+                {
+                  "name": "Champions League",
+                  "clubs": [
+                    {
+                      "name": "Arsenal",
+                      "points": 22
+                    },
+                    {
+                      "name": "Chelsea",
+                      "points": 19.5
+                    }
+                  ]
+                },
+                {
+                  "name": "Relegation",
+                  "clubs": []
+                },
+                {
+                  "name": "Europa League",
+                  "clubs": [
+                    {
+                      "name": "Aston Villa",
+                      "points": 17
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Stack",
+              "properties": {
+                "axis": "v",
+                "gap": 16
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Section",
+                    "properties": {
+                      "title": "Champions League"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 8
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "KeyValue",
+                                "properties": {
+                                  "label": "Arsenal",
+                                  "value": "Champions League"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "KeyValue",
+                                "properties": {
+                                  "label": "Chelsea",
+                                  "value": "Champions League"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Section",
+                    "properties": {
+                      "title": "Relegation"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 8
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Section",
+                    "properties": {
+                      "title": "Europa League"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 8
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "KeyValue",
+                                "properties": {
+                                  "label": "Aston Villa",
+                                  "value": "Europa League"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "Query/reads",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Query/reads\"}, {})\npick1 = Card([pick1_head, KeyValue(\"Leader\", d.answers.q1.scorers[0].name), KeyValue(\"Runner-up\", d.answers.q1.scorers[1].club), Row(d.answers.q1.match.home.name, d.answers.q1.season.label, null, Number(d.answers.q1.match.home.stats.shots, \"integer\", \"body\")), Number(d.answers.q1.scorers[0].xg, \"decimal\", \"headline\")])\npick1_head = Text(\"Haaland \\\"the robot\\\" leads\", \"headline\", \"semibold\")\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "Query/reads"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "Query/reads",
+              "title": "Query/reads",
+              "scorers": [
+                {
+                  "name": "Erling Haaland",
+                  "club": "Manchester City",
+                  "goals": 11,
+                  "xg": 9.42
+                },
+                {
+                  "name": "João Pedro",
+                  "club": "Chelsea",
+                  "goals": 5,
+                  "xg": 3.1
+                }
+              ],
+              "match": {
+                "home": {
+                  "name": "Chelsea",
+                  "stats": {
+                    "shots": 12
+                  }
+                }
+              },
+              "season": {
+                "label": "2026/27"
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Text",
+                    "properties": {
+                      "content": "Haaland \"the robot\" leads",
+                      "role": "headline",
+                      "weight": "semibold"
+                    },
+                    "slots": {}
+                  },
+                  {
+                    "kind": "KeyValue",
+                    "properties": {
+                      "label": "Leader",
+                      "value": "Erling Haaland"
+                    },
+                    "slots": {}
+                  },
+                  {
+                    "kind": "KeyValue",
+                    "properties": {
+                      "label": "Runner-up",
+                      "value": "Chelsea"
+                    },
+                    "slots": {}
+                  },
+                  {
+                    "kind": "Row",
+                    "properties": {
+                      "title": "Chelsea",
+                      "subtitle": "2026/27"
+                    },
+                    "slots": {
+                      "trailing": [
+                        {
+                          "kind": "Number",
+                          "properties": {
+                            "value": 12,
+                            "format": "integer",
+                            "role": "body"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Number",
+                    "properties": {
+                      "value": 9.42,
+                      "format": "decimal",
+                      "role": "headline"
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "Nullable/values",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Nullable/values\"}, {})\npick1 = Card([Row(d.answers.q1.club.name, null, Avatar(d.answers.q1.club.name, 40, d.answers.q1.club.logo, null, null, null), null), Text(d.answers.q1.club.name, \"body\", null, null, null, null, null, null)], null, null, null, null)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "Nullable/values"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "Nullable/values",
+              "title": "Nullable/values",
+              "club": {
+                "name": "Everton",
+                "logo": null
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Row",
+                    "properties": {
+                      "title": "Everton"
+                    },
+                    "slots": {
+                      "leading": [
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Everton",
+                            "size": 40
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Text",
+                    "properties": {
+                      "content": "Everton",
+                      "role": "body"
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
