@@ -8,3 +8,5 @@ data/
 traces/
 .DS_Store
 .vscode/
+# Agent worktrees.
+.claude/worktrees/

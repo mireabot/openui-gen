@@ -1,6 +1,6 @@
 # Session handoff, 25 and 26 October 2026
 
-openui-gen now generates football screens. You type a request such as "Chelsea vs Man City, last meeting stats". The server answers it from ESPN and cited web search, then streams an OpenUI Lang program that the web preview and the iOS app both render with your Sports components in club colours. Stocks, Massive and FMP are gone. Nothing from this session is committed yet.
+openui-gen now generates football screens. You type a request such as "Chelsea vs Man City, last meeting stats". The server answers it from ESPN and cited web search, then streams an OpenUI Lang program that the web preview and the iOS app both render with your Sports components in club colours. Stocks, Massive and FMP are gone. Everything is committed on branch `sports-pipeline`.
 
 This file covers how the pipeline works, what changed in each project, and what is left.
 
@@ -83,17 +83,27 @@ The web preview now calls `/lang/sports/stream` and draws the new Avatar and Spl
 
 The pragmatic-testing skill is installed in `~/.claude/skills/` and in this repo's `.claude/skills/`.
 
+## Done on 26 October, second session
+
+All of this is on branch `sports-pipeline`, one commit per item.
+
+- The web preview at `http://127.0.0.1:3001` never hydrated, because Next 16 blocks its dev scripts for any host but localhost. Generate did a plain form submit, so no request reached the server. `allowedDevOrigins` in `preview/next.config.ts` fixes it. The server now logs `sports openui started` with the origin when it accepts a request.
+- The preview frame keeps its 402×874 logical size, the same as ui-canvas, and scales down to fit the window.
+- Follow-ups (item 2). `POST /lang/sports/:documentId/follow-up` takes `{prompt, baseRevision, targets?}`. A Haiku follow-up planner keeps, revises, removes or adds questions. Kept parts stay byte for byte and their answers are not fetched again. The first stream's `done` returns `document: {id, revision: 1}`. The preview runs a follow-up on the next Generate and has a "New screen" button.
+- Compiler parity (item 3). `npm run openui:export` writes 16 fixtures to `catalog/openui/fixtures.json`: each Sports component over a full and a sparse record, plus plain programs. `OpenUIFixtureTests` in iOS compares the Swift tree with the server's. All 16 match.
+- Writer calls (item 5). Traces now record the writer's raw output. In live runs it calls components by name, for example `MatchCard(d.answers.q1.match)` and `@Each(..., "x", StatBar(x))`.
+- Competitions (item 7). Champions League (`uefa.champions`) and FA Cup (`eng.fa`) questions go to ESPN. Each planned question names its competition. The FA Cup has no table or leaders, so those go to the web.
+- OpenRouter removal (item 8). The OpenRouter code, `@openrouter/sdk` and the Massive and FMP types are gone. Calls to Claude build one small local request type.
+- Two component fixes. A component over an empty list is admitted. An answer shaped for StatsCard defaults to StatsCard rather than TeamDetail.
+- The writer's preview of a long list was an object with `items`, `first` and `last` keys, and the writer bound those paths. It is now a list with a marker for the items left out. A three-question Champions League request went from 19 issues and one default part to none.
+
 ## Left to do
 
-1. Commit. openui-gen has every change unstaged. ui-canvas is not a git repository, and backups of the files edited there are in this session's scratchpad.
-2. Build sports follow-ups. The document store and the iOS session's staged follow-up already exist. The server needs `/lang/sports/:documentId/follow-up`, and `done` needs to return the document again.
-3. Write sports fixtures for the compiler parity test. `fixtures.json` and the iOS `OpenUIFixtureTests` were deleted with stocks, so nothing compares the Swift compiler with the server's output right now.
-4. Bring latency down. The dataset and writer stages take about two minutes together. Test Opus at medium effort, or Sonnet 5.5 for the dataset stage.
-5. Check whether the writer calls components by name or copies their structure. The live run admitted every statement either way, but calls are shorter to stream.
-6. Decide which components to make native. FixturesHeatmap uses Badges for its squares, and Kino has no true red for the low rating bracket.
-7. Add more ESPN competitions. The FA Cup and Champions League have their own league codes and still go to web search.
-8. Remove the unused OpenRouter code and the old Massive and FMP keys from `.env`.
-9. In ui-canvas, rerun the `voice-memo-cards` browser review. Its staleness check fails because `design/rules.json` changed. Also open `/hooks` once in a ui-canvas session so the Kino pre-write hook loads.
+1. Latency (item 4). Measured over 5 alternating runs each with a fixed ESPN plan. With Opus at high effort, the dataset stage takes 42 s and the whole screen 53 s. With Sonnet 5.5 at medium effort for the dataset, those drop to 24 s and 31 s at half the cost, but the screens were thinner: 121 elements against 164 at the median, and some datasets dropped the goal scorers. Opus at medium effort for both stages took 32 s and 42 s. The defaults are unchanged; this is a speed against completeness call.
+2. Native components (item 6). FixturesHeatmap draws W, D and L Badges where the design has filled squares. The proposal is a generic tone-cell primitive in both renderers rather than a football-specific native view. Kino's `warn` is yellow (#ffc30a) and `bad` is orange-red (#ff6a3d); decide whether ratings need a true red and an orange.
+3. Remove the unused keys from `.env`: OPENROUTER_API_KEY, OPENROUTER_MODEL, OPENROUTER_STRICT_SCHEMA, MASSIVE_API_KEY, MASSIVE_RPM, FMP_API_KEY, TYPESAFE_API_KEY, JEV_DECIDE_MIN_CONFIDENCE, JEV_JUDGE_THRESHOLD, JEV_JUDGE_BLOCKING, GUIVALIDATE_BIN and MAX_RETRIES. The server ignores them.
+4. In ui-canvas, rerun the `voice-memo-cards` browser review. Its staleness check fails because `design/rules.json` changed. Also open `/hooks` once in a ui-canvas session so the Kino pre-write hook loads.
+5. Push `sports-pipeline` and open a PR when ready.
 
 ## Running and checking
 

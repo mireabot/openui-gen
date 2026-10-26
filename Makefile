@@ -53,6 +53,7 @@ backend:
 	@echo "openui-gen backend → $(BACKEND_URL)"
 	@echo "  GET  $(BACKEND_URL)/health                          liveness check, used by the iOS app"
 	@echo "  POST $(BACKEND_URL)/lang/sports/stream              generate a new screen, streamed as SSE"
+	@echo "  POST $(BACKEND_URL)/lang/sports/:documentId/follow-up edit a saved screen into a new revision"
 	@echo "  POST $(BACKEND_URL)/tools/sports_dataset            replay a run's dataset snapshot"
 	@echo "  GET  $(BACKEND_URL)/                                the preview page (after npm run preview:build)"
 	@echo ""
