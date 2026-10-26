@@ -94,7 +94,13 @@ export async function askSports(request: SportsRequest, store: SnapshotStore, ho
   hooks.data?.(snapshot);
 
   const model = cfg.SPORTS_MODEL;
-  const write: ProgramWriter = deps.write ?? ((messages, emit) => anthropicWriter(messages, model, emit, 12_000, { effort: "high", fallbacks: true }));
+  const writer: ProgramWriter = deps.write ?? ((messages, emit) => anthropicWriter(messages, model, emit, 12_000, { effort: "high", fallbacks: true }));
+  // The writer's own text, before templates expand: the trace shows whether it called components by name.
+  const write: ProgramWriter = async (messages, emit) => {
+    const result = await writer(messages, emit);
+    hooks.content?.({ stage: "compose", id: "writer-output", label: "Writer output", format: "text", data: result.text });
+    return result;
+  };
   const issues: ProgramIssue[] = [];
   hooks.progress?.({ stage: "compose", status: "started", detail: "Writing the screen" });
   const required = plan.questions.map(q => ({ id: q.id, text: q.text }));
