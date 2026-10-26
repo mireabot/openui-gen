@@ -7,6 +7,8 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   output: "export",
+  // Next 16 blocks dev resources for any host but localhost, so a page opened at 127.0.0.1 never hydrates.
+  allowedDevOrigins: ["127.0.0.1"],
   turbopack: {
     // The workspace is the repo: the preview imports ../src/lang.
     root: path.join(__dirname, ".."),

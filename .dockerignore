@@ -11,3 +11,4 @@ data
 traces
 *.tsbuildinfo
 .DS_Store
+ios

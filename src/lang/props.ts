@@ -18,7 +18,7 @@ export const NUMBER_FORMATS = ["integer", "decimal", "percent", "currency", "dur
 export type NumberFormat = (typeof NUMBER_FORMATS)[number];
 
 export type Role = "copy" | "data" | "token" | "node" | "nodes" | "style";
-export type DataKind = "text" | "number" | "boolean" | "status" | "image" | "icon" | "record" | "list";
+export type DataKind = "text" | "number" | "boolean" | "status" | "image" | "icon" | "color" | "record" | "list";
 
 export type PropMeta =
   | { readonly role: "copy"; readonly kind?: "icon" | "action"; readonly note?: string }
@@ -70,6 +70,8 @@ export const data = {
   bool: (note?: string) => spec<boolean, "data">(z.boolean(), { role: "data", kind: "boolean", ...noted(note) }),
   image: (note?: string) => spec<string, "data">(z.string(), { role: "data", kind: "image", ...noted(note) }),
   icon: (note?: string) => spec<string, "data">(z.string(), { role: "data", kind: "icon", ...noted(note) }),
+  /** A colour from the data, "#rrggbb" (a club's ESPN colour) or "" for none; never a typed literal. */
+  color: (note?: string) => spec<string, "data">(z.string().regex(/^(#[0-9a-fA-F]{6})?$/), { role: "data", kind: "color", ...noted(note) }),
   status: (note?: string) => spec<(typeof TONE)[number], "data">(z.enum(TONE), { role: "data", kind: "status", ...noted(note) }),
   list: <T>(item: z.ZodType<T>, range: Range = {}, note?: string) => spec<T[], "data">(ranged(z.array(item), range), { role: "data", kind: "list", ...noted(note) }),
   record: <T>(schema: z.ZodType<T>, note?: string) => spec<T, "data">(schema, { role: "data", kind: "record", ...noted(note) }),

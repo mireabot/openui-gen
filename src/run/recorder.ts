@@ -31,7 +31,7 @@ export interface RunStarted {
   readonly startedAt: string;
   readonly stages?: readonly Stage[];
   readonly summaryModel?: string;
-  /** A domain pack's run (`stocks`): its own steps and data sources. Absent for the general generator. */
+  /** A domain pack's run (`sports`): its own steps and data sources. Absent for the general generator. */
   readonly pack?: string;
   readonly generation?: "current" | "openui";
   /** A follow-up edit of a saved OpenUI document: which one, and the revision it starts from. */

@@ -198,7 +198,7 @@ export const PRIMITIVES = [
   }),
   P({
     name: "Avatar", category: "media", intent: "A person or company mark: image, or monogram on a tint.",
-    props: { name: copy.text(), size: token("avatarSize"), image: opt(data.image()), tint: opt(token("ink")), shape: opt(copy.oneOf(["circle", "rounded"])) },
+    props: { name: copy.text(), size: token("avatarSize"), image: opt(data.image()), tint: opt(token("ink")), shape: opt(copy.oneOf(["circle", "rounded"])), color: opt(data.color("a club colour from the data; fills the disc, overrides tint")) },
     behaviors: [], rules: ["fully round, or radius 8 when rounded", "scale the image proportionally to fit inside the fixed-size avatar without cropping or resizing the container", "image loads async (a URL or a server path resolved against the streaming server): the monogram shows first, the image fades in on load (150ms ease-out), and a failed load keeps the monogram"],
     skeleton: "circle (or radius-8 square) at its size",
   }),
@@ -348,11 +348,11 @@ export const PRIMITIVES = [
   P({
     name: "SplitBar", category: "data", intent: "How votes split between two or three sides (Buy · Hold · Sell, Yes · No) in one bar, each side in its tone, in the given order.",
     props: {
-      sides: data.list(z.object({ label: z.string(), count: z.number(), tone: z.enum(TONE) }), { min: 2, max: 3 }),
+      sides: data.list(z.object({ label: z.string(), count: z.number(), tone: z.enum(TONE), color: z.string().optional() }), { min: 2, max: 3 }),
       size: opt(copy.oneOf(["regular", "thin", "micro"], "regular 8 (default) · thin 6 · micro 4 (40 wide, for chips)")), dim: opt(copy.bool("losing sides at 35%")),
       legend: opt(copy.bool("side label and count under each end")),
     },
-    behaviors: [], rules: ["pill track, 2px gap between segments", "segment width = count / total", "order is the data's order; it never re-sorts by size", "fills the remaining width in a row"],
+    behaviors: [], rules: ["pill track, 2px gap between segments", "segment width = count / total", "a side's color (a team's #hex) overrides its tone", "order is the data's order; it never re-sorts by size", "fills the remaining width in a row"],
     skeleton: "one pill track at its height, full width (40 for micro)",
   }),
   P({

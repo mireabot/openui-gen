@@ -14,7 +14,7 @@ import { programSkeleton, programTree } from "./tree.js";
  * each statement as it streams, expands template macros to primitives, links a part once every
  * sibling it references is admitted, renames it to `pickN`, and derives what the part answers from
  * the data it reads. Coverage is checked after admission; questions no part shows get the pack's
- * fallback part. Generic: everything about stocks comes through `ScreenPack`.
+ * fallback part. Generic: everything about a domain comes through `ScreenPack`.
  */
 
 export type PartId = `pick${number}`;
@@ -45,6 +45,8 @@ export interface ScreenPack {
   briefing(source: ScreenSource): string;
   /** Template signatures for the writer's system prompt. */
   readonly templates: string;
+  /** The tool the program's `d = Query(...)` reads its snapshot from. Defaults to "sports_dataset". */
+  readonly tool?: string;
 }
 
 export interface RequiredQuestion { readonly id: QuestionId; readonly text: string }
@@ -220,13 +222,13 @@ class Screen {
 
   /** The first text on the wire: kept base parts and the root over them. */
   opening(): string {
-    return [printStatement("d", query(this.source.run)), ...this.source.base.flatMap(part => [...part.statements].map(([name, expr]) => printStatement(name, expr))), this.root()].join("\n") + "\n";
+    return [printStatement("d", query(this.source.run, this.pack.tool)), ...this.source.base.flatMap(part => [...part.statements].map(([name, expr]) => printStatement(name, expr))), this.root()].join("\n") + "\n";
   }
 
   /** The deterministic screen the fallbacks would make: the skeleton before the writer starts. */
   preview(questions: readonly QuestionId[]): string {
     const parts = questions.map((q, i) => [`preview${i}`, this.pack.fallback(q, this.source.values)] as const);
-    return [`root = Screen([${parts.map(([id]) => id).join(", ")}])`, printStatement("d", query(this.source.run)), ...parts.map(([id, expr]) => printStatement(id, expr))].join("\n") + "\n";
+    return [`root = Screen([${parts.map(([id]) => id).join(", ")}])`, printStatement("d", query(this.source.run, this.pack.tool)), ...parts.map(([id, expr]) => printStatement(id, expr))].join("\n") + "\n";
   }
 
   admit(raw: string): void {
@@ -287,7 +289,7 @@ class Screen {
       this.fallbacks.push({ id, statements, evidence: evidenceOf(statements.values(), this.source.values, this.pack), origin: { kind: "fallback", question: q.id } });
     }
     const parts = this.parts();
-    const program = [this.root(parts), printStatement("d", query(this.source.run)), ...parts.flatMap(p => [...p.statements].map(([name, expr]) => printStatement(name, expr)))].join("\n") + "\n";
+    const program = [this.root(parts), printStatement("d", query(this.source.run, this.pack.tool)), ...parts.flatMap(p => [...p.statements].map(([name, expr]) => printStatement(name, expr)))].join("\n") + "\n";
     programTree(program, this.source.values);
     const coverage = new Map<QuestionId, PartId[]>();
     for (const q of this.source.required) coverage.set(q.id, parts.filter(p => p.evidence.has(q.id)).map(p => p.id));
@@ -429,8 +431,8 @@ function mapExpr(expr: Expr, f: (e: Expr) => Expr): Expr {
   }
 }
 
-function query(run: string): Expr {
-  return { k: "Comp", name: "Query", args: [{ k: "Str", v: "stocks_dataset" }, { k: "Obj", entries: [["run", { k: "Str", v: run }]] }, { k: "Obj", entries: [] }] };
+function query(run: string, tool = "sports_dataset"): Expr {
+  return { k: "Comp", name: "Query", args: [{ k: "Str", v: tool }, { k: "Obj", entries: [["run", { k: "Str", v: run }]] }, { k: "Obj", entries: [] }] };
 }
 
 // ------------------------------------------------------------------ admission

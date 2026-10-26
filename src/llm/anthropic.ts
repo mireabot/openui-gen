@@ -20,6 +20,8 @@ const anthropic = () => client ??= new Anthropic({ apiKey: requireKey("ANTHROPIC
 const PRICES: Readonly<Record<string, readonly [number, number, number, number]>> = {
   "claude-opus-5-5": [4, 5, 0.2, 20],
   "claude-opus-5": [5, 6.25, 0.5, 25],
+  // A server-side refusal fallback target for Opus 5 and Sonnet 5.5.
+  "claude-opus-4-8": [5, 6.25, 0.5, 25],
   "claude-sonnet-5-5": [2, 2.5, 0.1, 10],
   "claude-haiku-5-5": [0.1, 0.125, 0.01, 0.5],
 };
@@ -92,34 +94,60 @@ export function anthropicSchema(schema: unknown): unknown {
   return result;
 }
 
+/**
+ * Per-call settings. `effort` sets thinking depth and spend (each model has its own default).
+ * `fallbacks` opts into the API's server-side refusal fallback ("default" routing by refusal
+ * category); only Opus and Sonnet take it, Haiku has no server-side fallback.
+ */
+export interface ClaudeCallOptions {
+  readonly effort?: "low" | "medium" | "high" | "xhigh" | "max";
+  readonly fallbacks?: boolean;
+}
+const FALLBACK_BETA = "server-side-fallback-2026-07-01";
+
 /** A structured-completion transport on the Anthropic API, using `model` whatever the request names. */
-export function anthropicSender(model: string): CompletionSender {
+export function anthropicSender(model: string, options: ClaudeCallOptions = {}): CompletionSender {
   return async (request: ChatRequest): Promise<CompletionEnvelope> => {
     const { system, messages } = anthropicMessages(request.messages as readonly Message[]);
     const format = request.responseFormat && "jsonSchema" in request.responseFormat ? request.responseFormat.jsonSchema.schema : undefined;
-    const response = await anthropic().messages.create({
-      model, max_tokens: request.maxTokens ?? 2_000, system, messages,
-      ...(format ? { output_config: { format: { type: "json_schema", schema: anthropicSchema(format) as Record<string, unknown> } } } : {}),
-    });
+    const output = format || options.effort ? { output_config: {
+      ...(format ? { format: { type: "json_schema" as const, schema: anthropicSchema(format) as Record<string, unknown> } } : {}),
+      ...(options.effort ? { effort: options.effort } : {}),
+    } } : {};
+    const params = { model, max_tokens: request.maxTokens ?? 2_000, system, messages, ...output };
+    // A fallback answer is billed at the fallback model's rates: price it by the model that served it.
+    const response = options.fallbacks
+      ? await anthropic().beta.messages.create({ ...params, betas: [FALLBACK_BETA], fallbacks: "default" })
+      : await anthropic().messages.create(params);
     const content = response.content.flatMap(block => block.type === "text" ? [block.text] : []).join("");
     const finishReason = response.stop_reason === "max_tokens" ? "length" : response.stop_reason === "refusal" ? "content_filter" : "stop";
     return { model: response.model, choices: [{ finishReason, message: { content } }],
-      usage: { promptTokens: promptTokens(response.usage), completionTokens: response.usage.output_tokens, cost: anthropicCost(model, response.usage) ?? null } };
+      usage: { promptTokens: promptTokens(response.usage), completionTokens: response.usage.output_tokens, cost: anthropicCost(response.model, response.usage) ?? null } };
   };
 }
 
 /** The screen writer on the Anthropic API: text deltas feed the statement stream as they arrive. */
-export async function anthropicWriter(input: readonly { role: "system" | "user"; content: string }[], model: string, onText: (delta: string) => void, maxTokens = 4_000): Promise<{ text: string; usage: WriterUsage }> {
+export async function anthropicWriter(input: readonly { role: "system" | "user"; content: string }[], model: string, onText: (delta: string) => void, maxTokens = 4_000, options: ClaudeCallOptions = {}): Promise<{ text: string; usage: WriterUsage }> {
   try {
     const { system, messages } = anthropicMessages(input);
-    const stream = anthropic().messages.stream({ model, max_tokens: maxTokens, system, messages });
+    const params = { model, max_tokens: maxTokens, system, messages, ...(options.effort ? { output_config: { effort: options.effort } } : {}) };
     let written = "";
-    stream.on("text", delta => { written += delta; onText(delta); });
-    const message = await stream.finalMessage();
+    const append = (delta: string) => { written += delta; onText(delta); };
+    // A mid-stream fallback keeps the streamed text and continues it on the fallback model.
+    let message: { readonly model: string; readonly stop_reason: string | null; readonly usage: Usage };
+    if (options.fallbacks) {
+      const stream = anthropic().beta.messages.stream({ ...params, betas: [FALLBACK_BETA], fallbacks: "default" });
+      stream.on("text", append);
+      message = await stream.finalMessage();
+    } else {
+      const stream = anthropic().messages.stream(params);
+      stream.on("text", append);
+      message = await stream.finalMessage();
+    }
     if (message.stop_reason === "max_tokens") throw new Error("Model output reached its token limit before finishing the layout");
     if (message.stop_reason === "refusal") throw new Error("Model stopped with content_filter");
     if (!written.trim()) throw new Error("Model returned empty layout content");
-    return { text: written, usage: { promptTokens: promptTokens(message.usage), completionTokens: message.usage.output_tokens, reasoningTokens: 0, cost: anthropicCost(model, message.usage) } };
+    return { text: written, usage: { promptTokens: promptTokens(message.usage), completionTokens: message.usage.output_tokens, reasoningTokens: 0, cost: anthropicCost(message.model, message.usage) } };
   } catch (error) {
     const detail = providerErrorDetail(error);
     log.error("anthropic writer failed", { stage: "compose", model, detail });

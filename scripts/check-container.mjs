@@ -7,7 +7,7 @@ import { setTimeout } from "node:timers/promises";
 const image = process.argv[2] ?? "openui-gen:ci";
 const docker = (...args) => execFileSync("docker", args, { encoding: "utf8" }).trim();
 // Non-default PORT verifies Railway's runtime port override.
-const container = docker("run", "--detach", "--publish", "127.0.0.1::8091", "--env", "PORT=8091", "--env", "OPENROUTER_API_KEY=ci-unused", image);
+const container = docker("run", "--detach", "--publish", "127.0.0.1::8091", "--env", "PORT=8091", "--env", "ANTHROPIC_API_KEY=ci-unused", "--env", "PARALLEL_API_KEY=ci-unused", image);
 try {
   const base = `http://${docker("port", container, "8091/tcp")}`;
   let ready = false;
@@ -25,11 +25,11 @@ try {
   assert.equal(page.status, 200);
   assert.match(page.headers.get("content-type") ?? "", /text\/html/);
   assert.match(await page.text(), /OpenUI generation/);
-  const missing = await fetch(base + "/tools/stocks_dataset", {
+  const missing = await fetch(base + "/tools/sports_dataset", {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ run: "00000000-0000-0000-0000-000000000000" }),
   });
   assert.equal(missing.status, 404);
-  const bad = await fetch(base + "/lang/stocks/stream", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: "" }) });
+  const bad = await fetch(base + "/lang/sports/stream", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt: "" }) });
   assert.equal(bad.status, 400);
   console.log("container: health, preview, dataset tool and request validation passed");
 } finally {

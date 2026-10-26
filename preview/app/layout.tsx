@@ -7,7 +7,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   title: "OpenUI generation",
-  description: "Live OpenUI Lang generation for stocks, rendered with the Kino components.",
+  description: "Live OpenUI Lang generation for sports, rendered with the Kino components.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
