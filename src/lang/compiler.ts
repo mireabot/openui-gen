@@ -58,7 +58,7 @@ export interface ScreenSource {
   readonly values: DatasetValues;
   /** Questions that must be visible after this compile: every question first run, the revised and added ones on a follow-up. */
   readonly required: readonly RequiredQuestion[];
-  /** Existing parts in screen order; those not editable are kept byte for byte. */
+  /** Existing parts in screen order; those not editable are kept byte for byte. One reading data `values` no longer has is dropped unless the writer rewrites it. */
   readonly base: readonly BasePart[];
   /** Base parts the writer may rewrite by their own id. */
   readonly editable: ReadonlySet<PartId>;
@@ -219,13 +219,20 @@ class Screen {
   private admitted = 0;
   private screenNodes = 0;
 
+  /** Base parts reading data this turn's values no longer have (their question was revised or removed): dropped unless the writer rewrites them. */
+  private readonly stale: ReadonlySet<PartId>;
+
   constructor(private readonly source: ScreenSource, private readonly pack: ScreenPack, private readonly report: (issue: ProgramIssue) => void, private readonly hooks: CompileHooks) {
     this.nextId = Math.max(0, ...source.base.map(part => Number(part.id.slice(4)))) + 1;
+    this.stale = new Set(source.base.filter(part => [...part.statements.values()].some(expr => readsOf(expr).some(path => !present(source.values, path)))).map(part => part.id));
   }
+
+  /** Base parts that stay on screen unless rewritten. */
+  private live(): readonly BasePart[] { return this.source.base.filter(part => !this.stale.has(part.id)); }
 
   /** The first text on the wire: kept base parts and the root over them. */
   opening(): string {
-    return [printStatement("d", query(this.source.run, this.pack.tool)), ...this.source.base.flatMap(part => [...part.statements].map(([name, expr]) => printStatement(name, expr))), this.root()].join("\n") + "\n";
+    return [printStatement("d", query(this.source.run, this.pack.tool)), ...this.live().flatMap(part => [...part.statements].map(([name, expr]) => printStatement(name, expr))), this.root()].join("\n") + "\n";
   }
 
   /** The deterministic screen the fallbacks would make: the skeleton before the writer starts. */
@@ -291,6 +298,7 @@ class Screen {
       const statements = hoist(id, new Map([[id, expr]]));
       this.fallbacks.push({ id, statements, evidence: evidenceOf(statements.values(), this.source.values, this.pack), origin: { kind: "fallback", question: q.id } });
     }
+    for (const id of this.stale) if (!this.finished().some(p => p.id === id)) this.report({ source: "coverage", code: "stale-part", message: `${id} read data this turn no longer has and was not rewritten; it was dropped`, statementId: id });
     const parts = this.parts();
     const program = [this.root(parts), printStatement("d", query(this.source.run, this.pack.tool)), ...parts.flatMap(p => [...p.statements].map(([name, expr]) => printStatement(name, expr)))].join("\n") + "\n";
     programTree(program, this.source.values);
@@ -355,7 +363,11 @@ class Screen {
 
   private parts(): CompiledPart[] {
     const written = new Map(this.finished().map(p => [p.id, p]));
-    const kept = this.source.base.map(base => written.get(base.id) ?? { id: base.id, statements: base.statements, evidence: evidenceOf(base.statements.values(), this.source.values, this.pack), origin: { kind: "kept" } as const });
+    const kept = this.source.base.flatMap((base): CompiledPart[] => {
+      const rewritten = written.get(base.id);
+      if (rewritten) return [rewritten];
+      return this.stale.has(base.id) ? [] : [{ id: base.id, statements: base.statements, evidence: evidenceOf(base.statements.values(), this.source.values, this.pack), origin: { kind: "kept" } }];
+    });
     const keptIds = new Set(kept.map(p => p.id));
     return [...kept, ...[...written.values()].filter(p => !keptIds.has(p.id)), ...this.fallbacks];
   }
@@ -364,7 +376,7 @@ class Screen {
     const union = new Map<QuestionId, DataPath[]>();
     // Base parts count until the writer replaces them; an editable part left alone still shows what it showed.
     const replaced = new Set(this.finished().map(p => p.id));
-    for (const evidence of [...this.source.base.filter(b => !replaced.has(b.id)).map(b => evidenceOf(b.statements.values(), this.source.values, this.pack)), ...parts])
+    for (const evidence of [...this.live().filter(b => !replaced.has(b.id)).map(b => evidenceOf(b.statements.values(), this.source.values, this.pack)), ...parts])
       for (const [q, reads] of evidence) union.set(q, [...(union.get(q) ?? []), ...reads]);
     return union;
   }
@@ -372,7 +384,7 @@ class Screen {
   /** The root over kept base parts and every writer part whose part statement is on the wire. */
   private root(parts?: readonly CompiledPart[]): string {
     const ids = parts ? parts.map(p => p.id) : [
-      ...this.source.base.map(b => b.id),
+      ...this.source.base.filter(b => !this.stale.has(b.id) || this.drafts.get(b.id)?.statements.has(null)).map(b => b.id),
       ...this.order.map(name => this.drafts.get(name)).filter((d): d is Draft => !!d && d.statements.has(null) && !this.source.base.some(b => b.id === d.id)).map(d => d.id),
     ];
     return `root = Screen([${ids.join(", ")}])`;
@@ -610,6 +622,14 @@ function readsOf(expr: Expr): DataPath[] {
   };
   walk(expr, new Map([["d", []]]));
   return reads;
+}
+
+/** Whether a read resolves in the values; a null segment ("each item") must resolve in every item. */
+function present(value: unknown, path: DataPath): boolean {
+  if (!path.length) return true;
+  const [head, ...rest] = path;
+  if (head === null || head === undefined) return Array.isArray(value) && value.every(item => present(item, rest));
+  return value !== null && typeof value === "object" && Object.hasOwn(value, head) && present(Reflect.get(value, head), rest);
 }
 
 function groupEvidence(reads: readonly DataPath[], pack: ScreenPack): Evidence {

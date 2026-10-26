@@ -9,6 +9,7 @@ import { BE_URL } from "@/lib/be-url";
 import { OpenUIPreview, type DatasetSeed } from "./openui-render";
 
 interface Issue { code: string; statementId?: string; message: string }
+interface DocumentVersion { id: string; revision: number }
 const Seed = z.object({ tool: z.literal("sports_dataset"), args: z.object({ run: z.string() }), result: z.record(z.string(), z.unknown()) });
 
 /**
@@ -31,8 +32,10 @@ function useFitScale(ref: RefObject<HTMLElement | null>): number {
 
 /**
  * A live generation against POST /lang/sports/stream: the skeleton first, then the OpenUI program
- * as it streams, rendered with the Kino components. Each generation owns its controller so old
- * chunks cannot enter a new preview.
+ * as it streams, rendered with the Kino components. Once a screen is done, the next Generate is a
+ * follow-up on its document (POST /lang/sports/:id/follow-up): the screen stays as it is until the
+ * new revision is done, then swaps in. "New screen" starts over. Each generation owns its controller
+ * so old chunks cannot enter a new preview.
  */
 export function SportsLive({ theme, specs, appearance }: {
   theme: CSSProperties | undefined; specs: Record<string, Record<string, unknown>> | undefined; appearance: "light" | "dark";
@@ -45,6 +48,7 @@ export function SportsLive({ theme, specs, appearance }: {
   const [state, setState] = useState<"idle" | "running" | "done" | "failed">("idle");
   const [skeleton, setSkeleton] = useState<Skeleton | null>(null);
   const [view, setView] = useState<PreviewState>("active");
+  const [document, setDocument] = useState<DocumentVersion | null>(null);
   const abort = useRef<AbortController | null>(null);
   const device = useRef<HTMLDivElement>(null);
   const scale = useFitScale(device);
@@ -55,20 +59,34 @@ export function SportsLive({ theme, specs, appearance }: {
     setIssues([]); setActivity([]); setSkeleton(null); setProgram(""); setSeed(null);
   }
 
+  function newScreen() {
+    abort.current?.abort(); abort.current = null;
+    reset(); setDocument(null); setState("idle");
+  }
+
   async function run() {
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
-    reset(); setState("running");
+    // A follow-up keeps the screen until `done` commits the next revision; its content is staged.
+    const base = state === "done" ? document : null;
+    const staged: { seed: DatasetSeed | null; program: string | null } = { seed: null, program: null };
+    if (base) { setIssues([]); setActivity([]); } else { reset(); setDocument(null); }
+    setState("running");
     const on = (event: string, body: Record<string, unknown>) => {
       if (abort.current !== controller || controller.signal.aborted) return;
       if (event === "activity") setActivity((a) => [...a, String(body.detail ?? body.stage)]);
-      else if (event === "data") setSeed(Seed.parse(body));
-      else if (event === "skeleton") setSkeleton(body as unknown as Skeleton);
-      else if (event === "openui") setProgram(previous => body.replace ? String(body.text ?? "") : previous + String(body.text ?? ""));
+      else if (event === "data") { if (base) staged.seed = Seed.parse(body); else setSeed(Seed.parse(body)); }
+      else if (event === "skeleton") { if (!base) setSkeleton(body as unknown as Skeleton); }
+      else if (event === "openui") {
+        if (base) staged.program = body.replace ? String(body.text ?? "") : (staged.program ?? "") + String(body.text ?? "");
+        else setProgram(previous => body.replace ? String(body.text ?? "") : previous + String(body.text ?? ""));
+      }
       else if (event === "issue") setIssues((i) => [...i, body.issue as Issue]);
       else if (event === "done") {
+        if (staged.seed) setSeed(staged.seed);
         if (typeof body.program === "string") setProgram(body.program);
+        setDocument((body.document as DocumentVersion | undefined) ?? null);
         setState("done");
       }
       else if (event === "failure") {
@@ -77,8 +95,9 @@ export function SportsLive({ theme, specs, appearance }: {
       }
     };
     try {
-      const res = await fetch(`${BE_URL}/lang/sports/stream`, {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }), signal: controller.signal,
+      const res = await fetch(base ? `${BE_URL}/lang/sports/${base.id}/follow-up` : `${BE_URL}/lang/sports/stream`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(base ? { prompt, baseRevision: base.revision } : { prompt }), signal: controller.signal,
       });
       if (!res.ok || !res.body) throw new Error(`${res.status} ${await res.text()}`);
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
@@ -112,7 +131,13 @@ export function SportsLive({ theme, specs, appearance }: {
           <button type="submit" disabled={state === "running"} className="h-11 rounded-lg bg-foreground px-4 text-[14px] font-medium text-background disabled:opacity-50">
             {state === "running" ? "Generating…" : "Generate"}
           </button>
+          {document && (
+            <button type="button" onClick={newScreen} disabled={state === "running"} className="h-11 rounded-lg border px-4 text-[14px] font-medium disabled:opacity-50">
+              New screen
+            </button>
+          )}
         </form>
+        {document && <p className="text-xs text-muted-foreground">Revision {document.revision}{state === "done" ? " · the next Generate is a follow-up on this screen" : ""}</p>}
         <div ref={device} className="relative w-fit">
           <StateToggle value={view} onChange={setView} className="absolute top-3 right-3 z-30" />
           <div style={{ zoom: scale }}>

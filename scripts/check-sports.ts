@@ -7,9 +7,11 @@ import { programTree } from "../src/lang/tree.js";
 import { SnapshotStore } from "../src/lang/snapshots.js";
 import type { Completion, CompletionSender } from "../src/llm/structured-completion.js";
 import type { ParallelTransport } from "../src/research/parallel-research.js";
-import { askSports } from "../src/sports/ask.js";
+import { sportsRoutes } from "../src/routes/sports.js";
+import { askSports, editSports, type SportsDeps } from "../src/sports/ask.js";
+import { DocumentStore, type SportsDocument } from "../src/sports/documents.js";
 import { espnLookup, type EspnTransport } from "../src/sports/espn.js";
-import { rawSchema, toPlan, type SportsPlan } from "../src/sports/plan.js";
+import { followUpSchema, rawSchema, toFollowUp, toPlan, type SportsPlan } from "../src/sports/plan.js";
 import { preview, SPORTS_SCREEN } from "../src/sports/screen.js";
 
 /** The sports pipeline offline: scripted ESPN, Parallel, Sonnet, Opus and writer; no network, no keys. */
@@ -168,4 +170,103 @@ assert.ok(programTree(empty.program, emptyValues).nodes.some(n => n.primitive ==
 // The writer's preview of a long list is still a list, so it offers no paths the data lacks.
 assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ rank })) }), { table: [{ rank: 0 }, { rank: 1 }, { rank: 2 }, "… 16 more items …", { rank: 19 }] });
 
-console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback, components, empty lists, component defaults and list previews passed");
+
+// Follow-ups through the routes: "Chelsea vs Man City last meeting stats", then add the table, revise the meeting, drop the scorers.
+// Kept parts stay byte for byte, kept answers are not researched again, and a stale or failed turn commits nothing.
+{
+  const dir = mkdtempSync(path.join(tmpdir(), "sports-follow-ups-"));
+  try {
+    const store = new SnapshotStore(path.join(dir, "snapshots"));
+    const documents = new DocumentStore(path.join(dir, "documents"));
+    const scripts: string[] = [];
+    const writer: ProgramWriter = async (_m, emit) => { const text = scripts.shift() ?? ""; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
+    const researched: string[] = [];
+    const extractLogged: CompletionSender = async request => { researched.push(/Sub-question: (.*)/.exec(request.messages[0]!.content)?.[1] ?? ""); return completion(finding([PAGE])); };
+    const meeting = { text: "Chelsea v Manchester City, last meeting stats", source: "espn" as const, competition: "league" as const, feed: "match" as const, team: "Chelsea", opponent: "Manchester City", date: null, season: null, searchQueries: [] };
+    const scorers = { text: "Chelsea's top scorers this season", source: "web" as const, competition: "league" as const, feed: "none" as const, team: null, opponent: null, date: null, season: null, searchQueries: ["Chelsea top scorers 2026/27", "Chelsea goals this season"] };
+    const subject = { kind: "match" as const, name: "Chelsea vs Manchester City", league: "eng.1" as const, season: "2026/27" };
+    const followUps: Record<string, Omit<Parameters<typeof toFollowUp>[0], "subject">> = {
+      "add the Premier League table and Spurs' results": { keep: ["q1", "q2"], revise: [], remove: [], add: [{ ...meeting, text: "The Premier League table", feed: "standings", opponent: null }, { ...meeting, text: "Tottenham's results this season", feed: "schedule", team: "Tottenham Hotspur", opponent: null }] },
+      "make it the last three meetings": { keep: ["q2", "q3", "q4"], remove: [], add: [], revise: [{ id: "q1", text: "Chelsea v Manchester City, last three meetings", source: "web", competition: "league", feed: "none", team: null, opponent: null, date: null, season: null, searchQueries: ["Chelsea Manchester City last three meetings", "Chelsea v Man City head to head"] }] },
+      "drop the scorers": { keep: ["q1", "q3", "q4"], revise: [], remove: ["q2"], add: [] },
+    };
+    const deps: SportsDeps = {
+      plan: async () => toPlan({ subject: { ...subject }, questions: [meeting, scorers] }), espn, parallel, extract: extractLogged, schema: async () => completion({ answers: [] }), write: writer, now: new Date("2026-10-25T12:00:00Z"),
+      planFollowUp: async context => {
+        const raw = followUps[context.prompt];
+        if (!raw) throw new Error("the planner is unavailable");
+        return toFollowUp({ subject: { ...subject }, ...raw }, context.questions);
+      },
+    };
+    const app = sportsRoutes({ store, documents, ask: (request, s, hooks, run) => askSports(request, s, hooks, run, deps), edit: (saved, request, s, hooks, run) => editSports(saved, request, s, hooks, run, deps) });
+    const post = async (url: string, body: object) => {
+      const response = await app.request(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+      const events = response.headers.get("content-type")?.includes("text/event-stream")
+        ? (await response.text()).split("\n\n").filter(Boolean).map(frame => ({ event: /^event: (.*)$/m.exec(frame)?.[1], data: JSON.parse(/^data: (.*)$/m.exec(frame)?.[1] ?? "null") as Record<string, any> }))
+        : [];
+      return { status: response.status, events, done: events.find(e => e.event === "done")?.data };
+    };
+    const lines = (doc: SportsDocument) => Object.fromEntries(doc.parts.map(p => [p.id, p.statements]));
+    const answersOf = (doc: SportsDocument) => (doc.snapshot.result as { answers: Record<string, unknown> }).answers;
+
+    scripts.push(`meeting = Card([Text(d.answers.q1.title, "headline"), Row("Shots", null, null, Number(d.answers.q1.teamStats.shots, "integer", "body"))])\nscorers = Card([Text(d.answers.q2.summary, "body")])\n`);
+    const first = await post("/lang/sports/stream", { prompt: "Chelsea vs Man City last meeting stats" });
+    const id = first.done!.document.id as string;
+    assert.deepEqual(first.done!.document, { id, revision: 1 }, "the first screen is saved as revision 1 before done");
+    const r1 = (await documents.get(id))!;
+    assert.deepEqual(r1.parts.map(p => [p.id, p.questions]), [["pick1", ["q1"]], ["pick2", ["q2"]]]);
+
+    // Adding questions: the writer may only add parts (its attempt to rewrite pick1 is refused); q4, which it skips, gets a default part.
+    scripts.push(`pick1 = Card([Text(d.answers.q1.title, "body")])\ntable = Card([Text(d.answers.q3.title, "headline"), Stack("v", 8, @Each(d.answers.q3.table, "r", Row(r.team.name, null, null, Number(r.points, "integer", "body"))))])\n`);
+    researched.length = 0;
+    const added = await post(`/lang/sports/${id}/follow-up`, { prompt: "add the Premier League table and Spurs' results", baseRevision: 1, model: "ignored", timeZone: "Europe/London" });
+    assert.deepEqual(added.done!.document, { id, revision: 2 });
+    assert.deepEqual(added.events.map(e => e.event).filter(e => e !== "activity"), ["data", "openui", "done"], "content arrives only after the commit");
+    assert.equal(added.events.find(e => e.event === "openui")!.data.replace, true);
+    const r2 = (await documents.get(id))!;
+    assert.deepEqual(r2.parts.map(p => [p.id, p.questions]), [["pick1", ["q1"]], ["pick2", ["q2"]], ["pick3", ["q3"]], ["pick4", ["q4"]]]);
+    assert.deepEqual([lines(r2).pick1, lines(r2).pick2], [lines(r1).pick1, lines(r1).pick2], "kept parts survive byte for byte");
+    for (const statement of [...Object.values(lines(r1).pick1!), ...Object.values(lines(r1).pick2!)]) assert.ok(r2.program.includes(`${statement}\n`), "kept statements are in the new program as they were");
+    assert.deepEqual([answersOf(r2).q1, answersOf(r2).q2], [answersOf(r1).q1, answersOf(r1).q2], "kept answers carried over");
+    assert.deepEqual(researched, [], "kept answers are not researched again");
+    const clubNames = (doc: SportsDocument) => ((doc.snapshot.result as { clubs: { name: string }[] }).clubs).map(c => c.name);
+    assert.deepEqual([clubNames(r1), clubNames(r2)], [["Chelsea", "Manchester City"], ["Chelsea", "Manchester City", "Tottenham Hotspur"]], "saved clubs keep their index, so kept parts reading d.clubs[i] read the same club");
+
+    assert.equal((await post(`/lang/sports/${id}/follow-up`, { prompt: "drop the scorers", baseRevision: 1 })).status, 409, "a stale revision is refused");
+    assert.equal((await post("/lang/sports/no-such-document/follow-up", { prompt: "add the table", baseRevision: 1 })).status, 404);
+
+    // A failed turn: failure on the stream, and the document is exactly as it was (no revision, no turns).
+    const failed = await post(`/lang/sports/${id}/follow-up`, { prompt: "show the referees", baseRevision: 2 });
+    assert.deepEqual([failed.events.at(-1)!.event, failed.done], ["failure", undefined]);
+    assert.deepEqual(await documents.get(id), r2, "a failed follow-up commits nothing");
+
+    // Revising q1: only its part is rewritten (under its id, in its place); the writer may not touch pick2.
+    scripts.push(`pick1 = Card([Text(d.answers.q1.title, "headline"), Text(d.answers.q1.summary, "body")])\npick2 = Card([Text(d.answers.q2.title, "body")])\n`);
+    const revised = await post(`/lang/sports/${id}/follow-up`, { prompt: "make it the last three meetings", baseRevision: 2 });
+    assert.deepEqual(revised.done!.document, { id, revision: 3 });
+    const r3 = (await documents.get(id))!;
+    assert.deepEqual(r3.parts.map(p => p.id), ["pick1", "pick2", "pick3", "pick4"]);
+    assert.match(lines(r3).pick1!.pick1!, /d\.answers\.q1\.summary/);
+    assert.deepEqual([lines(r3).pick2, lines(r3).pick3], [lines(r2).pick2, lines(r2).pick3]);
+    assert.ok(revised.done!.issues.some((i: { code: string; statementId?: string }) => i.code === "locked-part" && i.statementId === "pick2"));
+    assert.deepEqual(researched, ["Chelsea v Manchester City, last three meetings"], "only the revised question is researched");
+
+    // Removing q2 drops its part; the others stay byte for byte and no writer runs.
+    const removed = await post(`/lang/sports/${id}/follow-up`, { prompt: "drop the scorers", baseRevision: 3 });
+    assert.deepEqual(removed.done!.document, { id, revision: 4 });
+    const r4 = (await documents.get(id))!;
+    assert.deepEqual([r4.parts.map(p => p.id), removed.done!.issues], [["pick1", "pick3", "pick4"], []], "a removal is not a stale part");
+    assert.deepEqual([lines(r4).pick1, lines(r4).pick3], [lines(r3).pick1, lines(r3).pick3]);
+    assert.doesNotMatch(r4.program, /pick2|answers\.q2/);
+    assert.deepEqual(Object.keys(answersOf(r4)), ["q1", "q3", "q4"]);
+    assert.deepEqual(r4.turns.filter(t => t.role === "user").map(t => t.content), ["Chelsea vs Man City last meeting stats", "add the Premier League table and Spurs' results", "make it the last three meetings", "drop the scorers"]);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+// The follow-up planner accounts for every saved question exactly once.
+assert.throws(() => toFollowUp({ subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "" }, keep: ["q1"], revise: [], remove: ["q1"], add: [] }, plan.questions), /exactly once/);
+assert.ok(followUpSchema([], ["q1", "q2"]).safeParse({ subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "" }, keep: ["q7"], revise: [], remove: [], add: [] }).success === false, "only saved ids");
+
+console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback, components, empty lists, component defaults, list previews and follow-ups passed");

@@ -26,19 +26,20 @@ npm run preview               # preview on :3000, calling :8080
 | Route | Purpose |
 | --- | --- |
 | `POST /lang/sports/stream` | A new screen (`{prompt}`): SSE `activity`, `data`, `skeleton`, `openui`, `issue`, `done`, `failure`. |
+| `POST /lang/sports/:documentId/follow-up` | A follow-up on a saved screen (`{prompt, baseRevision}`): SSE `activity`, then `data`, `openui {replace: true}` and `done` with the next revision. 404 unknown document, 409 stale revision. |
 | `POST /tools/sports_dataset` | Replay a run's dataset snapshot (`{run}`), for `Query("sports_dataset", …)`. |
 | `GET /health` | Liveness. |
 | `GET /` | The preview (when `preview/out` exists). |
 
 `OPENUI-LANG.md` explains the pipeline (Haiku plans, ESPN feeds and Parallel searches read by Sonnet
 answer every question at once, Opus designs the dataset and writes the screen), the component
-library and the native renderer. Follow-ups are not built for sports yet.
+library, follow-ups and the native renderer.
 
 ## Layout
 
 ```text
-src/lang/       OpenUI Lang: primitives, library, compiler, printer, snapshots, documents
-src/sports/     plan (Haiku), ESPN client, parallel research (Parallel + Sonnet), dataset (Opus), screen pack
+src/lang/       OpenUI Lang: primitives, library, compiler, printer, snapshots
+src/sports/     plan and follow-up plan (Haiku), documents, ESPN client, parallel research (Parallel + Sonnet), dataset (Opus), screen pack
 src/research/   Parallel search, citations and dataset schema
 src/llm/        Anthropic client and structured completion
 src/routes/     HTTP routes

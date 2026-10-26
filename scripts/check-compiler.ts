@@ -171,6 +171,20 @@ calls = Card([Text(d.answers.q2.summary, "body")])
   assert.deepEqual(added.parts.map(p => [p.id, p.origin.kind]), [["pick1", "kept"], ["pick2", "kept"], ["pick3", "writer"]]);
 }
 
+// 7d. A revised answer reshaped under the same id: its old part reads data that is gone. The writer's rewrite keeps the
+// part's place; with no rewrite the stale part is dropped and its question falls back, never shipped reading missing data.
+{
+  const first = await compileScreen(source(), pack, scripted(`quarters = Stack("v", 12, @Each(d.answers.q1.periods, "p", Quarter(p)))\ncalls = Card([Text(d.answers.q2.summary, "body")])\n`));
+  const base = first.parts.map(p => basePart(p.id, Object.fromEntries([...p.statements].map(([name, expr]) => [name, printStatement(name, expr)]))));
+  const reshaped = { ...values, answers: { ...values.answers, q1: { question: "Last 2 years of EPS", periods: values.answers.q1.periods.map(p => ({ year: p.label, eps: p.eps })) } } };
+  const revision = source({ values: reshaped, base, editable: new Set(["pick1"]), required: [{ id: "q1", text: "Last 2 years of EPS" }] });
+  const rewritten = await compileScreen(revision, pack, scripted(`pick1 = Stack("v", 12, @Each(d.answers.q1.periods, "p", Text(p.eps, "body")))\n`));
+  assert.deepEqual(rewritten.parts.map(p => [p.id, p.origin.kind]), [["pick1", "writer"], ["pick2", "kept"]]);
+  const left = await compileScreen(revision, pack, scripted(""));
+  assert.deepEqual(left.parts.map(p => [p.id, p.origin.kind]), [["pick2", "kept"], ["pick3", "fallback"]]);
+  assert.doesNotMatch(left.program, /pick1/);
+}
+
 // 8. Statement splitting survives brackets and quoted newlines.
 {
   const stream = new StatementStream();

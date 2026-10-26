@@ -90,7 +90,7 @@ writer output.
 | `skeleton` | frames for the planned parts, before content |
 | `openui` | `{text}`: complete statements to append; later assignments to an id replace earlier ones |
 | `issue` | a recoverable problem with its statement id |
-| `done` | `{program, issues, holes, timings, model}` (no `document` until follow-ups exist) |
+| `done` | `{program, issues, holes, timings, model, document: {id, revision: 1}}`, sent after the screen is saved |
 | `failure` | `{error, message}` |
 
 The `data` event warms the client's tool provider. A client without the seed replays the query
@@ -104,8 +104,26 @@ subtree by statement id. This keeps local slider and choice edits independent pe
 
 ## Follow-ups
 
-Not yet for sports. The document store (`src/lang/documents.ts`) and the native session's staged
-follow-up remain; the route sends no `document`, so clients start a new screen for every prompt.
+A screen is a document (`src/sports/documents.ts`): one JSON file per document under
+`DATA_DIR/openui-documents`, holding the latest revision's program, snapshot, subject, routed
+questions, parts (printed statements and the questions each shows) and the conversation turns. The
+document id is the first run's id.
+
+`POST /lang/sports/:documentId/follow-up` with `{prompt, baseRevision, targets?}`:
+
+1. Haiku reads the turns, the subject, the saved questions and what each part shows, and returns the
+   updated plan: every saved id is kept, revised (same id, new text and routing) or removed, and
+   new questions get fresh ids. A revision identical to the saved question counts as kept.
+2. Kept answers are reused from the saved snapshot. Revised and new questions are researched and
+   designed as on a first screen. Saved clubs keep their order in `d.clubs` and new ones are appended.
+3. The compiler gets the saved parts as `base`, minus parts that show only removed questions. Parts
+   showing a revised or removed question are `editable`: the writer may rewrite them under their id.
+   Every other part is kept byte for byte. A base part whose reads no longer resolve is dropped unless
+   rewritten, and its questions fall back.
+4. The next revision is committed atomically under a per-document lock. Only then does the stream send
+   `data`, `openui {text, replace: true}` and `done` with `document: {id, revision}`. A failure sends
+   `failure` and commits nothing. 404 for an unknown document, 409 `revision_conflict` when
+   `baseRevision` is stale, 400 `unknown_target` for a target that names no part.
 
 ## The SwiftUI renderer
 
@@ -151,7 +169,7 @@ No view reads a whole tree or a whole dataset from the environment. A text view 
 
 ### The network layer and the Ask screen
 
-`OpenUIStreamService` in `GenUI/Streaming` posts to `/lang/sports/stream` and decodes the SSE events; its follow-up path (`/lang/sports/:documentId/follow-up`, 409 → `staleRevision`) waits for the backend.
+`OpenUIStreamService` in `GenUI/Streaming` posts to `/lang/sports/stream` and decodes the SSE events; a session with a document posts follow-ups to `/lang/sports/:documentId/follow-up` (409 → `staleRevision`).
 
 ```text
 AskView → AskModel → OpenUISession.ask → OpenUIStreamService → backend
@@ -159,7 +177,7 @@ AskView → AskModel → OpenUISession.ask → OpenUIStreamService → backend
                      scene → commit → handles → OpenUISceneView
 ```
 
-`AskModel` keeps one session; without a `document` in `done`, every prompt starts a new screen.
+`AskModel` keeps one session; once `done` carries a `document`, the next prompt is a follow-up on it.
 
 ### What this does not do yet
 
@@ -168,7 +186,7 @@ AskView → AskModel → OpenUISession.ask → OpenUIStreamService → backend
 - Calculator edits stay with their calculator across follow-ups only while the calculator keeps its id. There is no conflict marker when the server changes an input the user edited.
 - The session can export an `OpenUIArchive`, but History does not store it yet.
 - The OpenUI Ask answer shows the progress checklist before content, not the skeleton.
-- Follow-ups are not wired for sports. `OpenUISessionTests` cover the follow-up request and the stale-revision rule against a fake stream.
+- The iOS follow-up path is covered by `OpenUISessionTests` against a fake stream, not yet against the live server.
 
 The backend derives skeleton frames from the evaluated OpenUI frame; primitive skeleton
 descriptions remain strings.

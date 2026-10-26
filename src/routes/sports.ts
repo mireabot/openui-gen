@@ -2,28 +2,37 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { streamSSE } from "hono/streaming";
+import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import { z } from "zod";
 import { allowedOrigin, config } from "../config.js";
 import { log } from "../log.js";
 import { SnapshotArgs, SnapshotStore } from "../lang/snapshots.js";
 import { PROJECT_ROOT } from "../paths.js";
 import { RunRecorder, writeRunEvents } from "../run/recorder.js";
-import { askSports } from "../sports/ask.js";
+import { askSports, editSports } from "../sports/ask.js";
+import { DocumentConflict, DocumentStore, nextRevision } from "../sports/documents.js";
 
 const Request = z.object({ prompt: z.string().min(1).max(500) });
+const FollowUpRequest = Request.extend({ baseRevision: z.number().int().positive(), targets: z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_/-]*$/)).max(30).optional() });
 const STAGES = ["summarize", "search", "data", "compose", "validate"] as const;
 
 /**
  * POST /lang/sports/stream — a new sports screen as SSE: `activity`, `data` (the dataset
- * snapshot), `skeleton`, `openui` (program text), `issue`, then `done` or `failure`.
+ * snapshot), `skeleton`, `openui` (program text), `issue`, then `done` with `document {id, revision: 1}`
+ * once the screen is saved, or `failure`.
+ * POST /lang/sports/:documentId/follow-up — `{prompt, baseRevision, targets?}` edits a saved screen:
+ * `activity` while it works, then `data`, `openui {text, replace: true}` (the whole program) and
+ * `done` with the next revision, all after the revision is committed. 404 for an unknown document,
+ * 409 when `baseRevision` is not the current one. A failed follow-up commits nothing.
  * POST /tools/sports_dataset — a run's snapshot, for the program's `Query("sports_dataset", …)`.
- * No follow-ups yet: `done` carries no document, so clients start a new screen for each prompt.
  */
-export function sportsRoutes(options: { store?: SnapshotStore; ask?: typeof askSports } = {}) {
+export function sportsRoutes(options: { store?: SnapshotStore; documents?: DocumentStore; ask?: typeof askSports; edit?: typeof editSports } = {}) {
   const cfg = config();
-  const store = options.store ?? new SnapshotStore(path.resolve(fileURLToPath(PROJECT_ROOT), cfg.DATA_DIR, "openui-snapshots"));
+  const dataDir = path.resolve(fileURLToPath(PROJECT_ROOT), cfg.DATA_DIR);
+  const store = options.store ?? new SnapshotStore(path.join(dataDir, "openui-snapshots"));
+  const documents = options.documents ?? new DocumentStore(path.join(dataDir, "openui-documents"));
   const ask = options.ask ?? askSports;
+  const edit = options.edit ?? editSports;
   const app = new Hono();
   app.use("/lang/*", cors({ origin: allowedOrigin }));
   app.use("/tools/*", cors({ origin: allowedOrigin }));
@@ -47,8 +56,7 @@ export function sportsRoutes(options: { store?: SnapshotStore; ask?: typeof askS
     const { prompt } = parsed.data;
     log.info("sports openui started", { prompt, origin: c.req.header("origin") ?? null });
     return streamSSE(c, async stream => {
-      let chain = Promise.resolve();
-      const send = (event: string, data: unknown) => { chain = chain.then(() => stream.writeSSE({ event, data: JSON.stringify(data) })); };
+      const { send, abort, flush } = channel(stream);
       const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui" });
       try {
         const result = await ask({ prompt }, store, {
@@ -57,7 +65,8 @@ export function sportsRoutes(options: { store?: SnapshotStore; ask?: typeof askS
           data: snapshot => send("data", snapshot), skeleton: skeleton => send("skeleton", skeleton),
           program: text => send("openui", { text }), issue: issue => send("issue", { issue }),
         }, observer.runId);
-        send("done", { generation: "openui", run: result.run, program: result.program, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model });
+        await documents.put(nextRevision(null, result.run, prompt, result), 0, abort.signal);
+        send("done", { generation: "openui", run: result.run, program: result.program, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model, document: { id: result.run, revision: 1 } });
         observer.finish({ status: "ok", retries: result.holes.repairRounds, nodes: result.nodes });
         log.info("sports openui streamed", { run: result.run, subject: result.plan.subject.name, questions: result.plan.questions.length, nodes: result.nodes, issues: result.issues.length, holes: result.holes, ms: result.timings.validate });
       } catch (error) {
@@ -66,9 +75,67 @@ export function sportsRoutes(options: { store?: SnapshotStore; ask?: typeof askS
         log.error("sports openui failed", { message });
         send("failure", { error: "generation_failed", message });
       }
-      try { await chain; }
+      try { await flush(); }
       finally { if (cfg.TRACE_ENABLED) await writeRunEvents(cfg.TRACE_DIR, observer.recorded()); }
     });
   });
+
+  app.post("/lang/sports/:documentId/follow-up", async c => {
+    const parsed = FollowUpRequest.safeParse(await c.req.json().catch(() => null));
+    const identity = SnapshotArgs.safeParse({ run: c.req.param("documentId") });
+    if (!parsed.success || !identity.success) return c.json({ error: "bad_request" }, 400);
+    const id = identity.data.run;
+    const { prompt, baseRevision, targets } = parsed.data;
+    // Held until this follow-up commits or fails, so a concurrent one sees the new revision and gets 409.
+    const release = await documents.lock(id);
+    let previous;
+    try { previous = await documents.get(id); }
+    catch (error) { release(); throw error; }
+    if (!previous) { release(); return c.json({ error: "document_not_found" }, 404); }
+    if (previous.revision !== baseRevision) { release(); return c.json({ error: "revision_conflict", document: { id, revision: previous.revision } }, 409); }
+    const parts = previous.parts;
+    if (targets?.some(target => !parts.some(part => target === part.id || target.startsWith(`${part.id}_`) || target.startsWith(`${part.id}/`)))) { release(); return c.json({ error: "unknown_target" }, 400); }
+    const saved = previous;
+    log.info("sports follow-up started", { document: id, baseRevision, prompt });
+    return streamSSE(c, async stream => {
+      const { send, abort, flush } = channel(stream);
+      // A follow-up is recorded as its own run, tagged with the document and base revision.
+      const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui", followUp: { document: id, baseRevision } });
+      try {
+        // Content stays staged: the client keeps its screen until the revision is committed.
+        const result = await edit(saved, { prompt, targets }, store, {
+          progress: progress => { observer.step(progress); send("activity", progress); },
+          usage: usage => observer.usage(usage), content: report => observer.content(report),
+        }, observer.runId);
+        abort.signal.throwIfAborted();
+        const revision = saved.revision + 1;
+        await documents.put(nextRevision(saved, id, prompt, result), saved.revision, abort.signal);
+        send("data", result.snapshot);
+        send("openui", { text: result.program, replace: true });
+        send("done", { generation: "openui", run: result.run, program: result.program, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model, document: { id, revision } });
+        observer.content({ stage: "validate", id: "follow-up", label: "Follow-up merge", format: "json", data: { questions: result.followUp.questions.map(q => `${q.id} ${q.change}`), removed: result.followUp.removed, parts: result.screen.parts.map(p => `${p.id} ${p.origin.kind}`), revision } });
+        observer.finish({ status: "ok", retries: result.holes.repairRounds, nodes: result.nodes });
+        log.info("sports follow-up committed", { document: id, revision, run: result.run, questions: result.followUp.questions.map(q => `${q.id} ${q.change}`), removed: result.followUp.removed, parts: result.screen.parts.map(p => `${p.id} ${p.origin.kind}`) });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        observer.finish({ status: "failed", retries: 0, reason: message });
+        log.error("sports follow-up failed", { document: id, message });
+        send("failure", { error: error instanceof DocumentConflict ? "revision_conflict" : "generation_failed", message });
+      } finally {
+        release();
+        try { await flush(); }
+        finally { if (cfg.TRACE_ENABLED) await writeRunEvents(cfg.TRACE_DIR, observer.recorded()); }
+      }
+    });
+  });
   return app;
+}
+
+/** Ordered SSE writes, and an abort signal for a client that went away before the commit. */
+function channel(stream: SSEStreamingApi) {
+  const abort = new AbortController();
+  stream.onAbort(() => abort.abort());
+  let chain = Promise.resolve();
+  const send = (event: string, data: unknown) => { chain = chain.then(() => stream.writeSSE({ event, data: JSON.stringify(data) })); };
+  return { send, abort, flush: () => chain };
 }
