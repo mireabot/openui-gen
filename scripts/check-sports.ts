@@ -149,4 +149,16 @@ assert.ok(nodes.some(n => n.primitive === "Avatar" && n.props.color === "#034694
 assert.ok(nodes.some(n => n.primitive === "Text" && n.props.content === "0" && n.props.ink === "secondary"), "the losing score is secondary");
 assert.ok(nodes.some(n => n.primitive === "SplitBar" && JSON.stringify(n.props.sides).includes("#99c5ea")), "q2's default is a StatBar with team colours");
 
-console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback and components passed");
+// An empty list is valid data: the writer's Leaderboard over no entries is admitted. A StatsCard answer
+// defaults to StatsCard, not to TeamDetail, whose contract it extends.
+const emptyValues = { answers: {
+  q1: { status: "complete", question: "Clean sheets", title: "Clean sheets", source: "Source: ESPN", board: { title: "Clean sheets", metric: "", entries: [] } },
+  q2: { status: "complete", question: "Palmer", title: "Palmer", source: "Source: ESPN", player: { name: "Cole Palmer", detail: "Chelsea", logo: "", color: "#034694",
+    rating: { value: "7.21", tone: "good", label: "Season rating", caption: "" }, stats: [{ label: "Goals", value: "5" }] } },
+} };
+const boardWriter: ProgramWriter = async (_m, emit) => { const text = "sheets = Leaderboard(d.answers.q1.board)\n"; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
+const empty = await compileScreen({ run: "empty", request: "Clean sheets and Palmer", values: emptyValues, required: [{ id: "q1", text: "Clean sheets" }, { id: "q2", text: "Palmer" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, boardWriter);
+assert.equal(empty.parts.filter(p => p.origin.kind === "writer").length, 1, "a Leaderboard over an empty list is admitted");
+assert.ok(programTree(empty.program, emptyValues).nodes.some(n => n.primitive === "Badge" && n.props.label === "7.21"), "q2's default is a StatsCard, showing its rating");
+
+console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback, components, empty lists and component defaults passed");

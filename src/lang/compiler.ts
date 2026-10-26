@@ -550,10 +550,12 @@ function validate(raw: Expr, owner: string, source: ScreenSource, pack: ScreenPa
       const meta = spec.meta;
       if (meta.role === "node" || meta.role === "nodes") {
         if (meta.role === "node" && value.k === "Arr") report("type-mismatch", `${prop} accepts one child`, e.name, prop);
-        // An @Each counts as the items it renders.
+        // An @Each counts as the items it renders now for the maximum; for the minimum it is one slot, since an empty list is valid data.
         const width = (el: Expr) => { if (el.k !== "Comp" || el.name !== "Each" || !el.args[0]) return 1; try { const list = resolve(el.args[0], scope).value; return Array.isArray(list) ? list.length : 1; } catch { return 1; } };
-        const count = value.k === "Arr" ? value.els.reduce((n, el) => n + width(el), 0) : width(value);
-        if (meta.role === "nodes" && ((meta.min !== undefined && count < meta.min) || (meta.max !== undefined && count > meta.max))) report("slot-count", `Invalid child count for ${e.name}.${prop}`, e.name, prop);
+        const els = value.k === "Arr" ? value.els : [value];
+        const most = els.reduce((n, el) => n + width(el), 0);
+        const least = els.reduce((n, el) => n + Math.max(width(el), el.k === "Comp" && el.name === "Each" ? 1 : 0), 0);
+        if (meta.role === "nodes" && ((meta.min !== undefined && least < meta.min) || (meta.max !== undefined && most > meta.max))) report("slot-count", `Invalid child count for ${e.name}.${prop}`, e.name, prop);
         visit(value, scope, meta.accepts, e);
         return;
       }

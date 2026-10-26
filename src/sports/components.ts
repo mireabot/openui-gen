@@ -243,7 +243,10 @@ export function placements(answer: unknown): Placement[] {
     for (const [key, child] of Object.entries(value)) walk(child, [...keys, key], depth + 1);
   };
   walk(answer, [], 0);
-  return found;
+  // A component whose contract another one at the same place extends (TeamDetail inside StatsCard) would show less of it.
+  const paths = (p: Placement) => new Set(p.component.contract.map(f => f.path));
+  return found.filter(p => !found.some(q => q !== p && q.list === p.list && q.keys.join(".") === p.keys.join(".")
+    && q.component.contract.length > p.component.contract.length && [...paths(p)].every(path => paths(q).has(path))));
 }
 
 /** A placement as the writer would call it, e.g. `@Each(d.answers.q1.matches, "x", MatchCard(x))`. */
