@@ -10,7 +10,7 @@ import type { ParallelTransport } from "../src/research/parallel-research.js";
 import { askSports } from "../src/sports/ask.js";
 import { espnLookup, type EspnTransport } from "../src/sports/espn.js";
 import { rawSchema, toPlan, type SportsPlan } from "../src/sports/plan.js";
-import { SPORTS_SCREEN } from "../src/sports/screen.js";
+import { preview, SPORTS_SCREEN } from "../src/sports/screen.js";
 
 /** The sports pipeline offline: scripted ESPN, Parallel, Sonnet, Opus and writer; no network, no keys. */
 
@@ -60,8 +60,8 @@ const extract = (sourceUrls: string[]): CompletionSender => async () => completi
 const plan: SportsPlan = toPlan({
   subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "2026/27" },
   questions: [
-    { text: "Where are Chelsea in the table?", source: "espn", feed: "standings", team: "Chelsea", opponent: null, date: null, season: null, searchQueries: [] },
-    { text: "Chelsea's top scorers this season", source: "web", feed: "none", team: null, opponent: null, date: null, season: null, searchQueries: ["Chelsea top scorers 2026/27", "Premier League scorers Chelsea"] },
+    { text: "Where are Chelsea in the table?", source: "espn", competition: "league", feed: "standings", team: "Chelsea", opponent: null, date: null, season: null, searchQueries: [] },
+    { text: "Chelsea's top scorers this season", source: "web", competition: "league", feed: "none", team: null, opponent: null, date: null, season: null, searchQueries: ["Chelsea top scorers 2026/27", "Premier League scorers Chelsea"] },
   ],
 });
 /** Opus's design: q1 trimmed to the focus row; q2 left to its raw answer (no design returned). */
@@ -108,7 +108,7 @@ try {
 }
 
 // Routing rules the schema cannot express.
-const question = (overrides: object) => ({ text: "Where are Chelsea?", source: "espn" as const, feed: "standings" as const, team: null, opponent: null, date: null, season: null, searchQueries: [], ...overrides });
+const question = (overrides: object) => ({ text: "Where are Chelsea?", source: "espn" as const, competition: "league" as const, feed: "standings" as const, team: null, opponent: null, date: null, season: null, searchQueries: [], ...overrides });
 assert.throws(() => toPlan({ subject: { kind: "team", name: "Celtic", league: "other", season: "" }, questions: [question({})] }), /needs one of eng\.1/);
 assert.throws(() => toPlan({ subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "" }, questions: [question({ feed: "schedule" })] }), /schedule feed needs a team/);
 
@@ -117,6 +117,10 @@ const club = (id: string, name: string, short: string, abbreviation: string, col
 const clubs = [club("83", "Barcelona", "Barcelona", "BAR", "#a50044", "esp.1"), club("382", "Manchester City", "Man City", "MNC", "#99c5ea", "eng.1")];
 const barca = toPlan({ subject: { kind: "team", name: "Manchester City", league: "eng.1", season: "" }, questions: [question({ team: "Barcelona" })] }, clubs);
 assert.equal(barca.questions[0]!.source === "espn" && barca.questions[0]!.league, "esp.1");
+// A cup question reads the cup, whatever the club's league; the FA Cup has no table.
+const ucl = toPlan({ subject: { kind: "team", name: "Barcelona", league: "esp.1", season: "" }, questions: [question({ team: "Barcelona", competition: "uefa.champions", feed: "schedule" })] }, clubs);
+assert.equal(ucl.questions[0]!.source === "espn" && ucl.questions[0]!.league, "uefa.champions");
+assert.throws(() => toPlan({ subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "" }, questions: [question({ competition: "eng.fa" })] }), /no FA Cup standings/);
 assert.ok(!rawSchema(clubs).safeParse({ subject: { kind: "team", name: "Barça", league: "esp.1", season: "" }, questions: [question({ team: "Barça" })] }).success, "a club outside the directory is rejected");
 
 // A result is scored from the team's side: an away 2–0 win is a win, a home 0–2 a loss; the fixture is upcoming.
@@ -161,4 +165,7 @@ const empty = await compileScreen({ run: "empty", request: "Clean sheets and Pal
 assert.equal(empty.parts.filter(p => p.origin.kind === "writer").length, 1, "a Leaderboard over an empty list is admitted");
 assert.ok(programTree(empty.program, emptyValues).nodes.some(n => n.primitive === "Badge" && n.props.label === "7.21"), "q2's default is a StatsCard, showing its rating");
 
-console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback, components, empty lists and component defaults passed");
+// The writer's preview of a long list is still a list, so it offers no paths the data lacks.
+assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ rank })) }), { table: [{ rank: 0 }, { rank: 1 }, { rank: 2 }, "… 16 more items …", { rank: 19 }] });
+
+console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback, components, empty lists, component defaults and list previews passed");

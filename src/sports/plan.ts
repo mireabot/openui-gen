@@ -3,7 +3,7 @@ import { config } from "../config.js";
 import type { QuestionId } from "../lang/compiler.js";
 import { anthropicSender } from "../llm/anthropic.js";
 import { structuredCompletion, type StructuredCompletionHooks } from "../llm/structured-completion.js";
-import { clubDirectory, ESPN_FEEDS, LEAGUE_CODES, LEAGUES, type Club, type EspnFeed, type EspnTransport, type LeagueCode } from "./espn.js";
+import { clubDirectory, CUP_CODES, ESPN_FEEDS, LEAGUE_CODES, LEAGUES, MISSING_FEEDS, type Club, type EspnFeed, type EspnTransport, type LeagueCode } from "./espn.js";
 
 /**
  * Understanding the request (Haiku, SPORTS_PLAN_MODEL): what it is about and the questions the
@@ -46,6 +46,7 @@ export const rawSchema = (clubs: readonly Club[]) => {
   questions: z.array(z.object({
     text: z.string().min(3),
     source: z.enum(["espn", "web"]),
+    competition: z.enum([...CUP_CODES, "league"]),
     feed: z.enum([...ESPN_FEEDS, "none"]),
     team: club,
     opponent: club,
@@ -67,31 +68,32 @@ const clubList = (clubs: readonly Club[]) => LEAGUE_CODES.map(code => {
 export const planSystem = (today: string, clubs: readonly Club[] = []) => `You plan a mobile screen that answers a football (soccer) request. Today is ${today}; "this season" means the season in progress.
 Return the subject and 1–5 questions. Each question is one part of the screen, in the user's terms, with every detail they asked for (period, competition, count). Ask only what the request needs.
 Route each question to data. Use ESPN for anything it carries; search the web only for what it does not.
-- source "espn", for these leagues only (league code: ${leagueList}). Feeds:
+- source "espn", for these competitions only (code: ${leagueList}). competition: a cup's code when the question is about that cup, else "league" (the club's own league, or the subject's). The FA Cup has no "standings" or "leaders". Feeds:
   "standings": the league table (rank, played, W/D/L, goals, points).
   "scoreboard": one day's matches; date YYYYMMDD, null for the current matchday.
   "schedule": one team's season, results and fixtures, oldest first, each with its result; team required.
   "match": one meeting between two clubs: score, each side's possession, shots, shots on target, corners and cards, the goals with scorer and assist, and the players' goals, assists and shots; team and opponent required. Without a season it is the most recent meeting this season, or last season's if they have not played yet (the data says which).
   "leaders": the league's top scorers and top assisters this season.
   "teams": the league's clubs with colours and logos.
-  Set team to the club the question is about (for standings too, so the table can mark it)${clubs.length ? ", written exactly as listed below, the opponent too. Resolve what the user typed to the club they mean: \"Barcelona\" or \"Barça\" is Barcelona, \"Man City\" is Manchester City, \"Inter\" is Internazionale. A club not listed is outside these leagues: use the web" : ""}. season: the season's start year (2025 for 2025/26) only when the user names a past season, else null.
-- source "web" for everything else: player ratings and per-season player statistics beyond the leaders, injuries, transfers, news, history, explanations, and any other league or competition (cups, Champions League). Give 2–3 keyword search queries (3–6 words each) naming the players, clubs, competition and season.
-For espn questions set searchQueries to []; for web questions set feed "none" and team, opponent, date and season null.
+  Set team to the club the question is about (for standings too, so the table can mark it)${clubs.length ? ", written exactly as listed below, the opponent too. Resolve what the user typed to the club they mean: \"Barcelona\" or \"Barça\" is Barcelona, \"Man City\" is Manchester City, \"Inter\" is Internazionale. A club not listed is outside these competitions: use the web" : ""}. season: the season's start year (2025 for 2025/26) only when the user names a past season, else null.
+- source "web" for everything else: player ratings and per-season player statistics beyond the leaders, injuries, transfers, news, history, explanations, and any other league or competition (Europa League, League Cup). Give 2–3 keyword search queries (3–6 words each) naming the players, clubs, competition and season.
+For espn questions set searchQueries to []; for web questions set feed "none", competition "league", and team, opponent, date and season null.
 subject.name: the club, player, league or match by its full name (the listed club name for a club). subject.league: the ESPN league code the request is about, or "other". subject.season: e.g. "2026/27".${clubs.length ? `\n\nClubs ESPN covers, by league (exact name, then short name):\n${clubList(clubs)}` : ""}`;
 
 /**
- * Plain checks the schema cannot express; ids are assigned here in order. A question about a listed
- * club reads that club's league, whatever the subject's league is ("Barcelona" in a Premier League
- * conversation is LaLiga).
+ * Plain checks the schema cannot express; ids are assigned here in order. A question about a cup reads
+ * the cup; otherwise a question about a listed club reads that club's league, whatever the subject's
+ * league is ("Barcelona" in a Premier League conversation is LaLiga).
  */
 export function toPlan(raw: z.infer<typeof Raw>, clubs: readonly Club[] = []): SportsPlan {
   const questions = raw.questions.map((q, index): SportsQuestion => {
     const id = `q${index + 1}` as QuestionId;
     if (q.source === "espn") {
       const own = clubs.find(c => c.name === q.team)?.league;
-      const league = own ?? (raw.subject.league === "other" ? null : raw.subject.league);
+      const league = q.competition !== "league" ? q.competition : own ?? (raw.subject.league === "other" ? null : raw.subject.league);
       if (!league) throw new Error(`${id}: an ESPN question needs one of ${LEAGUE_CODES.join(", ")}`);
       if (q.feed === "none") throw new Error(`${id}: an ESPN question needs a feed`);
+      if (MISSING_FEEDS[league]?.includes(q.feed)) throw new Error(`${id}: ESPN has no ${LEAGUES[league]} ${q.feed}; use the web`);
       if (q.feed === "schedule" && !q.team) throw new Error(`${id}: the schedule feed needs a team`);
       if (q.feed === "match" && (!q.team || !q.opponent)) throw new Error(`${id}: the match feed needs a team and an opponent`);
       if (q.date && !/^\d{8}$/.test(q.date)) throw new Error(`${id}: date must be YYYYMMDD`);

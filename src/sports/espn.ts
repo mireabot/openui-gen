@@ -3,24 +3,30 @@ import { config } from "../config.js";
 import type { MockValue } from "../research/dataset-schema.js";
 
 /**
- * ESPN's public site API for the four leagues it covers here: a day's scoreboard, the team list,
+ * ESPN's public site API for the four leagues and two cups it covers here: a day's scoreboard, the team list,
  * the league table, one team's season schedule (results oldest first), the season's goal and assist
  * leaders, and one match between two clubs with its team and player statistics. No key. ESPN names a
  * season by its start year: 2026 is 2026/27, and is the default. Each feed is trimmed to what a screen
  * shows, so the schema stage and the writer read a few hundred tokens, not ESPN's full payload.
  */
 
+/** Domestic leagues first: a club's league is the first competition that lists it. */
 export const LEAGUES = {
   "eng.1": "Premier League",
   "esp.1": "LaLiga",
   "ger.1": "Bundesliga",
   "ita.1": "Serie A",
+  "uefa.champions": "Champions League",
+  "eng.fa": "FA Cup",
 } as const;
 export type LeagueCode = keyof typeof LEAGUES;
 export const LEAGUE_CODES = Object.keys(LEAGUES) as LeagueCode[];
+export const CUP_CODES = ["uefa.champions", "eng.fa"] as const satisfies readonly LeagueCode[];
 
 export const ESPN_FEEDS = ["scoreboard", "standings", "teams", "schedule", "leaders", "match"] as const;
 export type EspnFeed = (typeof ESPN_FEEDS)[number];
+/** Feeds a competition has no data for: a knockout cup has no table and ESPN keeps no FA Cup leaders. */
+export const MISSING_FEEDS: Partial<Record<LeagueCode, readonly EspnFeed[]>> = { "eng.fa": ["standings", "leaders"] };
 
 /** Injectable for offline checks: a URL in, parsed JSON out. */
 export type EspnTransport = (url: string) => Promise<unknown>;
@@ -142,8 +148,10 @@ let directory: { readonly at: number; readonly clubs: readonly Club[] } | undefi
 const DAY = 86_400_000;
 
 /**
- * Every club in the four leagues, for the planner to resolve "Barcelona", "Barça" or "Man City" to
- * ESPN's exact name and its league. Cached for a day; a league that fails to load is left out.
+ * Every club in the six competitions, for the planner to resolve "Barcelona", "Barça" or "Man City" to
+ * ESPN's exact name and its league. A club in a domestic league and a cup is listed once, under its
+ * league; a cup-only club (PSG, Benfica) is listed under the cup. Cached for a day; a competition that
+ * fails to load is left out.
  */
 export async function clubDirectory(send: EspnTransport = fetchJSON, now = Date.now()): Promise<readonly Club[]> {
   if (directory && now - directory.at < DAY) return directory.clubs;
@@ -159,7 +167,8 @@ export async function clubDirectory(send: EspnTransport = fetchJSON, now = Date.
       return [];
     }
   }));
-  const clubs = leagues.flat();
+  const seen = new Set<string>();
+  const clubs = leagues.flat().filter(club => !seen.has(club.id) && !!seen.add(club.id));
   if (clubs.length) directory = { at: now, clubs };
   return clubs;
 }

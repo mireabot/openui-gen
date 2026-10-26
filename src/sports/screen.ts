@@ -78,9 +78,12 @@ function fallback(q: QuestionId, values: DatasetValues): Expr {
   return ui.Card({ children }).expr;
 }
 
-/** Long lists trimmed for the prompt; the writer reads paths, not every value. */
-function preview(value: unknown): unknown {
-  if (Array.isArray(value)) return value.length > 6 ? { items: value.length, first: value.slice(0, 3).map(preview), last: preview(value.at(-1)) } : value.map(preview);
+/**
+ * Long lists trimmed for the prompt; the writer reads paths, not every value. A trimmed list stays a
+ * list, with a marker for the items left out, so it never reads as an object with `first` and `last` keys.
+ */
+export function preview(value: unknown): unknown {
+  if (Array.isArray(value)) return value.length > 6 ? [...value.slice(0, 3).map(preview), `… ${value.length - 4} more items …`, preview(value.at(-1))] : value.map(preview);
   if (isObject(value)) return Object.fromEntries(Object.entries(value).map(([k, v]) => [k, preview(v)]));
   return typeof value === "string" && value.length > 160 ? `${value.slice(0, 157)}…` : value;
 }
