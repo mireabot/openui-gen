@@ -1,7 +1,7 @@
 {
   "version": 1,
   "langCore": "1.0.0",
-  "digest": "b75055fa2035f3b7da50593c33c5c782e82af452e4911e9cd89a5d139fdd2f6c",
+  "digest": "4684bedb652d5d9400fa03cdeebf5442749a291570546fce61c373556011792e",
   "primitives": [
     {
       "name": "Screen",
@@ -91,6 +91,18 @@
           "optional": true,
           "role": "copy",
           "note": "hairline between children (lists)"
+        },
+        {
+          "name": "paddingX",
+          "optional": true,
+          "role": "token",
+          "token": "space"
+        },
+        {
+          "name": "paddingY",
+          "optional": true,
+          "role": "token",
+          "token": "space"
         }
       ]
     },
@@ -113,7 +125,14 @@
           "optional": false,
           "role": "nodes",
           "accepts": "any",
-          "min": 2
+          "min": 1
+        },
+        {
+          "name": "rowGap",
+          "optional": true,
+          "role": "token",
+          "token": "space",
+          "note": "vertical gap; defaults to gap"
         }
       ]
     },
@@ -177,6 +196,13 @@
           "optional": true,
           "role": "copy",
           "note": "bindable per item (p.selected): brand outline"
+        },
+        {
+          "name": "gap",
+          "optional": true,
+          "role": "token",
+          "token": "space",
+          "note": "between children; defaults to 16"
         }
       ]
     },
@@ -543,6 +569,12 @@
           "role": "data",
           "kind": "color",
           "note": "a club colour from the data; fills the disc, overrides tint"
+        },
+        {
+          "name": "kind",
+          "optional": true,
+          "role": "copy",
+          "note": "club (default): a crest inset inside the disc · player: a headshot that fills the disc, standing on its bottom edge"
         }
       ]
     },
@@ -770,6 +802,22 @@
           "optional": true,
           "role": "copy",
           "kind": "icon"
+        },
+        {
+          "name": "size",
+          "optional": true,
+          "role": "copy",
+          "note": "regular: 24 tall; large: title1 semibold, padding 12 horizontal and 4 vertical, radius 8"
+        },
+        {
+          "name": "fill",
+          "optional": true,
+          "role": "copy"
+        },
+        {
+          "name": "ink",
+          "optional": true,
+          "role": "copy"
         }
       ]
     },
@@ -872,6 +920,35 @@
           "name": "step",
           "optional": true,
           "role": "copy"
+        }
+      ]
+    },
+    {
+      "name": "ColorCell",
+      "args": [
+        {
+          "name": "label",
+          "optional": false,
+          "role": "copy",
+          "note": "accessibility label only; never drawn inside the square"
+        },
+        {
+          "name": "fill",
+          "optional": false,
+          "role": "copy"
+        },
+        {
+          "name": "color",
+          "optional": true,
+          "role": "data",
+          "kind": "color",
+          "note": "a data colour #rrggbb, or empty to use fill"
+        },
+        {
+          "name": "size",
+          "optional": true,
+          "role": "copy",
+          "note": "fill (default): square at the available width; fixed sizes for swatches"
         }
       ]
     },

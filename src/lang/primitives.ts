@@ -86,13 +86,14 @@ export const PRIMITIVES = [
       align: opt(copy.oneOf(["start", "center", "end", "stretch"])), justify: opt(copy.oneOf(["start", "center", "end", "between"])),
       overlap: opt(token("space", "children after the first overlap the previous one by this much (poster over a still)")),
       divided: opt(copy.bool("hairline between children (lists)")),
+      paddingX: opt(token("space")), paddingY: opt(token("space")),
     },
-    behaviors: ["stagger-in"], rules: ["gap is a spacing token", "inside a horizontal Stack, a vertical Stack takes the remaining width and its one-line Text truncates", "overlap is a spacing token, applied as a negative margin", "wrap: children keep their own width and flow into rows, gap between items and rows; an item wider than the row gets its own row", "divided: 1px separator between children"],
+    behaviors: ["stagger-in"], rules: ["gap is a spacing token", "inside a horizontal Stack, a vertical Stack takes the remaining width and its one-line Text truncates; one aligned end is a trailing column and keeps its own width instead", "overlap is a spacing token, applied as a negative margin", "wrap: children keep their own width and flow into rows, gap between items and rows; an item wider than the row gets its own row", "divided: 1px separator between children"],
     skeleton: "keeps its axis, gap and alignment; children draw their own skeletons (an @Each before data: 3 items)",
   }),
   P({
-    name: "Grid", category: "layout", intent: "Lays peer children in 2 to 4 equal columns.",
-    props: { columns: copy.oneOf(["2", "3", "4"]), gap: token("space"), children: nodes({ min: 2 }) },
+    name: "Grid", category: "layout", intent: "Lays peer children in 1 to 12 equal columns.",
+    props: { columns: copy.oneOf(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"]), gap: token("space"), children: nodes({ min: 1 }), rowGap: opt(token("space", "vertical gap; defaults to gap")) },
     behaviors: ["stagger-in"], rules: ["equal columns", "gap is a spacing token"],
     skeleton: "keeps its columns and gap",
   }),
@@ -107,7 +108,7 @@ export const PRIMITIVES = [
     props: {
       children: nodes({ min: 1 }), surface: opt(token("surface", "default card")),
       radius: opt(copy.oneOf(["container", "control"], "container 24 (default) · control 12 for small tiles")),
-      padding: opt(token("space", "default 16")), selected: opt(copy.bool("bindable per item (p.selected): brand outline")),
+      padding: opt(token("space", "default 16")), selected: opt(copy.bool("bindable per item (p.selected): brand outline")), gap: opt(token("space", "between children; defaults to 16")),
     },
     behaviors: ["press", "select"], rules: ["radius 24 (12 for control-size tiles), corner smoothing 60%", "padding 16 by default", "inner spacing 16", "selected = 1px brand stroke"],
     skeleton: "keeps its surface, radius and padding; children as skeletons",
@@ -198,8 +199,9 @@ export const PRIMITIVES = [
   }),
   P({
     name: "Avatar", category: "media", intent: "A person or company mark: image, or monogram on a tint.",
-    props: { name: copy.text(), size: token("avatarSize"), image: opt(data.image()), tint: opt(token("ink")), shape: opt(copy.oneOf(["circle", "rounded"])), color: opt(data.color("a club colour from the data; fills the disc, overrides tint")) },
-    behaviors: [], rules: ["fully round, or radius 8 when rounded", "scale the image proportionally to fit inside the fixed-size avatar without cropping or resizing the container", "image loads async (a URL or a server path resolved against the streaming server): the monogram shows first, the image fades in on load (150ms ease-out), and a failed load keeps the monogram"],
+    props: { name: copy.text(), size: token("avatarSize"), image: opt(data.image()), tint: opt(token("ink")), shape: opt(copy.oneOf(["circle", "rounded"])), color: opt(data.color("a club colour from the data; fills the disc, overrides tint")),
+      kind: opt(copy.oneOf(["club", "player"], "club (default): a crest inset inside the disc · player: a headshot that fills the disc, standing on its bottom edge")) },
+    behaviors: [], rules: ["fully round, or radius 8 when rounded", "club: scale the image proportionally to fit inside the fixed-size avatar without cropping or resizing the container, inset on every side", "player: the photo fills the disc width, anchored to the bottom edge with no bottom padding so the head and shoulders are never cut off; space only above the head; the disc colour shows behind", "image loads async (a URL or a server path resolved against the streaming server): the monogram shows first, the image fades in on load (150ms ease-out), and a failed load keeps the monogram"],
     skeleton: "circle (or radius-8 square) at its size",
   }),
   P({
@@ -251,8 +253,13 @@ export const PRIMITIVES = [
   }),
   P({
     name: "Badge", category: "control", intent: "A static status label.",
-    props: { label: copy.text(), tone: token("tone"), icon: opt(copy.icon()) },
-    behaviors: [], rules: ["radius 4"], skeleton: "pill 22 tall, 56 wide",
+    props: {
+      label: copy.text(), tone: token("tone"), icon: opt(copy.icon()),
+      size: opt(copy.oneOf(["regular", "large"], "regular: 24 tall; large: title1 semibold, padding 12 horizontal and 4 vertical, radius 8")),
+      fill: opt(copy.oneOf(["none", "tone.good.fg", "tone.warn.fg", "tone.bad.fg", "tone.neutral.fg", "ink.brand", "surface.brand", "surface.filled"])),
+      ink: opt(copy.oneOf(["ink.primary", "ink.secondary", "ink.onBrand", "surface.screen"])),
+    },
+    behaviors: [], rules: ["regular: footnote medium, radius 4, height 24", "large: title1 semibold, radius 8, padding 12 horizontal and 4 vertical", "fill and ink override the tone look", "fill none: plain text with no padding or background"], skeleton: "regular: 24 tall label; large: 42 tall label, or 34 when fill none",
   }),
   P({
     name: "Chip", category: "control", intent: "A pill that filters or selects, or a tappable tag.",
@@ -280,6 +287,17 @@ export const PRIMITIVES = [
   }),
 
   // ---------------------------------------------------------------- data
+  P({
+    name: "ColorCell", category: "data", intent: "One blank filled square for a heatmap, activity grid, status matrix or legend, with a spoken label.",
+    props: {
+      label: copy.text("accessibility label only; never drawn inside the square"),
+      fill: copy.oneOf(["tone.good.fg", "tone.warn.fg", "tone.bad.fg", "tone.neutral.fg", "outline.control", "surface.filled", "surface.brand"]),
+      color: opt(data.color("a data colour #rrggbb, or empty to use fill")),
+      size: opt(copy.oneOf(["fill", "12", "24", "32"], "fill (default): square at the available width; fixed sizes for swatches")),
+    },
+    behaviors: [], rules: ["square aspect ratio", "radius 4", "fill is a palette token; a nonempty data color overrides it", "label is spoken only; no visible text", "fill size takes the available width; fixed sizes never stretch"],
+    skeleton: "radius-4 square at its fixed size or the available width",
+  }),
   P({
     name: "Progress", category: "data", intent: "How far a value is toward a goal, as a bar or a ring.",
     props: { value: data.number("percent"), style: copy.oneOf(["bar", "ring"]), tone: opt(token("tone")), label: opt(copy.text()), caption: opt(copy.text()) },

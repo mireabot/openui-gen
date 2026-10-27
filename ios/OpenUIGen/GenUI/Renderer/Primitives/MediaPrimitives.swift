@@ -90,7 +90,8 @@ struct ImagePrimitive: View {
     }
 }
 
-/// `Avatar(name, size, @image?, tint?, shape?)`: a photo, or the name's initial on a tint.
+/// `Avatar(name, size, @image?, tint?, shape?, @color?, kind?)`: a crest or a player's photo, or the
+/// name's initial on a tint.
 struct AvatarPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
@@ -101,19 +102,29 @@ struct AvatarPrimitive: View {
         let radius = props.string("shape") == "rounded" ? PrimitiveMetrics.smallControlRadius : PrimitiveMetrics.pill
         let name = props.string("name") ?? ""
         let monogram = palette.look("Avatar", "monogram")
+        // A club colour from the data wins over the tint token.
+        let tint = props.string("color").flatMap { $0.hasPrefix("#") ? palette.value($0) : nil } ?? palette
+            .value(props.string("tint"))
+        let disc = tint.map(AnyShapeStyle.init) ?? palette.fillStyle(monogram.fill) ?? AnyShapeStyle(Color.gray)
         ZStack {
-            // A club colour from the data wins over the tint token.
-            if let tint = props.string("color").flatMap({ $0.hasPrefix("#") ? palette.value($0) : nil }) ?? palette
-                .value(props.string("tint"))
-            {
-                tint
-            } else {
-                Rectangle().fill(palette.fillStyle(monogram.fill) ?? AnyShapeStyle(Color.gray))
-            }
+            Rectangle().fill(disc)
             Text(name.prefix(1).uppercased())
                 .font(.system(size: size >= 40 ? 16 : 12, weight: .medium))
                 .foregroundStyle(palette.color(monogram.ink) ?? .white)
-            if let url = PrimitiveImages.url(props.string("image"), base: base) {
+            if let url = PrimitiveImages.url(props.string("image"), base: base), props.string("kind") == "player" {
+                // A headshot stands on the disc's bottom edge over the disc colour: no bottom inset, so
+                // the shoulders are never cut off, and the monogram never shows through.
+                LazyImage(url: url, transaction: Transaction(animation: .easeOut(duration: 0.15))) { state in
+                    if let photo = state.image {
+                        photo.resizable().scaledToFill()
+                            .frame(width: size, height: size * 0.88, alignment: .bottom)
+                            .clipped()
+                            .frame(width: size, height: size, alignment: .bottom)
+                            .background(disc)
+                    }
+                }
+                .pipeline(PrimitiveImages.pipeline)
+            } else if let url = PrimitiveImages.url(props.string("image"), base: base) {
                 // Logos are full-bleed squares: inset to the shape's inscribed square so the mask never
                 // crops them. The monogram stays visible until the logo loads, and on failure.
                 LazyImage(url: url, transaction: Transaction(animation: .easeOut(duration: 0.15))) { state in

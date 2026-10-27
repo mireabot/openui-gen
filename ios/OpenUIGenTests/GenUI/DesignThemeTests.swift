@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 import Testing
 @testable import OpenUIGen
 
@@ -73,5 +74,101 @@ struct DesignThemeTests {
         #expect(theme.spec("Button", "styles.text.border") == .null)
         #expect(theme.spec("Button", "styles.missing") == nil)
         #expect(theme.spec("Card")?.objectValue?["surfaces"] != nil)
+    }
+}
+
+
+@MainActor
+struct SkeletonLayoutTests {
+    @Test func layoutInsetsAndRowSpacingSurviveTheWireFormat() throws {
+        let json = #"""
+        {
+          "kind": "stack",
+          "axis": "v",
+          "gap": 0,
+          "paddingX": 16,
+          "paddingY": 12,
+          "children": [
+            {
+              "kind": "grid",
+              "columns": 2,
+              "gap": 16,
+              "rowGap": 24,
+              "children": [
+                {
+                  "kind": "line",
+                  "height": 20,
+                  "width": 1
+                },
+                {
+                  "kind": "line",
+                  "height": 20,
+                  "width": 1
+                },
+                {
+                  "kind": "line",
+                  "height": 20,
+                  "width": 1
+                }
+              ]
+            }
+          ]
+        }
+        """#
+        let frame = try JSONDecoder().decode(SkeletonFrame.self, from: Data(json.utf8))
+        let encoded = try JSONEncoder().encode(frame)
+        #expect(try JSONDecoder().decode(SkeletonFrame.self, from: encoded) == frame)
+        let output = try JSONDecoder().decode(PValue.self, from: encoded)
+        #expect(output["paddingX"] == .number(16))
+        #expect(output["paddingY"] == .number(12))
+        #expect(output["children"]?.listValue?.first?["rowGap"] == .number(24))
+        let image = try render(frame)
+        #expect(image.width == 200)
+        #expect(image.height == 88)
+    }
+
+    @Test func olderFramesKeepUnpaddedEqualGapLayout() throws {
+        let json = #"""
+        {
+          "kind": "stack",
+          "axis": "v",
+          "gap": 0,
+          "children": [
+            {
+              "kind": "grid",
+              "columns": 2,
+              "gap": 16,
+              "children": [
+                {
+                  "kind": "line",
+                  "height": 20,
+                  "width": 1
+                },
+                {
+                  "kind": "line",
+                  "height": 20,
+                  "width": 1
+                },
+                {
+                  "kind": "line",
+                  "height": 20,
+                  "width": 1
+                }
+              ]
+            }
+          ]
+        }
+        """#
+        let frame = try JSONDecoder().decode(SkeletonFrame.self, from: Data(json.utf8))
+        let image = try render(frame)
+        #expect(image.width == 200)
+        #expect(image.height == 56)
+    }
+
+    private func render(_ frame: SkeletonFrame) throws -> CGImage {
+        let renderer = ImageRenderer(content: SkeletonFrameView(frame: frame))
+        renderer.scale = 1
+        renderer.proposedSize = ProposedViewSize(width: 200, height: nil)
+        return try #require(renderer.cgImage)
     }
 }

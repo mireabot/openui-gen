@@ -23,7 +23,7 @@ export type LeagueCode = keyof typeof LEAGUES;
 export const LEAGUE_CODES = Object.keys(LEAGUES) as LeagueCode[];
 export const CUP_CODES = ["uefa.champions", "eng.fa"] as const satisfies readonly LeagueCode[];
 
-export const ESPN_FEEDS = ["scoreboard", "standings", "teams", "schedule", "leaders", "match"] as const;
+export const ESPN_FEEDS = ["scoreboard", "standings", "teams", "schedule", "leaders", "match", "scorers"] as const;
 export type EspnFeed = (typeof ESPN_FEEDS)[number];
 /** Feeds a competition has no data for: a knockout cup has no table and ESPN keeps no FA Cup leaders. */
 export const MISSING_FEEDS: Partial<Record<LeagueCode, readonly EspnFeed[]>> = { "eng.fa": ["standings", "leaders"] };
@@ -49,7 +49,7 @@ const Competitor = z.object({
   homeAway: z.enum(["home", "away"]), score: Score, winner: z.boolean().optional(), form: z.string().optional(),
   team: Team, records: z.array(z.object({ summary: z.string() }).loose()).optional(),
 }).loose();
-const Status = z.object({ type: z.object({ state: z.enum(["pre", "in", "post"]), detail: z.string().optional(), shortDetail: z.string().optional() }).loose() }).loose();
+const Status = z.object({ type: z.object({ state: z.enum(["pre", "in", "post"]), completed: z.boolean().optional(), name: z.string().optional(), detail: z.string().optional(), shortDetail: z.string().optional() }).loose() }).loose();
 const Scoreboard = z.object({
   /** A team schedule names the season it returned here; `season` is always the current one. */
   requestedSeason: z.object({ year: z.number() }).loose().optional(),
@@ -87,6 +87,16 @@ const Summary = z.object({
     athlete: z.object({ displayName: z.string() }).loose(), position: z.object({ abbreviation: z.string().optional() }).loose().optional(),
     stats: z.array(z.object({ name: z.string(), value: z.number().optional() }).loose()).default([]),
   }).loose()).default([]) }).loose()).default([]),
+}).loose();
+
+const ScorerReport = z.object({
+  keyEvents: z.array(z.object({
+    id: z.union([z.string(), z.number()]).transform(String).optional(),
+    scoringPlay: z.boolean().optional(), shootout: z.boolean().optional(),
+    team: z.object({ id: z.string() }).loose().optional(),
+    type: z.object({ id: z.union([z.string(), z.number()]).transform(String).optional(), type: z.string().optional() }).loose().optional(),
+    participants: z.array(z.object({ athlete: z.object({ id: z.string().optional(), displayName: z.string() }).loose() }).loose()).optional(),
+  }).loose()),
 }).loose();
 
 const logoOf = (team: z.infer<typeof Team>) => team.logo ?? team.logos?.[0]?.href ?? "";
@@ -129,6 +139,8 @@ export interface EspnRequest {
   readonly opponent?: string | null;
   /** `schedule` and `match`: the season's start year (2025 is 2025/26). Default: the current season. */
   readonly season?: number | null;
+  readonly lastGames?: number;
+  readonly allCompetitions?: boolean;
 }
 
 /** One club ESPN covers: its id, exact name (what feeds take), short name, code, colours, logo and league. */
@@ -181,10 +193,11 @@ export interface EspnAnswer {
   readonly source: string;
 }
 
-export async function espnLookup(request: EspnRequest, send: EspnTransport = fetchJSON): Promise<EspnAnswer> {
+export async function espnLookup(request: EspnRequest, send: EspnTransport = fetchJSON, now = new Date()): Promise<EspnAnswer> {
   const base = `${config().ESPN_BASE_URL}`;
   const league = request.league;
   const name = LEAGUES[league];
+  if (request.feed === "scorers") return recentScorers(base, request, send, now);
   if (request.feed === "teams") {
     const data = Teams.parse(await send(`${base}/site/v2/sports/soccer/${league}/teams`));
     const teams = data.sports.flatMap(s => s.leagues.flatMap(l => l.teams.map(t => teamRecord(t.team))));
@@ -260,6 +273,72 @@ export async function espnLookup(request: EspnRequest, send: EspnTransport = fet
   return { feed: "scoreboard", league, source: `Source: ESPN · ${name} scoreboard`, values: { league: name, matches: filtered } };
 }
 
+async function recentScorers(base: string, request: EspnRequest, send: EspnTransport, now: Date): Promise<EspnAnswer> {
+  if (!request.team) throw new Error("ESPN scorers needs a team");
+  const count = request.lastGames;
+  if (!Number.isInteger(count) || count === undefined || count < 1 || count > 20) throw new Error("ESPN scorers needs lastGames between 1 and 20");
+  const team = await findTeam(base, request.league, request.team, send);
+  const competition = request.allCompetitions === false ? request.league : "all";
+  const scope = competition === "all" ? "All competitions" : LEAGUES[competition];
+  const scheduleURL = `${base}/site/v2/sports/soccer/${competition}/teams/${encodeURIComponent(team.id)}/schedule`;
+  const schedule = Scoreboard.parse(await send(request.season == null ? scheduleURL : `${scheduleURL}?season=${request.season}`));
+  const unique = new Map(schedule.events.map(event => [event.id ?? event.date, event]));
+  const selected = [...unique.values()].filter(event => {
+    const fixture = event.competitions[0]!;
+    const status = (event.status ?? fixture.status)?.type;
+    return status?.state === "post" && status.completed !== false
+      && !["STATUS_CANCELED", "STATUS_POSTPONED", "STATUS_ABANDONED"].includes(status.name ?? "")
+      && new Date(event.date).getTime() <= now.getTime() && fixture.competitors.some(side => side.team.id === team.id);
+  }).sort((a, b) => Date.parse(b.date) - Date.parse(a.date)).slice(0, count);
+  if (selected.length !== count) throw new Error(`Only ${selected.length} completed matches available for the requested last ${count}`);
+  type Scorer = { name: string; espnId: string; team: string; goals: number };
+  const reports = await Promise.all(selected.map(async event => {
+    if (!event.id) throw new Error("A selected match has no report ID");
+    const fixture = event.competitions[0]!;
+    const side = fixture.competitors.find(competitor => competitor.team.id === team.id);
+    const rawScore = side ? scoreText(side.score) : undefined;
+    const expected = typeof rawScore === "string" && /^\d+$/.test(rawScore) ? Number(rawScore) : NaN;
+    if (!Number.isSafeInteger(expected)) throw new Error(`Match ${event.id} has no valid final team score`);
+    const report = ScorerReport.parse(await send(`${base}/site/v2/sports/soccer/${competition}/summary?event=${encodeURIComponent(event.id)}`));
+    const scorers: Scorer[] = [];
+    let ownGoals = 0;
+    const seen = new Set<string>();
+    for (const goal of report.keyEvents) {
+      if (!goal.scoringPlay || goal.shootout || goal.team?.id !== team.id) continue;
+      if (!goal.id) throw new Error(`Match ${event.id} has a scoring event without an ID`);
+      if (seen.has(goal.id)) continue;
+      seen.add(goal.id);
+      if (goal.type?.type === "own-goal" || goal.type?.id === "97") { ownGoals++; continue; }
+      const scorer = goal.participants?.[0]?.athlete;
+      if (!scorer?.displayName.trim()) throw new Error(`Match ${event.id} has an unidentified goalscorer`);
+      scorers.push({ name: scorer.displayName, espnId: scorer.id ?? "", team: team.displayName, goals: 1 });
+    }
+    if (scorers.length + ownGoals !== expected) throw new Error(`Match ${event.id} scorer data does not reconcile with its ${expected} team goals`);
+    return { scorers, ownGoals, goalsFor: expected, match: match(event) };
+  }));
+  const totals = new Map<string, Scorer>();
+  for (const scorer of reports.flatMap(report => report.scorers)) {
+    const key = scorer.espnId || scorer.name;
+    const existing = totals.get(key);
+    if (existing) existing.goals++;
+    else totals.set(key, { ...scorer });
+  }
+  const scorers = [...totals.values()].sort((a, b) => b.goals - a.goals || a.name.localeCompare(b.name));
+  const period = { requestedGames: count, gamesCounted: selected.length, scope, from: selected.at(-1)!.date, to: selected[0]!.date };
+  const goalsFor = reports.reduce((sum, report) => sum + report.goalsFor, 0);
+  const ownGoals = reports.reduce((sum, report) => sum + report.ownGoals, 0);
+  return { feed: "scorers", league: request.league, source: `Source: ESPN · ${team.displayName} last ${count} completed matches · ${scope}`, values: {
+    league: LEAGUES[request.league], season: seasonLabel(schedule.requestedSeason?.year ?? request.season ?? null),
+    scope, requestedGames: count, gamesCounted: selected.length, period, team: teamRecord(team), scorers, goalsFor, ownGoals,
+    matches: reports.map(report => report.match),
+    summary: `${team.displayName} goalscorers over the last ${count} completed matches (${scope}), ${period.from.slice(0, 10)} to ${period.to.slice(0, 10)}. ${goalsFor} team goals, including ${ownGoals} own goals.`,
+    leaderboard: {
+      title: `Top scorers · ${team.displayName} · Last ${count} games · ${scope}`, metric: "Goals",
+      entries: scorers.map(scorer => ({ name: scorer.name, detail: team.displayName, value: String(scorer.goals), logo: "", color: colorOf(team.color) })),
+    },
+  } };
+}
+
 /** "2026/27" for ESPN's season 2026. */
 const seasonLabel = (year: number | null) => (year === null ? "" : `${year}/${String((year + 1) % 100).padStart(2, "0")}`);
 
@@ -297,6 +376,37 @@ async function meetings(base: string, league: LeagueCode, team: z.infer<typeof T
   const opponentId = against.length ? String((against[0]![against[0]!.venueSide === "home" ? "away" : "home"] as Record<string, MockValue>).id) : null;
   return { season: year, current: season === null, opponentId,
     played: against.filter(m => m.result !== "upcoming"), upcoming: against.filter(m => m.result === "upcoming") };
+}
+
+const isObject = (v: unknown): v is Record<string, MockValue> => !!v && typeof v === "object" && !Array.isArray(v);
+const isMatch = (v: unknown): v is Record<string, MockValue> & { home: Record<string, MockValue>; away: Record<string, MockValue> } =>
+  isObject(v) && typeof v.date === "string" && typeof v.state === "string" && isObject(v.home) && isObject(v.away) && typeof v.home.name === "string";
+
+/**
+ * Every match in an ESPN answer, carrying MatchCard's contract as well, so the writer can call
+ * `MatchCard(m)` without the dataset stage reshaping anything: each side's score as text (its number
+ * moves to `goals`), the loser's score in secondary ink and the club colour from the directory; the
+ * date as `label`, kickoff or status as `value` in the user's time zone, and competition · venue ·
+ * broadcast as `details`. Runs after the feed's own logic, which compares scores as numbers.
+ */
+export function withMatchCards(values: Record<string, MockValue>, competition: string, timeZone: string): Record<string, MockValue> {
+  const clubs = new Map((directory?.clubs ?? []).map(c => [c.id, c]));
+  const date = (iso: string, options: Intl.DateTimeFormatOptions) => { try { return new Intl.DateTimeFormat("en-US", { timeZone, ...options }).format(new Date(iso)); } catch { return ""; } };
+  const card = (m: Record<string, MockValue> & { home: Record<string, MockValue>; away: Record<string, MockValue> }) => {
+    const goals = (side: Record<string, MockValue>) => (typeof side.goals === "number" ? side.goals : typeof side.score === "number" ? side.score : null);
+    const [home, away] = [goals(m.home), goals(m.away)];
+    const side = (team: Record<string, MockValue>, own: number | null, other: number | null) => ({
+      ...team, goals: own, score: own === null ? "" : String(own), ink: own !== null && other !== null && own < other ? "secondary" : "primary",
+      color: typeof team.color === "string" && team.color ? team.color : clubs.get(String(team.id))?.color ?? "",
+    });
+    const scheduled = m.state === "scheduled";
+    return { ...m, home: side(m.home, home, away), away: side(m.away, away, home),
+      label: date(m.date as string, { weekday: "short", month: "short", day: "numeric" }),
+      value: scheduled ? date(m.date as string, { hour: "numeric", minute: "2-digit" }) : String(m.status || (m.state === "final" ? "FT" : "Live")),
+      details: [competition, m.venue, m.broadcast].filter(part => typeof part === "string" && part).join(" · ") };
+  };
+  const walk = (v: MockValue): MockValue => Array.isArray(v) ? v.map(walk) : isMatch(v) ? card(v) : isObject(v) ? Object.fromEntries(Object.entries(v).map(([k, c]) => [k, walk(c)])) : v;
+  return walk(values) as Record<string, MockValue>;
 }
 
 /** One match, from a scoreboard event or a schedule event (which keeps its status on the competition). */

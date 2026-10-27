@@ -100,6 +100,7 @@ struct PrimitiveVisual: View {
         case "Toggle": TogglePrimitive(props: props)
         case "Stepper": StepperPrimitive(props: props)
         // data
+        case "ColorCell": ColorCellPrimitive(props: props)
         case "Progress": ProgressPrimitive(props: props)
         case "Bars": BarsPrimitive(props: props)
         case "ShareBar": ShareBarPrimitive(props: props)

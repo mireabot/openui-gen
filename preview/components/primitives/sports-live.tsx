@@ -97,7 +97,7 @@ export function SportsLive({ theme, specs, appearance }: {
     try {
       const res = await fetch(base ? `${BE_URL}/lang/sports/${base.id}/follow-up` : `${BE_URL}/lang/sports/stream`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(base ? { prompt, baseRevision: base.revision } : { prompt }), signal: controller.signal,
+        body: JSON.stringify({ prompt, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, ...(base ? { baseRevision: base.revision } : {}) }), signal: controller.signal,
       });
       if (!res.ok || !res.body) throw new Error(`${res.status} ${await res.text()}`);
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();

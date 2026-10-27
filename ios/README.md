@@ -36,7 +36,7 @@ OpenUIGen/Networking/       APIClient (JSON GET/POST), HTTPFailure, HealthServic
 OpenUIGen/GenUI/Core/       OpenUI parser and compiler, node model, DesignTheme (design tokens)
 OpenUIGen/GenUI/Runtime/    OpenUISession: streams a screen, recompiles, keeps follow-ups on one document
 OpenUIGen/GenUI/Streaming/  OpenUIStreamService: SSE client for /lang/sports/stream (follow-ups when the backend has them)
-OpenUIGen/GenUI/Renderer/   OpenUISceneView and the 42 primitives; Tokens/ holds metrics, type roles, palette
+OpenUIGen/GenUI/Renderer/   OpenUISceneView and the primitives; Tokens/ holds metrics, type roles, palette
 OpenUIGen/Views/            AskView: prompt bar over the rendered screen
 OpenUIGenTests/             unit tests (Swift Testing); Support/ holds the shared fakes
 ```

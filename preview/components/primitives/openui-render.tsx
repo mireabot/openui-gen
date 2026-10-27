@@ -188,5 +188,5 @@ function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton }: { progra
 }
 
 export function OpenUIPreview({ program, seed, theme, specs, isStreaming, skeleton = false }: { program: string; seed: DatasetSeed | null; theme?: CSSProperties; specs?: Record<string, Record<string, unknown>>; isStreaming: boolean; skeleton?: boolean }) {
-  return <div style={theme}><RenderBoundary program={program}><OpenUIRuntime program={program} seed={seed} specs={specs} isStreaming={isStreaming} skeleton={skeleton} /></RenderBoundary></div>;
+  return <div style={{ ...theme, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif' }}><RenderBoundary program={program}><OpenUIRuntime program={program} seed={seed} specs={specs} isStreaming={isStreaming} skeleton={skeleton} /></RenderBoundary></div>;
 }

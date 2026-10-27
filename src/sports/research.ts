@@ -5,7 +5,10 @@ import { structuredCompletion, type CompletionSender, type StructuredCompletionH
 import type { MockValue } from "../research/dataset-schema.js";
 import { researchWithParallel, type ParallelTransport } from "../research/parallel-research.js";
 import { citationKey, type WebResearch, type WebSource } from "../research/web-research.js";
-import { espnLookup, type EspnTransport } from "./espn.js";
+import { espnLookup, LEAGUES, withMatchCards, type EspnTransport } from "./espn.js";
+
+/** Kickoff times for a client that names no time zone: football's home clock. */
+export const DEFAULT_TIME_ZONE = "Europe/London";
 import type { SportsPlan, SportsQuestion } from "./plan.js";
 
 /**
@@ -77,7 +80,7 @@ export interface Answered {
   readonly web: boolean;
 }
 
-export async function answerSports(plan: SportsPlan, prompt: string, now: Date, hooks: ResearchHooks = {}, deps: ResearchDeps = {}): Promise<Answered> {
+export async function answerSports(plan: SportsPlan, prompt: string, now: Date, hooks: ResearchHooks = {}, deps: ResearchDeps = {}, timeZone = DEFAULT_TIME_ZONE): Promise<Answered> {
   const cfg = config();
   const today = now.toISOString().slice(0, 10);
   const sources: WebSource[] = [];
@@ -85,9 +88,11 @@ export async function answerSports(plan: SportsPlan, prompt: string, now: Date, 
     try {
       if (question.source === "espn") {
         hooks.progress?.(`ESPN ${question.feed}${question.team ? ` · ${question.team}` : ""}${question.opponent ? ` v ${question.opponent}` : ""}: ${question.text.slice(0, 100)}`);
-        const espn = await espnLookup({ league: question.league, feed: question.feed, team: question.team, opponent: question.opponent, dates: question.date, season: question.season }, deps.espn);
-        hooks.finding?.(question.id, espn.values);
-        return [question.id, { status: "complete", question: question.text, title: question.text.slice(0, 60), ...espn.values, source: espn.source }];
+        const espn = await espnLookup({ league: question.league, feed: question.feed, team: question.team, opponent: question.opponent, dates: question.date, season: question.season,
+          ...(question.lastGames !== undefined ? { lastGames: question.lastGames } : {}), ...(question.allCompetitions !== undefined ? { allCompetitions: question.allCompetitions } : {}) }, deps.espn, now);
+        const values = withMatchCards(espn.values, LEAGUES[question.league], timeZone);
+        hooks.finding?.(question.id, values);
+        return [question.id, { status: "complete", question: question.text, title: question.text.slice(0, 60), ...values, source: espn.source }];
       }
       hooks.progress?.(`Searching: ${question.text.slice(0, 120)}`);
       const started = performance.now();

@@ -12,7 +12,8 @@ import { RunRecorder, writeRunEvents } from "../run/recorder.js";
 import { askSports, editSports } from "../sports/ask.js";
 import { DocumentConflict, DocumentStore, nextRevision } from "../sports/documents.js";
 
-const Request = z.object({ prompt: z.string().min(1).max(500) });
+const TimeZone = z.string().max(100).refine(zone => { try { new Intl.DateTimeFormat("en", { timeZone: zone }); return true; } catch { return false; } });
+const Request = z.object({ prompt: z.string().min(1).max(500), timeZone: TimeZone.optional() });
 const FollowUpRequest = Request.extend({ baseRevision: z.number().int().positive(), targets: z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_/-]*$/)).max(30).optional() });
 const STAGES = ["summarize", "search", "data", "compose", "validate"] as const;
 
@@ -53,13 +54,13 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
   app.post("/lang/sports/stream", async c => {
     const parsed = Request.safeParse(await c.req.json().catch(() => null));
     if (!parsed.success) return c.json({ error: "bad_request", issues: parsed.error.issues.map(issue => ({ path: issue.path.join("."), message: issue.message })) }, 400);
-    const { prompt } = parsed.data;
-    log.info("sports openui started", { prompt, origin: c.req.header("origin") ?? null });
+    const { prompt, timeZone } = parsed.data;
+    log.info("sports openui started", { prompt, timeZone: timeZone ?? null, origin: c.req.header("origin") ?? null });
     return streamSSE(c, async stream => {
       const { send, abort, flush } = channel(stream);
       const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui" });
       try {
-        const result = await ask({ prompt }, store, {
+        const result = await ask({ prompt, timeZone }, store, {
           progress: progress => { observer.step(progress); send("activity", progress); },
           usage: usage => observer.usage(usage), content: report => observer.content(report),
           data: snapshot => send("data", snapshot), skeleton: skeleton => send("skeleton", skeleton),
@@ -85,7 +86,7 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
     const identity = SnapshotArgs.safeParse({ run: c.req.param("documentId") });
     if (!parsed.success || !identity.success) return c.json({ error: "bad_request" }, 400);
     const id = identity.data.run;
-    const { prompt, baseRevision, targets } = parsed.data;
+    const { prompt, baseRevision, targets, timeZone } = parsed.data;
     // Held until this follow-up commits or fails, so a concurrent one sees the new revision and gets 409.
     const release = await documents.lock(id);
     let previous;
@@ -103,7 +104,7 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
       const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui", followUp: { document: id, baseRevision } });
       try {
         // Content stays staged: the client keeps its screen until the revision is committed.
-        const result = await edit(saved, { prompt, targets }, store, {
+        const result = await edit(saved, { prompt, targets, timeZone }, store, {
           progress: progress => { observer.step(progress); send("activity", progress); },
           usage: usage => observer.usage(usage), content: report => observer.content(report),
         }, observer.runId);

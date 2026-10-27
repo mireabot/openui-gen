@@ -126,19 +126,27 @@ struct BadgePrimitive: View {
     @Environment(\.primitivePalette) private var palette
 
     var body: some View {
+        let large = props.string("size") == "large"
+        let plain = props.string("fill") == "none"
         HStack(spacing: 4) {
             if let icon = props.string("icon") { SymbolGlyph(name: icon, size: 16) }
             Text(props.string("label") ?? "")
-                .primitiveFont(.footnote, weight: .medium)
+                .primitiveFont(large ? .title1 : .footnote, weight: large ? .semibold : .medium)
+                .monospacedDigit()
                 .lineLimit(1)
         }
-        .padding(.horizontal, 8)
-        .frame(height: 24)
-        .primitiveSurface(
-            palette.look("Badge", "tones.\(props.string("tone") ?? "neutral")"),
-            radius: PrimitiveMetrics.innerRadius
-        )
+        .padding(.horizontal, plain ? 0 : large ? 12 : 8)
+        .padding(.vertical, plain ? 0 : large ? 4 : 0)
+        .frame(height: large ? nil : 24)
+        .primitiveSurface(look, radius: large ? 8 : PrimitiveMetrics.innerRadius)
         .fixedSize()
+    }
+
+    private var look: PrimitiveLook {
+        var result = palette.look("Badge", "tones.\(props.string("tone") ?? "neutral")")
+        if let fill = props.string("fill") { result.fill = fill == "none" ? nil : fill }
+        if let ink = props.string("ink") { result.ink = ink }
+        return result
     }
 }
 

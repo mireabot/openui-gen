@@ -10,9 +10,11 @@ import type { ParallelTransport } from "../src/research/parallel-research.js";
 import { sportsRoutes } from "../src/routes/sports.js";
 import { askSports, editSports, type SportsDeps } from "../src/sports/ask.js";
 import { DocumentStore, type SportsDocument } from "../src/sports/documents.js";
-import { espnLookup, type EspnTransport } from "../src/sports/espn.js";
+import { espnLookup, withMatchCards, type EspnTransport } from "../src/sports/espn.js";
 import { followUpSchema, rawSchema, toFollowUp, toPlan, type SportsPlan } from "../src/sports/plan.js";
 import { preview, SPORTS_SCREEN } from "../src/sports/screen.js";
+import { placements } from "../src/sports/components.js";
+import { answerSports } from "../src/sports/research.js";
 
 /** The sports pipeline offline: scripted ESPN, Parallel, Sonnet, Opus and writer; no network, no keys. */
 
@@ -79,7 +81,7 @@ try {
   const store = new SnapshotStore(dir);
   const now = new Date("2026-10-25T12:00:00Z");
   const run = (q1: unknown, sourceUrls: string[], id: string) => askSports({ prompt: "How are Chelsea doing?" }, store, {}, id,
-    { plan: async () => plan, espn, parallel, extract: extract(sourceUrls), schema: schema(q1), write, now });
+    { plan: async () => plan, espn, parallel, extract: extract(sourceUrls), schema: schema(q1), write, now, player: async () => null });
 
   // Wiring: ESPN and web answered, the design admitted, the snapshot readable by the program, and q2 shown by the compiler's default.
   const result = await run({ position: 5, points: 13, gap: "2 points behind 4th" }, [PAGE], "check-1");
@@ -130,6 +132,20 @@ const schedule = await espnLookup({ league: "eng.1", feed: "schedule", team: "Ch
 assert.deepEqual((schedule.values.matches as { result: string }[]).map(m => m.result), ["win", "loss", "upcoming"], "oldest first, Chelsea's perspective, fixtures included");
 assert.deepEqual([schedule.values.won, schedule.values.drawn, schedule.values.lost, schedule.values.season], [1, 0, 1, "2026/27"]);
 
+// Every ESPN match also carries MatchCard's contract, so the writer is offered MatchCard without the dataset stage reshaping it:
+// scores as text with the number kept as goals, the loser in secondary ink, the date and kickoff in the request's time zone.
+const carded = withMatchCards(schedule.values, "Premier League", "America/New_York") as { matches: Record<string, any>[] };
+const [played, , upcoming] = carded.matches;
+assert.deepEqual([played!.home.name, played!.home.score, played!.home.goals, played!.home.ink, played!.away.score, played!.away.ink, played!.label, played!.value],
+  ["Everton", "0", 0, "secondary", "2", "primary", "Sat, Oct 17", "FT"], "Everton 0–2 Chelsea, as MatchCard reads it")
+assert.ok(placements({ q: carded }).some(p => p.component.name === "MatchCard" && p.list), "a schedule's matches are offered as @Each MatchCard");
+const researched = await answerSports(toPlan({ subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "" }, questions: [{ text: "Chelsea's results", source: "espn", competition: "league", feed: "schedule", team: "Chelsea", opponent: null, date: null, season: null, searchQueries: [] }] }),
+  "Chelsea's results", new Date("2026-10-25T12:00:00Z"), {}, { espn }, "America/New_York");
+assert.equal((researched.answers.q1!.matches as Record<string, any>[])[0]!.label, "Sat, Oct 17", "research hands the dataset stage MatchCard-ready matches");
+assert.equal(upcoming!.home.score, "", "a fixture has no score yet");
+assert.match(String(upcoming!.value), /^\d{1,2}:\d{2} [AP]M$/, "a fixture's side line is its kickoff in the request's time zone");
+assert.ok(String(played!.details).startsWith("Premier League"), "details lead with the competition");
+
 // No meeting yet this season: last season's, labelled as such, with Chelsea's own stats on the team side.
 const meeting = (await espnLookup({ league: "eng.1", feed: "match", team: "Chelsea", opponent: "Man City" }, espn)).values as Record<string, any>;
 assert.deepEqual([meeting.played, meeting.season, meeting.currentSeason], [true, "2025/26", false]);
@@ -159,8 +175,8 @@ assert.ok(nodes.some(n => n.primitive === "SplitBar" && JSON.stringify(n.props.s
 // defaults to StatsCard, not to TeamDetail, whose contract it extends.
 const emptyValues = { answers: {
   q1: { status: "complete", question: "Clean sheets", title: "Clean sheets", source: "Source: ESPN", board: { title: "Clean sheets", metric: "", entries: [] } },
-  q2: { status: "complete", question: "Palmer", title: "Palmer", source: "Source: ESPN", player: { name: "Cole Palmer", detail: "Chelsea", logo: "", color: "#034694",
-    rating: { value: "7.21", tone: "good", label: "Season rating", caption: "" }, stats: [{ label: "Goals", value: "5" }] } },
+  q2: { status: "complete", question: "Palmer", title: "Palmer", source: "Source: ESPN", player: { kind: "player", name: "Cole Palmer", detail: "Chelsea", logo: "", color: "#034694",
+    rating: { value: "7.21", tone: "good", fill: "tone.good.fg", ink: "surface.screen", label: "Season rating", caption: "" }, stats: [{ label: "Goals", value: "5" }] } },
 } };
 const boardWriter: ProgramWriter = async (_m, emit) => { const text = "sheets = Leaderboard(d.answers.q1.board)\n"; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
 const empty = await compileScreen({ run: "empty", request: "Clean sheets and Palmer", values: emptyValues, required: [{ id: "q1", text: "Clean sheets" }, { id: "q2", text: "Palmer" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, boardWriter);
@@ -191,6 +207,7 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
       "drop the scorers": { keep: ["q1", "q3", "q4"], revise: [], remove: ["q2"], add: [] },
     };
     const deps: SportsDeps = {
+      player: async () => null,
       plan: async () => toPlan({ subject: { ...subject }, questions: [meeting, scorers] }), espn, parallel, extract: extractLogged, schema: async () => completion({ answers: [] }), write: writer, now: new Date("2026-10-25T12:00:00Z"),
       planFollowUp: async context => {
         const raw = followUps[context.prompt];

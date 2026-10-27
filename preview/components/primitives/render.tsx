@@ -386,7 +386,7 @@ function imageUrl(v: unknown): string | null {
 }
 
 /** Loads async over whatever is under it: invisible until loaded, then a 150ms ease-out fade; on error it stays hidden. */
-function FadeImage({ src, className, onState }: { src: string; className?: string; onState?: (s: "ok" | "fail") => void }) {
+function FadeImage({ src, className, style, onState }: { src: string; className?: string; style?: CSSProperties; onState?: (s: "ok" | "fail") => void }) {
   const [state, setState] = useState<"loading" | "ok" | "fail">("loading");
   if (state === "fail") return null;
   return (
@@ -394,7 +394,7 @@ function FadeImage({ src, className, onState }: { src: string; className?: strin
     <img src={src} alt="" draggable={false} decoding="async"
       onLoad={() => { setState("ok"); onState?.("ok"); }} onError={() => { setState("fail"); onState?.("fail"); }}
       className={cn("absolute inset-0 size-full object-contain transition-opacity duration-150 motion-reduce:transition-none", state === "ok" ? "opacity-100" : "opacity-0", className)}
-      style={{ transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }} />
+      style={{ transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)", ...style }} />
   );
 }
 
@@ -453,6 +453,8 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
       return <Bar line={LINE_OF(p("role"))} width={axis === "h" ? "72px" : "40%"} />;
     case "Icon":
       return <Shimmer className="rounded-[4px]" style={{ width: size(24), height: size(24) }} />;
+    case "ColorCell":
+      return <Shimmer className="shrink-0 rounded-[4px]" style={{ aspectRatio: "1", width: p("size") && p("size") !== "fill" ? Number(p("size")) : "100%" }} />;
     case "Image": {
       const [w, h] = String(p("aspect") ?? "4-3").split("-").map(Number);
       return <Shimmer className={cn(p("rounded") ? "rounded-[24px]" : "")} style={{ aspectRatio: `${w ?? 4} / ${h ?? 3}`, width: p("width") ? Number(p("width")) : "100%" }} />;
@@ -470,7 +472,7 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
     case "Chip":
       return <Shimmer className="h-8 w-[72px] rounded-full" />;
     case "Badge":
-      return <Shimmer className="h-[22px] w-14 rounded-full" />;
+      return <Shimmer className="w-[72px]" style={{ height: p("size") === "large" ? p("fill") === "none" ? 34 : 42 : 24, borderRadius: p("size") === "large" ? 8 : 4 }} />;
     case "SegmentedControl":
       return <Shimmer className="h-11 w-full rounded-full" />;
     case "Slider":
@@ -550,15 +552,16 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     case "Stack": {
       if (p("axis") === "wrap") {
         // Flow layout: children keep their own width and wrap into rows, one gap both ways.
-        return <div className="flex min-w-0 flex-row flex-wrap items-center" style={{ gap: Number(p("gap") ?? 0) }}>{kids(n, "children")}</div>;
+        return <div className="flex min-w-0 flex-row flex-wrap items-center" style={{ gap: Number(p("gap") ?? 0), paddingInline: Number(p("paddingX") ?? 0), paddingBlock: Number(p("paddingY") ?? 0) }}>{kids(n, "children")}</div>;
       }
       const h = p("axis") === "h";
       return (
         <div
-          // A column inside a row takes the remaining width (and lets one-line text truncate), like an identity next to a mark.
-          className={cn("flex min-w-0", h ? "flex-row" : "flex-col", !h && axis === "h" && "flex-1")}
+          // A column inside a row takes the remaining width (and lets one-line text truncate), like an identity next to a mark;
+          // an end-aligned column is a trailing column (a date over a status) and keeps its own width.
+          className={cn("flex min-w-0", h ? "flex-row" : "flex-col", !h && axis === "h" && (p("align") === "end" ? "shrink-0" : "flex-1"))}
           style={{
-            gap: Number(p("gap") ?? 0),
+            gap: Number(p("gap") ?? 0), paddingInline: Number(p("paddingX") ?? 0), paddingBlock: Number(p("paddingY") ?? 0),
             alignItems: ({ start: "flex-start", center: "center", end: "flex-end", stretch: "stretch" } as Record<string, string>)[String(p("align"))] ?? (h ? "center" : "stretch"),
             justifyContent: ({ start: "flex-start", center: "center", end: "flex-end", between: "space-between" } as Record<string, string>)[String(p("justify"))],
           }}
@@ -574,7 +577,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       );
     }
     case "Grid":
-      return <div className="grid" style={{ gridTemplateColumns: `repeat(${p("columns")}, minmax(0, 1fr))`, gap: Number(p("gap") ?? 0) }}>{kids(n, "children")}</div>;
+      return <div className="grid" style={{ gridTemplateColumns: `repeat(${p("columns")}, minmax(0, 1fr))`, columnGap: Number(p("gap") ?? 0), rowGap: Number(p("rowGap") ?? p("gap") ?? 0) }}>{kids(n, "children")}</div>;
     case "Rail": {
       const width = Number(p("width") ?? 0);
       return (
@@ -590,7 +593,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
         <div
           className={cn("flex flex-col gap-4 backdrop-blur-xl", p("radius") === "control" ? "rounded-[12px]" : "rounded-[24px]")}
           style={{
-            padding: Number(p("padding") ?? 16),
+            padding: Number(p("padding") ?? 16), gap: Number(p("gap") ?? 16),
             ["--inset" as string]: `${Number(p("padding") ?? 16)}px`,
             ...look(s, `surfaces.${surface}`),
             ...(selected ? { border: `1px solid ${tv(s("selected.border") ?? "surface.brand")}`, boxShadow: effect(s("selected.effect")) } : {}),
@@ -708,15 +711,19 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       );
     case "Avatar": {
       const size = Number(p("size") ?? 40);
+      const disc: CSSProperties = { ...look(s, "monogram"), ...(typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string) ? { background: p("color") as string } : p("tint") ? { background: color(p("tint")) } : {}) };
+      const image = imageUrl(p("image"));
       return (
         <span
           className={cn("relative flex shrink-0 items-center justify-center overflow-hidden font-medium", p("shape") === "rounded" ? "rounded-[8px]" : "rounded-full")}
-          style={{ width: size, height: size, fontSize: size >= 40 ? 16 : 12, ...look(s, "monogram"), ...(typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string) ? { background: p("color") as string } : p("tint") ? { background: color(p("tint")) } : {}) }}
+          style={{ width: size, height: size, fontSize: size >= 40 ? 16 : 12, ...disc }}
         >
           {/* The monogram is the placeholder and the fallback; a logo fades in over it once loaded. */}
           {String(p("name") ?? "?").slice(0, 1)}
+          {/* A headshot stands on the disc's bottom edge over the disc colour, so the shoulders are never cut off and the monogram never shows through. */}
+          {image && p("kind") === "player" && <FadeImage key={image} src={image} className="object-cover object-bottom pt-[12%]" style={{ background: disc.background }} />}
           {/* Logos are full-bleed squares: inset them to the shape's inscribed square so the mask never crops them. */}
-          {imageUrl(p("image")) && <FadeImage key={imageUrl(p("image"))!} src={imageUrl(p("image"))!} className={cn("bg-white", p("shape") === "rounded" ? "p-[10%]" : "p-[15%]")} />}
+          {image && p("kind") !== "player" && <FadeImage key={image} src={image} className={cn("bg-white", p("shape") === "rounded" ? "p-[10%]" : "p-[15%]")} />}
         </span>
       );
     }
@@ -781,10 +788,18 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
           {p("value") != null && <span className="tabular-nums" style={{ color: tv(s("value.ink")), fontWeight: 500 }}>{String(p("value"))}</span>}
         </span>
       );
-        case "Badge": {
+    case "Badge": {
       const tone = String(p("tone") ?? "neutral");
+      const large = p("size") === "large";
+      const plain = p("fill") === "none";
       return (
-        <span className="inline-flex h-6 w-fit items-center gap-1 rounded-[4px] px-2" style={{ ...textStyle("footnote", "medium", undefined), ...look(s, `tones.${tone}`) }}>
+        <span className="inline-flex w-fit shrink-0 items-center gap-1 tabular-nums" style={{
+          ...textStyle(large ? "title1" : "footnote", large ? "semibold" : "medium", undefined), ...look(s, `tones.${tone}`),
+          borderRadius: large ? 8 : 4, paddingInline: plain ? 0 : large ? 12 : 8, paddingBlock: plain ? 0 : large ? 4 : 0,
+          ...(large ? {} : { height: 24 }),
+          ...(p("fill") ? { background: plain ? "transparent" : tv(p("fill")) } : {}),
+          ...(p("ink") ? { color: tv(p("ink")) } : {}),
+        }}>
           {p("icon") != null && <Icon name={p("icon")} size={16} />}
           {String(p("label"))}
         </span>
@@ -829,6 +844,12 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
           <button type="button" className="flex size-11 items-center justify-center rounded-full" style={{ background: tv("surface.control"), color: tv("ink.primary") }}><Icon name="plus" size={16} /></button>
         </div>
       );
+    case "ColorCell": {
+      const override = p("color");
+      const label = String(p("label") ?? "");
+      const size = p("size");
+      return <span role="img" aria-label={label} title={label} className="block shrink-0 rounded-[4px]" style={{ aspectRatio: "1", width: size && size !== "fill" ? Number(size) : "100%", background: typeof override === "string" && /^#[0-9a-f]{6}$/i.test(override) ? override : tv(p("fill")) }} />;
+    }
     case "Progress": {
       const v = Math.max(0, Math.min(100, Number(p("value") ?? 0)));
       const color = p("tone") ? tv(`tone.${p("tone")}.fg`) : tv(s("bar.fill") ?? "surface.brand");

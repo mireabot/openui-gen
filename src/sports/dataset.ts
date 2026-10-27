@@ -6,6 +6,7 @@ import { DATA_FORMATS, dataShape, validateValues, type DataField, type MockValue
 import type { SnapshotDataset } from "../lang/snapshots.js";
 import { COMPONENT_CONTRACTS } from "./components.js";
 import type { SportsPlan } from "./plan.js";
+import type { PlayerProfile } from "./fotmob.js";
 
 /**
  * The schema stage (Opus, SPORTS_MODEL): from every answer it designs the fields the screen needs
@@ -37,7 +38,7 @@ Do not define these fields; the server adds them: ${BASE_FIELDS.join(", ")}.
 valuesJson: one JSON object with exactly those fields. A number or date the data does not have is null. Lists hold at most 20 items.
 title: a short heading for the answer, e.g. "Premier League table", "Chelsea's season".
 
-Sports components. When an answer suits one, shape the answer (a field of it, or a list's items) to its contract exactly, field for field, so the screen can show it with that component: a match → a MatchCard record, a run of results → a FixturesHeatmap record, two clubs compared on a stat → one StatBar record per stat in a list, a ranking → a Leaderboard record, a player's or a club's figures → a StatsCard record. Every contract field is present: text "" and lists [] when the data has nothing. Colours: take each club's "#rrggbb" and logo from the clubs list in the input, matched by club name; "" for a club not in it.
+Sports components. When an answer suits one, shape the answer (a field of it, or a list's items) to its contract exactly, field for field, so the screen can show it with that component: a match → a MatchCard record, a run of results → a FixturesHeatmap record, two clubs compared on a stat → one StatBar record per stat in a list, a ranking → a Leaderboard record, a player's or a club's figures → a StatsCard record. Every contract field is present: text "" and lists [] when the data has nothing. Colours: take each club's "#rrggbb" and logo from the clubs list in the input, matched by club name; "" for a club not in it. Player photos: match the verified players list by full player name and use its imageUrl for a player's logo. Never use the club crest as a player photo or invent an image URL. Keep each player's full name in its record so the server can attach the verified image.
 ${COMPONENT_CONTRACTS}`;
 
 const PATH = /^[a-z][A-Za-z0-9]*(?:\[\])?(?:\.[a-z][A-Za-z0-9]*(?:\[\])?)*$/;
@@ -91,6 +92,20 @@ function rawAnswer(answer: Record<string, MockValue>, id: string): { fields: Dat
   return { fields, values: { ...content, ...Object.fromEntries(BASE_FIELDS.filter(k => k in answer).map(k => [k, answer[k]!])) } };
 }
 
+function scorerAnswer(answer: Record<string, MockValue>, id: string): ReturnType<typeof rawAnswer> {
+  const result = rawAnswer(answer, id);
+  if (Array.isArray(answer.scorers) && !answer.scorers.length) {
+    result.values.scorers = [];
+    result.fields.push(...["name", "espnId", "team"].map(key => ({ path: `answers.${id}.scorers[].${key}`, kind: "text", format: "none" } satisfies DataField)),
+      { path: `answers.${id}.scorers[].goals`, kind: "number", format: "integer" });
+  }
+  const leaderboard = answer.leaderboard;
+  if (leaderboard && typeof leaderboard === "object" && !Array.isArray(leaderboard) && Array.isArray(leaderboard.entries) && !leaderboard.entries.length) {
+    result.fields.push(...["name", "detail", "value", "logo", "color"].map(key => ({ path: `answers.${id}.leaderboard.entries[].${key}`, kind: "text", format: "none" } satisfies DataField)));
+  }
+  return result;
+}
+
 /** Throws when values do not match their fields. */
 const validate = (id: string, fields: readonly DataField[], values: Record<string, MockValue>) =>
   validateValues(dataShape(fields), { answers: { [id]: values } }, "root", true, LIST_MAX);
@@ -113,9 +128,9 @@ export interface DatasetHooks {
 
 /** The dataset the program reads (`d.answers.<id>`), with its fields, ready to snapshot. */
 export async function designDataset(plan: SportsPlan, answers: Record<string, Record<string, MockValue>>, source: SnapshotDataset["source"], now: Date,
-  hooks: DatasetHooks = {}, send?: CompletionSender, clubs: readonly Record<string, MockValue>[] = []): Promise<SnapshotDataset & { readonly designed: readonly string[] }> {
+  hooks: DatasetHooks = {}, send?: CompletionSender, clubs: readonly Record<string, MockValue>[] = [], players: readonly PlayerProfile[] = []): Promise<SnapshotDataset & { readonly designed: readonly string[] }> {
   const model = config().SPORTS_MODEL;
-  const complete = plan.questions.filter(q => answers[q.id]?.status === "complete");
+  const complete = plan.questions.filter(q => answers[q.id]?.status === "complete" && !(q.source === "espn" && q.feed === "scorers"));
   let designs = new Map<string, z.infer<typeof Design>["answers"][number]>();
   if (complete.length) {
     try {
@@ -124,7 +139,7 @@ export async function designDataset(plan: SportsPlan, answers: Record<string, Re
         request: {
           model, maxTokens: 16_000, schema: z.toJSONSchema(Design) as Record<string, unknown>,
           messages: [{ role: "system", content: SCHEMA_SYSTEM }, { role: "user", content: JSON.stringify({
-            subject: plan.subject, today: now.toISOString().slice(0, 10), clubs,
+            subject: plan.subject, today: now.toISOString().slice(0, 10), clubs, players,
             answers: complete.map(q => ({ id: q.id, question: q.text, data: Object.fromEntries(Object.entries(answers[q.id]!).filter(([k]) => !(BASE_FIELDS as readonly string[]).includes(k) || k === "summary")) })),
           }) }],
         },
@@ -149,7 +164,7 @@ export async function designDataset(plan: SportsPlan, answers: Record<string, Re
   for (const q of plan.questions) {
     const answer = answers[q.id]!;
     const design = designs.get(q.id);
-    let shaped = rawAnswer(answer, q.id);
+    let shaped = q.source === "espn" && q.feed === "scorers" && answer.status === "complete" ? scorerAnswer(answer, q.id) : rawAnswer(answer, q.id);
     if (design) {
       try { shaped = checked(q.id, answer, design); designed.push(q.id); }
       catch (error) { hooks.rejected?.(q.id, (error as Error).message.slice(0, 300)); }

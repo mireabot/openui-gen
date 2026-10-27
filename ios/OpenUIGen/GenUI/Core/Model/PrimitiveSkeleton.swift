@@ -71,8 +71,16 @@ public indirect enum SkeletonFrame: Sendable, Equatable {
         }
     }
 
-    case stack(axis: Axis, gap: Double, align: String?, justify: String?, children: [SkeletonFrame])
-    case grid(columns: Int, gap: Double, children: [SkeletonFrame])
+    case stack(
+        axis: Axis,
+        gap: Double,
+        align: String?,
+        justify: String?,
+        children: [SkeletonFrame],
+        paddingX: Double? = nil,
+        paddingY: Double? = nil
+    )
+    case grid(columns: Int, gap: Double, children: [SkeletonFrame], rowGap: Double? = nil)
     /// `width`: each item's width in points (rails of fixed-width cards), nil for their own width.
     case rail(gap: Double, width: Double? = nil, children: [SkeletonFrame])
     case `repeat`(
@@ -119,7 +127,7 @@ extension SkeletonFrame.Radius: Codable {
 extension SkeletonFrame: Codable {
     private enum Key: String, CodingKey {
         case kind, axis, gap, align, justify, children, columns, layout, count, divided, item
-        case height, width, aspect, radius, surface, padding, size
+        case height, width, aspect, radius, surface, padding, size, paddingX, paddingY, rowGap
     }
 
     public init(from decoder: any Decoder) throws {
@@ -132,13 +140,16 @@ extension SkeletonFrame: Codable {
                 gap: container.decode(Double.self, forKey: .gap),
                 align: container.decodeIfPresent(String.self, forKey: .align),
                 justify: container.decodeIfPresent(String.self, forKey: .justify),
-                children: container.decode([Self].self, forKey: .children)
+                children: container.decode([Self].self, forKey: .children),
+                paddingX: container.decodeIfPresent(Double.self, forKey: .paddingX),
+                paddingY: container.decodeIfPresent(Double.self, forKey: .paddingY)
             )
         case "grid":
             self = try .grid(
                 columns: container.decode(Int.self, forKey: .columns),
                 gap: container.decode(Double.self, forKey: .gap),
-                children: container.decode([Self].self, forKey: .children)
+                children: container.decode([Self].self, forKey: .children),
+                rowGap: container.decodeIfPresent(Double.self, forKey: .rowGap)
             )
         case "rail":
             self = try .rail(
@@ -196,18 +207,21 @@ extension SkeletonFrame: Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.container(keyedBy: Key.self)
         switch self {
-        case let .stack(axis, gap, align, justify, children):
+        case let .stack(axis, gap, align, justify, children, paddingX, paddingY):
             try container.encode("stack", forKey: .kind)
             try container.encode(axis, forKey: .axis)
             try container.encode(gap, forKey: .gap)
             try container.encodeIfPresent(align, forKey: .align)
             try container.encodeIfPresent(justify, forKey: .justify)
             try container.encode(children, forKey: .children)
-        case let .grid(columns, gap, children):
+            try container.encodeIfPresent(paddingX, forKey: .paddingX)
+            try container.encodeIfPresent(paddingY, forKey: .paddingY)
+        case let .grid(columns, gap, children, rowGap):
             try container.encode("grid", forKey: .kind)
             try container.encode(columns, forKey: .columns)
             try container.encode(gap, forKey: .gap)
             try container.encode(children, forKey: .children)
+            try container.encodeIfPresent(rowGap, forKey: .rowGap)
         case let .rail(gap, width, children):
             try container.encode("rail", forKey: .kind)
             try container.encode(gap, forKey: .gap)

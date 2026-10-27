@@ -42,31 +42,64 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
   },
   Leaderboard: {
     full: { title: "Top scorers · Premier League", metric: "Goals", entries: [
-      { name: "Erling Haaland", detail: "Forward · Manchester City", value: "11", logo: "https://a.espncdn.com/i/headshots/soccer/players/full/253989.png", color: "#99c5ea" },
-      { name: "João Pedro", detail: "Forward · Chelsea", value: "5", logo: "", color: "#034694" },
-      { name: "Nico O'Reilly", detail: "", value: "4", logo: "", color: "" },
+      { kind: "player", name: "Erling Haaland", detail: "Forward · Manchester City", value: "11", logo: "https://images.fotmob.com/image_resources/playerimages/737066.png", color: "#99c5ea" },
+      { kind: "player", name: "João Pedro", detail: "Forward · Chelsea", value: "5", logo: "", color: "#034694" },
+      { kind: "player", name: "Nico O'Reilly", detail: "", value: "4", logo: "", color: "" },
     ] },
     sparse: { title: "Clean sheets", metric: "", entries: [] },
   },
   FixturesHeatmap: {
-    full: { value: "1.6", caption: "Points per game · Premier League 2026/27", summary: "4 won · 1 drawn · 3 lost", results: [
-      { label: "W", tone: "good" }, { label: "D", tone: "neutral" }, { label: "L", tone: "bad" }, { label: "", tone: "neutral" },
+    full: { value: "1.6", caption: "Points per game · Premier League 2026/27", summary: "4 won · 2 drawn · 3 lost", results: [
+      { label: "Win", fill: "tone.good.fg" }, { label: "Draw", fill: "outline.control" }, { label: "Loss", fill: "tone.bad.fg" },
+      { label: "Win", fill: "tone.good.fg" }, { label: "Loss", fill: "tone.bad.fg" }, { label: "Draw", fill: "outline.control" },
+      { label: "Win", fill: "tone.good.fg" }, { label: "Win", fill: "tone.good.fg" }, { label: "Loss", fill: "tone.bad.fg" },
+      { label: "Upcoming", fill: "surface.filled" }, { label: "Upcoming", fill: "surface.filled" }, { label: "Upcoming", fill: "surface.filled" },
     ] },
     sparse: { value: "0 pts", caption: "", summary: "", results: [] },
   },
   StatsCard: {
     full: {
-      name: "Cole Palmer", detail: "Chelsea · Attacking Midfielder", logo: "https://a.espncdn.com/i/headshots/soccer/players/full/268406.png", color: "#034694",
-      rating: { value: "7.21", tone: "good", label: "Season rating", caption: "Average of 6 matches" },
+      kind: "player", name: "Cole Palmer", detail: "Chelsea · Attacking Midfielder", logo: "https://images.fotmob.com/image_resources/playerimages/1096353.png", color: "#034694",
+      rating: { value: "7.21", tone: "good", fill: "tone.good.fg", ink: "surface.screen", label: "Season rating", caption: "Average of 6 matches" },
       stats: [{ label: "Goals", value: "5" }, { label: "Assists", value: "3" }, { label: "Pass accuracy", value: "86%" }, { label: "Shots", value: "24" }],
     },
-    sparse: { name: "Unknown player", detail: "", logo: "", color: "", rating: { value: "—", tone: "neutral", label: "Season rating", caption: "" }, stats: [] },
+    mid: {
+      kind: "player", name: "Ilan Okafor", detail: "Lakeshore · Midfielder", logo: "", color: "#4477aa",
+      rating: { value: "6.60", tone: "warn", fill: "ink.brand", ink: "surface.screen", label: "Season rating", caption: "Average of 6 matches" },
+      stats: [{ label: "Goals", value: "0" }, { label: "Assists", value: "1" }, { label: "Started", value: "2" }, { label: "Matches", value: "6" }, { label: "Minutes played", value: "298" }, { label: "Key passes", value: "7" }, { label: "Pass accuracy", value: "86%" }, { label: "Tackles", value: "9" }, { label: "Duels won", value: "54%" }],
+    },
+    low: {
+      kind: "club", name: "Low rating", detail: "", logo: "", color: "",
+      rating: { value: "5.80", tone: "bad", fill: "surface.brand", ink: "ink.onBrand", label: "Match rating", caption: "" },
+      stats: [{ label: "Minutes played", value: "90" }],
+    },
+    unavailable: {
+      kind: "player", name: "Noah Petit", detail: "Cedar · Midfielder", logo: "", color: "#557744",
+      rating: { value: "—", tone: "neutral", fill: "none", ink: "ink.secondary", label: "Season rating", caption: "Shows after 90 minutes played" },
+      stats: [{ label: "Matches", value: "1" }, { label: "Minutes played", value: "34" }, { label: "xG", value: "—" }],
+    },
+    sparse: { kind: "player", name: "Unknown player", detail: "", logo: "", color: "", rating: { value: "—", tone: "neutral", fill: "none", ink: "ink.secondary", label: "Season rating", caption: "" }, stats: [] },
   },
 };
 
 const scorers = [{ name: "Erling Haaland", club: "Manchester City", goals: 11, xg: 9.42 }, { name: "João Pedro", club: "Chelsea", goals: 5, xg: 3.1 }];
 /** Programs written in primitives, as the writer does when no component fits. `pick1` is the part. */
 const PROGRAMS: readonly { key: string; values: Record<string, unknown>; statements: readonly string[] }[] = [
+  {
+    key: "ColorCell/fluid",
+    values: { cells: [
+      { label: "Completed", fill: "tone.good.fg" }, { label: "Attention", fill: "tone.warn.fg" },
+      { label: "Failed", fill: "tone.bad.fg" }, { label: "Inactive", fill: "tone.neutral.fg" },
+      { label: "Available", fill: "outline.control" }, { label: "Scheduled", fill: "surface.filled" },
+      { label: "Selected", fill: "surface.brand" },
+    ] },
+    statements: [`pick1 = Grid("7", 4, @Each(d.answers.q1.cells, "c", ColorCell(c.label, c.fill)))`],
+  },
+  {
+    key: "ColorCell/fixed",
+    values: { color: "#6f42c1", empty: "" },
+    statements: [`pick1 = Stack("h", 8, [ColorCell("Project colour", "surface.brand", d.answers.q1.color, "12"), ColorCell("Available", "outline.control", d.answers.q1.empty, "24"), ColorCell("Scheduled", "surface.filled", null, "32")])`],
+  },
   {
     key: "Each/rows",
     values: { scorers },

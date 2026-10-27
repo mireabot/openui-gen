@@ -110,3 +110,99 @@ extension PrimitivePalette: CustomTestStringConvertible {
         "\(theme?.brand ?? "none") \(appearance)"
     }
 }
+
+@MainActor
+struct ColorCellRenderingTests {
+    private let palette = PrimitivePalette.standard
+
+    @Test(arguments: ["12", "24", "32"])
+    func fixedCellsKeepTheirSquareSize(_ size: String) throws {
+        let image = try render(props: ["size": .string(size)], width: 200)
+        #expect(image.width == Int(size))
+        #expect(image.height == Int(size))
+    }
+
+    @Test func fluidCellUsesTheProposedColumnWidth() throws {
+        let image = try render(props: [:], width: 27)
+        #expect(image.width == 27)
+        #expect(image.height == 27)
+    }
+
+    @Test(arguments: ["tone.good.fg", "tone.bad.fg", "outline.control", "surface.filled"])
+    func cellDrawsItsPaletteFill(_ token: String) throws {
+        let actual = try render(props: ["fill": .string(token), "size": .string("24")], width: 100)
+        let expected = try solid(palette.color(token: token))
+        #expect(try center(actual) == center(expected), "\(token)")
+    }
+
+    @Test func dataColourOverridesTheToken() throws {
+        let actual = try render(props: ["color": .string("#6f42c1"), "size": .string("24")], width: 100)
+        let expected = try solid(#require(palette.value("#6f42c1")))
+        #expect(try center(actual) == center(expected))
+    }
+
+    @Test(arguments: ["", "invalid", "#fff"])
+    func invalidDataColourFallsBackToTheToken(_ color: String) throws {
+        let actual = try render(props: ["color": .string(color), "size": .string("24")], width: 100)
+        let expected = try solid(palette.color(token: "surface.brand"))
+        #expect(try center(actual) == center(expected))
+    }
+
+    private func render(props: [String: PValue], width: CGFloat) throws -> CGImage {
+        let node = PNode(
+            id: "cell", primitive: "ColorCell",
+            props: ["label": .string("Status"), "fill": .string("surface.brand")].merging(props) { _, new in new },
+            children: [:], line: 1, itemOf: nil
+        )
+        let renderer = ImageRenderer(content: ColorCellPrimitive(props: PrimitiveProps(node: node, scope: DataScope(data: .null)))
+            .environment(\.primitivePalette, palette))
+        renderer.scale = 1
+        renderer.proposedSize = ProposedViewSize(width: width, height: nil)
+        return try #require(renderer.cgImage)
+    }
+
+    private func solid(_ color: Color) throws -> CGImage {
+        let renderer = ImageRenderer(content: Rectangle().fill(color).frame(width: 24, height: 24))
+        renderer.scale = 1
+        return try #require(renderer.cgImage)
+    }
+
+    private func center(_ image: CGImage) throws -> [UInt8] {
+        let data = try #require(image.dataProvider?.data)
+        let pointer = try #require(CFDataGetBytePtr(data))
+        let count = image.bitsPerPixel / 8
+        let offset = image.height / 2 * image.bytesPerRow + image.width / 2 * count
+        return (0 ..< count).map { pointer[offset + $0] }
+    }
+}
+
+@MainActor
+struct BadgeRenderingTests {
+    @Test func regularBadgePreservesItsExistingHeight() throws {
+        #expect(try render([:]).height == 24)
+    }
+
+    @Test func largeBadgeUsesTheHeroProportions() throws {
+        let image = try render(["size": .string("large"), "fill": .string("tone.good.fg"), "ink": .string("surface.screen")])
+        #expect(image.height == 42)
+        #expect(image.width > 70)
+    }
+
+    @Test func plainLargeBadgeHasNoPillPadding() throws {
+        let image = try render(["size": .string("large"), "fill": .string("none"), "ink": .string("ink.secondary"), "label": .string("—")])
+        #expect(image.height == 34)
+        #expect(image.width < 40)
+    }
+
+    private func render(_ properties: [String: PValue]) throws -> CGImage {
+        let node = PNode(
+            id: "badge", primitive: "Badge",
+            props: ["label": .string("7.21"), "tone": .string("good")].merging(properties) { _, new in new },
+            children: [:], line: 1, itemOf: nil
+        )
+        let renderer = ImageRenderer(content: BadgePrimitive(props: PrimitiveProps(node: node, scope: DataScope(data: .null)))
+            .environment(\.primitivePalette, PrimitivePalette.standard))
+        renderer.scale = 1
+        return try #require(renderer.cgImage)
+    }
+}

@@ -14,6 +14,8 @@ import { clubDirectory, clubRecord, isTeam } from "./espn.js";
 import { planFollowUp, planSports, type FollowUpContext, type FollowUpPlan, type SportsPlan } from "./plan.js";
 import { answerSports, type ResearchDeps } from "./research.js";
 import { SPORTS_SCREEN } from "./screen.js";
+import { lookupPlayer, type PlayerLookup, type PlayerProfile } from "./fotmob.js";
+import { componentPlayerQueries, createPlayerResolver, populatePlayerImages, rawPlayerQueries, savedPlayerProfiles } from "./player-images.js";
 
 /**
  * The sports pipeline: Haiku understands the request and plans the questions; every question is
@@ -22,8 +24,9 @@ import { SPORTS_SCREEN } from "./screen.js";
  * the saved questions, answers only the revised and added ones, and rewrites only their parts.
  */
 
-export interface SportsRequest { readonly prompt: string }
-export interface FollowUpRequest { readonly prompt: string; readonly targets?: readonly string[] | undefined }
+/** `timeZone` (IANA, e.g. "America/New_York") sets the clock kickoff times are shown in. */
+export interface SportsRequest { readonly prompt: string; readonly timeZone?: string | undefined }
+export interface FollowUpRequest extends SportsRequest { readonly targets?: readonly string[] | undefined }
 export interface SportsHooks {
   readonly progress?: (value: RunProgress) => void;
   readonly usage?: (value: UsageReport) => void;
@@ -40,6 +43,7 @@ export interface SportsDeps extends ResearchDeps {
   readonly schema?: CompletionSender;
   readonly write?: ProgramWriter;
   readonly now?: Date;
+  readonly player?: PlayerLookup;
 }
 export interface SportsResult {
   readonly run: string;
@@ -72,7 +76,7 @@ export async function askSports(request: SportsRequest, store: SnapshotStore, ho
 
   const clubs = await clubsOf(plan, deps);
   hooks.content?.({ stage: "summarize", id: "clubs", label: "Clubs (ESPN)", format: "json", data: clubs });
-  const dataset = await answer(plan, plan.questions, request.prompt, clubs, now, hooks, deps, clock);
+  const dataset = await answer(plan, plan.questions, request, clubs, now, hooks, deps, clock);
   const snapshot = await store.put(run, dataset, "sports_dataset");
   hooks.data?.(snapshot);
   return compose({ run, request: request.prompt, values: dataset.values, required: plan.questions.map(q => ({ id: q.id, text: q.text })), base: [], editable: new Set(), explicitLayout: null },
@@ -98,18 +102,20 @@ export async function editSports(saved: SportsDocument, request: FollowUpRequest
   hooks.progress?.({ stage: "summarize", status: "completed", detail: [...followUp.questions.map(q => `${q.id} ${q.change}`), ...followUp.removed.map(id => `${id} removed`)].join(" · ") });
 
   const plan: SportsPlan = { subject: followUp.subject, questions: followUp.questions.map(({ change: _change, ...q }) => q) };
-  const previous = saved.snapshot.result as { answers: Answers; clubs?: Record<string, MockValue>[] };
+  const previous = saved.snapshot.result as { answers: Answers; clubs?: Record<string, MockValue>[]; players?: unknown };
   // Saved clubs keep their order, so kept parts reading d.clubs[i] still read the same club.
   const savedClubs = previous.clubs ?? [];
   const clubs = [...savedClubs, ...(await clubsOf(plan, deps)).filter(c => !savedClubs.some(s => s.id === c.id))];
   hooks.content?.({ stage: "summarize", id: "clubs", label: "Clubs (ESPN)", format: "json", data: clubs });
-  const fresh = changed.length ? await answer(plan, changed, request.prompt, clubs, now, hooks, deps, clock) : null;
+  const savedPlayers = savedPlayerProfiles(previous.players);
+  const fresh = changed.length ? await answer(plan, changed, request, clubs, now, hooks, deps, clock, savedPlayers) : null;
+  const players = fresh ? savedPlayerProfiles(fresh.values.players) : savedPlayers;
   const freshAnswers = (fresh?.values.answers ?? {}) as Answers;
   const answers: Answers = Object.fromEntries(plan.questions.map(q => [q.id, kept.has(q.id) ? previous.answers[q.id]! : freshAnswers[q.id]!]));
   const answerFields = (fields: readonly DataField[], keep: (id: string) => boolean) => fields.filter(f => f.path.startsWith("answers.") && keep(f.path.split(".")[1]!));
   const dataset: SnapshotDataset = {
-    values: { answers, ...(clubs.length ? { clubs } : {}) },
-    fields: [...answerFields(saved.snapshot.fields, id => kept.has(id)), ...answerFields(fresh?.fields ?? [], id => !kept.has(id)), ...(clubs.length ? inferFields(clubs, "clubs") : [])],
+    values: { answers, ...(clubs.length ? { clubs } : {}), ...(players.length ? { players } : {}) },
+    fields: [...answerFields(saved.snapshot.fields, id => kept.has(id)), ...answerFields(fresh?.fields ?? [], id => !kept.has(id)), ...(clubs.length ? inferFields(clubs, "clubs") : []), ...(players.length ? inferFields(players.map(player => ({ ...player })), "players") : [])],
     asOf: now.toISOString(), source: sourceOf(plan, answers),
   };
   const snapshot = await store.put(run, dataset, "sports_dataset");
@@ -144,29 +150,35 @@ const sourceOf = (plan: SportsPlan, answers: Answers): SnapshotDataset["source"]
 };
 
 /** Research and dataset design for `questions`, all at once. */
-async function answer(plan: SportsPlan, questions: SportsPlan["questions"], prompt: string, clubs: readonly Record<string, MockValue>[], now: Date, hooks: SportsHooks, deps: SportsDeps, clock: Clock) {
+async function answer(plan: SportsPlan, questions: SportsPlan["questions"], request: SportsRequest, clubs: readonly Record<string, MockValue>[], now: Date, hooks: SportsHooks, deps: SportsDeps, clock: Clock, savedPlayers: readonly PlayerProfile[] = []) {
   const cfg = config();
   const subset: SportsPlan = { subject: plan.subject, questions };
   hooks.progress?.({ stage: "search", status: "started", detail: `Answering ${questions.length} questions in parallel` });
-  const answered = await answerSports(subset, prompt, now, {
+  const answered = await answerSports(subset, request.prompt, now, {
     progress: detail => hooks.progress?.({ stage: "search", status: "working", detail }),
     // Parallel search is reported like stocks did: engine llm, model parallel/search.
     usage: entry => hooks.usage?.({ ...entry, engine: "llm" }),
     finding: (id, value) => hooks.content?.({ stage: "search", id: `finding-${id}`, label: `Answer ${id}`, format: "json", data: value }),
-  }, deps);
+  }, deps, request.timeZone);
   clock.mark("search");
   const statuses = Object.entries(answered.answers).map(([id, a]) => `${id} ${String(a.status)}`).join(" · ");
   hooks.progress?.({ stage: "search", status: "completed", detail: statuses, ...(answered.sources.length ? { sources: answered.sources.slice(0, 12) } : {}) });
 
   hooks.progress?.({ stage: "data", status: "started", detail: "Designing the dataset" });
+  const resolvePlayers = createPlayerResolver(deps.player ?? lookupPlayer, savedPlayers);
+  const rawQueries = rawPlayerQueries(subset, answered.answers);
+  const initialPlayers = await resolvePlayers(rawQueries);
   const dataset = await designDataset(subset, answered.answers, sourceOf(subset, answered.answers), now, {
     usage: llmUsage(hooks, "data"),
     rejected: (id, problem) => hooks.content?.({ stage: "data", id: `rejected-${id}`, label: `Design rejected for ${id}; raw answer kept`, format: "text", data: problem }),
-  }, deps.schema, clubs);
+  }, deps.schema, clubs, initialPlayers);
+  const componentQueries = componentPlayerQueries(dataset.values.answers, clubs);
+  const players = await resolvePlayers(componentQueries);
+  const enriched = populatePlayerImages(dataset, players, rawQueries);
   clock.mark("data");
-  hooks.content?.({ stage: "data", id: "dataset", label: `Dataset (${cfg.SPORTS_MODEL})`, format: "json", data: { fields: dataset.fields, values: dataset.values } });
-  hooks.progress?.({ stage: "data", status: "completed", detail: `${dataset.fields.length} fields · designed ${dataset.designed.join(", ") || "none"}` });
-  return dataset;
+  hooks.content?.({ stage: "data", id: "dataset", label: `Dataset (${cfg.SPORTS_MODEL})`, format: "json", data: { fields: enriched.fields, values: enriched.values } });
+  hooks.progress?.({ stage: "data", status: "completed", detail: `${enriched.fields.length} fields · designed ${dataset.designed.join(", ") || "none"}` });
+  return enriched;
 }
 
 /** The writer composes; the compiler admits, covers and falls back. */

@@ -7,22 +7,33 @@ import SwiftUI
 struct StackPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitiveHiddenIDs) private var hidden
+    @Environment(\.primitiveStackAxis) private var parentAxis
 
     var body: some View {
         let ids = props.childReferences("children").filter { !hidden.contains($0.rawID) }
-        if props.string("axis") == "wrap" {
-            // Children keep their own width and flow into rows, one gap both ways.
-            FlowLayout(spacing: gap) {
-                ForEach(ids, id: \.self) { PrimitiveNodeView(id: $0) }
-            }
-            .environment(\.primitiveStackAxis, .horizontal)
-        } else if props.string("axis") == "h" {
-            horizontal(ids)
+        Group {
+            if props.string("axis") == "wrap" {
+                // Children keep their own width and flow into rows, one gap both ways.
+                FlowLayout(spacing: gap) {
+                    ForEach(ids, id: \.self) { PrimitiveNodeView(id: $0) }
+                }
                 .environment(\.primitiveStackAxis, .horizontal)
-        } else {
-            vertical(ids)
-                .environment(\.primitiveStackAxis, .vertical)
+            } else if props.string("axis") == "h" {
+                horizontal(ids)
+                    .environment(\.primitiveStackAxis, .horizontal)
+            } else if parentAxis == .horizontal, props.string("align") == "end" {
+                // A trailing column in a row (a date over a status) keeps its own width, so the
+                // column beside it gets the rest and its text wraps instead of truncating.
+                vertical(ids)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .environment(\.primitiveStackAxis, .vertical)
+            } else {
+                vertical(ids)
+                    .environment(\.primitiveStackAxis, .vertical)
+            }
         }
+        .padding(.horizontal, props.cgFloat("paddingX") ?? 0)
+        .padding(.vertical, props.cgFloat("paddingY") ?? 0)
     }
 
     private var gap: CGFloat {
@@ -107,7 +118,11 @@ struct GridPrimitive: View {
     let props: PrimitiveProps
 
     var body: some View {
-        ColumnsLayout(columns: props.int("columns") ?? 2, spacing: props.cgFloat("gap") ?? 0) {
+        ColumnsLayout(
+            columns: props.int("columns") ?? 2,
+            spacing: props.cgFloat("gap") ?? 0,
+            rowSpacing: props.cgFloat("rowGap")
+        ) {
             ForEach(props.childReferences("children"), id: \.self) { id in
                 PrimitiveNodeView(id: id)
                     .frame(maxWidth: .infinity, alignment: .topLeading)
@@ -187,7 +202,7 @@ struct CardPrimitive: View {
 
     var body: some View {
         let padding = props.cgFloat("padding") ?? PrimitiveMetrics.containerPadding
-        VStack(alignment: .leading, spacing: PrimitiveMetrics.containerPadding) {
+        VStack(alignment: .leading, spacing: props.cgFloat("gap") ?? PrimitiveMetrics.containerPadding) {
             ForEach(props.childReferences("children"), id: \.self) { id in
                 PrimitiveNodeView(id: id)
                     .frame(maxWidth: .infinity, alignment: .leading)

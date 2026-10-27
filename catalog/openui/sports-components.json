@@ -180,6 +180,11 @@
           "note": "player or club"
         },
         {
+          "path": "entries[].kind",
+          "kind": "text",
+          "note": "\"player\" or \"club\": a player's photo stands on the disc's bottom edge, a crest is inset"
+        },
+        {
           "path": "entries[].detail",
           "kind": "text",
           "note": "position · club for a player, league for a club, or \"\""
@@ -226,12 +231,12 @@
         {
           "path": "results[].label",
           "kind": "text",
-          "note": "\"W\", \"D\" or \"L\"; \"\" for a fixture to come"
+          "note": "spoken result, e.g. \"Win\", \"Draw\", \"Loss\" or \"Upcoming\"; not visible in the square"
         },
         {
-          "path": "results[].tone",
-          "kind": "tone",
-          "note": "win \"good\", loss \"bad\", draw or to come \"neutral\""
+          "path": "results[].fill",
+          "kind": "text",
+          "note": "win \"tone.good.fg\", loss \"tone.bad.fg\", draw \"outline.control\", upcoming \"surface.filled\""
         },
         {
           "path": "summary",
@@ -251,6 +256,11 @@
           "path": "name",
           "kind": "text",
           "note": "player or club"
+        },
+        {
+          "path": "kind",
+          "kind": "text",
+          "note": "\"player\" or \"club\": a player's photo stands on the disc's bottom edge, a crest is inset"
         },
         {
           "path": "detail",
@@ -276,6 +286,16 @@
           "path": "rating.tone",
           "kind": "tone",
           "note": "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\", none \"neutral\""
+        },
+        {
+          "path": "rating.fill",
+          "kind": "text",
+          "note": "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand; unavailable: none"
+        },
+        {
+          "path": "rating.ink",
+          "kind": "text",
+          "note": "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand; unavailable: ink.secondary"
         },
         {
           "path": "rating.label",

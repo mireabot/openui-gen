@@ -4,7 +4,7 @@ import { each, ui, type Node } from "../lang/program.js";
  * The Sports component index: the components designed in ui-canvas (Sports Components, Kino) as
  * server templates. Each entry says what it is for, when to use it, and the exact data contract it
  * reads. The schema stage shapes answers to these contracts, the writer calls them by name, and they
- * expand to the 42 primitives, so every client renders them without knowing they exist.
+ * expand to primitives, so every client renders them without knowing they exist.
  *
  * Contracts are strict: every field is present on every record (text may be "", a list may be
  * empty). A template expands without seeing values, and the compiler rejects a missing path.
@@ -45,11 +45,12 @@ const team = (prefix: string): ContractField[] => [
 ];
 
 /** A club's mark: its logo, or its initial on the club colour. */
-const mark = (t: AnyRef, size: 20 | 40) => ui.Avatar({ name: t.name, size, image: t.logo, color: t.color });
+/** A club's mark, or a player's photo when `kind` (a literal or a data field) is "player". */
+const mark = (t: AnyRef, size: 20 | 40, kind: AnyRef = "club") => ui.Avatar({ name: t.name, size, image: t.logo, color: t.color, kind });
 
-/** A club on one line: logo or monogram, name, and an optional trailing node. */
+/** A club's row: logo or monogram, its name on up to two leading lines, and an optional trailing node. */
 const teamLine = (t: AnyRef, trailing?: Node) => ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-  ui.Stack({ axis: "h", gap: 12, align: "center", children: [mark(t, 20), ui.Text({ content: t.name, role: "body", weight: "medium", lines: 1 })] }),
+  ui.Stack({ axis: "h", gap: 12, align: "center", children: [mark(t, 20), ui.Text({ content: t.name, role: "body", weight: "medium", lines: 2, align: "start" })] }),
   ...(trailing ? [trailing] : []),
 ] });
 
@@ -77,7 +78,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
           ui.Text({ content: m.value, role: "headline", weight: "semibold", align: "end" }),
         ] }),
       ] }),
-      ui.Text({ content: m.details, role: "footnote", ink: "secondary", lines: 1 }),
+      ui.Text({ content: m.details, role: "footnote", ink: "secondary", lines: 2, align: "start" }),
     ] }),
   },
   {
@@ -124,6 +125,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("metric", "text", "the one metric every value is, e.g. \"Goals\""),
       f("entries", "list", "in rank order, at most 10"),
       f("entries[].name", "text", "player or club"),
+      f("entries[].kind", "text", "\"player\" or \"club\": a player's photo stands on the disc's bottom edge, a crest is inset"),
       f("entries[].detail", "text", "position · club for a player, league for a club, or \"\""),
       f("entries[].value", "text", "the metric's value as shown, e.g. \"9\""),
       f("entries[].logo", "text", "logo or photo URL, or \"\""),
@@ -136,7 +138,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
         ui.Text({ content: b.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.Stack({ axis: "v", gap: 12, divided: true, children: each(b.entries, "e", (e: AnyRef) => ui.Row({
-        title: e.name, subtitle: e.detail, leading: mark(e, 40),
+        title: e.name, subtitle: e.detail, leading: mark(e, 40, e.kind),
         trailing: ui.Text({ content: e.value, role: "body", weight: "semibold" }),
       })) }),
     ] }),
@@ -150,17 +152,17 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("value", "text", "the headline figure, e.g. points per game \"1.6\" or \"13 pts\""),
       f("caption", "text", "what the figure is, e.g. \"Points per game · Premier League 2026/27\""),
       f("results", "list", "one per fixture, oldest first"),
-      f("results[].label", "text", "\"W\", \"D\" or \"L\"; \"\" for a fixture to come"),
-      f("results[].tone", "tone", "win \"good\", loss \"bad\", draw or to come \"neutral\""),
+      f("results[].label", "text", "spoken result, e.g. \"Win\", \"Draw\", \"Loss\" or \"Upcoming\"; not visible in the square"),
+      f("results[].fill", "text", "win \"tone.good.fg\", loss \"tone.bad.fg\", draw \"outline.control\", upcoming \"surface.filled\""),
       f("summary", "text", "e.g. \"4 won · 1 drawn · 3 lost\""),
     ],
     params: [],
     build: h => ui.Card({ children: [
-      ui.Stack({ axis: "v", gap: 4, align: "center", children: [
+      ui.Stack({ axis: "v", gap: 8, align: "center", children: [
         ui.Text({ content: h.value, role: "display", weight: "semibold", align: "center" }),
         ui.Text({ content: h.caption, role: "body", ink: "secondary", align: "center" }),
       ] }),
-      ui.Stack({ axis: "wrap", gap: 4, justify: "center", children: each(h.results, "r", (r: AnyRef) => ui.Badge({ label: r.label, tone: r.tone })) }),
+      ui.Grid({ columns: "10", gap: 4, children: each(h.results, "r", (r: AnyRef) => ui.ColorCell({ label: r.label, fill: r.fill })) }),
       ui.Text({ content: h.summary, role: "footnote", ink: "secondary", align: "center" }),
     ] }),
   },
@@ -171,11 +173,14 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     source: "ui-canvas sports-components/stats-card (from stats-grid/rating-hero)",
     contract: [
       f("name", "text", "player or club"),
+      f("kind", "text", "\"player\" or \"club\": a player's photo stands on the disc's bottom edge, a crest is inset"),
       f("detail", "text", "club · position for a player, league · season for a club"),
       f("logo", "text", "photo or logo URL, or \"\""),
       f("color", "color", "the club's colour \"#rrggbb\" (a player's club), or \"\""),
       f("rating.value", "text", "rating as shown, e.g. \"6.60\", or \"—\" when there is none"),
       f("rating.tone", "tone", "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\", none \"neutral\""),
+      f("rating.fill", "text", "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand; unavailable: none"),
+      f("rating.ink", "text", "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand; unavailable: ink.secondary"),
       f("rating.label", "text", "e.g. \"Season rating\""),
       f("rating.caption", "text", "what it averages, e.g. \"Average of 6 matches\", or \"\""),
       f("stats", "list", "any number, in reading order"),
@@ -183,19 +188,29 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("stats[].value", "text", "as shown, e.g. \"5\" or \"86%\""),
     ],
     params: [],
-    build: c => ui.Card({ children: [
-      ui.Row({ title: c.name, subtitle: c.detail, leading: mark(c, 40) }),
-      ui.Stack({ axis: "h", gap: 16, align: "center", children: [
-        ui.Badge({ label: c.rating.value, tone: c.rating.tone }),
+    build: c => ui.Card({ padding: 0, gap: 0, children: [
+      ui.Stack({ axis: "h", gap: 12, align: "center", paddingX: 16, paddingY: 12, children: [
+        mark(c, 40, c.kind),
+        ui.Stack({ axis: "v", gap: 0, children: [
+          ui.Text({ content: c.name, role: "headline", weight: "semibold", lines: 1 }),
+          ui.Text({ content: c.detail, role: "footnote", ink: "secondary", lines: 1 }),
+        ] }),
+      ] }),
+      ui.Divider({}),
+      ui.Stack({ axis: "h", gap: 16, align: "center", paddingX: 16, paddingY: 24, children: [
+        ui.Badge({ label: c.rating.value, tone: c.rating.tone, size: "large", fill: c.rating.fill, ink: c.rating.ink }),
         ui.Stack({ axis: "v", gap: 0, children: [
           ui.Text({ content: c.rating.label, role: "body", weight: "medium" }),
           ui.Text({ content: c.rating.caption, role: "footnote", ink: "secondary" }),
         ] }),
       ] }),
-      ui.Grid({ columns: "3", gap: 16, children: each(c.stats, "s", (s: AnyRef) => ui.Stack({ axis: "v", gap: 4, align: "center", children: [
-        ui.Text({ content: s.value, role: "headline", weight: "semibold", align: "center" }),
-        ui.Text({ content: s.label, role: "footnote", ink: "secondary", align: "center" }),
-      ] })) }),
+      ui.Divider({}),
+      ui.Stack({ axis: "v", gap: 0, paddingX: 16, paddingY: 24, children: [
+        ui.Grid({ columns: "3", gap: 16, rowGap: 24, children: each(c.stats, "s", (s: AnyRef) => ui.Stack({ axis: "v", gap: 4, align: "center", children: [
+          ui.Text({ content: s.value, role: "headline", weight: "semibold", align: "center" }),
+          ui.Text({ content: s.label, role: "footnote", ink: "secondary", align: "center" }),
+        ] })) }),
+      ] }),
     ] }),
   },
 ];

@@ -77,6 +77,17 @@ const tree = programTree(program, values);
 assert.deepEqual(tree.nodes.filter((node) => node.primitive === "Number").map((node) => node.props.value), [21, 18, 17], "numeric data resolves through the tree");
 assert.ok(skeletonOf(tree).blocks.length >= 1, "the program has a skeleton");
 
+const paddedSkeleton = skeletonOf(programTree(`root = Screen([Stack("v", 0, [Grid("2", 16, [Text("A", "body"), Text("B", "body"), Text("C", "body")], 24)], null, null, null, null, 16, 12)])`, {}));
+const paddedFrame = paddedSkeleton.blocks[0];
+assert.ok(paddedFrame?.kind === "stack", "a padded top stack remains a container");
+assert.equal(paddedFrame.paddingX, 16);
+assert.equal(paddedFrame.paddingY, 12);
+const paddedGrid = paddedFrame.children[0];
+assert.ok(paddedGrid?.kind === "grid");
+assert.equal(paddedGrid.gap, 16);
+assert.equal(paddedGrid.rowGap, 24);
+assert.deepEqual(JSON.parse(JSON.stringify(paddedSkeleton)), paddedSkeleton, "layout survives the skeleton wire format");
+
 const errorsOf = (src: string) => PARSER.parse(`root = Screen([s])\n${src}`).meta.errors.map((e) => `${e.code} ${e.component}${e.path}`);
 assert.deepEqual(errorsOf(`s = Spacer(5)`), ["type-mismatch Spacer/size"], "tokens are closed");
 assert.deepEqual(errorsOf(`s = Text("x", "huge")`), ["type-mismatch Text/role"]);

@@ -25,8 +25,8 @@ export function Bar({ line, width }: { line: number; width: string }) {
 // ---------------------------------------------------------------- server frames
 
 export type SkeletonFrame =
-  | { readonly kind: "stack"; readonly axis: "v" | "h"; readonly gap: number; readonly align?: string; readonly justify?: string; readonly children: readonly SkeletonFrame[] }
-  | { readonly kind: "grid"; readonly columns: number; readonly gap: number; readonly children: readonly SkeletonFrame[] }
+  | { readonly kind: "stack"; readonly axis: "v" | "h"; readonly gap: number; readonly align?: string; readonly justify?: string; readonly paddingX?: number; readonly paddingY?: number; readonly children: readonly SkeletonFrame[] }
+  | { readonly kind: "grid"; readonly columns: number; readonly gap: number; readonly rowGap?: number; readonly children: readonly SkeletonFrame[] }
   | { readonly kind: "rail"; readonly gap: number; readonly children: readonly SkeletonFrame[] }
   | { readonly kind: "repeat"; readonly layout: "stack" | "rail" | "grid" | "wrap"; readonly count: number; readonly gap: number; readonly columns?: number; readonly divided?: boolean; readonly item: SkeletonFrame }
   | { readonly kind: "box"; readonly height?: number; readonly width?: number; readonly aspect?: number; readonly radius: number | "pill"; readonly surface?: string; readonly padding?: number; readonly children?: readonly SkeletonFrame[] }
@@ -47,12 +47,12 @@ export function Frame({ f, inRow = false }: { f: SkeletonFrame; inRow?: boolean 
     case "stack":
       return (
         <div className={cn("flex min-w-0", f.axis === "h" ? "flex-row" : "flex-col", f.axis === "v" && inRow && "flex-1")}
-          style={{ gap: f.gap, alignItems: ALIGN[f.align ?? ""] ?? (f.axis === "h" ? "center" : "stretch"), justifyContent: JUSTIFY[f.justify ?? ""] }}>
+          style={{ gap: f.gap, paddingInline: f.paddingX ?? 0, paddingBlock: f.paddingY ?? 0, alignItems: ALIGN[f.align ?? ""] ?? (f.axis === "h" ? "center" : "stretch"), justifyContent: JUSTIFY[f.justify ?? ""] }}>
           {f.children.map((c, i) => <Frame key={i} f={c} inRow={f.axis === "h"} />)}
         </div>
       );
     case "grid":
-      return <div className="grid" style={{ gridTemplateColumns: `repeat(${f.columns}, minmax(0, 1fr))`, gap: f.gap }}>{f.children.map((c, i) => <Frame key={i} f={c} />)}</div>;
+      return <div className="grid" style={{ gridTemplateColumns: `repeat(${f.columns}, minmax(0, 1fr))`, columnGap: f.gap, rowGap: f.rowGap ?? f.gap }}>{f.children.map((c, i) => <Frame key={i} f={c} />)}</div>;
     case "rail":
       return <div className="-mx-6 flex overflow-hidden px-6 py-1" style={{ gap: f.gap }}>{f.children.map((c, i) => <div key={i} className="w-[60%] shrink-0"><Frame f={c} /></div>)}</div>;
     case "repeat": {
