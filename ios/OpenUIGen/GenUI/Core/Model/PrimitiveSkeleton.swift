@@ -18,6 +18,13 @@ public struct PrimitiveSkeleton: Sendable, Equatable, Codable {
         self.inset = inset
         self.blocks = blocks
     }
+
+    /// One finished part replaces one frame. The last frame stays until the stream ends, because
+    /// the writer may have more parts than the plan had questions.
+    public func pendingBlocks(afterShowing shown: Int) -> [SkeletonFrame] {
+        let rest = Array(blocks.dropFirst(shown))
+        return rest.isEmpty ? Array(blocks.suffix(1)) : rest
+    }
 }
 
 /// One frame of a skeleton: a layout container, or a shape to shimmer.

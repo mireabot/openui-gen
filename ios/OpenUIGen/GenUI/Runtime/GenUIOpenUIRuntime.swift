@@ -84,6 +84,10 @@ public final class OpenUISession {
     public private(set) var document: OpenUIDocumentVersion?
     public private(set) var issues: [PValue] = []
     public private(set) var startedAt = Date.now
+    /// When the run stopped, so its timer holds; nil while it runs.
+    public private(set) var finishedAt: Date?
+    /// Dollars spent so far in this run, per pipeline stage.
+    public private(set) var stageCosts: [String: Double] = [:]
 
     @ObservationIgnored private let service: any OpenUIStreaming
     @ObservationIgnored private let compiler: OpenUICompiler
@@ -104,7 +108,20 @@ public final class OpenUISession {
         self.compiler = try compiler ?? OpenUICompiler()
     }
 
-    public var hasContent: Bool { !root.children.isEmpty }
+    /// Whether a finished part is on screen: the opening program's empty `Screen` has none.
+    public var hasContent: Bool { shownBlocks > 0 }
+
+    public var totalCost: Double { stageCosts.values.reduce(0, +) }
+
+    /// Skeleton frames for the parts still being written, under the finished ones.
+    public var pendingBlocks: [SkeletonFrame] {
+        guard phase == .loading, let skeleton else { return [] }
+        return skeleton.pendingBlocks(afterShowing: shownBlocks)
+    }
+
+    private var shownBlocks: Int {
+        root.children.reduce(0) { $0 + ($1.kind == "Screen" ? $1.slots["children"]?.children.count ?? 0 : 1) }
+    }
 
     /// The first message starts a document; later messages are follow-ups on it.
     public func ask(_ prompt: String, targets: [String]? = nil) async throws {
@@ -154,6 +171,7 @@ public final class OpenUISession {
                 trace(event)
                 switch event {
                 case let .activity(value): record(value)
+                case let .usage(value): recordCost(value)
                 case let .data(dataset):
                     datasets.append(dataset)
                     if case let .string(run)? = dataset.args["run"], documentKey == "draft" { documentKey = run }
@@ -174,7 +192,7 @@ public final class OpenUISession {
             throw OpenUIError.incompleteStream
         } catch {
             trace("failed", error)
-            if hasContent { finish() } else { phase = .idle }
+            if hasContent { finish() } else { phase = .idle; finishedAt = .now }
             throw error
         }
     }
@@ -193,6 +211,7 @@ public final class OpenUISession {
                 trace(event)
                 switch event {
                 case let .activity(value): record(value)
+                case let .usage(value): recordCost(value)
                 case let .data(dataset): stagedSeeds.append(dataset)
                 case let .openui(text, _): stagedProgram = text
                 case let .issue(value): issues.append(value)
@@ -245,11 +264,19 @@ public final class OpenUISession {
         activities = []
         issues = []
         startedAt = .now
+        finishedAt = nil
+        stageCosts = [:]
     }
 
     private func finish() {
         phase = .ready
         skeleton = nil
+        finishedAt = .now
+    }
+
+    private func recordCost(_ value: PValue) {
+        guard let stage = value["stage"]?.stringValue, let cost = value["costUSD"]?.numberValue else { return }
+        stageCosts[stage, default: 0] += cost
     }
 
     private func record(_ value: PValue) {
@@ -278,6 +305,7 @@ public final class OpenUISession {
     private func trace(_ event: OpenUIStreamEvent) {
         switch event {
         case let .activity(value): trace("activity", value)
+        case let .usage(value): trace("usage", value)
         case let .data(dataset): trace("data", dataset)
         case let .skeleton(value): trace("skeleton", value)
         case let .openui(text, replace): append(replace ? "openui (replace)" : "openui", text)

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { compileScreen, type ProgramWriter } from "../src/lang/compiler.js";
@@ -13,7 +13,7 @@ import { DocumentStore, type SportsDocument } from "../src/sports/documents.js";
 import { espnLookup, withMatchCards, type EspnTransport } from "../src/sports/espn.js";
 import { followUpSchema, rawSchema, toFollowUp, toPlan, type SportsPlan } from "../src/sports/plan.js";
 import { preview, SPORTS_SCREEN } from "../src/sports/screen.js";
-import { placements } from "../src/sports/components.js";
+import { fitHeatmaps, heatmapColumns, lockFacts, placements, settleMissing, settleVenues } from "../src/sports/components.js";
 import { answerSports } from "../src/sports/research.js";
 
 /** The sports pipeline offline: scripted ESPN, Parallel, Sonnet, Opus and writer; no network, no keys. */
@@ -131,6 +131,11 @@ assert.ok(!rawSchema(clubs).safeParse({ subject: { kind: "team", name: "Barça",
 const schedule = await espnLookup({ league: "eng.1", feed: "schedule", team: "Chelsea" }, espn);
 assert.deepEqual((schedule.values.matches as { result: string }[]).map(m => m.result), ["win", "loss", "upcoming"], "oldest first, Chelsea's perspective, fixtures included");
 assert.deepEqual([schedule.values.won, schedule.values.drawn, schedule.values.lost, schedule.values.season], [1, 0, 1, "2026/27"]);
+// Chelsea lost 0-2 at home to Spurs and won 2-0 at Everton; the upcoming City match counts for neither.
+assert.deepEqual(schedule.values.venues, {
+  home: { played: 1, won: 0, drawn: 0, lost: 1, goalsFor: 0, goalsAgainst: 2, goalDifference: -2, points: 0 },
+  away: { played: 1, won: 1, drawn: 0, lost: 0, goalsFor: 2, goalsAgainst: 0, goalDifference: 2, points: 3 },
+});
 
 // Every ESPN match also carries MatchCard's contract, so the writer is offered MatchCard without the dataset stage reshaping it:
 // scores as text with the number kept as goals, the loser in secondary ink, the date and kickoff in the request's time zone.
@@ -176,8 +181,17 @@ assert.ok(nodes.some(n => n.primitive === "SplitBar" && JSON.stringify(n.props.s
 const emptyValues = { answers: {
   q1: { status: "complete", question: "Clean sheets", title: "Clean sheets", source: "Source: ESPN", board: { title: "Clean sheets", metric: "", entries: [] } },
   q2: { status: "complete", question: "Palmer", title: "Palmer", source: "Source: ESPN", player: { kind: "player", name: "Cole Palmer", detail: "Chelsea", logo: "", color: "#034694",
-    rating: { value: "7.21", tone: "good", fill: "tone.good.fg", ink: "surface.screen", label: "Season rating", caption: "" }, stats: [{ label: "Goals", value: "5" }] } },
+    rating: { value: "7.21", tone: "good", fill: "tone.good.fg", ink: "surface.screen", label: "Season rating", caption: "", show: true }, stats: [{ label: "Goals", value: "5" }], showStats: true } },
 } };
+// A source's gaps never reach the screen: a dash used to render as a "— Season rating" row and a "—" stat, once per card.
+const missingCard = { name: "E Haaland", kind: "player", detail: "City", logo: "", color: "", rating: { value: "—", label: "Season rating" }, stats: [{ label: "Goals", value: "9" }, { label: "Assists", value: "—" }] };
+const settled = settleMissing({ values: { answers: { q1: { player: missingCard, board: { title: "t", metric: "Goals", entries: [{ name: "A", value: "6" }, { name: "B", value: "N/A" }] } } } }, fields: [] }).values.answers as unknown as { q1: { player: { rating: { show: boolean }; stats: unknown[]; showStats: boolean }; board: { entries: unknown[] } } };
+assert.deepEqual([settled.q1.player.rating.show, settled.q1.player.stats, settled.q1.player.showStats, settled.q1.board.entries.length], [false, [{ label: "Goals", value: "9" }], true, 1], "a dash in a rating, a stat or a ranking row is left out");
+assert.equal((settleMissing({ values: { answers: { q1: { player: { ...missingCard, stats: [{ label: "Assists", value: "" }] } } } }, fields: [] }).values.answers.q1.player as unknown as { showStats: boolean }).showStats, false, "a card with no stats has no rail");
+// A player's second card shows only what's new, and goes when nothing is.
+const playerCard = (stats: { label: string; value: string }[]) => ({ kind: "player", name: "E Haaland", detail: "City", logo: "", color: "", showStats: true, rating: { value: "7.5", tone: "good", fill: "x", ink: "y", label: "Season rating", caption: "", show: true }, stats });
+const locked = lockFacts({ values: { answers: { q1: { player: playerCard([{ label: "Goals", value: "9" }]) }, q2: { player: playerCard([{ label: "Goals", value: "9" }, { label: "Shots", value: "30" }]) }, q3: { player: playerCard([{ label: "Goals", value: "9" }]) } } }, fields: [] }).dataset.values.answers as Record<string, { player?: { rating: { show: boolean }; stats: unknown[] } }>;
+assert.deepEqual([locked.q1!.player!.rating.show, locked.q2!.player!.rating.show, locked.q2!.player!.stats, locked.q3!.player], [true, false, [{ label: "Shots", value: "30" }], undefined], "the first card owns a player's rating and stats");
 const boardWriter: ProgramWriter = async (_m, emit) => { const text = "sheets = Leaderboard(d.answers.q1.board)\n"; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
 const empty = await compileScreen({ run: "empty", request: "Clean sheets and Palmer", values: emptyValues, required: [{ id: "q1", text: "Clean sheets" }, { id: "q2", text: "Palmer" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, boardWriter);
 assert.equal(empty.parts.filter(p => p.origin.kind === "writer").length, 1, "a Leaderboard over an empty list is admitted");
@@ -215,7 +229,8 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
         return toFollowUp({ subject: { ...subject }, ...raw }, context.questions);
       },
     };
-    const app = sportsRoutes({ store, documents, ask: (request, s, hooks, run) => askSports(request, s, hooks, run, deps), edit: (saved, request, s, hooks, run) => editSports(saved, request, s, hooks, run, deps) });
+    const savedDirectory = mkdtempSync(path.join(tmpdir(), "saved-generations-"));
+    const app = sportsRoutes({ store, documents, savedDirectory, ask: (request, s, hooks, run) => askSports(request, s, hooks, run, deps), edit: (saved, request, s, hooks, run) => editSports(saved, request, s, hooks, run, deps) });
     const post = async (url: string, body: object) => {
       const response = await app.request(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const events = response.headers.get("content-type")?.includes("text/event-stream")
@@ -230,6 +245,19 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
     const first = await post("/lang/sports/stream", { prompt: "Chelsea vs Man City last meeting stats" });
     const id = first.done!.document.id as string;
     assert.deepEqual(first.done!.document, { id, revision: 1 }, "the first screen is saved as revision 1 before done");
+    assert.equal((await post(`/lang/sports/${id}/save`, { revision: 2 })).status, 409, "only the revision on screen can be saved");
+    assert.equal((await post(`/lang/sports/${id}/save`, { revision: 1 })).status, 200);
+    const kept = JSON.parse(readFileSync(path.join(savedDirectory, `${id}-r1.json`), "utf8")) as SportsDocument;
+    assert.deepEqual([kept.program, kept.revision], [first.done!.program, 1], "the saved copy is the screen's program");
+    assert.equal((await post(`/lang/sports/00000000-0000-4000-8000-000000000000/save`, { revision: 1 })).status, 404);
+    // Replay gives back the same screen with no model call: nothing below reaches a script.
+    const scriptsBefore = scripts.length;
+    const runs = await (await app.request("/lang/sports/runs")).json() as { runs: { id: string; prompt: string }[] };
+    assert.deepEqual(runs.runs.map(r => [r.id, r.prompt]), [[id, "Chelsea vs Man City last meeting stats"]]);
+    const replay = await (await app.request(`/lang/sports/runs/${id}`)).json() as { prompt: string; program: string; snapshot: { args: { run: string } } };
+    assert.deepEqual([replay.program, replay.snapshot.args.run], [first.done!.program, id], "the same program and its dataset");
+    assert.equal((await app.request("/lang/sports/runs/00000000-0000-4000-8000-000000000000")).status, 404);
+    assert.equal(scripts.length, scriptsBefore);
     const r1 = (await documents.get(id))!;
     assert.deepEqual(r1.parts.map(p => [p.id, p.questions]), [["pick1", ["q1"]], ["pick2", ["q2"]]]);
 
@@ -238,7 +266,7 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
     researched.length = 0;
     const added = await post(`/lang/sports/${id}/follow-up`, { prompt: "add the Premier League table and Spurs' results", baseRevision: 1, model: "ignored", timeZone: "Europe/London" });
     assert.deepEqual(added.done!.document, { id, revision: 2 });
-    assert.deepEqual(added.events.map(e => e.event).filter(e => e !== "activity"), ["data", "openui", "done"], "content arrives only after the commit");
+    assert.deepEqual(added.events.map(e => e.event).filter(event => event !== "usage").filter(e => e !== "activity"), ["data", "openui", "done"], "content arrives only after the commit");
     assert.equal(added.events.find(e => e.event === "openui")!.data.replace, true);
     const r2 = (await documents.get(id))!;
     assert.deepEqual(r2.parts.map(p => [p.id, p.questions]), [["pick1", ["q1"]], ["pick2", ["q2"]], ["pick3", ["q3"]], ["pick4", ["q4"]]]);
@@ -285,5 +313,88 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
 // The follow-up planner accounts for every saved question exactly once.
 assert.throws(() => toFollowUp({ subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "" }, keep: ["q1"], revise: [], remove: ["q1"], add: [] }, plan.questions), /exactly once/);
 assert.ok(followUpSchema([], ["q1", "q2"]).safeParse({ subject: { kind: "team", name: "Chelsea", league: "eng.1", season: "" }, keep: ["q7"], revise: [], remove: [], add: [] }).success === false, "only saved ids");
+
+// Run 13439935: a bad gap in a row, then a misplaced argument, dropped the part with the answer. The club
+// row left standing names the subject and answers nothing, so the default part must show the projections.
+{
+  const answer = { status: "complete", question: "Projected finish?", title: "Chelsea's projected finish", summary: "Projections vary by source.", source: "Source: x", asOf: "2026-10-25",
+    team: { name: "Chelsea", logo: "", color: "#034694", detail: "Premier League" }, projectionRange: "3rd to 6th",
+    projections: [{ source: "Opta", position: "3rd", detail: "September", date: "2026-09-01" }, { source: "Sky Sports", position: "5th", detail: "October", date: "2026-10-01" }] };
+  const prompts: string[] = [];
+  const issues: { code: string; statementId?: string; message: string }[] = [];
+  const written = [
+    `club = Card([club_team])\nclub_team = TeamDetail(d.answers.q1.team)\nprojection = Card([projection_rows, projection_range])\nprojection_range = Text(d.answers.q1.projectionRange, "title1")\nprojection_rows = Stack("v", 0, @Each(d.answers.q1.projections, "p", Row(p.source, p.detail, null, Stack("v", 2, [Text(p.position, "headline")]))))\n`,
+    `projection_rows = Stack("v", 0, @Each(d.answers.q1.projections, "p", Row(p.source, p.detail, null, Text(p.position, "headline"))), "stretch", "start", true)\n`,
+  ];
+  const screen = await compileScreen({ run: "r", request: "projection", values: { answers: { q1: answer } }, required: [{ id: "q1", text: "Projected finish?" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, async (messages, emit) => {
+    prompts.push(String(messages.at(-1)!.content));
+    const text = written[prompts.length - 1] ?? "";
+    emit(text);
+    return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } };
+  }, { issue: issue => issues.push(issue) });
+  assert.equal(issues.filter(i => i.message.startsWith("Stack.gap")).length, 1, "one bad value across rows is one problem");
+  assert.ok(prompts[1]!.includes(`Stack("v", 2,`) && prompts[1]!.includes("got 2") && prompts[1]!.includes("Stack(axis, gap, children, align?"), "repair shows the statement, the value and the signature");
+  assert.ok(issues.some(i => i.code === "part-incomplete"), "the part is reported as dropped");
+  assert.deepEqual(screen.parts.map(p => p.origin.kind), ["writer", "fallback"]);
+  assert.match(screen.program, /d\.answers\.q1\.projectionRange/);
+  assert.match(screen.program, /d\.answers\.q1\.projections/);
+  assert.match(screen.program, /item\.position/, "and each row keeps the position, which is the answer");
+}
+
+// One place answers home and away: TeamPoints when it is on the screen, else LeagueStanding if it has them.
+{
+  const venue = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
+  const record = { subtitle: "Rank 10 · 38 played", points: "52", home: venue, away: venue };
+  const standing = (detail: string) => ({ place: "10th", summary: "52 points", rows: [], home: { detail }, away: { detail }, showVenues: true });
+  const shown = (answers: Record<string, unknown>) => (settleVenues({ values: { answers }, fields: [] }).values.answers as { q1: { standing: { showVenues: boolean } } }).q1.standing.showVenues;
+  assert.equal(shown({ q1: { standing: standing("26 pts · 7-5-7") }, q2: { record } }), false, "TeamPoints elsewhere on the screen answers them");
+  assert.equal(shown({ q1: { standing: standing("26 pts · 7-5-7") } }), true, "alone, the standing shows them");
+  assert.equal(shown({ q1: { standing: standing("") } }), false, "with no figures there is nothing to show");
+}
+
+// The heatmap's grid follows its count: 20 sit 10 to a row, a season's 38 keep two rows with smaller squares.
+assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11", "19", "23", "24"]);
+{
+  const fitted = fitHeatmaps({ values: { answers: { q1: { run: { value: "1.37", caption: "PPG", summary: "x", columns: "10", results: Array.from({ length: 38 }, () => ({ label: "Win", fill: "tone.good.fg" })) } } } }, fields: [] });
+  assert.equal((fitted.values.answers as { q1: { run: { columns: string } } }).q1.run.columns, "19", "the server sets it, whatever the model wrote");
+}
+
+// A home and away table built by hand where TeamPoints fits is refused, and the repair is told what to call.
+{
+  const side = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
+  const answer = { status: "complete", question: "Season", title: "Season", source: "Source: ESPN", record: { subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side } };
+  const prompts: string[] = [];
+  const replies = [`season = Card([Text(d.answers.q1.record.home.points, "body"), Text(d.answers.q1.record.away.points, "body")])\n`, `season = TeamPoints(d.answers.q1.record)\n`];
+  const screen = await compileScreen({ run: "r", request: "season", values: { answers: { q1: answer } }, required: [{ id: "q1", text: "Season" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, async (messages, emit) => {
+    prompts.push(String(messages.at(-1)!.content));
+    const text = replies[prompts.length - 1] ?? "";
+    emit(text);
+    return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } };
+  });
+  assert.ok(prompts[1]!.includes("Call TeamPoints(d.answers.q1.record)"), "the repair names the card");
+  assert.deepEqual(screen.parts.map(p => p.origin.kind), ["writer"]);
+  assert.match(screen.program, /"Points"/, "the card's total header is on screen");
+}
+
+// Run 341a9f75: the season's points showed in TeamPoints and again in two half-season heatmaps. Each fact is locked to one place.
+{
+  const side = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
+  const points = { subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side };
+  const heat = (count: number, value: string) => ({ value, caption: "Points", summary: "s", columns: "10", results: Array.from({ length: count }, () => ({ label: "Win", fill: "tone.good.fg" })) });
+  const standing = { place: "10th", summary: "52 points", rows: [], home: { detail: "" }, away: { detail: "" }, showVenues: false };
+  const match = { name: "x", value: "1" };
+  const season = lockFacts({ values: { answers: { q1: { status: "complete", title: "Table", standing }, q2: { status: "complete", title: "Season", points, firstHalf: heat(19, "30 pts"), secondHalf: heat(19, "22 pts") } } }, fields: [{ path: "answers.q2.firstHalf.value", kind: "text", format: "none" }, { path: "answers.q2.points.points", kind: "text", format: "none" }] });
+  const q2 = (season.dataset.values.answers as Record<string, Record<string, { subtitle?: string }>>).q2!;
+  assert.deepEqual(Object.keys(q2), ["status", "title", "points"], "heatmaps of the whole season go");
+  assert.equal(q2.points!.subtitle, "38 played", "the standing owns the place");
+  assert.deepEqual(season.dataset.fields.map(f => f.path), ["answers.q2.points.points"]);
+  assert.equal(season.removed.length, 3);
+  const form = lockFacts({ values: { answers: { q1: { points, form: heat(5, "2.4") } } }, fields: [] });
+  assert.deepEqual(form.removed, [], "the last five is another fact and stays");
+  const twice = lockFacts({ values: { answers: { q1: { status: "complete", win: match }, q2: { status: "complete", title: "Best", best: { value: "1", name: "x" } } } }, fields: [] });
+  assert.deepEqual(twice.removed.map(r => r.path), ["answers.q2.best"], "the same record stays in the first place, whatever its key order");
+  // A question whose facts all moved elsewhere needs nothing from the writer and no default part.
+  assert.equal(SPORTS_SCREEN.shows("q2", [], twice.dataset.values as Parameters<typeof SPORTS_SCREEN.shows>[2]), true);
+}
 
 console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback, components, empty lists, component defaults, list previews and follow-ups passed");

@@ -3,6 +3,7 @@ import type { SnapshotDataset } from "../lang/snapshots.js";
 import type { DataField, MockValue } from "../research/dataset-schema.js";
 import { inferFields } from "./dataset.js";
 import { PlayerProfileSchema, playerNameKey, playerTeamKey, type PlayerLookup, type PlayerProfile, type PlayerQuery } from "./fotmob.js";
+import type { Club } from "./espn.js";
 import type { SportsPlan } from "./plan.js";
 
 type RecordValue = Record<string, MockValue>;
@@ -27,7 +28,7 @@ export function rawPlayerQueries(plan: SportsPlan, answers: Record<string, Recor
     };
     if (question.feed === "leaders") { add(answer.goals); add(answer.assists); }
     if (question.feed === "scorers") add(answer.scorers, question.team ?? undefined);
-    if (question.feed === "match") { add(answer.teamPlayers, question.team ?? undefined); add(answer.opponentPlayers, question.opponent ?? undefined); }
+    if (question.feed === "match") { add(answer.teamRated, question.team ?? undefined); add(answer.opponentRated, question.opponent ?? undefined); add(answer.teamPlayers, question.team ?? undefined); add(answer.opponentPlayers, question.opponent ?? undefined); }
   }
   return queries;
 }
@@ -37,7 +38,7 @@ export function componentPlayerQueries(answers: unknown, clubs: readonly RecordV
   const queries: PlayerQuery[] = [];
   const add = (value: RecordValue) => {
     const query = queryOf(value);
-    if (query && !clubNames.has(playerNameKey(query.name))) queries.push(query);
+    if (query && !clubNames.has(playerNameKey(query.name))) queries.push({ ...query, ...(typeof value.detail === "string" && value.detail ? { context: value.detail } : {}) });
   };
   const walk = (value: MockValue) => {
     if (Array.isArray(value)) { value.forEach(walk); return; }
@@ -45,16 +46,21 @@ export function componentPlayerQueries(answers: unknown, clubs: readonly RecordV
     if (!record) return;
     if (object(record.rating) && Array.isArray(record.stats)) add(record);
     if (typeof record.metric === "string" && Array.isArray(record.entries)) records(record.entries).forEach(add);
+    if (typeof record.metric === "string" && Array.isArray(record.rows)) for (const row of records(record.rows)) {
+      for (const cell of [object(row.home), object(row.away)]) {
+        if (cell?.present === true) add({ ...cell, ...(typeof object(cell.club)?.name === "string" ? { team: object(cell.club)!.name! } : {}) });
+      }
+    }
     Object.values(record).forEach(walk);
   };
   walk(z.json().parse(answers));
   return queries;
 }
 
-const matches = (profile: PlayerProfile, query: PlayerQuery) => playerNameKey(profile.name) === playerNameKey(query.name)
-  && (!query.team || playerTeamKey(profile.team) === playerTeamKey(query.team));
+/** A profile answers a query by name: the lookup already settled which of any namesakes it is. */
+const matches = (profile: PlayerProfile, query: PlayerQuery) => playerNameKey(profile.name) === playerNameKey(query.name);
 
-export function createPlayerResolver(lookup: PlayerLookup, existing: readonly PlayerProfile[] = [], budgetMs = 5_000): (queries: readonly PlayerQuery[]) => Promise<PlayerProfile[]> {
+export function createPlayerResolver(lookup: PlayerLookup, existing: readonly PlayerProfile[] = [], budgetMs = 12_000): (queries: readonly PlayerQuery[]) => Promise<PlayerProfile[]> {
   const profiles = [...existing];
   const attempted = new Set<string>();
   let remaining = budgetMs;
@@ -84,6 +90,35 @@ export function createPlayerResolver(lookup: PlayerLookup, existing: readonly Pl
   };
 }
 
+/**
+ * Every club the ESPN directory knows gets its logo and colour, not only the ones the screen is about:
+ * an opponent in a MatchCard, a club on a podium. A club with a logo then passes "clear", so its crest
+ * has no fill whatever the schema stage wrote; a club without one keeps its colour for the monogram.
+ * Runs after `populatePlayerImages`, which marks the player records.
+ */
+export function fillClubMarks<T extends SnapshotDataset>(dataset: T, directory: readonly Club[]): T {
+  // Local names a page may use for a club ESPN lists in English.
+  const clubKey = (name: string) => playerTeamKey(name).replace("munchen", "munich").replace("koln", "cologne");
+  const clubOf = (name: string) => directory.find(club => clubKey(club.name) === clubKey(name) || clubKey(club.short) === clubKey(name));
+  const walk = (value: MockValue): MockValue => {
+    if (Array.isArray(value)) return value.map(walk);
+    const record = object(value);
+    if (!record) return value;
+    const result: RecordValue = Object.fromEntries(Object.entries(record).map(([key, child]) => [key, walk(child)]));
+    // A player's disc is their club's colour from the directory, for every club, not only the ones the screen is about.
+    if (record.kind === "player") {
+      const named = [record.team, ...(typeof record.detail === "string" ? record.detail.split(" · ") : [])].flatMap(name => typeof name === "string" && name ? [clubOf(name)] : []).find(Boolean);
+      return named?.color ? { ...result, color: named.color } : result;
+    }
+    if (typeof record.name !== "string" || typeof record.logo !== "string") return result;
+    const club = record.logo === "" ? clubOf(record.name) : undefined;
+    const logo = club?.logo || record.logo;
+    return { ...result, logo, ...("color" in record ? { color: logo ? "clear" : record.color || club?.color || "" } : {}) };
+  };
+  const source = z.record(z.string(), z.json()).parse(dataset.values);
+  return { ...dataset, values: { ...source, ...(source.answers !== undefined ? { answers: walk(source.answers) } : {}) } };
+}
+
 export function populatePlayerImages<T extends SnapshotDataset>(dataset: T, players: readonly PlayerProfile[], knownPlayerQueries: readonly PlayerQuery[]): Omit<T, "values" | "fields"> & SnapshotDataset {
   const source = z.record(z.string(), z.json()).parse(dataset.values);
   const candidateNames = new Set([...knownPlayerQueries.map(query => playerNameKey(query.name)), ...players.map(player => playerNameKey(player.name))]);
@@ -109,7 +144,7 @@ export function populatePlayerImages<T extends SnapshotDataset>(dataset: T, play
     const query = queryOf(record);
     const candidates = query ? players.filter(player => matches(player, query)) : [];
     const player = candidates.length === 1 ? candidates[0] : undefined;
-    // A record named like a player is one, photo or not: its Avatar stands the headshot on the disc's bottom edge.
+    // A record named like a player is one, photo or not: its Avatar shows the headshot on the disc colour.
     result.kind = "player";
     addField(`${path}.kind`, "text", "none");
     result.fotmobId = player?.fotmobId ?? null;

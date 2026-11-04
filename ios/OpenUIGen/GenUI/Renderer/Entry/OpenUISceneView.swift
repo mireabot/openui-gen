@@ -6,17 +6,20 @@ public struct OpenUISceneView: View {
     private let root: OpenUIRootHandle
     private let theme: DesignTheme?
     private let scrolls: Bool
+    private let pending: [SkeletonFrame]
     private let editAction: OpenUIEditAction
 
     public init(
         root: OpenUIRootHandle,
         theme: DesignTheme? = .bundled(brand: "purple"),
         scrolls: Bool = true,
+        pending: [SkeletonFrame] = [],
         onEdit: @escaping (OpenUIEditAddress, Double) -> Void = { _, _ in }
     ) {
         self.root = root
         self.theme = theme
         self.scrolls = scrolls
+        self.pending = pending
         editAction = OpenUIEditAction(perform: onEdit)
     }
 
@@ -42,8 +45,15 @@ public struct OpenUISceneView: View {
             ForEach(blocks, id: \.id) { handle in
                 OpenUIElementView(handle: handle, onEdit: editAction.perform)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity)
+            }
+            ForEach(Array(pending.enumerated()), id: \.offset) { _, frame in
+                SkeletonBlockView(frame: frame)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .transition(.opacity)
             }
         }
+        .animation(.smooth(duration: 0.25), value: pending.count)
         .padding(PrimitiveMetrics.screenInset)
     }
 

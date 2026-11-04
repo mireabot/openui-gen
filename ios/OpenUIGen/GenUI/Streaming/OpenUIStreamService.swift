@@ -28,6 +28,7 @@ public struct OpenUIStreamDone: Decodable, Equatable, Sendable {
 
 public enum OpenUIStreamEvent: Sendable, Equatable {
     case activity(PValue)
+    case usage(PValue)
     case data(OpenUIDataset)
     case skeleton(PrimitiveSkeleton)
     case openui(text: String, replace: Bool)
@@ -60,6 +61,8 @@ public struct OpenUIStreamRequest: Sendable, Encodable {
 public protocol OpenUIStreaming: Sendable {
     func stream(_ request: OpenUIStreamRequest) -> AsyncThrowingStream<OpenUIStreamEvent, any Error>
     func query(tool: String, args: PValue) async throws -> PValue
+    /// Keeps a copy of this revision on the server.
+    func save(_ document: OpenUIDocumentVersion) async throws
 }
 
 public struct OpenUIStreamService: OpenUIStreaming {
@@ -84,6 +87,17 @@ public struct OpenUIStreamService: OpenUIStreaming {
         let (data, response) = try await session.data(for: request)
         try Self.check(response, data: data)
         return try JSONDecoder().decode(PValue.self, from: data)
+    }
+
+    public func save(_ document: OpenUIDocumentVersion) async throws {
+        var request = URLRequest(
+            url: baseURL.appending(path: "lang/sports").appending(component: document.id)
+                .appending(path: "save")
+        )
+        request.httpMethod = "POST"; request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONEncoder().encode(["revision": document.revision])
+        let (data, response) = try await session.data(for: request)
+        try Self.check(response, data: data)
     }
 
     private func run(_ body: OpenUIStreamRequest, yield: (OpenUIStreamEvent) -> Void) async throws {
@@ -118,6 +132,7 @@ public struct OpenUIStreamService: OpenUIStreaming {
         let decoder = JSONDecoder()
         switch name {
         case "activity": return try .activity(decoder.decode(PValue.self, from: data))
+        case "usage": return try .usage(decoder.decode(PValue.self, from: data))
         case "data": return try .data(decoder.decode(OpenUIDataset.self, from: data))
         case "skeleton": return try .skeleton(decoder.decode(PrimitiveSkeleton.self, from: data))
         case "openui":

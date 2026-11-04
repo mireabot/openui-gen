@@ -47,17 +47,16 @@ const card = statsNodes.find(node => node.kind === "Card");
 assert.ok(card);
 assert.equal(card.properties.padding, 0);
 assert.equal(card.properties.gap, 0);
-assert.equal(statsNodes.filter(node => node.kind === "Divider").length, 2);
+assert.equal(statsNodes.filter(node => node.kind === "Divider").length, 1);
 const rating = statsNodes.find(node => node.kind === "Badge");
 assert.ok(rating);
 assert.equal(rating.properties.size, "large");
 assert.equal(rating.properties.fill, "tone.good.fg");
 assert.equal(rating.properties.ink, "surface.screen");
 assert.ok(statsNodes.some(node => node.kind === "Text" && node.properties.content === "Cole Palmer" && node.properties.role === "headline" && node.properties.weight === "semibold"));
-const statsGrid = statsNodes.find(node => node.kind === "Grid");
-assert.ok(statsGrid);
-assert.equal(statsGrid.properties.gap, 16);
-assert.equal(statsGrid.properties.rowGap, 24);
+const statsRail = statsNodes.find(node => node.kind === "Rail");
+assert.ok(statsRail);
+assert.equal(statsRail.properties.gap, 12);
 
 const sourceIndex = process.argv.indexOf("--source");
 if (sourceIndex >= 0) {

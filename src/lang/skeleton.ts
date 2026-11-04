@@ -182,6 +182,8 @@ function frame(n: PNode, byId: Map<string, PNode>, depth: number): SkeletonFrame
       return { kind: "box", height: 40, radius: 4 };
     case "PriceChart":
       return { kind: "stack", axis: "v", gap: 8, children: [{ kind: "box", height: p.height === "compact" ? 120 : 200, radius: 12 }, { kind: "stack", axis: "h", gap: 12, justify: "between", children: [line("footnote", 0.5), line("footnote", 0.5)] }] };
+    case "StepTimeline":
+      return { kind: "stack", axis: "v", gap: 12, children: [{ kind: "box", height: 68, radius: 12 }, { kind: "box", height: 200, radius: 12 }] };
     case "Change":
       return { kind: "box", height: 22, width: p.style === "percent" ? 64 : 96, radius: "pill" };
     case "SplitBar":
@@ -250,6 +252,7 @@ function estimate(n: PNode, byId: Map<string, PNode>): number {
     case "Bars": return 128;
     case "Sparkline": return 40;
     case "PriceChart": return (p.height === "compact" ? 120 : 200) + 26;
+    case "StepTimeline": return 68 + 12 + 200;
     case "Change": return 22;
     case "SplitBar": return p.legend === true ? 30 : 8;
     case "Note": return 72;

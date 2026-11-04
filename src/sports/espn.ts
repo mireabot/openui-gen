@@ -137,7 +137,7 @@ export interface EspnRequest {
   readonly dates?: string | null;
   /** `match` only: the other club. */
   readonly opponent?: string | null;
-  /** `schedule` and `match`: the season's start year (2025 is 2025/26). Default: the current season. */
+  /** `standings`, `schedule` and `match`: the season's start year (2025 is 2025/26). Default: the current season. */
   readonly season?: number | null;
   readonly lastGames?: number;
   readonly allCompetitions?: boolean;
@@ -204,7 +204,8 @@ export async function espnLookup(request: EspnRequest, send: EspnTransport = fet
     return { feed: "teams", league, source: `Source: ESPN · ${name} teams`, values: { league: name, teams } };
   }
   if (request.feed === "standings") {
-    const data = Standings.parse(await send(`${base}/v2/sports/soccer/${league}/standings`));
+    const url = `${base}/v2/sports/soccer/${league}/standings`;
+    const data = Standings.parse(await send(request.season == null ? url : `${url}?season=${request.season}`));
     const table = (data.children[0]?.standings.entries ?? []).map(entry => {
       const stat = (key: string) => entry.stats.find(s => s.name === key)?.value ?? null;
       return {
@@ -213,7 +214,8 @@ export async function espnLookup(request: EspnRequest, send: EspnTransport = fet
       } as Record<string, MockValue>;
     }).sort((a, b) => Number(a.rank ?? 99) - Number(b.rank ?? 99));
     const focus = request.team ? table.find(row => isTeam(row.team as Record<string, MockValue>, request.team!)) ?? null : null;
-    return { feed: "standings", league, source: `Source: ESPN · ${name} table`, values: { league: name, table, ...(request.team ? { focus } : {}) } };
+    const season = request.season == null ? null : seasonLabel(request.season);
+    return { feed: "standings", league, source: `Source: ESPN · ${name} table${season ? ` ${season}` : ""}`, values: { league: name, ...(season ? { season } : {}), table, ...(request.team ? { focus } : {}) } };
   }
   if (request.feed === "leaders") {
     const data = Leaders.parse(await send(`${base}/site/v2/sports/soccer/${league}/statistics`));
@@ -229,6 +231,7 @@ export async function espnLookup(request: EspnRequest, send: EspnTransport = fet
     const count = (r: string) => matches.filter(m => m.result === r).length;
     return { feed: "schedule", league, source: `Source: ESPN · ${team.displayName} ${name} schedule`, values: {
       league: name, season: seasonLabel(season), team: teamRecord(team), matches, won: count("win"), drawn: count("draw"), lost: count("loss"),
+      venues: { home: venueTotals(matches, "home"), away: venueTotals(matches, "away") },
     } };
   }
   if (request.feed === "match") {
@@ -339,8 +342,18 @@ async function recentScorers(base: string, request: EspnRequest, send: EspnTrans
   } };
 }
 
+/** One venue's played matches added up: ESPN's table has no home and away split. */
+export function venueTotals(matches: readonly Record<string, MockValue>[], venue: "home" | "away") {
+  const played = matches.filter(m => m.venueSide === venue && m.result !== "upcoming");
+  const goals = (side: "home" | "away") => played.reduce((sum, m) => sum + Number((m[side] as Record<string, MockValue>).score), 0);
+  const count = (result: string) => played.filter(m => m.result === result).length;
+  const [goalsFor, goalsAgainst] = [goals(venue), goals(venue === "home" ? "away" : "home")];
+  const [won, drawn] = [count("win"), count("draw")];
+  return { played: played.length, won, drawn, lost: count("loss"), goalsFor, goalsAgainst, goalDifference: goalsFor - goalsAgainst, points: won * 3 + drawn };
+}
+
 /** "2026/27" for ESPN's season 2026. */
-const seasonLabel = (year: number | null) => (year === null ? "" : `${year}/${String((year + 1) % 100).padStart(2, "0")}`);
+export const seasonLabel = (year: number | null) => (year === null ? "" : `${year}/${String((year + 1) % 100).padStart(2, "0")}`);
 
 async function findTeam(base: string, league: LeagueCode, query: string, send: EspnTransport) {
   const teams = Teams.parse(await send(`${base}/site/v2/sports/soccer/${league}/teams`)).sports.flatMap(s => s.leagues.flatMap(l => l.teams.map(t => t.team)));

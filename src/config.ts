@@ -16,14 +16,23 @@ const Schema = z.object({
   PORT: z.coerce.number().int().positive().default(8080),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 
-  // Claude on the Anthropic API runs every model stage; Parallel's Search and Extract APIs find and
+  // Where the Claude stages run. "debug": the local Claude Code CLI, on the signed-in plan's limits.
+  // "api": the Anthropic API, billed to ANTHROPIC_API_KEY. Models and effort match; search is Parallel in both.
+  GENERATION_MODE: z.enum(["debug", "api"]).default("debug"),
+
+  // Where football data comes from. "mixed": ESPN for tables, matches and clubs, FotMob for players.
+  // "fotmob": FotMob for all of it, so clubs outside ESPN's six competitions work. FotMob's terms
+  // forbid automated retrieval, so this is for personal research only.
+  DATA_SOURCE: z.enum(["mixed", "fotmob"]).default("mixed"),
+
+  // Claude on the Anthropic API runs every model stage in api mode; Parallel's Search and Extract APIs find and
   // read the pages behind cited web research.
   ANTHROPIC_API_KEY: z.string().min(1).optional(),
   PARALLEL_API_KEY: z.string().min(1).optional(),
   // Parallel Search depth: "advanced" (~3 s, most thorough) unless set lower for latency.
   PARALLEL_SEARCH_MODE: z.enum(["turbo", "fast", "basic", "advanced"]).default("advanced"),
 
-  // The sports endpoint (Anthropic API only): Haiku understands the request, Sonnet reads each
+  // The sports endpoint: Haiku understands the request, Sonnet reads each
   // parallel search's pages into cited facts, Opus shapes the dataset and writes the screen.
   SPORTS_PLAN_MODEL: z.string().min(1).default("claude-haiku-5-5"),
   SPORTS_SEARCH_MODEL: z.string().min(1).default("claude-sonnet-5-5"),
@@ -82,9 +91,9 @@ export function requireKey(name: "ANTHROPIC_API_KEY" | "PARALLEL_API_KEY"): stri
 /** What `.env` ships with, so an unfilled key fails at boot rather than as a 502. */
 const PLACEHOLDER = /^(REPLACE_ME|\.\.\.|changeme|placeholder)$/i;
 
-/** Boot check: the keys the sports endpoint needs (Claude on the Anthropic API, Parallel search), present and filled in. */
+/** Boot check: the keys this mode needs (Parallel search, and Claude on the Anthropic API in api mode), present and filled in. */
 export function assertCredentials(): void {
-  const keys = ["ANTHROPIC_API_KEY", "PARALLEL_API_KEY"] as const;
+  const keys = config().GENERATION_MODE === "api" ? ["ANTHROPIC_API_KEY", "PARALLEL_API_KEY"] as const : ["PARALLEL_API_KEY"] as const;
   const missing = keys.filter((k) => !config()[k]);
   const unfilled = keys.filter((k) => {
     const v = config()[k];

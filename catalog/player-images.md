@@ -28,14 +28,14 @@ Player prompts and explicit ESPN player lists resolve before dataset shaping. Na
 
 Image lookup is optional. Known player records that cannot resolve use `fotmobId: null`, `imageUrl: ""`, and `logo: ""`. The clients retain their initials fallback. A component entry that has not been identified as a player retains its existing imagery, including club crests. If no profiles resolve, the dataset omits the top-level `players` array.
 
-The resolver allows up to twenty new identities per generation, in batches of four. A shared five-second budget covers image resolution across both shaping phases. The model call between phases does not consume that budget. Late responses can warm the provider cache but cannot alter an already returned dataset.
+The resolver allows up to twenty new identities per generation, in batches of four. A shared twelve-second budget covers image resolution across both shaping phases. The model call between phases does not consume that budget.
 
-Successful lookups cache for one day. Missing or ambiguous identities cache for five minutes. Transient request failures are not cached as missing players. The provider cache holds at most one thousand entries and shares concurrent requests for the same name and club.
+Lookups are not cached between generations, so each one asks FotMob again. Concurrent requests for one identity share their work, and a generation resolves each identity once.
 
 Follow-ups preserve saved player order and reuse known profiles. Kept answers retain their original portrait data.
 
 ## Verification
 
-Run `npm run check:players` for offline identity, cache, failure, deadline, field metadata, API response, Avatar binding, and follow-up checks. The check uses the actual Hono route and snapshot store with scripted external transports. `npm run check:all` includes it.
+Run `npm run check:players` for offline identity, failure, deadline, field metadata, API response, Avatar binding, and follow-up checks. The check uses the actual Hono route and snapshot store with scripted external transports. `npm run check:all` includes it.
 
 A live request through the backend adapter verified Cole Palmer's ID, club, position, and image URL shown above. The image endpoint returned a 192-by-192 PNG.

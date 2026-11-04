@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { config } from "../config.js";
-import { anthropicSender } from "../llm/anthropic.js";
+import { claudeSender } from "../llm/claude.js";
 import { structuredCompletion, type CompletionSender, type StructuredCompletionHooks } from "../llm/structured-completion.js";
 import { DATA_FORMATS, dataShape, validateValues, type DataField, type MockValue } from "../research/dataset-schema.js";
 import type { SnapshotDataset } from "../lang/snapshots.js";
@@ -35,10 +35,13 @@ export const SCHEMA_SYSTEM = `You design the dataset a mobile sports screen read
 Use only the data given: select, order, trim and derive (a top five, a points gap, a form string such as "WWDLW", a goal difference), but never add a figure, name or date that is not in the data.
 fields: flat paths relative to the answer, lowerCamel segments, "[]" for list items (e.g. "table[].team.name", "table[].points", "leader.name"). A list path names its items' fields, never the list itself. Kinds: text, number (format integer, count, decimal or percent 0–100), boolean, date (format day or month; ISO dates), status (good, warn, bad or neutral), object and list are implied by paths. Every other kind uses format "none". Logos and URLs are text.
 Do not define these fields; the server adds them: ${BASE_FIELDS.join(", ")}.
-valuesJson: one JSON object with exactly those fields. A number or date the data does not have is null. Lists hold at most 20 items.
+valuesJson: one JSON object with exactly those fields. A number or date the data does not have is null. Lists hold at most 20 items, except a FixturesHeatmap's results, which hold every fixture.
 title: a short heading for the answer, e.g. "Premier League table", "Chelsea's season".
+Missing data: leave it out. Never write "—", "N/A", "unknown" or an empty value; a part of a card with no data is not shown.
+Long data: a stat's value is one figure or a few words ("317", "€51m", "Norway") with its name in label. Split "162 goals, 29 assists" into one stat each. Sentences belong in summary.
+Repeats: a fact goes in one answer. When two answers are about the same player, the second holds only what the first does not.
 
-Sports components. When an answer suits one, shape the answer (a field of it, or a list's items) to its contract exactly, field for field, so the screen can show it with that component: a match → a MatchCard record, a run of results → a FixturesHeatmap record, two clubs compared on a stat → one StatBar record per stat in a list, a ranking → a Leaderboard record, a player's or a club's figures → a StatsCard record. Every contract field is present: text "" and lists [] when the data has nothing. Colours: take each club's "#rrggbb" and logo from the clubs list in the input, matched by club name; "" for a club not in it. Player photos: match the verified players list by full player name and use its imageUrl for a player's logo. Never use the club crest as a player photo or invent an image URL. Keep each player's full name in its record so the server can attach the verified image.
+Sports components. When an answer suits one, shape the answer (a field of it, or a list's items) to its contract exactly, field for field, so the screen can show it with that component: a match → a MatchCard record, a run of results → a FixturesHeatmap record, two clubs compared on a stat → one StatBar record per stat in a list, a ranking → a Leaderboard record, the top players of one match from both sides → a MatchTopPlayers record with the number of rows the request asks for (for top rated, values from teamRated and opponentRated), a player's or a club's figures → a StatsCard record, a club's points or record this season → a TeamPoints record, a club's place in the table → a LeagueStanding record, a league's final top three → a SeasonPodium record. Lock every fact to one place, however many questions ask for it: never put the same figure or record in two fields, and when questions overlap, answer the fact once and leave it out of the others. When both a TeamPoints and a LeagueStanding record are on the screen, TeamPoints is the place for home and away, and the LeagueStanding's showVenues is false. TeamPoints also holds the season's points: never split them across other records, and a FixturesHeatmap beside it headlines something else, such as points per game. Every contract field is present: text "" and lists [] when the data has nothing. Colours: take each club's "#rrggbb" and logo from the clubs list in the input, matched by club name; "" for a club not in it, and the server fills those it knows. A club with a logo has color "clear", so its crest has no fill; the server enforces it. Player photos: match the verified players list by full player name and use its imageUrl for a player's logo. Never use the club crest as a player photo or invent an image URL. Keep each player's full name in its record so the server can attach the verified image.
 ${COMPONENT_CONTRACTS}`;
 
 const PATH = /^[a-z][A-Za-z0-9]*(?:\[\])?(?:\.[a-z][A-Za-z0-9]*(?:\[\])?)*$/;
@@ -130,7 +133,7 @@ export interface DatasetHooks {
 export async function designDataset(plan: SportsPlan, answers: Record<string, Record<string, MockValue>>, source: SnapshotDataset["source"], now: Date,
   hooks: DatasetHooks = {}, send?: CompletionSender, clubs: readonly Record<string, MockValue>[] = [], players: readonly PlayerProfile[] = []): Promise<SnapshotDataset & { readonly designed: readonly string[] }> {
   const model = config().SPORTS_MODEL;
-  const complete = plan.questions.filter(q => answers[q.id]?.status === "complete" && !(q.source === "espn" && q.feed === "scorers"));
+  const complete = plan.questions.filter(q => answers[q.id]?.status === "complete" && q.source !== "fotmob" && !(q.source === "espn" && q.feed === "scorers"));
   let designs = new Map<string, z.infer<typeof Design>["answers"][number]>();
   if (complete.length) {
     try {
@@ -143,7 +146,7 @@ export async function designDataset(plan: SportsPlan, answers: Record<string, Re
             answers: complete.map(q => ({ id: q.id, question: q.text, data: Object.fromEntries(Object.entries(answers[q.id]!).filter(([k]) => !(BASE_FIELDS as readonly string[]).includes(k) || k === "summary")) })),
           }) }],
         },
-        send: send ?? anthropicSender({ effort: "high", fallbacks: true }),
+        send: send ?? claudeSender({ effort: "high", fallbacks: true }),
         // Every design is validated here, so a bad one regenerates the whole stage once.
         parse: text => {
           const design = Design.parse(JSON.parse(text));

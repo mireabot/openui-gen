@@ -81,7 +81,27 @@ calls = Card([Text(d.answers.q2.summary, "body")])
   assert.match(screen.program, /^root = Screen\(\[pick1, pick2\]\)\nd = Query/);
   assert.doesNotMatch(screen.program, /Quarter\(/, "templates expand to primitives");
   assert.equal(programTree(screen.program, values).nodes.filter(n => n.primitive === "Card").length, 9);
-  assert.match(live.text(), /pick1_list = Show\(false, Divider\(\)\)/, "a sibling named before it is written streams as a placeholder");
+  assert.doesNotMatch(live.text(), /Show\(false/, "no placeholders on the wire");
+  assert.ok(live.text().indexOf("pick1_list =") < live.text().indexOf("root = Screen([pick1])"), "a part reaches the root only once all of it is there");
+}
+
+// 1b. A part still being written is not on the wire, so a client shows its skeleton instead.
+{
+  const seen: string[] = [];
+  await compileScreen(source(), pack, scripted(`quarters = Section("Eight quarters", [quarters_list])\ncalls = Card([Text(d.answers.q2.summary, "body")])\n`, `quarters_list = Stack("v", 12, @Each(d.answers.q1.periods, "p", Quarter(p)))\n`), { program: chunk => seen.push(chunk) });
+  const roots = seen.flatMap(chunk => chunk.match(/root = Screen\(\[.*\]\)/g) ?? []);
+  assert.deepEqual(roots, ["root = Screen([])", "root = Screen([pick2])", "root = Screen([pick1, pick2])"]);
+}
+
+// 1c. The system prompt is the cached prefix: a new screen and an edit of a saved one must send the same bytes, or every follow-up misses the cache.
+{
+  const systems: string[] = [];
+  const capture = { request: (messages: readonly { role: string; content: string }[]) => { systems.push(messages[0]!.content); } };
+  const first = await compileScreen(source(), pack, scripted(`calls = Card([Text(d.answers.q2.summary, "body")])\nquarters = Stack("v", 12, @Each(d.answers.q1.periods, "p", Quarter(p)))\n`), capture);
+  const stored = first.parts.map(p => basePart(p.id, Object.fromEntries([...p.statements].map(([name, expr]) => [name, printStatement(name, expr)]))));
+  await compileScreen(source({ base: stored, editable: new Set([stored[0]!.id]), required: [{ id: "q2", text: "Management commentary" }] }), pack, scripted(`${stored[0]!.id} = Card([Text(d.answers.q2.summary, "headline")])\n`), capture);
+  assert.equal(systems.length, 2);
+  assert.equal(systems[1], systems[0], "follow-ups share the system prompt");
 }
 
 // 2. A question the writer leaves out gets the pack's fallback part, after one repair attempt.

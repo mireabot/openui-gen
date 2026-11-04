@@ -127,17 +127,25 @@ struct BadgePrimitive: View {
 
     var body: some View {
         let large = props.string("size") == "large"
+        let small = props.string("size") == "small"
         let plain = props.string("fill") == "none"
         HStack(spacing: 4) {
             if let icon = props.string("icon") { SymbolGlyph(name: icon, size: 16) }
-            Text(props.string("label") ?? "")
-                .primitiveFont(large ? .title1 : .footnote, weight: large ? .semibold : .medium)
-                .monospacedDigit()
-                .lineLimit(1)
+            if small {
+                Text(props.string("label") ?? "")
+                    .font(.system(size: 11, weight: .semibold))
+                    .monospacedDigit()
+                    .lineLimit(1)
+            } else {
+                Text(props.string("label") ?? "")
+                    .primitiveFont(large ? .title1 : .footnote, weight: large ? .semibold : .medium)
+                    .monospacedDigit()
+                    .lineLimit(1)
+            }
         }
-        .padding(.horizontal, plain ? 0 : large ? 12 : 8)
+        .padding(.horizontal, plain ? 0 : large ? 12 : small ? 4 : 8)
         .padding(.vertical, plain ? 0 : large ? 4 : 0)
-        .frame(height: large ? nil : 24)
+        .frame(height: large ? nil : small ? 16 : 24)
         .primitiveSurface(look, radius: large ? 8 : PrimitiveMetrics.innerRadius)
         .fixedSize()
     }

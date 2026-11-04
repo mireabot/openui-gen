@@ -41,8 +41,12 @@ struct RowPrimitive: View {
                         .foregroundStyle(palette.color(token: spec("subtitle.ink")?.stringValue ?? "ink.tertiary"))
                 }
             }
-            .lineLimit(1)
+            .lineLimit(2)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
+            // The title keeps its room, so a long trailing value wraps instead of crushing it.
+            .layoutPriority(1)
             PrimitiveChildren(ids: props.childReferences("trailing"))
                 .foregroundStyle(palette.color(token: spec("trailing.ink")?.stringValue ?? "ink.secondary"))
         }

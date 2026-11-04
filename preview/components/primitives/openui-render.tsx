@@ -15,7 +15,7 @@ export interface DatasetSeed {
 }
 
 const definitions = new Map<string, PrimitiveDef>(PRIMITIVES.map(def => [def.name, def]));
-const RuntimeCtx = createContext<{ calculations: ReadonlyMap<string, readonly PNode[]>; dataset: unknown }>({ calculations: new Map(), dataset: undefined });
+const RuntimeCtx = createContext<{ calculations: ReadonlyMap<string, readonly PNode[]>; dataset: unknown; pending: ReactNode }>({ calculations: new Map(), dataset: undefined, pending: null });
 
 function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -140,9 +140,9 @@ function rendererFor(name: string) {
 
 function OpenUIScreen({ children, placement }: { children: ReactNode; placement: Value | undefined }) {
   const query = useRendererQuery();
+  const { pending } = useContext(RuntimeCtx);
   if (query.errors.length) return null;
-  if (query.isLoading) return <p role="status" className="p-6 text-sm">Loading stock data…</p>;
-  return placement === "sheet" ? <div className="flex min-h-[874px] flex-col bg-black pt-(--safe-top)"><div className="mx-4 mt-2 h-4 rounded-t-[24px]" style={{ background: "var(--ds-surface-filled)" }} /><div className="relative -mt-2 flex flex-1 flex-col gap-7 rounded-t-[24px] px-6 pb-(--safe-bottom)" style={{ background: "var(--ds-surface-screen)", color: "var(--ds-ink-primary)" }}>{children}</div></div> : <div className="flex min-h-[874px] flex-col gap-7 px-6 pt-(--safe-top) pb-(--safe-bottom)" style={{ background: "var(--ds-surface-screen)", color: "var(--ds-ink-primary)" }}>{children}</div>;
+  return placement === "sheet" ? <div className="flex min-h-[874px] flex-col bg-black pt-(--safe-top)"><div className="mx-4 mt-2 h-4 rounded-t-[24px]" style={{ background: "var(--ds-surface-filled)" }} /><div className="relative -mt-2 flex flex-1 flex-col gap-7 rounded-t-[24px] px-6 pb-(--safe-bottom)" style={{ background: "var(--ds-surface-screen)", color: "var(--ds-ink-primary)" }}>{query.isLoading ? null : children}{pending}</div></div> : <div className="flex min-h-[874px] flex-col gap-7 px-6 pt-(--safe-top) pb-(--safe-bottom)" style={{ background: "var(--ds-surface-screen)", color: "var(--ds-ink-primary)" }}>{query.isLoading ? null : children}{pending}</div>;
 }
 
 const OPENUI_LIBRARY = createLibrary({ root: "Screen", components: Object.values(LIBRARY.components).map(def => ({ ...def, component: rendererFor(def.name) })) });
@@ -156,7 +156,7 @@ class RenderBoundary extends Component<{ children: ReactNode; program: string },
   render() { return this.state.error ? <p role="alert" className="p-6 text-sm text-destructive">OpenUI rendering failed. {this.state.error}</p> : this.props.children; }
 }
 
-function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton }: { program: string; seed: DatasetSeed | null; isStreaming: boolean; specs?: Record<string, Record<string, unknown>>; skeleton: boolean }) {
+function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton, pending }: { program: string; seed: DatasetSeed | null; isStreaming: boolean; specs?: Record<string, Record<string, unknown>>; skeleton: boolean; pending: ReactNode }) {
   const [dataset, setDataset] = useState<unknown>(undefined);
   const [errors, setErrors] = useState<OpenUIError[]>([]);
   const calculations = useMemo(() => calculationsIn(program), [program]);
@@ -181,12 +181,13 @@ function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton }: { progra
       return data;
     } };
   }, [seed]);
-  return <KinoProvider specs={specs} skeleton={skeleton}><RuntimeCtx value={{ calculations, dataset }}>
+  return <KinoProvider specs={specs} skeleton={skeleton}><RuntimeCtx value={{ calculations, dataset, pending }}>
     <Renderer response={program} library={OPENUI_LIBRARY} isStreaming={isStreaming} toolProvider={toolProvider} onError={setErrors} publishObservability={false} />
     {errors.length > 0 && <ul role="alert" className="m-6 list-disc rounded-lg border border-destructive/40 p-3 pl-7 text-sm text-destructive">{errors.map((error, index) => <li key={index}>{error.message}</li>)}</ul>}
   </RuntimeCtx></KinoProvider>;
 }
 
-export function OpenUIPreview({ program, seed, theme, specs, isStreaming, skeleton = false }: { program: string; seed: DatasetSeed | null; theme?: CSSProperties; specs?: Record<string, Record<string, unknown>>; isStreaming: boolean; skeleton?: boolean }) {
-  return <div style={{ ...theme, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif' }}><RenderBoundary program={program}><OpenUIRuntime program={program} seed={seed} specs={specs} isStreaming={isStreaming} skeleton={skeleton} /></RenderBoundary></div>;
+/** `pending` draws under the finished parts: the skeleton of the ones still being written. */
+export function OpenUIPreview({ program, seed, theme, specs, isStreaming, skeleton = false, pending = null }: { program: string; seed: DatasetSeed | null; theme?: CSSProperties; specs?: Record<string, Record<string, unknown>>; isStreaming: boolean; skeleton?: boolean; pending?: ReactNode }) {
+  return <div style={{ ...theme, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif' }}><RenderBoundary program={program}><OpenUIRuntime program={program} seed={seed} specs={specs} isStreaming={isStreaming} skeleton={skeleton} pending={pending} /></RenderBoundary></div>;
 }

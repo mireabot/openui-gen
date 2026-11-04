@@ -108,6 +108,7 @@ struct PrimitiveVisual: View {
         case "Change": ChangePrimitive(props: props)
         case "Sparkline": PriceLinePrimitive(props: props, compact: true)
         case "PriceChart": PriceLinePrimitive(props: props, compact: false)
+        case "StepTimeline": StepTimelinePrimitive(props: props)
         case "Rating": RatingPrimitive(props: props)
         case "Note": NotePrimitive(props: props)
         // rows

@@ -97,49 +97,55 @@ struct AvatarPrimitive: View {
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveMediaBaseURL) private var base
 
+    /// A photo sits on its club's colour. With no club known it sits on a neutral fill, not a colour that reads as a club's.
+    private func photoDisc(_ tint: Color?) -> Color {
+        tint ?? palette.color(token: "surface.filled")
+    }
+
     var body: some View {
         let size = props.cgFloat("size") ?? 40
         let radius = props.string("shape") == "rounded" ? PrimitiveMetrics.smallControlRadius : PrimitiveMetrics.pill
         let name = props.string("name") ?? ""
         let monogram = palette.look("Avatar", "monogram")
-        // A club colour from the data wins over the tint token.
+        // A club colour from the data wins over the tint token; "clear" leaves the theme's disc for
+        // the monogram, because a crest has nothing behind it.
         let tint = props.string("color").flatMap { $0.hasPrefix("#") ? palette.value($0) : nil } ?? palette
             .value(props.string("tint"))
         let disc = tint.map(AnyShapeStyle.init) ?? palette.fillStyle(monogram.fill) ?? AnyShapeStyle(Color.gray)
-        ZStack {
+        let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+        let face = ZStack {
             Rectangle().fill(disc)
             Text(name.prefix(1).uppercased())
                 .font(.system(size: size >= 40 ? 16 : 12, weight: .medium))
                 .foregroundStyle(palette.color(monogram.ink) ?? .white)
-            if let url = PrimitiveImages.url(props.string("image"), base: base), props.string("kind") == "player" {
-                // A headshot stands on the disc's bottom edge over the disc colour: no bottom inset, so
-                // the shoulders are never cut off, and the monogram never shows through.
+        }
+        .clipShape(shape)
+        Group {
+            if let url = PrimitiveImages.url(props.string("image"), base: base) {
+                // The whole image fits the frame with no inset, so a player's head is never cut off. A
+                // photo sits on the disc colour, masked by the shape; a crest has nothing behind it and
+                // no mask. The monogram shows until the image loads, and on failure.
                 LazyImage(url: url, transaction: Transaction(animation: .easeOut(duration: 0.15))) { state in
-                    if let photo = state.image {
-                        photo.resizable().scaledToFill()
-                            .frame(width: size, height: size * 0.88, alignment: .bottom)
-                            .clipped()
-                            .frame(width: size, height: size, alignment: .bottom)
-                            .background(disc)
+                    if let image = state.image {
+                        if props.string("kind") == "player" {
+                            image.resizable().scaledToFit()
+                                .frame(width: size, height: size)
+                                .background(photoDisc(tint))
+                                .clipShape(shape)
+                        } else {
+                            image.resizable().scaledToFit()
+                                .frame(width: size, height: size)
+                        }
+                    } else {
+                        face
                     }
                 }
                 .pipeline(PrimitiveImages.pipeline)
-            } else if let url = PrimitiveImages.url(props.string("image"), base: base) {
-                // Logos are full-bleed squares: inset to the shape's inscribed square so the mask never
-                // crops them. The monogram stays visible until the logo loads, and on failure.
-                LazyImage(url: url, transaction: Transaction(animation: .easeOut(duration: 0.15))) { state in
-                    if let logo = state.image {
-                        logo.resizable().scaledToFit()
-                            .padding(size * (props.string("shape") == "rounded" ? 0.1 : 0.15))
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(.white)
-                    }
-                }
-                .pipeline(PrimitiveImages.pipeline)
+            } else {
+                face
             }
         }
         .frame(width: size, height: size)
-        .clipShape(.rect(cornerRadius: radius, style: .continuous))
     }
 }
 

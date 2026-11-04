@@ -36,6 +36,8 @@ export interface ScreenPack {
   evidenceOf(path: DataPath): { readonly question: QuestionId; readonly rest: DataPath } | null;
   /** Whether these reads (relative to the answer) show the question. */
   shows(question: QuestionId, reads: readonly DataPath[], values: DatasetValues): boolean;
+  /** Why this statement, as the writer wrote it, must be written another way; null when it may stand. */
+  refuses?(statement: Expr, values: DatasetValues): string | null;
   /** The count-driven list rule for an @Each over `path`; null when allowed. */
   listProblem(path: DataPath, count: number, container: ListContainer, explicit: ListContainer | null): string | null;
   /** A part that shows the question from primitives and templates only (no writer). */
@@ -128,7 +130,6 @@ export const WRITER_PRIMITIVES: readonly PrimitiveName[] = (PRIMITIVES as readon
 const WRITER_SET = new Set<string>(WRITER_PRIMITIVES);
 /** Primitives a template may expand to beyond the writer's own: Calculation and the controls it scopes. */
 const TEMPLATE_ONLY = new Set(["Calculation", "Slider", "ChoiceTags", "Stepper"]);
-const PLACEHOLDER: Expr = { k: "Comp", name: "Show", args: [{ k: "Bool", v: false }, { k: "Comp", name: "Divider", args: [] }] };
 const LABEL = /^[a-z][A-Za-z0-9]*$/;
 /** `label_x` and deeper names (`label_rev_title`) all belong to the part `label`. */
 const SUB = /^([a-z][A-Za-z0-9]*)_([A-Za-z0-9]+(?:_[A-Za-z0-9]+)*)$/;
@@ -176,10 +177,17 @@ export async function compileScreen(source: ScreenSource, pack: ScreenPack, writ
   if (!writerFailed && (screen.open().length || gaps().length)) {
     repairRounds = 1;
     const open = screen.open().map(part => `${part.name}: missing ${part.missing.join(", ") || "its part statement"}`);
+    const rejected = screen.rejections(issues);
     const uncovered = gaps().map(q => `${q.id}: ${q.text}`);
-    await run([...messages, { role: "user", content: `Repair. Write only the statements that finish these parts or show these questions; do not repeat admitted statements.\n${open.length ? `Unfinished parts:\n${open.join("\n")}\n` : ""}${uncovered.length ? `Questions not yet shown (read their answer data):\n${uncovered.join("\n")}\n` : ""}Rejected so far: ${JSON.stringify(issues.filter(i => i.source !== "coverage").slice(-12))}` }], 1);
+    await run([...messages, { role: "user", content: `Repair. Write only the statements that finish these parts or show these questions; do not repeat admitted statements.\n${open.length ? `Unfinished parts:\n${open.join("\n")}\n` : ""}${uncovered.length ? `Questions not yet shown (read their answer data):\n${uncovered.join("\n")}\n` : ""}${rejected ? `Rejected statements. Rewrite each one, changing only what its problems name:\n${rejected}` : ""}` }], 1);
   }
   return screen.finish(usage, { written, repairRounds, writerCalled: true });
+}
+
+/** A component's arguments in wire order, for a repair message: `Stack(axis, gap, children, align?, ...)`. */
+function signatureOf(name: string): string {
+  const def = PRIMITIVE_BY_NAME.get(name);
+  return def ? `Arguments: ${name}(${Object.entries(def.props).map(([prop, spec]) => prop + (spec.optional ? "?" : "")).join(", ")}); null skips an optional one` : "";
 }
 
 /** A stored part statement map (document) as a BasePart. */
@@ -202,8 +210,8 @@ interface Draft {
   readonly name: string;
   readonly id: PartId;
   readonly statements: Map<string | null, Admitted>;
-  /** Placeholders already on the wire for siblings referenced but not yet admitted. */
-  readonly placed: Set<string>;
+  /** Statements already on the wire. */
+  readonly placed: Set<string | null>;
   closed: boolean;
 }
 
@@ -213,6 +221,8 @@ class Screen {
   /** Sub-statements that arrived before their part statement. */
   private readonly early = new Map<string, Map<string, Admitted>>();
   private readonly fallbacks: CompiledPart[] = [];
+  /** The writer's text for statements rejected and not yet replaced, so repair can show it back. */
+  private readonly rejected = new Map<string, string>();
   private nextId: number;
   /** Whether the writer may start parts under new labels this turn (false when it may only rewrite editable parts). */
   allowNew = true;
@@ -250,7 +260,8 @@ class Screen {
     catch (error) { this.report(fail("invalid-statement", error instanceof Error ? error.message : String(error), owner + (sub ? `_${sub}` : ""))); return; }
     const name = owner + (sub ? `_${sub}` : "");
     const result = validate(expr, owner, this.source, this.pack, name);
-    if ("issues" in result) { result.issues.forEach(this.report); return; }
+    if ("issues" in result) { this.rejected.set(name, raw); result.issues.forEach(this.report); return; }
+    this.rejected.delete(name);
     if (this.screenNodes + result.nodes > LIMITS.nodesPerScreen) { this.report(fail("screen-budget", `The screen exceeds ${LIMITS.nodesPerScreen} nodes`, name)); return; }
     let draft = this.drafts.get(owner);
     if (!draft && sub !== null) {
@@ -289,10 +300,29 @@ class Screen {
     return this.source.required.filter(q => !this.pack.shows(q.id, evidence.get(q.id) ?? [], this.source.values));
   }
 
+  /** Required questions whose content went with a dropped part: it read fields of theirs no finished part reads. */
+  private lost(): readonly RequiredQuestion[] {
+    const shown = this.evidence(this.finished().map(p => p.evidence));
+    const dropped = groupEvidence([...this.drafts.values()].filter(d => !this.complete(d)).flatMap(d => [...d.statements.values()].flatMap(s => s.reads)), this.pack);
+    return this.source.required.filter(q => {
+      const fields = new Set((shown.get(q.id) ?? []).map(path => path[0]));
+      return this.pack.shows(q.id, (dropped.get(q.id) ?? []).filter(path => !fields.has(path[0])), this.source.values);
+    });
+  }
+
+  /** Each rejected statement with its problems and the signature of the components they name. */
+  rejections(issues: readonly ProgramIssue[]): string {
+    return [...this.rejected].map(([name, raw]) => {
+      const own = issues.filter(issue => issue.statementId === name);
+      const components = [...new Set(own.flatMap(issue => issue.component ? [issue.component] : []))];
+      return [raw, ...new Set(own.map(issue => `Problem: ${issue.message}`)), ...components.map(signatureOf)].join("\n");
+    }).join("\n\n");
+  }
+
   finish(usage: WriterUsage, run: { written: number; repairRounds: number; writerCalled: boolean }): CompiledScreen {
     for (const part of this.open()) this.report(fail("part-incomplete", `Dropped: missing ${part.missing.join(", ") || "its part statement"}`, part.name));
     for (const part of this.finished().filter(p => this.repeats(p))) this.report({ source: "coverage", code: "repeated-part", message: `${part.id} only repeats answers the saved screen already shows; it was dropped`, statementId: part.id });
-    for (const q of this.gaps()) {
+    for (const q of new Set([...this.gaps(), ...this.lost()])) {
       this.report({ source: "coverage", code: "question-fallback", message: `${q.id} was not shown by the writer; the server added its default part`, statementId: q.id });
       const expr = this.pack.fallback(q.id, this.source.values);
       const id = `pick${this.nextId++}` as PartId;
@@ -328,19 +358,16 @@ class Screen {
     return missing;
   }
 
-  /** Append this part's newest statement (and placeholders for siblings it names) plus a root that includes it. */
+  /** Put a finished part on the wire, whole, with a root that includes it. Until then clients show its skeleton. */
   private emit(draft: Draft): void {
-    if (!draft.statements.has(null)) return;
+    if (!this.complete(draft)) return;
+    draft.closed = true;
     const lines: string[] = [];
-    const reachable = this.reachable(draft);
-    for (const sub of reachable) {
-      const statement = draft.statements.get(sub);
-      const global = sub === null ? draft.id : `${draft.id}_${sub}`;
-      if (statement) {
-        if (!draft.placed.has(`=${sub}`)) { lines.push(printStatement(global, rename(statement.expr, draft))); draft.placed.add(`=${sub}`); }
-      } else if (!draft.placed.has(sub ?? "")) { lines.push(printStatement(global, PLACEHOLDER)); draft.placed.add(sub ?? ""); }
+    for (const sub of this.reachable(draft)) {
+      if (draft.placed.has(sub)) continue;
+      lines.push(printStatement(sub === null ? draft.id : `${draft.id}_${sub}`, rename(draft.statements.get(sub)!.expr, draft)));
+      draft.placed.add(sub);
     }
-    draft.closed = this.complete(draft);
     if (lines.length) this.hooks.program?.(lines.join("\n") + "\n" + this.root() + "\n");
   }
 
@@ -392,8 +419,8 @@ class Screen {
   /** The root over kept base parts and every writer part whose part statement is on the wire. */
   private root(parts?: readonly CompiledPart[]): string {
     const ids = parts ? parts.map(p => p.id) : [
-      ...this.source.base.filter(b => !this.stale.has(b.id) || this.drafts.get(b.id)?.statements.has(null)).map(b => b.id),
-      ...this.order.map(name => this.drafts.get(name)).filter((d): d is Draft => !!d && d.statements.has(null) && !this.source.base.some(b => b.id === d.id)).map(d => d.id),
+      ...this.source.base.filter(b => { const draft = this.drafts.get(b.id); return !this.stale.has(b.id) || (!!draft && this.complete(draft)); }).map(b => b.id),
+      ...this.order.map(name => this.drafts.get(name)).filter((d): d is Draft => !!d && this.complete(d) && !this.source.base.some(b => b.id === d.id)).map(d => d.id),
     ];
     return `root = Screen([${ids.join(", ")}])`;
   }
@@ -520,7 +547,10 @@ function expandTemplates(e: Expr, pack: ScreenPack): Expr {
  */
 function validate(raw: Expr, owner: string, source: ScreenSource, pack: ScreenPack, name: string): Admitted | { issues: ProgramIssue[] } {
   const issues: ProgramIssue[] = [];
-  const report = (code: string, message: string, component?: string, path?: string) => issues.push(fail(code, message, name, component, path));
+  // One problem once: a template inside @Each is checked per item, so a bad value would report per row.
+  const report = (code: string, message: string, component?: string, path?: string) => { if (!issues.some(issue => issue.code === code && issue.message === message)) issues.push(fail(code, message, name, component, path)); };
+  const refused = pack.refuses?.(raw, source.values);
+  if (refused) return { issues: [fail("use-component", refused, name)] };
   let expr: Expr;
   try { expr = expandTemplates(raw, pack); }
   catch (error) { return { issues: [fail("template", error instanceof Error ? error.message : String(error), name)] }; }
@@ -586,7 +616,7 @@ function validate(raw: Expr, owner: string, source: ScreenSource, pack: ScreenPa
         else resolved = literal(value);
         if (typeof spec.schema === "function") throw new Error("Unexpected child schema");
         const checked = spec.schema.safeParse(resolved);
-        if (!checked.success) throw new Error(`${e.name}.${prop}: ${checked.error.issues.map(issue => issue.message).join("; ")}`);
+        if (!checked.success) throw new Error(`${e.name}.${prop}: ${checked.error.issues.map(issue => issue.message).join("; ")}; got ${JSON.stringify(resolved)}`);
         if (meta.role === "copy" && meta.kind === "action") throw new Error("Actions are not permitted in generated content");
         if ((meta.role === "copy" || meta.role === "data") && meta.kind === "icon" && typeof resolved === "string") {
           const problem = iconProblem(resolved);
@@ -651,6 +681,7 @@ function groupEvidence(reads: readonly DataPath[], pack: ScreenPack): Evidence {
 
 // ------------------------------------------------------------------ the writer's briefing
 
+/** The system prompt is the same for every screen and follow-up, so it stays one cache entry: anything that varies goes in the user turn. */
 function writerMessages(source: ScreenSource, pack: ScreenPack, allowNew: boolean): Message[] {
   const signatures = generateSystemPrompt(slotLibrary(WRITER_PRIMITIVES).library.toSpec());
   // The signatures name token types; these are their only values (the closed ground rules).
@@ -661,9 +692,9 @@ function writerMessages(source: ScreenSource, pack: ScreenPack, allowNew: boolea
   return [{ role: "system", content: `You compose a mobile screen in OpenUI Lang that answers the user's request from the supplied data.
 Write one statement per line. Each part of the screen is a statement named with a lowerCamel label (\`quarters = Section(...)\`); split a large part into sub-statements named label_name (\`quarters_table = Card(...)\`) and reference them by name from the part. Write the part statement first, then its sub-statements top-down. Parts appear in the order you write them. Never write root, d, Screen, queries, mutations, state or actions; never reference another part.
 Data props must reference the data: d.<path> or an @Each item (\`@Each(d.answers.q1.periods, "p", EarningsCard(p))\`); never type figures as literals in data props. Copy (titles, labels) is plain text; do not invent figures in it.
-Answer every required question (${source.required.map(q => q.id).join(", ") || "none"}): each must be shown by reading its answer data (d.answers.<id>). An answer marked partial or unavailable must show its note.
-Templates are optional: call one by name with data that fits it, or copy its structure and change it. Use only token values the signatures allow.
-At most ${LIMITS.parts} parts, ${LIMITS.statementsPerPart} statements per part, ${LIMITS.nodesPerPart} nodes per part after @Each expansion.${editing}
+Answer every required question named with the request: each must be shown by reading its answer data (d.answers.<id>). An answer marked partial or unavailable must show its note.
+Templates are optional: call one by name with data that fits it, or copy its structure and change it. Use only token values the signatures allow. Arguments are positional: to set a later optional argument, pass null for each one before it (\`Stack("v", 12, [a, b], null, null, null, true)\` sets divided).
+At most ${LIMITS.parts} parts, ${LIMITS.statementsPerPart} statements per part, ${LIMITS.nodesPerPart} nodes per part after @Each expansion.
 
 Primitives:
 ${signatures}
@@ -673,7 +704,7 @@ ${tokens}
 
 Templates:
 ${pack.templates}` },
-  { role: "user", content: `Request: ${source.request}\n\n${pack.briefing(source)}${current ? `\n\n# Parts you may rewrite (current statements)\n${current}` : ""}` }];
+  { role: "user", content: `Required questions: ${source.required.map(q => q.id).join(", ") || "none"}.${editing}\n\nRequest: ${source.request}\n\n${pack.briefing(source)}${current ? `\n\n# Parts you may rewrite (current statements)\n${current}` : ""}` }];
 }
 
 // ------------------------------------------------------------------ streaming statements

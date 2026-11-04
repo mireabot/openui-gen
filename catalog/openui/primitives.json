@@ -1,7 +1,7 @@
 {
   "version": 1,
   "langCore": "1.0.0",
-  "digest": "4684bedb652d5d9400fa03cdeebf5442749a291570546fce61c373556011792e",
+  "digest": "83b4dfb2b80cc7868e55e09e38af18a31f33105ad72808f90ed5f0b38dbc8054",
   "primitives": [
     {
       "name": "Screen",
@@ -415,6 +415,13 @@
           "optional": true,
           "role": "copy",
           "note": "keep the height of `lines` lines even when the text is shorter, so cards in a set match"
+        },
+        {
+          "name": "color",
+          "optional": true,
+          "role": "data",
+          "kind": "color",
+          "note": "a colour from the data (a medal, a club); overrides tone and ink; empty uses them"
         }
       ]
     },
@@ -568,13 +575,13 @@
           "optional": true,
           "role": "data",
           "kind": "color",
-          "note": "a club colour from the data; fills the disc, overrides tint"
+          "note": "from the data: a player's club colour fills the disc behind the photo; \"clear\" for a club with a logo, whose crest has no fill; a club without a logo uses its colour for the monogram"
         },
         {
           "name": "kind",
           "optional": true,
           "role": "copy",
-          "note": "club (default): a crest inset inside the disc · player: a headshot that fills the disc, standing on its bottom edge"
+          "note": "club (default): a crest with nothing behind it · player: a headshot on the disc colour; both fit the whole frame"
         }
       ]
     },
@@ -807,7 +814,7 @@
           "name": "size",
           "optional": true,
           "role": "copy",
-          "note": "regular: 24 tall; large: title1 semibold, padding 12 horizontal and 4 vertical, radius 8"
+          "note": "small: 11 semibold, 16 tall, padding 4, for a value on an avatar; regular: 24 tall; large: title1 semibold, padding 12 horizontal and 4 vertical, radius 8"
         },
         {
           "name": "fill",
@@ -1420,6 +1427,37 @@
           "optional": true,
           "role": "copy",
           "note": "auto (default): shade the points' pre-market and after-hours stretches · off"
+        }
+      ]
+    },
+    {
+      "name": "StepTimeline",
+      "args": [
+        {
+          "name": "value",
+          "optional": false,
+          "role": "data",
+          "kind": "text",
+          "note": "the current value, the header's left side"
+        },
+        {
+          "name": "segments",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "ticks",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "caption",
+          "optional": true,
+          "role": "data",
+          "kind": "text",
+          "note": "under the value"
         }
       ]
     },

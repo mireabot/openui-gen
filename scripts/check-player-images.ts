@@ -11,8 +11,8 @@ import { sportsRoutes } from "../src/routes/sports.js";
 import { askSports, editSports, type SportsDeps, type SportsResult } from "../src/sports/ask.js";
 import { inferFields } from "../src/sports/dataset.js";
 import { DocumentStore, nextRevision } from "../src/sports/documents.js";
-import { createPlayerLookup, type FotmobTransport, type PlayerLookup } from "../src/sports/fotmob.js";
-import { componentPlayerQueries, createPlayerResolver, populatePlayerImages, rawPlayerQueries } from "../src/sports/player-images.js";
+import { createPlayerLookup, type FotmobTransport, type PlayerLookup, type PlayerPicker, marketValueText, matchRatings, playerValueChart, valueTicks } from "../src/sports/fotmob.js";
+import { componentPlayerQueries, createPlayerResolver, fillClubMarks, populatePlayerImages, rawPlayerQueries } from "../src/sports/player-images.js";
 import type { SportsPlan } from "../src/sports/plan.js";
 
 const IMAGE = "https://images.fotmob.com/image_resources/playerimages/1096353.png";
@@ -32,7 +32,7 @@ const send: FotmobTransport = async raw => {
 const lookup = createPlayerLookup({ send });
 assert.deepEqual(await lookup({ name: "Cole Palmer", team: "Chelsea" }), PROFILE);
 assert.deepEqual(await lookup({ name: "Cole Palmer", team: "Chelsea" }), PROFILE);
-assert.equal(calls.length, 2, "a cached identity needs no second search or profile request");
+assert.equal(calls.length, 4, "nothing is cached: each lookup searches again");
 assert.ok(calls[0]?.startsWith("https://apigw.fotmob.com/searchapi/suggest?"));
 assert.equal(new URL(calls[0]!).searchParams.get("term"), "Cole Palmer");
 assert.equal(new URL(calls[1]!).searchParams.get("id"), "1096353");
@@ -69,6 +69,62 @@ for (const response of [
   assert.equal(profiles, 0, "unverified identities never produce a profile or image URL");
 }
 
+// Run 81cbaba2: namesakes and players who have moved go to the model, which reads each career. It can only choose a real result.
+{
+  const entry = (id: string, name: string, team: string) => option(id, name, team);
+  const careers: Record<string, string[]> = { "1": ["Manchester City", "Chelsea", "Benfica"], "2": ["C.S. Cartaginés"] };
+  const searches: string[] = [];
+  const fotmob = createPlayerLookup({ send: async raw => {
+    const url = new URL(raw);
+    if (url.hostname === "apigw.fotmob.com") {
+      const term = url.searchParams.get("term")!;
+      searches.push(term);
+      return term === "Heung-min Son" ? searchPayload(entry("1", "Heung-min Son", "Los Angeles FC")) : searchPayload(entry("1", "Enzo Fernández", "Manchester City"), entry("2", "Enzo Fernandez", "C.S. Cartaginés"));
+    }
+    const id = url.searchParams.get("id")!;
+    return { id: Number(id), name: "Enzo Fernández", primaryTeam: { teamName: careers[id]![0] }, careerHistory: { careerItems: { senior: { teamEntries: careers[id]!.map(team => ({ team })) } } } };
+  } });
+  const photo = "https://images.fotmob.com/image_resources/playerimages/1.png";
+  const seen: { name: string; careers: string[][] }[] = [];
+  const chooses = (fotmobId: number | null, searchAgain: string | null = null): PlayerPicker => async (query, candidates) => {
+    seen.push({ name: query.name, careers: candidates.map(c => [...c.career]) });
+    return { fotmobId, searchAgain };
+  };
+  assert.deepEqual(await fotmob({ name: "Enzo Fernández", team: "Chelsea" }, chooses(1)).then(p => [p?.imageUrl, p?.team]), [photo, "Chelsea"], "the model's choice decides, and he keeps the club asked about");
+  assert.deepEqual(seen[0]?.careers, [careers["1"], careers["2"]], "the model reads each namesake's career");
+  assert.equal(await fotmob({ name: "Enzo Fernández", context: "x" }, chooses(99)), null, "an id that is not in the results is ignored");
+  assert.equal(await createPlayerLookup({ send: async raw => new URL(raw).hostname === "apigw.fotmob.com" ? searchPayload(entry("1", "Enzo Fernández", "Manchester City"), entry("2", "Enzo Fernandez", "C.S. Cartaginés")) : {} })({ name: "Enzo Fernández" }), null, "with no model, namesakes stay unresolved");
+  let calls = 0;
+  const secondSearch: PlayerPicker = async (_query, candidates) => { calls++; return calls === 1 ? { fotmobId: null, searchAgain: "Heung-min Son" } : { fotmobId: candidates[0]?.fotmobId ?? null, searchAgain: null }; };
+  searches.length = 0;
+  assert.equal((await fotmob({ name: "Son Heung-Min" }, secondSearch))?.imageUrl, photo, "a name FotMob knows differently is searched again");
+  assert.deepEqual(searches, ["Son Heung-Min", "Heung-min Son"]);
+  assert.deepEqual(componentPlayerQueries({ board: { metric: "Goals", entries: [{ name: "João Pedro", detail: "Forward · Chelsea" }] } }, []), [{ name: "João Pedro", context: "Forward · Chelsea" }], "the detail line reaches the model");
+  const filled = fillClubMarks({ values: { answers: { q1: { match: { home: { name: "West Ham United", logo: "", color: "" }, away: { name: "Chelsea", logo: "chelsea.png", color: "#144992" }, unknown: { name: "Nowhere FC", logo: "", color: "#123456" } }, scorer: { kind: "player", name: "Everton", logo: "", color: "#0606fa" } } } }, fields: [], asOf: "", source: "espn" as const },
+    [{ id: "21", name: "West Ham United", short: "West Ham", abbreviation: "WHU", color: "#7a263a", alternateColor: "", logo: "whu.png", league: "eng.1" }, { id: "368", name: "Everton", short: "Everton", abbreviation: "EVE", color: "#0606fa", alternateColor: "", logo: "eve.png", league: "eng.1" }]);
+  assert.deepEqual((filled.values.answers as Record<string, unknown>).q1, { match: { home: { name: "West Ham United", logo: "whu.png", color: "clear" }, away: { name: "Chelsea", logo: "chelsea.png", color: "clear" }, unknown: { name: "Nowhere FC", logo: "", color: "#123456" } }, scorer: { kind: "player", name: "Everton", logo: "", color: "#0606fa" } }, "a club with a logo passes clear; a club without one keeps its colour for the monogram; a player keeps the disc colour");
+  // ESPN and FotMob name Inter differently, and a late kickoff can sit under FotMob's earlier day.
+  const fotmobMatches = async (url: string) => url.includes("matchDetails") ? { content: { matchFacts: { topPlayers: { homeTopPlayers: [{ playerId: 7, name: { fullName: "Hakan Calhanoglu" }, playerRatingRounded: "8.1", positionLabel: { label: "DM" } }], awayTopPlayers: [] } } } }
+    : url.endsWith("20261101") ? { leagues: [{ matches: [{ id: 1, home: { name: "Inter", score: 1 }, away: { name: "Roma", score: 1 } }, { id: 2, home: { name: "Inter", score: 2 }, away: { name: "Lille", score: 0 } }] }] } : { leagues: [] };
+  assert.deepEqual(await matchRatings({ date: "2026-11-02T00:30:00Z", home: "Internazionale", away: "Monaco", homeScore: 2, awayScore: 0 }, fotmobMatches), { home: [{ fotmobId: 7, name: "Hakan Calhanoglu", rating: "8.1", position: "DM", imageUrl: "https://images.fotmob.com/image_resources/playerimages/7.png" }], away: [] }, "the match is found by the day before, its score and one club's name");
+  assert.equal(await matchRatings({ date: "2026-11-01T18:00:00Z", home: "Internazionale", away: "AS Monaco", homeScore: 3, awayScore: 0 }, fotmobMatches), null, "a different score is a different match");
+  // A move back to a club is a new stretch, and the history reads in date order whatever order it arrives in.
+  const spell = (date: string, value: number, teamId: number, teamName: string) => ({ date, value, teamId, teamName, teamColor: { lightMode: "#111111", darkMode: "#222222" } });
+  const chart = playerValueChart("A Player", [spell("2024-01-01T00:00:00Z", 2_000_000, 2, "Loan FC"), spell("2023-01-01T00:00:00Z", 950_000, 1, "Home FC"), spell("2025-01-01T00:00:00Z", 110_000_000, 1, "Home FC")]);
+  assert.deepEqual(chart?.segments.map(s => [s.name, s.points.map(p => p.display)]), [["Home FC", ["€950k"]], ["Loan FC", ["€2M"]], ["Home FC", ["€110M"]]], "one stretch per unbroken spell, oldest first, values short");
+  assert.equal(chart?.value, "€110M", "the current value is the latest one");
+  assert.deepEqual([900_000, 999_499, 999_500, 1_000_000, 1_250_000].map(marketValueText), ["€900k", "€999k", "€1M", "€1M", "€1.3M"], "thousands under a million, millions from there, never \"€1000k\"");
+  assert.deepEqual([116_235_970, 900_000].map(top => valueTicks(top).map(tick => tick.display)), [["€0", "€50M", "€100M"], ["€0", "€250k", "€500k", "€750k"]], "round y axis labels from zero, no higher than the top value");
+  assert.equal(playerValueChart("A Player", [spell("2024-01-01T00:00:00Z", 1, 1, "Home FC")]), null, "one value is not a history");
+  // Haaland's 54 months at City broke the dataset's limit of 40 per list, and the whole chart became "Couldn't show this data".
+  const months = Array.from({ length: 54 }, (_, month) => spell(new Date(Date.UTC(2022, 6 + month)).toISOString(), month === 37 ? 200_000_000 : 1_000_000 + month, 1, "Long FC"));
+  const long = playerValueChart("A Player", months)!.segments[0]!.points;
+  assert.equal(long.length, 40, "a long spell fits the dataset's list limit");
+  assert.deepEqual([long[0]!.label, long.at(-1)!.label, Math.max(...long.map(point => point.value))], ["Jul 2022", "Dec 2026", 200_000_000], "it keeps the spell's start, end and peak");
+  const cell = (name: string, club: string, present = true) => ({ present, name, detail: "Midfielder", club: { name: club } });
+  assert.deepEqual(componentPlayerQueries({ q1: { card: { metric: "Goals", rows: [{ home: cell("Cole Palmer", "Chelsea"), away: cell("", "", false) }] } } }, []), [{ name: "Cole Palmer", team: "Chelsea", context: "Midfielder" }], "a two-team card looks up its players by club and skips an empty side");
+}
+
 const mismatch = createPlayerLookup({ send: async raw => new URL(raw).hostname === "apigw.fotmob.com"
   ? searchPayload(option("1096353", "Cole Palmer", "Chelsea")) : profilePayload(422685, "Bruno Fernandes", "Manchester United") });
 assert.equal(await mismatch({ name: "Cole Palmer" }), null, "profile identity must match the search result");
@@ -79,7 +135,7 @@ const recovery = createPlayerLookup({ send: async raw => {
 } });
 assert.equal(await recovery({ name: "Cole Palmer" }), null);
 failing = false;
-assert.deepEqual(await recovery({ name: "Cole Palmer" }), PROFILE, "transient failures do not cache a missing identity");
+assert.deepEqual(await recovery({ name: "Cole Palmer" }), PROFILE, "a failed lookup does not stop the next one");
 
 let budgetLookups = 0;
 const noBudget = createPlayerResolver(async () => { budgetLookups++; return PROFILE; }, [], 0);
@@ -144,17 +200,28 @@ assert.deepEqual(correctedMetadata.fields.find(field => field.path === "answers.
 assert.deepEqual(correctedMetadata.fields.find(field => field.path === "answers.q1.player.fotmobId"), { path: "answers.q1.player.fotmobId", kind: "number", format: "integer" });
 assert.deepEqual(correctedMetadata.fields.find(field => field.path === "answers.q1.player.logo"), { path: "answers.q1.player.logo", kind: "text", format: "none" });
 assert.ok(correctedMetadata.fields.some(field => field.path === "answers.q1.passAccuracy" && field.format === "percent"));
-assert.equal((correctedMetadata.values as { answers: { q1: { player: { kind: unknown } } } }).answers.q1.player.kind, "player", "a resolved player's Avatar stands the photo on the disc's bottom edge");
+assert.equal((correctedMetadata.values as { answers: { q1: { player: { kind: unknown } } } }).answers.q1.player.kind, "player", "a resolved player's Avatar shows the photo on the disc colour");
 const clubAnswers = { q1: { board: { title: "League table", metric: "Points", entries: [{ name: "Arsenal", detail: "Premier League", value: "20", logo: "https://example.test/arsenal.png", color: "#ef0107" }] } } };
-assert.deepEqual(componentPlayerQueries(clubAnswers, []), [{ name: "Arsenal" }], "an unknown leaderboard entry is only a possible player");
+assert.deepEqual(componentPlayerQueries(clubAnswers, []), [{ name: "Arsenal", context: "Premier League" }], "an unknown leaderboard entry is only a possible player");
 const clubDataset = { values: { answers: clubAnswers }, fields: inferFields(clubAnswers, "answers"), asOf: "2026-10-27", source: "espn" as const };
 assert.deepEqual(populatePlayerImages(clubDataset, [], []).values, clubDataset.values, "an unresolved component candidate cannot erase a club's crest or add player metadata");
+// Only the clubs a screen is about used to reach d.clubs, so every other player's photo sat on the theme's orange.
+const clubDirectoryFixture = [
+  { id: "1", name: "Liverpool", short: "Liverpool", abbreviation: "LIV", color: "#d11317", alternateColor: "", logo: "", league: "eng.1" },
+  { id: "2", name: "Bayern Munich", short: "Bayern", abbreviation: "BAY", color: "#dc052d", alternateColor: "", logo: "", league: "ger.1" },
+] as const;
+const colours = (fillClubMarks({ values: { answers: { q1: { board: { entries: [
+  { name: "Alexander Isak", kind: "player", detail: "Striker · Liverpool", logo: "x", color: "" },
+  { name: "Michael Olise", kind: "player", detail: "FC Bayern München", logo: "x", color: "#123456" },
+  { name: "Someone Else", kind: "player", detail: "Unknown FC", logo: "x", color: "" },
+] } } } }, fields: [], asOf: "2026-11-04", source: "espn" as const }, clubDirectoryFixture as never).values as { answers: { q1: { board: { entries: { color: string }[] } } } }).answers.q1.board.entries.map(entry => entry.color);
+assert.deepEqual(colours, ["#d11317", "#dc052d", ""], "a player's disc is their club's colour, from any part of the detail line and under a local name; an unknown club stays empty");
 const directory = mkdtempSync(path.join(tmpdir(), "player-images-check-"));
 try {
   const store = new SnapshotStore(path.join(directory, "snapshots"));
   const documents = new DocumentStore(path.join(directory, "documents"));
   const results: SportsResult[] = [];
-  const app = sportsRoutes({ store, documents, ask: async (request, snapshots, hooks, run) => {
+  const app = sportsRoutes({ store, documents, savedDirectory: path.join(directory, "saved"), ask: async (request, snapshots, hooks, run) => {
     const result = await askSports(request, snapshots, hooks, run, deps());
     results.push(result);
     return result;
@@ -231,4 +298,4 @@ try {
   rmSync(directory, { recursive: true, force: true });
 }
 
-console.log("player images: verified identity, ambiguity, cache, failure recovery, API object, schema omission, Avatar wiring, follow-ups and raw fallback passed");
+console.log("player images: verified identity, ambiguity, failure recovery, API object, schema omission, Avatar wiring, follow-ups and raw fallback passed");

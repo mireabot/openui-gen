@@ -9,6 +9,9 @@ final class AskModel {
     var prompt = ""
     private(set) var session: OpenUISession?
     private(set) var errorMessage: String?
+    private(set) var saveState = SaveState.idle
+
+    enum SaveState: Equatable { case idle, saving, saved, failed }
 
     @ObservationIgnored private let service: any OpenUIStreaming
 
@@ -25,6 +28,7 @@ final class AskModel {
         guard !text.isEmpty, !isBusy else { return }
         prompt = ""
         errorMessage = nil
+        saveState = .idle
         do {
             let session = try session ?? OpenUISession(service: service)
             self.session = session
@@ -36,10 +40,23 @@ final class AskModel {
         }
     }
 
+    /// Keeps a copy of the screen as it stands on the server.
+    func save() async {
+        guard let document = session?.document, saveState != .saving, saveState != .saved else { return }
+        saveState = .saving
+        do {
+            try await service.save(document)
+            saveState = .saved
+        } catch {
+            saveState = .failed
+        }
+    }
+
     /// Drops the document so the next prompt starts a new one.
     func reset() {
         session = nil
         errorMessage = nil
+        saveState = .idle
     }
 
     private static func message(for error: any Error) -> String {

@@ -37,7 +37,7 @@ OpenUIGen/GenUI/Core/       OpenUI parser and compiler, node model, DesignTheme 
 OpenUIGen/GenUI/Runtime/    OpenUISession: streams a screen, recompiles, keeps follow-ups on one document
 OpenUIGen/GenUI/Streaming/  OpenUIStreamService: SSE client for /lang/sports/stream (follow-ups when the backend has them)
 OpenUIGen/GenUI/Renderer/   OpenUISceneView and the primitives; Tokens/ holds metrics, type roles, palette
-OpenUIGen/Views/            AskView: prompt bar over the rendered screen
+OpenUIGen/Views/            AskView: prompt bar over the rendered screen; PasteScreenView: render a pasted schema; Gallery/: the Components page
 OpenUIGenTests/             unit tests (Swift Testing); Support/ holds the shared fakes
 ```
 

@@ -72,6 +72,8 @@ export const data = {
   icon: (note?: string) => spec<string, "data">(z.string(), { role: "data", kind: "icon", ...noted(note) }),
   /** A colour from the data, "#rrggbb" (a club's ESPN colour) or "" for none; never a typed literal. */
   color: (note?: string) => spec<string, "data">(z.string().regex(/^(#[0-9a-fA-F]{6})?$/), { role: "data", kind: "color", ...noted(note) }),
+  /** An Avatar's colour: "#rrggbb", "" for none, or "clear" for no fill behind a crest. */
+  discColor: (note?: string) => spec<string, "data">(z.string().regex(/^(#[0-9a-fA-F]{6}|clear)?$/), { role: "data", kind: "color", ...noted(note) }),
   status: (note?: string) => spec<(typeof TONE)[number], "data">(z.enum(TONE), { role: "data", kind: "status", ...noted(note) }),
   list: <T>(item: z.ZodType<T>, range: Range = {}, note?: string) => spec<T[], "data">(ranged(z.array(item), range), { role: "data", kind: "list", ...noted(note) }),
   record: <T>(schema: z.ZodType<T>, note?: string) => spec<T, "data">(schema, { role: "data", kind: "record", ...noted(note) }),

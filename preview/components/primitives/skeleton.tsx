@@ -41,6 +41,17 @@ const ALIGN: Record<string, string> = { start: "flex-start", center: "center", e
 const JUSTIFY: Record<string, string> = { start: "flex-start", center: "center", end: "flex-end", between: "space-between" };
 const radius = (r: number | "pill") => (r === "pill" ? 999 : r);
 
+/**
+ * The frames still to fill: one finished part replaces one frame, and the last frame stays until the
+ * stream ends, because the writer may have more parts than the plan had questions.
+ */
+export function pendingFrames(skeleton: Skeleton, program: string): readonly SkeletonFrame[] {
+  const root = [...program.matchAll(/^root = Screen\(\[(.*)\]\)$/gm)].at(-1)?.[1] ?? "";
+  const shown = root ? root.split(",").length : 0;
+  const rest = skeleton.blocks.slice(shown);
+  return rest.length ? rest : skeleton.blocks.slice(-1);
+}
+
 /** One server frame. Containers with a surface draw on it (cards keep their look); shapes shimmer. */
 export function Frame({ f, inRow = false }: { f: SkeletonFrame; inRow?: boolean }): ReactNode {
   switch (f.kind) {

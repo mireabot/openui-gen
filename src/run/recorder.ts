@@ -1,3 +1,4 @@
+import { config } from "../config.js";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -20,7 +21,14 @@ export interface ScreenProgress {
 
 export type Stage = ScreenProgress["stage"] | "search" | "data" | "retrieve";
 export type Engine = "llm" | "jev";
-export interface RunProgress extends Omit<ScreenProgress, "stage"> { readonly stage: Stage; readonly sources?: readonly WebSource[] }
+export interface RunProgress extends Omit<ScreenProgress, "stage"> {
+  readonly stage: Stage;
+  readonly sources?: readonly WebSource[];
+  /** The search step: Parallel web searches and ESPN lookups in this run, and every source they read. */
+  readonly searches?: number;
+  readonly lookups?: number;
+  readonly sourceCount?: number;
+}
 
 export interface RunStarted {
   readonly type: "run.started";
@@ -28,6 +36,9 @@ export interface RunStarted {
   readonly prompt: string;
   readonly model: string;
   readonly startedAt: string;
+  /** Where the Claude stages ran. A debug run's $0 is plan usage, not a free run. */
+  readonly mode: "debug" | "api";
+  readonly dataSource: "mixed" | "fotmob";
   readonly stages?: readonly Stage[];
   readonly summaryModel?: string;
   /** A domain pack's run (`sports`): its own steps and data sources. Absent for the general generator. */
@@ -92,7 +103,8 @@ export interface RunCost {
 export interface RunFinished {
   readonly type: "run.finished";
   readonly runId: string;
-  readonly status: "ok" | "failed";
+  /** "partial": it finished, but the writer's part was dropped and a default stands in for it. */
+  readonly status: "ok" | "partial" | "failed";
   readonly totalMs: number;
   readonly costUSD: RunCost;
   readonly retries: number;
@@ -123,7 +135,7 @@ export class RunRecorder {
   private readonly events: RunEvent[] = [];
 
   constructor(prompt: string, model: string, metadata: Pick<RunStarted, "stages" | "summaryModel" | "pack" | "generation" | "followUp"> = {}) {
-    this.events.push({ type: "run.started", runId: this.runId, prompt, model, startedAt: new Date().toISOString(), ...metadata });
+    this.events.push({ type: "run.started", runId: this.runId, prompt, model, startedAt: new Date().toISOString(), mode: config().GENERATION_MODE, dataSource: config().DATA_SOURCE, ...metadata });
   }
 
   recorded(): readonly RunEvent[] {

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { SnapshotArgs, SnapshotSchema } from "../lang/snapshots.js";
@@ -47,6 +47,16 @@ export function nextRevision(previous: SportsDocument | null, id: string, prompt
   };
 }
 
+/** A copy the user chose to keep, one file per revision: saving the same revision again replaces it. */
+export async function saveGeneration(directory: string, document: SportsDocument, now = new Date()): Promise<string> {
+  await mkdir(directory, { recursive: true });
+  const name = `${document.id}-r${document.revision}.json`;
+  const temporary = path.join(directory, `${name}.${randomUUID()}.tmp`);
+  await writeFile(temporary, JSON.stringify({ savedAt: now.toISOString(), ...document }, null, 2), "utf8");
+  await rename(temporary, path.join(directory, name));
+  return name;
+}
+
 export class DocumentConflict extends Error {
   constructor(readonly revision: number) { super("The document changed. Retry with the current revision."); }
 }
@@ -75,6 +85,13 @@ export class DocumentStore {
       if (error && typeof error === "object" && "code" in error && error.code === "ENOENT") return null;
       throw error;
     }
+  }
+  /** Saved screens, newest first, by the prompt that started them. A file that no longer parses is skipped. */
+  async list(limit = 50): Promise<{ id: string; revision: number; prompt: string; model: string; updatedAt: string }[]> {
+    const names = await readdir(this.directory).catch(() => [] as string[]);
+    const documents = await Promise.all(names.filter(name => name.endsWith(".json")).map(name => this.get(name.slice(0, -5)).catch(() => null)));
+    return documents.flatMap(document => document ? [{ id: document.id, revision: document.revision, prompt: document.turns.find(turn => turn.role === "user")?.content ?? "", model: document.model, updatedAt: document.updatedAt }] : [])
+      .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)).slice(0, limit);
   }
   /** Call under the document's lock. Rename is the only persistent commit point. */
   async put(document: SportsDocument, baseRevision: number, signal?: AbortSignal): Promise<void> {
