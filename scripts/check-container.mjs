@@ -20,7 +20,7 @@ try {
     await setTimeout(500);
   }
   assert.ok(ready, "container did not become healthy");
-  assert.deepEqual(await (await fetch(base + "/health")).json(), { status: "ok" });
+  assert.deepEqual(await (await fetch(base + "/health")).json(), { status: "ok", mode: "api", dataSource: "mixed" });
   const page = await fetch(base + "/");
   assert.equal(page.status, 200);
   assert.match(page.headers.get("content-type") ?? "", /text\/html/);

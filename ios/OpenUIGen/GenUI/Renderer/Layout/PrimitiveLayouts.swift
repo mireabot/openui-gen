@@ -71,6 +71,7 @@ struct FlowLayout: Layout {
 struct ColumnsLayout: Layout {
     var columns: Int
     var spacing: CGFloat
+    var rowSpacing: CGFloat? = nil
 
     static func columnWidth(container width: CGFloat, columns: Int, spacing: CGFloat) -> CGFloat {
         let count = CGFloat(max(1, columns))
@@ -81,7 +82,7 @@ struct ColumnsLayout: Layout {
         let width = proposal.width ?? idealWidth(subviews)
         let cell = Self.columnWidth(container: width, columns: columns, spacing: spacing)
         let heights = rowHeights(subviews, cell: cell)
-        return CGSize(width: width, height: heights.reduce(0, +) + spacing * CGFloat(max(0, heights.count - 1)))
+        return CGSize(width: width, height: heights.reduce(0, +) + (rowSpacing ?? spacing) * CGFloat(max(0, heights.count - 1)))
     }
 
     func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
@@ -97,7 +98,7 @@ struct ColumnsLayout: Layout {
                     proposal: ProposedViewSize(width: cell, height: height)
                 )
             }
-            y += height + spacing
+            y += height + (rowSpacing ?? spacing)
         }
     }
 

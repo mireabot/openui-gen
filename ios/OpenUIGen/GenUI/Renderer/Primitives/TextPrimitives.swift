@@ -16,7 +16,7 @@ struct InkResolver {
     }
 }
 
-/// `Text(content, role, weight?, ink?, lines?, align?)`.
+/// `Text(content, role, weight?, ink?, lines?, align?, tone?, reserve?, @color?)`.
 struct TextPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
@@ -25,25 +25,33 @@ struct TextPrimitive: View {
     var body: some View {
         let lines = props.int("lines").flatMap { $0 > 0 ? $0 : nil }
         let alignment = props.string("align")
-        // Unpublished facts arrive as null and read as a dash.
-        Text(props.string("content") ?? "—")
-            .primitiveFont(
-                PrimitiveTypeRole(token: props.string("role")),
-                weight: Font.Weight(token: props.string("weight"))
-            )
-            .foregroundStyle(
-                props.string("tone")
-                    .map { palette.tone($0) } ?? InkResolver(palette: palette, onMedia: onMedia)(props.string("ink"))
-            )
-            .modifier(LineLimit(lines: lines, reserve: props.flag("reserve")))
-            .truncationMode(.tail)
-            .multilineTextAlignment(alignment == "center" ? .center : alignment == "end" ? .trailing : .leading)
-            // Its own height, up to `lines`: a stack can't squeeze wrapping text to one line.
-            .fixedSize(horizontal: false, vertical: true)
-            .frame(
-                maxWidth: alignment == "center" || alignment == "end" ? .infinity : nil,
-                alignment: alignment == "center" ? .center : alignment == "end" ? .trailing : .leading
-            )
+        // No data, no line: an empty detail or caption takes no space.
+        if props.string("content") != "" {
+            // Unpublished facts arrive as null and read as a dash.
+            Text(props.string("content") ?? "—")
+                .primitiveFont(
+                    PrimitiveTypeRole(token: props.string("role")),
+                    weight: Font.Weight(token: props.string("weight"))
+                )
+                .foregroundStyle(
+                    dataColor ?? props.string("tone")
+                        .map { palette.tone($0) } ?? InkResolver(palette: palette, onMedia: onMedia)(props.string("ink"))
+                )
+                .modifier(LineLimit(lines: lines, reserve: props.flag("reserve")))
+                .truncationMode(.tail)
+                .multilineTextAlignment(alignment == "center" ? .center : alignment == "end" ? .trailing : .leading)
+                // Its own height, up to `lines`: a stack can't squeeze wrapping text to one line.
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(
+                    maxWidth: alignment == "center" || alignment == "end" ? .infinity : nil,
+                    alignment: alignment == "center" ? .center : alignment == "end" ? .trailing : .leading
+                )
+        }
+    }
+
+    /// A colour from the data, which wins over tone and ink; empty means none.
+    private var dataColor: Color? {
+        props.string("color").flatMap { $0.hasPrefix("#") ? palette.value($0) : nil }
     }
 }
 

@@ -7,6 +7,7 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   output: "export",
+  experimental: { extensionAlias: { ".js": [".ts", ".tsx", ".js"] } },
   // Next 16 blocks dev resources for any host but localhost, so a page opened at 127.0.0.1 never hydrates.
   allowedDevOrigins: ["127.0.0.1"],
   turbopack: {

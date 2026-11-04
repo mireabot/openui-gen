@@ -23,7 +23,10 @@ public extension PrimitiveTree {
         var gap = 28.0
         var seen: Set<String> = []
         while ids.count == 1, let only = node(ids[0]), only.primitive == "Stack",
-              only.props["axis"] == .string("v"), seen.insert(only.id).inserted
+              only.props["axis"] == .string("v"),
+              (Self.number(only.props["paddingX"]) ?? 0) == 0,
+              (Self.number(only.props["paddingY"]) ?? 0) == 0,
+              seen.insert(only.id).inserted
         {
             gap = Self.number(only.props["gap"]) ?? 0
             ids = only.children["children"] ?? []

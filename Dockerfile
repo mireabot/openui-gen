@@ -22,7 +22,8 @@ RUN npm run build && npm prune --omit=dev
 
 FROM node:22-bookworm-slim AS runtime
 WORKDIR /app
-ENV NODE_ENV=production PORT=8080
+# The image has no Claude Code CLI: deployments always run on the API.
+ENV NODE_ENV=production PORT=8080 GENERATION_MODE=api DATA_SOURCE=mixed
 COPY --from=server-build /app/package.json ./
 COPY --from=server-build /app/node_modules/ node_modules/
 COPY --from=server-build /app/dist/ dist/

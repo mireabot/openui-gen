@@ -26,8 +26,8 @@ fallback (`fallbacks: "default"`); Haiku has none.
 
 ## The component library
 
-`src/lang/primitives.ts` is the only list of primitives (42: `Screen`, `Section`, `Card`, `Stack`,
-`Grid`, `Rail`, `Text`, `Number`, `PriceChart`, `Calculation`, …). Each has zod props whose key order
+`src/lang/primitives.ts` is the only list of primitives, including `Screen`, `Section`, `Card`, `Stack`,
+`Grid`, `Rail`, `Text`, `Number`, `ColorCell`, `PriceChart`, and `Calculation`. Each has zod props whose key order
 is the positional order on the wire, a role per prop (`node`, `nodes`, `data`, `copy`, `token`), and
 ground rules the renderer applies (a Card has radius 24 and padding 16; props only choose between
 allowed tokens).
@@ -41,9 +41,9 @@ primitive name:
 - SwiftUI: `OpenUICompiler` and the Kino views (see below).
 
 Templates are server-side compositions the writer may call, as typed builders (`ui.Card(...)`) that
-expand to primitives when admitted, so clients never learn a template, only the 42 primitives. The
-sports pack has none yet; the Sports components explored in ui-canvas (MatchCard, StatBar,
-Leaderboard, FixturesHeatmap, StatsCard) are the candidates.
+expand to primitives when admitted, so clients never learn a template, only primitives. The
+sports pack includes MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, and SeasonPodium.
+Their contracts live in `src/sports/components.ts`. See `catalog/sports-parity.md` for source-design coverage and remaining visual differences.
 
 ```text
 root = Screen([pick1, pick2])
@@ -58,6 +58,8 @@ pick2 = Card([Text(d.answers.q2.title, "headline"), ...])
 
 - `catalog/openui/primitives.json`: every primitive with its positional props and roles, and a
   digest of the lang-core schema. The iOS app bundles it directly.
+- `catalog/openui/sports-components.json`: the sports template contracts and usage guidance.
+- `catalog/openui/fixtures.json`: shared compiler fixtures, including full and sparse sports records.
 
 `--check` fails when it is stale.
 `catalog/sf-symbols.json` (`npm run sf-symbols`) is the icon allowlist the compiler checks names against.

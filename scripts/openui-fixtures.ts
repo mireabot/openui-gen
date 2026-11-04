@@ -4,6 +4,7 @@ import { PRIMITIVE_BY_NAME } from "../src/lang/primitives.js";
 import { exprOfRef, printExpr, queryPath } from "../src/lang/program.js";
 import { isElement } from "../src/lang/tree.js";
 import { SPORTS_COMPONENTS, fits } from "../src/sports/components.js";
+import { valueTicks } from "../src/sports/fotmob.js";
 import { SPORTS_SCREEN } from "../src/sports/screen.js";
 
 /**
@@ -18,18 +19,30 @@ import { SPORTS_SCREEN } from "../src/sports/screen.js";
 
 const TOOL = "sports_dataset";
 
+const crest = (id: number) => `https://a.espncdn.com/i/teamlogos/soccer/500/${id}.png`;
+const chelsea = { name: "Chelsea", logo: crest(363), color: "clear" };
+const arsenal = { name: "Arsenal", logo: crest(359), color: "clear" };
+const noPlayer = { present: false, name: "", kind: "player", detail: "", logo: "", color: "", value: "", fill: "surface.filled", ink: "ink.primary", club: { name: "", logo: "", color: "" } };
+const fromChelsea = (name: string, detail: string, photo: number, value: string, fill: string, ink: string) => ({ present: true, name, kind: "player", detail, logo: photo ? `https://images.fotmob.com/image_resources/playerimages/${photo}.png` : "", color: "#034694", value, fill, ink, club: chelsea });
+const fromArsenal = (name: string, detail: string, photo: number, value: string, fill: string, ink: string) => ({ ...fromChelsea(name, detail, photo, value, fill, ink), color: "#e20520", club: arsenal });
+
+const valueStretch = (name: string, lineColor: string, tagColor: string, team: number, points: readonly (readonly [string, number, string])[]) => ({
+  name, lineColor, tagColor, logo: `https://images.fotmob.com/image_resources/logo/teamlogo/${team}.png`,
+  points: points.map(([date, value, display]) => ({ x: Date.parse(date), label: new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(date)), value, display })),
+});
+
 const side = (name: string, logo: string, color: string, score: string, ink: string) => ({ name, logo, color, score, ink });
 const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
   MatchCard: {
     full: {
-      home: side("Chelsea", "https://a.espncdn.com/i/teamlogos/soccer/500/363.png", "#034694", "0", "secondary"),
-      away: side("Manchester City", "https://a.espncdn.com/i/teamlogos/soccer/500/382.png", "#99c5ea", "3", "primary"),
+      home: side("Chelsea", "https://a.espncdn.com/i/teamlogos/soccer/500/363.png", "clear", "0", "secondary"),
+      away: side("Manchester City", "https://a.espncdn.com/i/teamlogos/soccer/500/382.png", "clear", "3", "primary"),
       label: "Sun, Apr 12", value: "FT", details: "Premier League · Stamford Bridge · Sky Sports",
     },
     sparse: { home: side("Everton", "", "", "", "primary"), away: side("Nottingham Forest", "", "", "", "primary"), label: "", value: "6:30 PM", details: "" },
   },
   TeamDetail: {
-    full: { name: "Barcelona", logo: "https://a.espncdn.com/i/teamlogos/soccer/500/83.png", color: "#a50044", detail: "LaLiga · BAR" },
+    full: { name: "Barcelona", logo: "https://a.espncdn.com/i/teamlogos/soccer/500/83.png", color: "clear", detail: "LaLiga · BAR" },
     sparse: { name: "Brentford", logo: "", color: "", detail: "" },
   },
   StatBar: {
@@ -42,31 +55,133 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
   },
   Leaderboard: {
     full: { title: "Top scorers · Premier League", metric: "Goals", entries: [
-      { name: "Erling Haaland", detail: "Forward · Manchester City", value: "11", logo: "https://a.espncdn.com/i/headshots/soccer/players/full/253989.png", color: "#99c5ea" },
-      { name: "João Pedro", detail: "Forward · Chelsea", value: "5", logo: "", color: "#034694" },
-      { name: "Nico O'Reilly", detail: "", value: "4", logo: "", color: "" },
+      { kind: "player", name: "Erling Haaland", detail: "Forward · Manchester City", value: "11", logo: "https://images.fotmob.com/image_resources/playerimages/737066.png", color: "#99c5ea" },
+      { kind: "player", name: "João Pedro", detail: "Forward · Chelsea", value: "5", logo: "https://images.fotmob.com/image_resources/playerimages/1021382.png", color: "#034694" },
+      { kind: "player", name: "Bukayo Saka", detail: "Winger · Arsenal", value: "4", logo: "https://images.fotmob.com/image_resources/playerimages/961995.png", color: "#e20520" },
     ] },
     sparse: { title: "Clean sheets", metric: "", entries: [] },
   },
   FixturesHeatmap: {
-    full: { value: "1.6", caption: "Points per game · Premier League 2026/27", summary: "4 won · 1 drawn · 3 lost", results: [
-      { label: "W", tone: "good" }, { label: "D", tone: "neutral" }, { label: "L", tone: "bad" }, { label: "", tone: "neutral" },
+    full: { value: "1.6", caption: "Points per game · Premier League 2026/27", summary: "4 won · 2 drawn · 3 lost", columns: "10", results: [
+      { label: "Win", fill: "tone.good.fg" }, { label: "Draw", fill: "outline.control" }, { label: "Loss", fill: "tone.bad.fg" },
+      { label: "Win", fill: "tone.good.fg" }, { label: "Loss", fill: "tone.bad.fg" }, { label: "Draw", fill: "outline.control" },
+      { label: "Win", fill: "tone.good.fg" }, { label: "Win", fill: "tone.good.fg" }, { label: "Loss", fill: "tone.bad.fg" },
+      { label: "Upcoming", fill: "surface.filled" }, { label: "Upcoming", fill: "surface.filled" }, { label: "Upcoming", fill: "surface.filled" },
     ] },
-    sparse: { value: "0 pts", caption: "", summary: "", results: [] },
+    season: { value: "1.37", caption: "Points per game · Premier League 2025/26", summary: "14 won · 10 drawn · 14 lost", columns: "19", results: Array.from({ length: 38 }, (_, i) => i % 19 === 0 ? { label: "Draw", fill: "outline.control" } : i % 2 ? { label: "Win", fill: "tone.good.fg" } : { label: "Loss", fill: "tone.bad.fg" }) },
+    sparse: { value: "0 pts", caption: "", summary: "", columns: "10", results: [] },
   },
   StatsCard: {
     full: {
-      name: "Cole Palmer", detail: "Chelsea · Attacking Midfielder", logo: "https://a.espncdn.com/i/headshots/soccer/players/full/268406.png", color: "#034694",
-      rating: { value: "7.21", tone: "good", label: "Season rating", caption: "Average of 6 matches" },
-      stats: [{ label: "Goals", value: "5" }, { label: "Assists", value: "3" }, { label: "Pass accuracy", value: "86%" }, { label: "Shots", value: "24" }],
+      kind: "player", name: "Cole Palmer", detail: "Chelsea · Attacking Midfielder", logo: "https://images.fotmob.com/image_resources/playerimages/1096353.png", color: "#034694",
+      rating: { value: "7.21", tone: "good", fill: "tone.good.fg", ink: "surface.screen", label: "Season rating", caption: "Average of 6 matches", show: true },
+      stats: [{ label: "Goals", value: "5" }, { label: "Assists", value: "3" }, { label: "Pass accuracy", value: "86%" }, { label: "Shots", value: "24" }], showStats: true,
     },
-    sparse: { name: "Unknown player", detail: "", logo: "", color: "", rating: { value: "—", tone: "neutral", label: "Season rating", caption: "" }, stats: [] },
+    mid: {
+      kind: "player", name: "Declan Rice", detail: "Arsenal · Midfielder", logo: "https://images.fotmob.com/image_resources/playerimages/654096.png", color: "#e20520",
+      rating: { value: "6.60", tone: "warn", fill: "ink.brand", ink: "surface.screen", label: "Season rating", caption: "Average of 6 matches", show: true },
+      stats: [{ label: "Goals", value: "0" }, { label: "Assists", value: "1" }, { label: "Started", value: "2" }, { label: "Matches", value: "6" }, { label: "Minutes played", value: "298" }, { label: "Key passes", value: "7" }, { label: "Pass accuracy", value: "86%" }, { label: "Tackles", value: "9" }, { label: "Duels won", value: "54%" }], showStats: true,
+    },
+    low: {
+      kind: "club", name: "Everton", detail: "Premier League · 2026/27", logo: "https://a.espncdn.com/i/teamlogos/soccer/500/368.png", color: "clear",
+      rating: { value: "5.80", tone: "bad", fill: "surface.brand", ink: "ink.onBrand", label: "Match rating", caption: "", show: true },
+      stats: [{ label: "Minutes played", value: "90" }], showStats: true,
+    },
+    unavailable: {
+      kind: "player", name: "João Pedro", detail: "Chelsea · Forward", logo: "https://images.fotmob.com/image_resources/playerimages/1021382.png", color: "#034694",
+      rating: { value: "", tone: "neutral", fill: "none", ink: "ink.secondary", label: "", caption: "", show: false },
+      stats: [{ label: "Matches", value: "1" }, { label: "Minutes played", value: "34" }], showStats: true,
+    },
+    sparse: { kind: "player", name: "Unknown player", detail: "", logo: "", color: "", rating: { value: "", tone: "neutral", fill: "none", ink: "ink.secondary", label: "", caption: "", show: false }, stats: [], showStats: false, },
+  },
+  TeamPoints: {
+    full: { subtitle: "Rank 1 · 9 played", points: "27",
+      home: { played: "5", won: "5", drawn: "0", lost: "0", goals: "20-1", goalDifference: "+19", goalDifferenceTone: "neutral", points: "15" },
+      away: { played: "4", won: "4", drawn: "0", lost: "0", goals: "13-3", goalDifference: "+10", goalDifferenceTone: "neutral", points: "12" },
+    },
+    mixed: { subtitle: "Rank 13 · 9 played", points: "9",
+      home: { played: "4", won: "2", drawn: "1", lost: "1", goals: "7-6", goalDifference: "+1", goalDifferenceTone: "neutral", points: "7" },
+      away: { played: "5", won: "0", drawn: "2", lost: "3", goals: "3-9", goalDifference: "−6", goalDifferenceTone: "bad", points: "2" },
+    },
+    sparse: { subtitle: "", points: "0",
+      home: { played: "0", won: "0", drawn: "0", lost: "0", goals: "0-0", goalDifference: "0", goalDifferenceTone: "neutral", points: "0" },
+      away: { played: "0", won: "0", drawn: "0", lost: "0", goals: "0-0", goalDifference: "0", goalDifferenceTone: "neutral", points: "0" },
+    },
+  },
+  LeagueStanding: {
+    full: { place: "1st", summary: "27 points · 5 clear of 2nd", rows: [
+      { rank: "1", name: "Bayern München", points: "27", surface: "filled", ink: "primary", weight: "medium" },
+      { rank: "2", name: "Borussia Dortmund", points: "22", surface: "none", ink: "secondary", weight: "regular" },
+      { rank: "3", name: "RB Leipzig", points: "20", surface: "none", ink: "secondary", weight: "regular" },
+    ], home: { detail: "15 pts · 5-0-0" }, away: { detail: "12 pts · 4-0-0" }, showVenues: true },
+    mixed: { place: "13th", summary: "9 points · 1 behind 12th, 1 ahead of 14th", rows: [
+      { rank: "12", name: "Brentford", points: "10", surface: "none", ink: "secondary", weight: "regular" },
+      { rank: "13", name: "Everton", points: "9", surface: "filled", ink: "primary", weight: "medium" },
+      { rank: "14", name: "Aston Villa", points: "8", surface: "none", ink: "secondary", weight: "regular" },
+    ], home: { detail: "7 pts · 2-1-1" }, away: { detail: "2 pts · 0-2-3" }, showVenues: false },
+    sparse: { place: "", summary: "", rows: [], home: { detail: "" }, away: { detail: "" }, showVenues: false },
+  },
+  MatchTopPlayers: {
+    full: { title: "Top rated · Chelsea 2-1 Arsenal", metric: "Rating", rows: [
+      { home: fromChelsea("Cole Palmer", "Midfielder", 1096353, "8.6", "tone.good.fg", "surface.screen"), away: fromArsenal("Bukayo Saka", "Attacker", 961995, "7.7", "tone.good.fg", "surface.screen") },
+      { home: fromChelsea("João Pedro", "Attacker", 1021382, "7.5", "tone.good.fg", "surface.screen"), away: fromArsenal("Declan Rice", "Midfielder", 654096, "6.9", "ink.brand", "surface.screen") },
+      { home: fromChelsea("Enzo Fernández", "Midfielder", 0, "6.8", "ink.brand", "surface.screen"), away: fromArsenal("Martin Ødegaard", "Midfielder", 0, "5.9", "surface.brand", "ink.onBrand") },
+    ] },
+    one: { title: "Top scorers · Chelsea 2-1 Arsenal", metric: "Goals", rows: [
+      { home: fromChelsea("Cole Palmer", "Midfielder", 1096353, "2", "surface.filled", "ink.primary"), away: fromArsenal("Bukayo Saka", "Attacker", 961995, "1", "surface.filled", "ink.primary") },
+    ] },
+    uneven: { title: "Top scorers · Chelsea 3-1 Arsenal", metric: "Goals", rows: [
+      { home: fromChelsea("Cole Palmer", "Midfielder", 1096353, "2", "surface.filled", "ink.primary"), away: fromArsenal("Bukayo Saka", "Attacker", 961995, "1", "surface.filled", "ink.primary") },
+      { home: fromChelsea("João Pedro", "Attacker", 1021382, "1", "surface.filled", "ink.primary"), away: noPlayer },
+    ] },
+    sparse: { title: "Top scorers", metric: "", rows: [] },
+  },
+  PlayerValue: {
+    full: { value: "€97.7M", caption: "Cole Palmer · Market value", segments: [
+      valueStretch("Manchester City U18", "#69A8D8", "#69A8D8", 1113543, [["2018-12-31", 250_000, "€250k"], ["2019-12-31", 530_000, "€530k"]]),
+      valueStretch("Manchester City", "#76b4e5", "#69A8D8", 8456, [["2020-06-30", 1_200_000, "€1.2M"], ["2022-01-31", 15_370_000, "€15.4M"], ["2022-09-30", 4_460_000, "€4.5M"], ["2023-06-30", 5_050_000, "€5.1M"]]),
+      valueStretch("Chelsea", "#033cc1", "#051495", 8455, [["2023-09-01", 18_000_000, "€18M"], ["2024-03-31", 49_295_400, "€49.3M"], ["2024-12-31", 116_235_970, "€116.2M"], ["2025-10-01", 116_165_340, "€116.2M"], ["2026-07-01", 110_374_028, "€110.4M"], ["2026-11-01", 97_678_048, "€97.7M"]]),
+    ], ticks: valueTicks(116_235_970) },
+    oneClub: { value: "€157.7M", caption: "Erling Haaland · Market value", segments: [
+      valueStretch("Manchester City", "#76b4e5", "#69A8D8", 8456, [["2024-01-31", 170_000_000, "€170M"], ["2025-01-31", 190_000_000, "€190M"], ["2026-11-01", 157_706_260, "€157.7M"]]),
+    ], ticks: valueTicks(190_000_000) },
+    underMillion: { value: "€900k", caption: "A prospect · Market value", segments: [
+      valueStretch("Chelsea", "#033cc1", "#051495", 8455, [["2025-06-30", 150_000, "€150k"], ["2025-12-31", 400_000, "€400k"], ["2026-06-30", 900_000, "€900k"]]),
+    ], ticks: valueTicks(900_000) },
+    sparse: { value: "", caption: "", segments: [], ticks: [] },
+  },
+  SeasonPodium: {
+    full: {
+      first: { name: "Liverpool", logo: "https://a.espncdn.com/i/teamlogos/soccer/500/364.png", color: "clear", medal: "#E6B422" },
+      second: { name: "Arsenal", logo: "https://a.espncdn.com/i/teamlogos/soccer/500/359.png", color: "clear", medal: "#C0C4CC" },
+      third: { name: "Manchester City", logo: "https://a.espncdn.com/i/teamlogos/soccer/500/382.png", color: "clear", medal: "#CD7F32" },
+    },
+    sparse: {
+      first: { name: "Winner", logo: "", color: "", medal: "#E6B422" },
+      second: { name: "Runner-up", logo: "", color: "", medal: "#C0C4CC" },
+      third: { name: "Third", logo: "", color: "", medal: "#CD7F32" },
+    },
   },
 };
 
 const scorers = [{ name: "Erling Haaland", club: "Manchester City", goals: 11, xg: 9.42 }, { name: "João Pedro", club: "Chelsea", goals: 5, xg: 3.1 }];
 /** Programs written in primitives, as the writer does when no component fits. `pick1` is the part. */
 const PROGRAMS: readonly { key: string; values: Record<string, unknown>; statements: readonly string[] }[] = [
+  {
+    key: "ColorCell/fluid",
+    values: { cells: [
+      { label: "Completed", fill: "tone.good.fg" }, { label: "Attention", fill: "tone.warn.fg" },
+      { label: "Failed", fill: "tone.bad.fg" }, { label: "Inactive", fill: "tone.neutral.fg" },
+      { label: "Available", fill: "outline.control" }, { label: "Scheduled", fill: "surface.filled" },
+      { label: "Selected", fill: "surface.brand" },
+    ] },
+    statements: [`pick1 = Grid("7", 4, @Each(d.answers.q1.cells, "c", ColorCell(c.label, c.fill)))`],
+  },
+  {
+    key: "ColorCell/fixed",
+    values: { color: "#6f42c1", empty: "" },
+    statements: [`pick1 = Stack("h", 8, [ColorCell("Project colour", "surface.brand", d.answers.q1.color, "12"), ColorCell("Available", "outline.control", d.answers.q1.empty, "24"), ColorCell("Scheduled", "surface.filled", null, "32")])`],
+  },
   {
     key: "Each/rows",
     values: { scorers },

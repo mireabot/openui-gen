@@ -386,7 +386,100 @@ function imageUrl(v: unknown): string | null {
 }
 
 /** Loads async over whatever is under it: invisible until loaded, then a 150ms ease-out fade; on error it stays hidden. */
-function FadeImage({ src, className, onState }: { src: string; className?: string; onState?: (s: "ok" | "fail") => void }) {
+/** Shimmer until it loads, then only the image, so a transparent logo has nothing behind it. A failed load keeps the flat placeholder. */
+function ImageFill({ src }: { src: string }) {
+  const [state, setState] = useState<"loading" | "ok" | "fail">("loading");
+  return <>{state === "loading" && <Shimmer className="absolute inset-0 size-full" />}{state === "fail" && <span className="absolute inset-0" style={{ background: tv("surface.filled") }} />}<FadeImage src={src} onState={setState} /></>;
+}
+
+type TimelineStretch = { name: string; lineColor: string; tagColor: string; logo: string; points: { x: number; label: string; value: number; display: string }[] };
+
+/** A stepped value line in club colours, crest above each stretch. The header's right side follows the scrub and keeps its space, so nothing jumps. */
+function StepTimeline({ value, caption, segments, ticks }: { value: string; caption?: string; segments: TimelineStretch[]; ticks: { value: number; display: string }[] }) {
+  const [hover, setHover] = useState<{ segment: number; point: number } | null>(null);
+  const W = 300, H = 200, HEADROOM = 28, CREST = 20;
+  const stretches = segments.filter(s => s.points.length);
+  const all = stretches.flatMap(s => s.points);
+  if (all.length < 2) return <span style={textStyle("title1", "semibold", tv("ink.primary"))}>{value}</span>;
+  const [start, end] = [all[0]!.x, all.at(-1)!.x];
+  const top = Math.max(...all.map(p => p.value)) || 1;
+  const fx = (x: number) => (x - start) / (end - start || 1);
+  const fy = (v: number) => HEADROOM + (1 - v / top) * (H - HEADROOM - 2);
+  const color = (hex: string, fallback: string) => hex || tv(fallback)!;
+  const paths = stretches.map((s, i) => {
+    const before = stretches[i - 1]?.points.at(-1);
+    const after = stretches[i + 1]?.points[0];
+    let d = before ? `M${fx(s.points[0]!.x) * W},${fy(before.value)}V${fy(s.points[0]!.value)}` : `M${fx(s.points[0]!.x) * W},${fy(s.points[0]!.value)}`;
+    s.points.slice(1).forEach(p => { d += `H${fx(p.x) * W}V${fy(p.value)}`; });
+    if (after) d += `H${fx(after.x) * W}`;
+    return d;
+  });
+  const crests = stretches.map((s, i) => {
+    const from = s.points[0]!.x;
+    const to = stretches[i + 1]?.points[0]?.x ?? s.points.at(-1)!.x;
+    const mid = (from + to) / 2;
+    return { logo: s.logo, width: fx(to) - fx(from), left: fx(mid), top: Math.max(0, fy(Math.max(...s.points.map(p => p.value))) - CREST - 4) };
+  });
+  const pick = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const at = start + Math.max(0, Math.min(1, (e.clientX - box.left) / box.width)) * (end - start);
+    let best = { segment: 0, point: 0 }, gap = Infinity;
+    stretches.forEach((s, segment) => s.points.forEach((p, point) => { if (Math.abs(p.x - at) < gap) { gap = Math.abs(p.x - at); best = { segment, point }; } }));
+    setHover(best);
+  };
+  const shown = hover ?? { segment: stretches.length - 1, point: stretches.at(-1)!.points.length - 1 };
+  const stretch = stretches[shown.segment]!;
+  const point = stretch.points[shown.point]!;
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-3">
+      <div className="flex items-start justify-between gap-3" style={{ minHeight: 68 }}>
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="tabular-nums" style={textStyle("title1", "semibold", tv("ink.primary"))}>{value}</span>
+          {caption && <span style={textStyle("footnote", "regular", tv("ink.secondary"))}>{caption}</span>}
+        </div>
+        {hover && (
+          <div className="flex shrink-0 flex-col items-end" style={{ gap: 6 }}>
+            <span style={textStyle("footnote", "semibold", color(stretch.lineColor, "ink.primary"))}>{stretch.name}</span>
+            <span style={textStyle("footnote", "regular", tv("ink.secondary"))}>{point.label}</span>
+            <span className="inline-flex items-center rounded-[4px] px-2 tabular-nums" style={{ ...textStyle("footnote", "semibold", "#ffffff"), height: 20, background: color(stretch.tagColor, "surface.brand") }}>{point.display}</span>
+          </div>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <div className="relative min-w-0 flex-1 touch-none" style={{ height: H }} onPointerDown={pick} onPointerMove={pick} onPointerLeave={() => setHover(null)}>
+        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 size-full overflow-visible">
+          {paths.map((d, i) => <path key={i} d={d} fill="none" stroke={color(stretches[i]!.lineColor, "ink.primary")} strokeWidth={2} vectorEffect="non-scaling-stroke" strokeLinejoin="round" />)}
+        </svg>
+        {hover && <span className="absolute bottom-0 w-px -translate-x-1/2" style={{ left: `${fx(point.x) * 100}%`, top: 0, background: tv("outline.control") }} />}
+        <span className="absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: `${fx(point.x) * 100}%`, top: fy(point.value), background: color(stretch.lineColor, "ink.primary") }} />
+        {crests.map((c, i) => c.logo && c.width * 326 >= CREST && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img key={i} src={c.logo} alt="" draggable={false} className="pointer-events-none absolute -translate-x-1/2 object-contain" style={{ left: `${c.left * 100}%`, top: c.top, width: CREST, height: CREST }} />
+        ))}
+      </div>
+        <div className="relative shrink-0 tabular-nums" style={{ width: 44, height: H }}>
+          {ticks.map(tick => <span key={tick.value} className="absolute right-0 -translate-y-1/2 whitespace-nowrap" style={{ top: fy(tick.value), ...textStyle("footnote", "regular", tv("ink.tertiary")) }}>{tick.display}</span>)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** The monogram on its disc until the image loads. A photo then sits on the disc colour and a crest on nothing, unclipped; both fit the whole frame, so a head is never cut off. */
+function AvatarFace({ name, size, rounded, disc, photoFill, image, player }: { name: string; size: number; rounded: boolean; disc: CSSProperties; photoFill: string; image: string | null | undefined; player: boolean }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <span
+      className={cn("relative flex shrink-0 items-center justify-center font-medium", !(loaded && !player) && "overflow-hidden", rounded ? "rounded-[8px]" : "rounded-full")}
+      style={{ width: size, height: size, fontSize: size >= 40 ? 16 : 12, ...disc, ...(loaded ? { background: "transparent" } : {}) }}
+    >
+      {!loaded && name.slice(0, 1)}
+      {image && <FadeImage src={image} style={player ? { background: photoFill } : undefined} onState={state => setLoaded(state === "ok")} />}
+    </span>
+  );
+}
+
+function FadeImage({ src, className, style, onState }: { src: string; className?: string; style?: CSSProperties; onState?: (s: "ok" | "fail") => void }) {
   const [state, setState] = useState<"loading" | "ok" | "fail">("loading");
   if (state === "fail") return null;
   return (
@@ -394,7 +487,7 @@ function FadeImage({ src, className, onState }: { src: string; className?: strin
     <img src={src} alt="" draggable={false} decoding="async"
       onLoad={() => { setState("ok"); onState?.("ok"); }} onError={() => { setState("fail"); onState?.("fail"); }}
       className={cn("absolute inset-0 size-full object-contain transition-opacity duration-150 motion-reduce:transition-none", state === "ok" ? "opacity-100" : "opacity-0", className)}
-      style={{ transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }} />
+      style={{ transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)", ...style }} />
   );
 }
 
@@ -453,6 +546,8 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
       return <Bar line={LINE_OF(p("role"))} width={axis === "h" ? "72px" : "40%"} />;
     case "Icon":
       return <Shimmer className="rounded-[4px]" style={{ width: size(24), height: size(24) }} />;
+    case "ColorCell":
+      return <Shimmer className="shrink-0 rounded-[4px]" style={{ aspectRatio: "1", width: p("size") && p("size") !== "fill" ? Number(p("size")) : "100%" }} />;
     case "Image": {
       const [w, h] = String(p("aspect") ?? "4-3").split("-").map(Number);
       return <Shimmer className={cn(p("rounded") ? "rounded-[24px]" : "")} style={{ aspectRatio: `${w ?? 4} / ${h ?? 3}`, width: p("width") ? Number(p("width")) : "100%" }} />;
@@ -470,7 +565,7 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
     case "Chip":
       return <Shimmer className="h-8 w-[72px] rounded-full" />;
     case "Badge":
-      return <Shimmer className="h-[22px] w-14 rounded-full" />;
+      return <Shimmer className={p("size") === "small" ? "w-7" : "w-[72px]"} style={{ height: p("size") === "small" ? 16 : p("size") === "large" ? p("fill") === "none" ? 34 : 42 : 24, borderRadius: p("size") === "large" ? 8 : 4 }} />;
     case "SegmentedControl":
       return <Shimmer className="h-11 w-full rounded-full" />;
     case "Slider":
@@ -490,6 +585,13 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
       return <Bar line={16} width="30%" />;
     case "Sparkline":
       return <Shimmer className={cn("h-10 rounded-[4px]", axis === "h" ? "w-[72px]" : "w-full")} />;
+    case "StepTimeline":
+      return (
+        <span className="flex w-full flex-col gap-3">
+          <Shimmer className="w-full rounded-[12px]" style={{ height: 68 }} />
+          <Shimmer className="w-full rounded-[12px]" style={{ height: 200 }} />
+        </span>
+      );
     case "PriceChart":
       return (
         <span className="flex w-full flex-col gap-2">
@@ -550,15 +652,16 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     case "Stack": {
       if (p("axis") === "wrap") {
         // Flow layout: children keep their own width and wrap into rows, one gap both ways.
-        return <div className="flex min-w-0 flex-row flex-wrap items-center" style={{ gap: Number(p("gap") ?? 0) }}>{kids(n, "children")}</div>;
+        return <div className="flex min-w-0 flex-row flex-wrap items-center" style={{ gap: Number(p("gap") ?? 0), paddingInline: Number(p("paddingX") ?? 0), paddingBlock: Number(p("paddingY") ?? 0) }}>{kids(n, "children")}</div>;
       }
       const h = p("axis") === "h";
       return (
         <div
-          // A column inside a row takes the remaining width (and lets one-line text truncate), like an identity next to a mark.
-          className={cn("flex min-w-0", h ? "flex-row" : "flex-col", !h && axis === "h" && "flex-1")}
+          // A column inside a row takes the remaining width (and lets one-line text truncate), like an identity next to a mark;
+          // an end-aligned column is a trailing column (a date over a status) and keeps its own width.
+          className={cn("flex min-w-0", h ? "flex-row" : "flex-col", !h && axis === "h" && (p("align") === "end" ? "shrink-0" : "flex-1"))}
           style={{
-            gap: Number(p("gap") ?? 0),
+            gap: Number(p("gap") ?? 0), paddingInline: Number(p("paddingX") ?? 0), paddingBlock: Number(p("paddingY") ?? 0),
             alignItems: ({ start: "flex-start", center: "center", end: "flex-end", stretch: "stretch" } as Record<string, string>)[String(p("align"))] ?? (h ? "center" : "stretch"),
             justifyContent: ({ start: "flex-start", center: "center", end: "flex-end", between: "space-between" } as Record<string, string>)[String(p("justify"))],
           }}
@@ -574,7 +677,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       );
     }
     case "Grid":
-      return <div className="grid" style={{ gridTemplateColumns: `repeat(${p("columns")}, minmax(0, 1fr))`, gap: Number(p("gap") ?? 0) }}>{kids(n, "children")}</div>;
+      return <div className="grid" style={{ gridTemplateColumns: `repeat(${p("columns")}, minmax(0, 1fr))`, columnGap: Number(p("gap") ?? 0), rowGap: Number(p("rowGap") ?? p("gap") ?? 0) }}>{kids(n, "children")}</div>;
     case "Rail": {
       const width = Number(p("width") ?? 0);
       return (
@@ -590,7 +693,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
         <div
           className={cn("flex flex-col gap-4 backdrop-blur-xl", p("radius") === "control" ? "rounded-[12px]" : "rounded-[24px]")}
           style={{
-            padding: Number(p("padding") ?? 16),
+            padding: Number(p("padding") ?? 16), gap: Number(p("gap") ?? 16),
             ["--inset" as string]: `${Number(p("padding") ?? 16)}px`,
             ...look(s, `surfaces.${surface}`),
             ...(selected ? { border: `1px solid ${tv(s("selected.border") ?? "surface.brand")}`, boxShadow: effect(s("selected.effect")) } : {}),
@@ -654,8 +757,11 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     case "Show":
       return p("when") ? <>{kids(n, "child")}</> : null;
     case "Text": {
+      // No data, no line: an empty detail or caption takes no space.
+      if (p("content") === "") return null;
       const lines = Number(p("lines") ?? 0);
-      const style = textStyle(p("role"), p("weight"), typeof p("tone") === "string" ? tv(`tone.${p("tone")}.fg`) : ink(p("ink") ?? "primary"));
+      const dataColor = typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string) ? p("color") as string : null;
+      const style = textStyle(p("role"), p("weight"), dataColor ?? (typeof p("tone") === "string" ? tv(`tone.${p("tone")}.fg`) : ink(p("ink") ?? "primary")));
       return (
         <span
           className={cn(lines === 1 && "truncate", p("align") === "center" && "text-center", p("align") === "end" && "text-right")}
@@ -703,22 +809,16 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       return (
         <div className={cn("relative overflow-hidden", width ? "shrink-0" : "w-full", p("rounded") !== false && (width && width < 56 ? "rounded-[8px]" : "rounded-[24px]"))}
           style={{ aspectRatio: String(p("aspect") ?? "1-1").replace("-", "/"), background: url ? undefined : tint, ...(width ? { width } : {}), ...(p("ring") ? { boxShadow: `0 0 0 4px ${tv("surface.screen")}` } : {}) }}>
-          {url && <><Shimmer className="absolute inset-0 size-full" /><FadeImage key={url} src={url} /></>}
+          {url && <ImageFill key={url} src={url} />}
         </div>
       );
     case "Avatar": {
       const size = Number(p("size") ?? 40);
-      return (
-        <span
-          className={cn("relative flex shrink-0 items-center justify-center overflow-hidden font-medium", p("shape") === "rounded" ? "rounded-[8px]" : "rounded-full")}
-          style={{ width: size, height: size, fontSize: size >= 40 ? 16 : 12, ...look(s, "monogram"), ...(typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string) ? { background: p("color") as string } : p("tint") ? { background: color(p("tint")) } : {}) }}
-        >
-          {/* The monogram is the placeholder and the fallback; a logo fades in over it once loaded. */}
-          {String(p("name") ?? "?").slice(0, 1)}
-          {/* Logos are full-bleed squares: inset them to the shape's inscribed square so the mask never crops them. */}
-          {imageUrl(p("image")) && <FadeImage key={imageUrl(p("image"))!} src={imageUrl(p("image"))!} className={cn("bg-white", p("shape") === "rounded" ? "p-[10%]" : "p-[15%]")} />}
-        </span>
-      );
+      const disc: CSSProperties = { ...look(s, "monogram"), ...(typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string) ? { background: p("color") as string } : p("tint") ? { background: color(p("tint")) } : {}) };
+      const image = imageUrl(p("image"));
+      // A photo sits on its club's colour. With no club known it sits on a neutral fill, not a colour that reads as a club's.
+      const photoFill = (typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string)) || p("tint") ? String(disc.background) : String(tv("surface.filled"));
+      return <AvatarFace key={String(image)} name={String(p("name") ?? "?")} size={size} rounded={p("shape") === "rounded"} disc={disc} photoFill={photoFill} image={image} player={p("kind") === "player"} />;
     }
     case "AvatarStack": {
       // Initials on soft tints, overlapping by 8, then a +N disc (Kino taste-match / consensus voters).
@@ -781,10 +881,20 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
           {p("value") != null && <span className="tabular-nums" style={{ color: tv(s("value.ink")), fontWeight: 500 }}>{String(p("value"))}</span>}
         </span>
       );
-        case "Badge": {
+    case "Badge": {
       const tone = String(p("tone") ?? "neutral");
+      const large = p("size") === "large";
+      const small = p("size") === "small";
+      const plain = p("fill") === "none";
       return (
-        <span className="inline-flex h-6 w-fit items-center gap-1 rounded-[4px] px-2" style={{ ...textStyle("footnote", "medium", undefined), ...look(s, `tones.${tone}`) }}>
+        <span className="inline-flex w-fit shrink-0 items-center gap-1 tabular-nums" style={{
+          ...textStyle(large ? "title1" : "footnote", large ? "semibold" : "medium", undefined), ...look(s, `tones.${tone}`),
+          ...(small ? { fontSize: 11, lineHeight: "16px", fontWeight: 600 } : {}),
+          borderRadius: large ? 8 : 4, paddingInline: plain ? 0 : large ? 12 : small ? 4 : 8, paddingBlock: plain ? 0 : large ? 4 : 0,
+          ...(large ? {} : { height: small ? 16 : 24 }),
+          ...(p("fill") ? { background: plain ? "transparent" : tv(p("fill")) } : {}),
+          ...(p("ink") ? { color: tv(p("ink")) } : {}),
+        }}>
           {p("icon") != null && <Icon name={p("icon")} size={16} />}
           {String(p("label"))}
         </span>
@@ -829,6 +939,12 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
           <button type="button" className="flex size-11 items-center justify-center rounded-full" style={{ background: tv("surface.control"), color: tv("ink.primary") }}><Icon name="plus" size={16} /></button>
         </div>
       );
+    case "ColorCell": {
+      const override = p("color");
+      const label = String(p("label") ?? "");
+      const size = p("size");
+      return <span role="img" aria-label={label} title={label} className="block shrink-0 rounded-[4px]" style={{ aspectRatio: "1", width: size && size !== "fill" ? Number(size) : "100%", background: typeof override === "string" && /^#[0-9a-f]{6}$/i.test(override) ? override : tv(p("fill")) }} />;
+    }
     case "Progress": {
       const v = Math.max(0, Math.min(100, Number(p("value") ?? 0)));
       const color = p("tone") ? tv(`tone.${p("tone")}.fg`) : tv(s("bar.fill") ?? "surface.brand");
@@ -908,6 +1024,8 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
           sessions={p("sessions") !== "off"} />
       );
     }
+    case "StepTimeline":
+      return <StepTimeline value={String(p("value") ?? "")} caption={p("caption") ? String(p("caption")) : undefined} segments={Array.isArray(p("segments")) ? p("segments") as unknown as TimelineStretch[] : []} ticks={Array.isArray(p("ticks")) ? p("ticks") as unknown as { value: number; display: string }[] : []} />;
     case "Change": {
       const value = Number(p("value"));
       const pct = Number(p("percent"));
@@ -1004,11 +1122,11 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     case "Note": {
       const tone = String(p("tone") ?? "neutral");
       return (
-        <div className="flex items-start gap-3 rounded-[12px] p-3" style={look(s, `tones.${tone}`)}>
+        <div className="flex items-center gap-3 rounded-[12px] p-3" style={look(s, `tones.${tone}`)}>
           {p("icon") != null && <Icon name={p("icon")} size={24} />}
           <div className="flex min-w-0 flex-col">
             {p("title") != null && <span style={textStyle("footnote", "semibold", undefined)}>{String(p("title"))}</span>}
-            <span style={textStyle("footnote", "medium", undefined)}>{String(p("text"))}</span>
+            <span className="text-left" style={textStyle("footnote", "medium", undefined)}>{String(p("text"))}</span>
           </div>
         </div>
       );
@@ -1018,10 +1136,10 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
         <div className="flex min-h-11 items-center gap-3 py-3">
           {kids(n, "leading")}
           <div className="flex min-w-0 flex-1 flex-col">
-            <span className="truncate" style={textStyle("body", s("title.weight") ?? "medium", tv(s("title.ink") ?? "ink.primary"))}>{String(p("title"))}</span>
-            {p("subtitle") != null && <span className="truncate" style={textStyle("footnote", "regular", tv(s("subtitle.ink") ?? "ink.tertiary"))}>{String(p("subtitle"))}</span>}
+            <span className="line-clamp-2" style={textStyle("body", s("title.weight") ?? "medium", tv(s("title.ink") ?? "ink.primary"))}>{String(p("title"))}</span>
+            {p("subtitle") != null && <span className="line-clamp-2" style={textStyle("footnote", "regular", tv(s("subtitle.ink") ?? "ink.tertiary"))}>{String(p("subtitle"))}</span>}
           </div>
-          <span style={{ color: tv("ink.secondary") }}>{kids(n, "trailing")}</span>
+          <span className="min-w-0 max-w-[45%] shrink-0 text-right" style={{ color: tv("ink.secondary") }}>{kids(n, "trailing")}</span>
         </div>
       );
     case "KeyValue":

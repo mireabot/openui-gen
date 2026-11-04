@@ -15,8 +15,8 @@ import { LABEL_GAP, SCREEN_INSET } from "../primitives/tokens.js";
  */
 
 export type SkeletonFrame =
-  | { readonly kind: "stack"; readonly axis: "v" | "h"; readonly gap: number; readonly align?: string; readonly justify?: string; readonly children: readonly SkeletonFrame[] }
-  | { readonly kind: "grid"; readonly columns: number; readonly gap: number; readonly children: readonly SkeletonFrame[] }
+  | { readonly kind: "stack"; readonly axis: "v" | "h"; readonly gap: number; readonly align?: string; readonly justify?: string; readonly paddingX?: number; readonly paddingY?: number; readonly children: readonly SkeletonFrame[] }
+  | { readonly kind: "grid"; readonly columns: number; readonly gap: number; readonly rowGap?: number; readonly children: readonly SkeletonFrame[] }
   | { readonly kind: "rail"; readonly gap: number; readonly width?: number; readonly children: readonly SkeletonFrame[] }
   | { readonly kind: "repeat"; readonly layout: "stack" | "rail" | "grid" | "wrap"; readonly count: number; readonly gap: number; readonly columns?: number; readonly width?: number; readonly divided?: boolean; readonly item: SkeletonFrame }
   /** A shape. With `surface` it is a container drawn on that surface (card, filled, grouped, outlined); without, a shimmer fill. */
@@ -65,7 +65,7 @@ export function topBlocks(tree: Tree, byId = new Map(tree.nodes.map((n) => [n.id
   let gap = 28;
   for (;;) {
     const only = ids.length === 1 ? byId.get(ids[0]!) : undefined;
-    if (!only || only.primitive !== "Stack" || only.props.axis !== "v") return { gap, ids };
+    if (!only || only.primitive !== "Stack" || only.props.axis !== "v" || num(only.props.paddingX) || num(only.props.paddingY)) return { gap, ids };
     gap = num(only.props.gap) ?? 0;
     ids = only.children.children ?? [];
   }
@@ -90,20 +90,23 @@ function frame(n: PNode, byId: Map<string, PNode>, depth: number): SkeletonFrame
     case "Calculation": return { kind: "stack", axis: "v", gap: 24, children: kids(n, "children", byId).map(child => frame(child, byId, depth + 1)) };
     case "Slider": return { kind: "stack", axis: "v", gap: 8, children: [line("body", 0.5), { kind: "box", height: 44, radius: "pill" }] };
     case "ChoiceTags": return { kind: "stack", axis: "v", gap: 8, children: [line("footnote", 0.5), { kind: "stack", axis: "h", gap: 8, children: Array.from({ length: 3 }, () => ({ kind: "box" as const, height: 44, width: 96, radius: "pill" as const })) }] };
-    case "Stack":
+    case "Stack": {
+      const padding = { ...(p.paddingX != null ? { paddingX: num(p.paddingX) ?? 0 } : {}), ...(p.paddingY != null ? { paddingY: num(p.paddingY) ?? 0 } : {}) };
       // A wrapping stack draws as wrapping items of its first child's shape (tags, chips).
       if (p.axis === "wrap") {
         const first = kids(n, "children", byId)[0];
-        return { kind: "repeat", layout: "wrap", count: n.children.children?.length ?? 1, gap: num(p.gap) ?? 0, item: first ? sub(first) : { kind: "box", height: 32, width: 72, radius: "pill" } };
+        const wrapped: SkeletonFrame = { kind: "repeat", layout: "wrap", count: n.children.children?.length ?? 1, gap: num(p.gap) ?? 0, item: first ? sub(first) : { kind: "box", height: 32, width: 72, radius: "pill" } };
+        return Object.keys(padding).length ? { kind: "stack", axis: "v", gap: 0, ...padding, children: [wrapped] } : wrapped;
       }
-      return { kind: "stack", axis: p.axis === "h" ? "h" : "v", gap: num(p.gap) ?? 0, ...(str(p.align) ? { align: str(p.align)! } : {}), ...(str(p.justify) ? { justify: str(p.justify)! } : {}), children: all() };
+      return { kind: "stack", axis: p.axis === "h" ? "h" : "v", gap: num(p.gap) ?? 0, ...(str(p.align) ? { align: str(p.align)! } : {}), ...(str(p.justify) ? { justify: str(p.justify)! } : {}), ...padding, children: all() };
+    }
     case "Grid":
-      return { kind: "grid", columns: num(p.columns) ?? 2, gap: num(p.gap) ?? 0, children: all() };
+      return { kind: "grid", columns: num(p.columns) ?? 2, gap: num(p.gap) ?? 0, ...(p.rowGap != null ? { rowGap: num(p.rowGap) ?? 0 } : {}), children: all() };
     case "Rail":
       return { kind: "rail", gap: num(p.gap) ?? 12, ...(num(p.width) ? { width: num(p.width)! } : {}), children: all() };
     case "Card": {
       const surface = str(p.surface) ?? "card";
-      return { kind: "box", radius: p.radius === "control" ? 12 : 24, surface, padding: num(p.padding) ?? 16, children: [{ kind: "stack", axis: "v", gap: 16, children: all() }] };
+      return { kind: "box", radius: p.radius === "control" ? 12 : 24, surface, padding: num(p.padding) ?? 16, children: [{ kind: "stack", axis: "v", gap: num(p.gap) ?? 16, children: all() }] };
     }
     case "Section": {
       const head: SkeletonFrame[] = [line("headline")];
@@ -139,6 +142,8 @@ function frame(n: PNode, byId: Map<string, PNode>, depth: number): SkeletonFrame
       return line(str(p.role), 0.6);
     case "Icon":
       return { kind: "box", width: num(p.size) ?? 24, height: num(p.size) ?? 24, radius: 4 };
+    case "ColorCell":
+      return { kind: "box", aspect: 1, radius: 4, ...(num(p.size) ? { width: num(p.size)!, height: num(p.size)! } : {}) };
     case "Avatar":
     case "AvatarStack":
       return p.shape === "rounded" ? { kind: "box", width: num(p.size) ?? 40, height: num(p.size) ?? 40, radius: 8 } : { kind: "circle", size: num(p.size) ?? 40 };
@@ -154,9 +159,10 @@ function frame(n: PNode, byId: Map<string, PNode>, depth: number): SkeletonFrame
     case "IconButton":
       return { kind: "circle", size: 44 };
     case "Badge":
+      return { kind: "box", height: p.size === "large" ? p.fill === "none" ? 34 : 42 : 24, width: 72, radius: p.size === "large" ? 8 : 4 };
     case "Pill":
     case "Chip":
-      return { kind: "box", height: n.primitive === "Badge" ? 22 : 32, width: 72, radius: "pill" };
+      return { kind: "box", height: 32, width: 72, radius: "pill" };
     case "SegmentedControl": {
       const panel = kids(n, "panels", byId)[0];
       const selected = panel?.primitive === "Repeat" ? kids(panel, "template", byId)[0] : panel;
@@ -176,6 +182,8 @@ function frame(n: PNode, byId: Map<string, PNode>, depth: number): SkeletonFrame
       return { kind: "box", height: 40, radius: 4 };
     case "PriceChart":
       return { kind: "stack", axis: "v", gap: 8, children: [{ kind: "box", height: p.height === "compact" ? 120 : 200, radius: 12 }, { kind: "stack", axis: "h", gap: 12, justify: "between", children: [line("footnote", 0.5), line("footnote", 0.5)] }] };
+    case "StepTimeline":
+      return { kind: "stack", axis: "v", gap: 12, children: [{ kind: "box", height: 68, radius: 12 }, { kind: "box", height: 200, radius: 12 }] };
     case "Change":
       return { kind: "box", height: 22, width: p.style === "percent" ? 64 : 96, radius: "pill" };
     case "SplitBar":
@@ -216,9 +224,15 @@ function estimate(n: PNode, byId: Map<string, PNode>): number {
     case "Calculation": return sum("children", 24);
     case "Slider": return 90;
     case "ChoiceTags": return 70;
-    case "Stack": return p.axis === "v" ? sum("children", num(p.gap) ?? 0) : max("children");
+    case "Stack": return 2 * (num(p.paddingY) ?? 0) + (p.axis === "v" ? sum("children", num(p.gap) ?? 0) : max("children"));
+    case "Grid": {
+      const children = kids(n, "children", byId);
+      const columns = Math.max(1, num(p.columns) ?? 2);
+      const rows = Array.from({ length: Math.ceil(children.length / columns) }, (_, index) => Math.max(0, ...children.slice(index * columns, (index + 1) * columns).map(child => estimate(child, byId))));
+      return rows.reduce((total, height) => total + height, 0) + Math.max(0, rows.length - 1) * (num(p.rowGap) ?? num(p.gap) ?? 0);
+    }
     case "Disclosure": return p.open === true ? 44 + LABEL_GAP + sum("children", 0) : 44;
-    case "Card": return 2 * (num(p.padding) ?? 16) + sum("children", 16);
+    case "Card": return 2 * (num(p.padding) ?? 16) + sum("children", num(p.gap) ?? 16);
     case "Section": return 22 + LABEL_GAP + sum("children", 0);
     case "Repeat": {
       const t = kids(n, "template", byId)[0];
@@ -233,17 +247,19 @@ function estimate(n: PNode, byId: Map<string, PNode>): number {
     case "Text": case "Number": return LINE[str(p.role) ?? "body"] ?? 20;
     case "Image": return num(p.width) ?? 200;
     case "Avatar": case "IconTile": return num(p.size) ?? 40;
+    case "ColorCell": return num(p.size) ?? 24;
     case "Row": return 64;
     case "Bars": return 128;
     case "Sparkline": return 40;
     case "PriceChart": return (p.height === "compact" ? 120 : 200) + 26;
+    case "StepTimeline": return 68 + 12 + 200;
     case "Change": return 22;
     case "SplitBar": return p.legend === true ? 30 : 8;
     case "Note": return 72;
     case "Progress": return p.style === "ring" ? 80 : 8;
     case "Spacer": return num(p.size) ?? 0;
     case "Divider": return 1;
-    case "Badge": return 22;
+    case "Badge": return p.size === "large" ? p.fill === "none" ? 34 : 42 : 24;
     case "Chip": case "Pill": return 32;
     default: return 44;
   }

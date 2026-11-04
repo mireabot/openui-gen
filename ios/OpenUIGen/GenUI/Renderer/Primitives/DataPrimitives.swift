@@ -1,6 +1,32 @@
 import Charts
 import SwiftUI
 
+struct ColorCellPrimitive: View {
+    let props: PrimitiveProps
+    @Environment(\.primitivePalette) private var palette
+
+    var body: some View {
+        let size = props.cgFloat("size")
+        RoundedRectangle(cornerRadius: 4)
+            .fill(fill)
+            .aspectRatio(1, contentMode: .fit)
+            .frame(width: size, height: size)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(props.string("label") ?? "")
+            .accessibilityAddTraits(.isImage)
+    }
+
+    private var fill: Color {
+        if let color = props.string("color"),
+           color.range(of: "^#[0-9a-fA-F]{6}$", options: .regularExpression) != nil,
+           let resolved = palette.value(color)
+        {
+            return resolved
+        }
+        return palette.color(token: props.string("fill") ?? "surface.filled")
+    }
+}
+
 // MARK: Progress
 
 /// `Progress(@value, style, tone?, label?, caption?)`: value is 0–100.
@@ -502,13 +528,16 @@ struct NotePrimitive: View {
     @Environment(\.primitivePalette) private var palette
 
     var body: some View {
-        HStack(alignment: .top, spacing: PrimitiveMetrics.labelGap) {
+        HStack(alignment: .center, spacing: PrimitiveMetrics.labelGap) {
             if let icon = props.string("icon") { SymbolGlyph(name: icon, size: 24) }
             VStack(alignment: .leading, spacing: 0) {
                 if let title = props.string("title") {
                     Text(title).primitiveFont(.footnote, weight: .semibold)
                 }
-                Text(props.string("text") ?? "").primitiveFont(.footnote, weight: .medium)
+                Text(props.string("text") ?? "")
+                    .primitiveFont(.footnote, weight: .medium)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Spacer(minLength: 0)
         }

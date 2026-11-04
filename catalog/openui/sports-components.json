@@ -20,7 +20,7 @@
         {
           "path": "home.color",
           "kind": "color",
-          "note": "the club's colour \"#rrggbb\" from d.clubs, or \"\""
+          "note": "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\""
         },
         {
           "path": "home.score",
@@ -45,7 +45,7 @@
         {
           "path": "away.color",
           "kind": "color",
-          "note": "the club's colour \"#rrggbb\" from d.clubs, or \"\""
+          "note": "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\""
         },
         {
           "path": "away.score",
@@ -94,7 +94,7 @@
         {
           "path": "color",
           "kind": "color",
-          "note": "the club's colour \"#rrggbb\", or \"\""
+          "note": "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\""
         },
         {
           "path": "detail",
@@ -180,6 +180,11 @@
           "note": "player or club"
         },
         {
+          "path": "entries[].kind",
+          "kind": "text",
+          "note": "\"player\" or \"club\": a player's photo sits on the club colour, a crest on white"
+        },
+        {
           "path": "entries[].detail",
           "kind": "text",
           "note": "position · club for a player, league for a club, or \"\""
@@ -197,7 +202,7 @@
         {
           "path": "entries[].color",
           "kind": "color",
-          "note": "the club's colour \"#rrggbb\" (a player's club), or \"\""
+          "note": "a player: their club's colour \"#rrggbb\", or \"\"; a club: \"clear\" with a logo, else its colour"
         }
       ],
       "params": []
@@ -221,29 +226,34 @@
         {
           "path": "results",
           "kind": "list",
-          "note": "one per fixture, oldest first"
+          "note": "one per fixture, oldest first, every fixture of the run however many: a season is one record, never split"
         },
         {
           "path": "results[].label",
           "kind": "text",
-          "note": "\"W\", \"D\" or \"L\"; \"\" for a fixture to come"
+          "note": "spoken result, e.g. \"Win\", \"Draw\", \"Loss\" or \"Upcoming\"; not visible in the square"
         },
         {
-          "path": "results[].tone",
-          "kind": "tone",
-          "note": "win \"good\", loss \"bad\", draw or to come \"neutral\""
+          "path": "results[].fill",
+          "kind": "text",
+          "note": "win \"tone.good.fg\", loss \"tone.bad.fg\", draw \"outline.control\", upcoming \"surface.filled\""
         },
         {
           "path": "summary",
           "kind": "text",
           "note": "e.g. \"4 won · 1 drawn · 3 lost\""
+        },
+        {
+          "path": "columns",
+          "kind": "text",
+          "note": "\"10\"; the server sets it from the number of results"
         }
       ],
       "params": []
     },
     {
       "name": "StatsCard",
-      "intent": "A player's or a club's stats: a header (logo, name and a detail line), the rating on top in its bracket colour, then a grid of any number of stats, value over label.",
+      "intent": "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label. A part with no data is not shown.",
       "useWhen": "a player's or a club's season or match stats; any set of figures about one subject",
       "source": "ui-canvas sports-components/stats-card (from stats-grid/rating-hero)",
       "contract": [
@@ -251,6 +261,11 @@
           "path": "name",
           "kind": "text",
           "note": "player or club"
+        },
+        {
+          "path": "kind",
+          "kind": "text",
+          "note": "\"player\" or \"club\": a player's photo sits on the club colour, a crest on white"
         },
         {
           "path": "detail",
@@ -265,17 +280,27 @@
         {
           "path": "color",
           "kind": "color",
-          "note": "the club's colour \"#rrggbb\" (a player's club), or \"\""
+          "note": "a player: their club's colour \"#rrggbb\", or \"\"; a club: \"clear\" with a logo, else its colour"
         },
         {
           "path": "rating.value",
           "kind": "text",
-          "note": "rating as shown, e.g. \"6.60\", or \"—\" when there is none"
+          "note": "rating as shown, e.g. \"6.60\"; leave rating out when there is none"
         },
         {
           "path": "rating.tone",
           "kind": "tone",
-          "note": "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\", none \"neutral\""
+          "note": "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\""
+        },
+        {
+          "path": "rating.fill",
+          "kind": "text",
+          "note": "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand"
+        },
+        {
+          "path": "rating.ink",
+          "kind": "text",
+          "note": "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand"
         },
         {
           "path": "rating.label",
@@ -288,9 +313,14 @@
           "note": "what it averages, e.g. \"Average of 6 matches\", or \"\""
         },
         {
+          "path": "rating.show",
+          "kind": "boolean",
+          "note": "the server sets this"
+        },
+        {
           "path": "stats",
           "kind": "list",
-          "note": "any number, in reading order"
+          "note": "any number, in reading order; leave out a stat with no value"
         },
         {
           "path": "stats[].label",
@@ -300,7 +330,477 @@
         {
           "path": "stats[].value",
           "kind": "text",
-          "note": "as shown, e.g. \"5\" or \"86%\""
+          "note": "one figure or a few words, e.g. \"5\", \"86%\" or \"Norway\""
+        },
+        {
+          "path": "showStats",
+          "kind": "boolean",
+          "note": "the server sets this"
+        }
+      ],
+      "params": []
+    },
+    {
+      "name": "TeamPoints",
+      "intent": "A team's points so far this season: the total and its rank, then a table splitting the record into home and away (played, won, drawn, lost, goals, goal difference, points).",
+      "useWhen": "how many points a team has, or its record this season, home and away; one team in one competition",
+      "source": "ui-canvas sports-components/team-points (from team-points-breakdown/table-reference)",
+      "contract": [
+        {
+          "path": "subtitle",
+          "kind": "text",
+          "note": "rank and matches played, e.g. \"Rank 1 · 9 played\""
+        },
+        {
+          "path": "points",
+          "kind": "text",
+          "note": "total points as shown, e.g. \"27\""
+        },
+        {
+          "path": "home.played",
+          "kind": "text",
+          "note": "matches played home, e.g. \"5\""
+        },
+        {
+          "path": "home.won",
+          "kind": "text",
+          "note": "wins"
+        },
+        {
+          "path": "home.drawn",
+          "kind": "text",
+          "note": "draws"
+        },
+        {
+          "path": "home.lost",
+          "kind": "text",
+          "note": "losses"
+        },
+        {
+          "path": "home.goals",
+          "kind": "text",
+          "note": "goals for and against, e.g. \"20-1\""
+        },
+        {
+          "path": "home.goalDifference",
+          "kind": "text",
+          "note": "always signed with a true minus: \"+19\", \"−6\", \"0\""
+        },
+        {
+          "path": "home.goalDifferenceTone",
+          "kind": "tone",
+          "note": "\"bad\" when negative, else \"neutral\""
+        },
+        {
+          "path": "home.points",
+          "kind": "text",
+          "note": "points at this venue"
+        },
+        {
+          "path": "away.played",
+          "kind": "text",
+          "note": "matches played away, e.g. \"5\""
+        },
+        {
+          "path": "away.won",
+          "kind": "text",
+          "note": "wins"
+        },
+        {
+          "path": "away.drawn",
+          "kind": "text",
+          "note": "draws"
+        },
+        {
+          "path": "away.lost",
+          "kind": "text",
+          "note": "losses"
+        },
+        {
+          "path": "away.goals",
+          "kind": "text",
+          "note": "goals for and against, e.g. \"20-1\""
+        },
+        {
+          "path": "away.goalDifference",
+          "kind": "text",
+          "note": "always signed with a true minus: \"+19\", \"−6\", \"0\""
+        },
+        {
+          "path": "away.goalDifferenceTone",
+          "kind": "tone",
+          "note": "\"bad\" when negative, else \"neutral\""
+        },
+        {
+          "path": "away.points",
+          "kind": "text",
+          "note": "points at this venue"
+        }
+      ],
+      "params": []
+    },
+    {
+      "name": "LeagueStanding",
+      "intent": "Where a team stands in the league table: its place as the hero, the points gap to the places around it, its row between its nearest two neighbours, and optionally its home and away record.",
+      "useWhen": "a team's position in the table, or how far it is from the teams around it; for the whole table use a list of rows instead",
+      "source": "ui-canvas sports-components/league-standing (from team-points-breakdown/rank-context)",
+      "contract": [
+        {
+          "path": "place",
+          "kind": "text",
+          "note": "the team's place as shown, e.g. \"13th\""
+        },
+        {
+          "path": "summary",
+          "kind": "text",
+          "note": "points and gaps, e.g. \"9 points · 1 behind 12th, 1 ahead of 14th\"; for first place \"27 points · 5 clear of 2nd\""
+        },
+        {
+          "path": "rows",
+          "kind": "list",
+          "note": "exactly three in table order: the team and its nearest two, one either side, or the two below it in first place and the two above it in last"
+        },
+        {
+          "path": "rows[].rank",
+          "kind": "text",
+          "note": "the place, e.g. \"12\""
+        },
+        {
+          "path": "rows[].name",
+          "kind": "text",
+          "note": "club name"
+        },
+        {
+          "path": "rows[].points",
+          "kind": "text",
+          "note": "points as shown"
+        },
+        {
+          "path": "rows[].surface",
+          "kind": "text",
+          "note": "\"filled\" for the team, \"none\" for the others"
+        },
+        {
+          "path": "rows[].ink",
+          "kind": "ink",
+          "note": "\"primary\" for the team, \"secondary\" for the others"
+        },
+        {
+          "path": "rows[].weight",
+          "kind": "text",
+          "note": "\"medium\" for the team, \"regular\" for the others"
+        },
+        {
+          "path": "home.detail",
+          "kind": "text",
+          "note": "points and record at home, e.g. \"7 pts · 2-1-1\", from the schedule's venues; \"\" without them"
+        },
+        {
+          "path": "away.detail",
+          "kind": "text",
+          "note": "the same away"
+        },
+        {
+          "path": "showVenues",
+          "kind": "boolean",
+          "note": "whether to show home and away here; false when a TeamPoints record answers them, which is their primary place"
+        }
+      ],
+      "params": []
+    },
+    {
+      "name": "MatchTopPlayers",
+      "intent": "The top players of one match from both clubs, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
+      "useWhen": "the top scorers, top rated or other best players of one match, from both sides; not a ranking across matches, which is a Leaderboard",
+      "source": "ui-canvas sports-components/match-top-players (from the Fotmob match screen's Top rated card)",
+      "contract": [
+        {
+          "path": "title",
+          "kind": "text",
+          "note": "the card's name, e.g. \"Top scorers\""
+        },
+        {
+          "path": "metric",
+          "kind": "text",
+          "note": "the one metric every value is, e.g. \"Goals\" or \"Rating\""
+        },
+        {
+          "path": "rows",
+          "kind": "list",
+          "note": "as many as the request asks for per side, e.g. 1 or 3, otherwise 3; best first on each side, and only players the metric applies to, so a scorer has scored"
+        },
+        {
+          "path": "rows[].home.present",
+          "kind": "boolean",
+          "note": "false when this side has no player for the row, such as a side with fewer scorers; the cell stays empty and its other fields are \"\", with fill \"surface.filled\" and ink \"ink.primary\""
+        },
+        {
+          "path": "rows[].home.name",
+          "kind": "text",
+          "note": "the player's full name"
+        },
+        {
+          "path": "rows[].home.kind",
+          "kind": "text",
+          "note": "\"player\""
+        },
+        {
+          "path": "rows[].home.detail",
+          "kind": "text",
+          "note": "position as the data gives it, e.g. \"DM\" or \"Midfielder\", or \"\""
+        },
+        {
+          "path": "rows[].home.logo",
+          "kind": "text",
+          "note": "photo URL, or \"\""
+        },
+        {
+          "path": "rows[].home.color",
+          "kind": "color",
+          "note": "their club's colour \"#rrggbb\" from d.clubs, or \"\""
+        },
+        {
+          "path": "rows[].home.value",
+          "kind": "text",
+          "note": "the metric's value as shown, e.g. \"7.7\" or \"2\""
+        },
+        {
+          "path": "rows[].home.fill",
+          "kind": "text",
+          "note": "a rating: 7.0 and up tone.good.fg, 6.0–6.99 ink.brand, under 6.0 surface.brand; any other metric: surface.filled"
+        },
+        {
+          "path": "rows[].home.ink",
+          "kind": "text",
+          "note": "a rating: 7.0 and up and 6.0–6.99 surface.screen, under 6.0 ink.onBrand; any other metric: ink.primary"
+        },
+        {
+          "path": "rows[].home.club.name",
+          "kind": "text",
+          "note": "the player's club"
+        },
+        {
+          "path": "rows[].home.club.logo",
+          "kind": "text",
+          "note": "logo URL, or \"\""
+        },
+        {
+          "path": "rows[].home.club.color",
+          "kind": "color",
+          "note": "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\""
+        },
+        {
+          "path": "rows[].away.present",
+          "kind": "boolean",
+          "note": "false when this side has no player for the row, such as a side with fewer scorers; the cell stays empty and its other fields are \"\", with fill \"surface.filled\" and ink \"ink.primary\""
+        },
+        {
+          "path": "rows[].away.name",
+          "kind": "text",
+          "note": "the player's full name"
+        },
+        {
+          "path": "rows[].away.kind",
+          "kind": "text",
+          "note": "\"player\""
+        },
+        {
+          "path": "rows[].away.detail",
+          "kind": "text",
+          "note": "position as the data gives it, e.g. \"DM\" or \"Midfielder\", or \"\""
+        },
+        {
+          "path": "rows[].away.logo",
+          "kind": "text",
+          "note": "photo URL, or \"\""
+        },
+        {
+          "path": "rows[].away.color",
+          "kind": "color",
+          "note": "their club's colour \"#rrggbb\" from d.clubs, or \"\""
+        },
+        {
+          "path": "rows[].away.value",
+          "kind": "text",
+          "note": "the metric's value as shown, e.g. \"7.7\" or \"2\""
+        },
+        {
+          "path": "rows[].away.fill",
+          "kind": "text",
+          "note": "a rating: 7.0 and up tone.good.fg, 6.0–6.99 ink.brand, under 6.0 surface.brand; any other metric: surface.filled"
+        },
+        {
+          "path": "rows[].away.ink",
+          "kind": "text",
+          "note": "a rating: 7.0 and up and 6.0–6.99 surface.screen, under 6.0 ink.onBrand; any other metric: ink.primary"
+        },
+        {
+          "path": "rows[].away.club.name",
+          "kind": "text",
+          "note": "the player's club"
+        },
+        {
+          "path": "rows[].away.club.logo",
+          "kind": "text",
+          "note": "logo URL, or \"\""
+        },
+        {
+          "path": "rows[].away.club.color",
+          "kind": "color",
+          "note": "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\""
+        }
+      ],
+      "params": []
+    },
+    {
+      "name": "PlayerValue",
+      "intent": "A player's market value over time: the current value, then a stepped line coloured by club with each club's crest above its stretch and prices on the y axis, no card; scrubbing shows the club, date and value.",
+      "useWhen": "a player's market value, or how it changed over time; the server builds the record",
+      "source": "ui-canvas sports-components/player-value, on FotMob marketValues, in the style of a Kalshi step chart",
+      "contract": [
+        {
+          "path": "value",
+          "kind": "text",
+          "note": "the current value, e.g. \"€97.7M\""
+        },
+        {
+          "path": "caption",
+          "kind": "text",
+          "note": "e.g. \"Cole Palmer · Market value\""
+        },
+        {
+          "path": "segments",
+          "kind": "list",
+          "note": "one per unbroken spell at a club, oldest first"
+        },
+        {
+          "path": "segments[].name",
+          "kind": "text",
+          "note": "club name"
+        },
+        {
+          "path": "segments[].lineColor",
+          "kind": "color",
+          "note": "the line and the club's name while scrubbing"
+        },
+        {
+          "path": "segments[].tagColor",
+          "kind": "color",
+          "note": "the value tag behind white text"
+        },
+        {
+          "path": "segments[].logo",
+          "kind": "text",
+          "note": "crest URL, or \"\""
+        },
+        {
+          "path": "segments[].points",
+          "kind": "list",
+          "note": "the values in this spell, oldest first"
+        },
+        {
+          "path": "segments[].points[].x",
+          "kind": "number",
+          "note": "time in milliseconds"
+        },
+        {
+          "path": "segments[].points[].label",
+          "kind": "text",
+          "note": "the date as shown, e.g. \"Nov 2026\""
+        },
+        {
+          "path": "segments[].points[].value",
+          "kind": "number",
+          "note": "the value in euros"
+        },
+        {
+          "path": "segments[].points[].display",
+          "kind": "text",
+          "note": "the value as shown, e.g. \"€97.7M\""
+        },
+        {
+          "path": "ticks",
+          "kind": "list",
+          "note": "the y axis's labels, from zero up"
+        },
+        {
+          "path": "ticks[].value",
+          "kind": "number",
+          "note": "the value in euros"
+        },
+        {
+          "path": "ticks[].display",
+          "kind": "text",
+          "note": "the label, e.g. \"€50M\""
+        }
+      ],
+      "params": []
+    },
+    {
+      "name": "SeasonPodium",
+      "intent": "How a league's season ended: the winner, 2nd and 3rd in podium order (2, 1, 3), each a place numeral in gold, silver or bronze, a club avatar scaled by place and the club's name.",
+      "useWhen": "who won a league and who came 2nd and 3rd in a finished season; not a season still in progress, where a table or LeagueStanding says what is true so far",
+      "source": "ui-canvas sports-components/season-podium (from Figma Kino Screens 225:2579)",
+      "contract": [
+        {
+          "path": "first.name",
+          "kind": "text",
+          "note": "club name"
+        },
+        {
+          "path": "first.logo",
+          "kind": "text",
+          "note": "logo URL, or \"\""
+        },
+        {
+          "path": "first.color",
+          "kind": "color",
+          "note": "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\""
+        },
+        {
+          "path": "first.medal",
+          "kind": "color",
+          "note": "always \"#E6B422\" (gold): the place's colour, which a template cannot hold itself"
+        },
+        {
+          "path": "second.name",
+          "kind": "text",
+          "note": "club name"
+        },
+        {
+          "path": "second.logo",
+          "kind": "text",
+          "note": "logo URL, or \"\""
+        },
+        {
+          "path": "second.color",
+          "kind": "color",
+          "note": "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\""
+        },
+        {
+          "path": "second.medal",
+          "kind": "color",
+          "note": "always \"#C0C4CC\" (silver): the place's colour, which a template cannot hold itself"
+        },
+        {
+          "path": "third.name",
+          "kind": "text",
+          "note": "club name"
+        },
+        {
+          "path": "third.logo",
+          "kind": "text",
+          "note": "logo URL, or \"\""
+        },
+        {
+          "path": "third.color",
+          "kind": "color",
+          "note": "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\""
+        },
+        {
+          "path": "third.medal",
+          "kind": "color",
+          "note": "always \"#CD7F32\" (bronze): the place's colour, which a template cannot hold itself"
         }
       ],
       "params": []

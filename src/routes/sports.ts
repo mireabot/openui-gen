@@ -10,10 +10,12 @@ import { SnapshotArgs, SnapshotStore } from "../lang/snapshots.js";
 import { PROJECT_ROOT } from "../paths.js";
 import { RunRecorder, writeRunEvents } from "../run/recorder.js";
 import { askSports, editSports } from "../sports/ask.js";
-import { DocumentConflict, DocumentStore, nextRevision } from "../sports/documents.js";
+import { DocumentConflict, DocumentStore, nextRevision, saveGeneration, type SportsDocument } from "../sports/documents.js";
 
-const Request = z.object({ prompt: z.string().min(1).max(500) });
+const TimeZone = z.string().max(100).refine(zone => { try { new Intl.DateTimeFormat("en", { timeZone: zone }); return true; } catch { return false; } });
+const Request = z.object({ prompt: z.string().min(1).max(500), timeZone: TimeZone.optional() });
 const FollowUpRequest = Request.extend({ baseRevision: z.number().int().positive(), targets: z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_/-]*$/)).max(30).optional() });
+const SaveRequest = z.object({ revision: z.number().int().positive() });
 const STAGES = ["summarize", "search", "data", "compose", "validate"] as const;
 
 /**
@@ -24,15 +26,28 @@ const STAGES = ["summarize", "search", "data", "compose", "validate"] as const;
  * `activity` while it works, then `data`, `openui {text, replace: true}` (the whole program) and
  * `done` with the next revision, all after the revision is committed. 404 for an unknown document,
  * 409 when `baseRevision` is not the current one. A failed follow-up commits nothing.
+ * Both also send `usage` per model or search call: its stage, model, tokens, cost and time.
+ * POST /lang/sports/:documentId/save — `{revision}` keeps a copy of that revision under
+ * DATA_DIR/saved-generations: the program, dataset, plan and prompts. 404 unknown, 409 not current.
+ * GET /lang/sports/runs, /lang/sports/runs/:documentId — saved screens to replay with no model call; off in production.
  * POST /tools/sports_dataset — a run's snapshot, for the program's `Query("sports_dataset", …)`.
  */
-export function sportsRoutes(options: { store?: SnapshotStore; documents?: DocumentStore; ask?: typeof askSports; edit?: typeof editSports } = {}) {
+const finishedStatus = (issues: readonly { readonly code: string }[]) => issues.some(issue => issue.code === "part-incomplete") ? "partial" as const : "ok" as const;
+
+export function sportsRoutes(options: { store?: SnapshotStore; documents?: DocumentStore; savedDirectory?: string; ask?: typeof askSports; edit?: typeof editSports } = {}) {
   const cfg = config();
   const dataDir = path.resolve(fileURLToPath(PROJECT_ROOT), cfg.DATA_DIR);
   const store = options.store ?? new SnapshotStore(path.join(dataDir, "openui-snapshots"));
   const documents = options.documents ?? new DocumentStore(path.join(dataDir, "openui-documents"));
+  const savedDirectory = options.savedDirectory ?? path.join(dataDir, "saved-generations");
   const ask = options.ask ?? askSports;
   const edit = options.edit ?? editSports;
+  /** Commits a revision. In debug mode each one also gets its own file, which a later follow-up can't overwrite. */
+  const commit = async (document: SportsDocument, baseRevision: number, signal: AbortSignal) => {
+    await documents.put(document, baseRevision, signal);
+    if (cfg.GENERATION_MODE !== "debug") return;
+    await saveGeneration(savedDirectory, document).catch(error => log.warn("debug run not saved", { document: document.id, detail: (error as Error).message }));
+  };
   const app = new Hono();
   app.use("/lang/*", cors({ origin: allowedOrigin }));
   app.use("/tools/*", cors({ origin: allowedOrigin }));
@@ -53,21 +68,21 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
   app.post("/lang/sports/stream", async c => {
     const parsed = Request.safeParse(await c.req.json().catch(() => null));
     if (!parsed.success) return c.json({ error: "bad_request", issues: parsed.error.issues.map(issue => ({ path: issue.path.join("."), message: issue.message })) }, 400);
-    const { prompt } = parsed.data;
-    log.info("sports openui started", { prompt, origin: c.req.header("origin") ?? null });
+    const { prompt, timeZone } = parsed.data;
+    log.info("sports openui started", { prompt, timeZone: timeZone ?? null, origin: c.req.header("origin") ?? null });
     return streamSSE(c, async stream => {
       const { send, abort, flush } = channel(stream);
       const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui" });
       try {
-        const result = await ask({ prompt }, store, {
+        const result = await ask({ prompt, timeZone }, store, {
           progress: progress => { observer.step(progress); send("activity", progress); },
-          usage: usage => observer.usage(usage), content: report => observer.content(report),
+          usage: usage => { observer.usage(usage); send("usage", usage); }, content: report => observer.content(report),
           data: snapshot => send("data", snapshot), skeleton: skeleton => send("skeleton", skeleton),
           program: text => send("openui", { text }), issue: issue => send("issue", { issue }),
         }, observer.runId);
-        await documents.put(nextRevision(null, result.run, prompt, result), 0, abort.signal);
+        await commit(nextRevision(null, result.run, prompt, result), 0, abort.signal);
         send("done", { generation: "openui", run: result.run, program: result.program, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model, document: { id: result.run, revision: 1 } });
-        observer.finish({ status: "ok", retries: result.holes.repairRounds, nodes: result.nodes });
+        observer.finish({ status: finishedStatus(result.issues), retries: result.holes.repairRounds, nodes: result.nodes });
         log.info("sports openui streamed", { run: result.run, subject: result.plan.subject.name, questions: result.plan.questions.length, nodes: result.nodes, issues: result.issues.length, holes: result.holes, ms: result.timings.validate });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -80,12 +95,35 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
     });
   });
 
+  // Replay for the preview: a saved screen with no model call. Prompts and data are private, so never in production.
+  const replayable = process.env.NODE_ENV !== "production";
+  app.get("/lang/sports/runs", async c => replayable ? c.json({ runs: await documents.list() }) : c.json({ error: "not_found" }, 404));
+  app.get("/lang/sports/runs/:documentId", async c => {
+    const identity = SnapshotArgs.safeParse({ run: c.req.param("documentId") });
+    if (!replayable || !identity.success) return c.json({ error: "not_found" }, 404);
+    const document = await documents.get(identity.data.run);
+    if (!document) return c.json({ error: "document_not_found" }, 404);
+    return c.json({ prompt: document.turns.find(turn => turn.role === "user")?.content ?? "", program: document.program, snapshot: document.snapshot });
+  });
+
+  app.post("/lang/sports/:documentId/save", async c => {
+    const parsed = SaveRequest.safeParse(await c.req.json().catch(() => null));
+    const identity = SnapshotArgs.safeParse({ run: c.req.param("documentId") });
+    if (!parsed.success || !identity.success) return c.json({ error: "bad_request" }, 400);
+    const document = await documents.get(identity.data.run);
+    if (!document) return c.json({ error: "document_not_found" }, 404);
+    if (document.revision !== parsed.data.revision) return c.json({ error: "revision_conflict", document: { id: document.id, revision: document.revision } }, 409);
+    const file = await saveGeneration(savedDirectory, document);
+    log.info("sports generation saved", { document: document.id, revision: document.revision, file });
+    return c.json({ saved: { id: document.id, revision: document.revision, file } });
+  });
+
   app.post("/lang/sports/:documentId/follow-up", async c => {
     const parsed = FollowUpRequest.safeParse(await c.req.json().catch(() => null));
     const identity = SnapshotArgs.safeParse({ run: c.req.param("documentId") });
     if (!parsed.success || !identity.success) return c.json({ error: "bad_request" }, 400);
     const id = identity.data.run;
-    const { prompt, baseRevision, targets } = parsed.data;
+    const { prompt, baseRevision, targets, timeZone } = parsed.data;
     // Held until this follow-up commits or fails, so a concurrent one sees the new revision and gets 409.
     const release = await documents.lock(id);
     let previous;
@@ -103,18 +141,18 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
       const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui", followUp: { document: id, baseRevision } });
       try {
         // Content stays staged: the client keeps its screen until the revision is committed.
-        const result = await edit(saved, { prompt, targets }, store, {
+        const result = await edit(saved, { prompt, targets, timeZone }, store, {
           progress: progress => { observer.step(progress); send("activity", progress); },
-          usage: usage => observer.usage(usage), content: report => observer.content(report),
+          usage: usage => { observer.usage(usage); send("usage", usage); }, content: report => observer.content(report),
         }, observer.runId);
         abort.signal.throwIfAborted();
         const revision = saved.revision + 1;
-        await documents.put(nextRevision(saved, id, prompt, result), saved.revision, abort.signal);
+        await commit(nextRevision(saved, id, prompt, result), saved.revision, abort.signal);
         send("data", result.snapshot);
         send("openui", { text: result.program, replace: true });
         send("done", { generation: "openui", run: result.run, program: result.program, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model, document: { id, revision } });
         observer.content({ stage: "validate", id: "follow-up", label: "Follow-up merge", format: "json", data: { questions: result.followUp.questions.map(q => `${q.id} ${q.change}`), removed: result.followUp.removed, parts: result.screen.parts.map(p => `${p.id} ${p.origin.kind}`), revision } });
-        observer.finish({ status: "ok", retries: result.holes.repairRounds, nodes: result.nodes });
+        observer.finish({ status: finishedStatus(result.issues), retries: result.holes.repairRounds, nodes: result.nodes });
         log.info("sports follow-up committed", { document: id, revision, run: result.run, questions: result.followUp.questions.map(q => `${q.id} ${q.change}`), removed: result.followUp.removed, parts: result.screen.parts.map(p => `${p.id} ${p.origin.kind}`) });
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);

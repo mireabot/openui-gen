@@ -32,6 +32,8 @@ final class FakeOpenUIStream: OpenUIStreaming, @unchecked Sendable {
     func query(tool: String, args _: PValue) async throws -> PValue {
         throw OpenUIError.missingQuery(tool)
     }
+
+    func save(_: OpenUIDocumentVersion) async throws {}
 }
 
 extension OpenUIStreamEvent {

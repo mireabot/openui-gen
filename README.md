@@ -27,9 +27,24 @@ npm run preview               # preview on :3000, calling :8080
 | --- | --- |
 | `POST /lang/sports/stream` | A new screen (`{prompt}`): SSE `activity`, `data`, `skeleton`, `openui`, `issue`, `done`, `failure`. |
 | `POST /lang/sports/:documentId/follow-up` | A follow-up on a saved screen (`{prompt, baseRevision}`): SSE `activity`, then `data`, `openui {replace: true}` and `done` with the next revision. 404 unknown document, 409 stale revision. |
+| `POST /lang/sports/:documentId/save` | Keep a copy of a revision (`{revision}`) under `DATA_DIR/saved-generations`: program, dataset, plan and prompts. 404 unknown document, 409 not the current revision. |
+| `GET /lang/sports/runs`, `GET /lang/sports/runs/:documentId` | Saved screens the preview replays with no model call. Off when `NODE_ENV` is `production`. |
 | `POST /tools/sports_dataset` | Replay a run's dataset snapshot (`{run}`), for `Query("sports_dataset", …)`. |
 | `GET /health` | Liveness. |
 | `GET /` | The preview (when `preview/out` exists). |
+
+## Generation modes
+
+`GENERATION_MODE` picks where the Claude stages run. Stages, models and effort are the same in both.
+
+| Mode | Claude stages | Search |
+| --- | --- | --- |
+| `debug` (default) | Local `claude` CLI, on your plan's limits. Needs `claude auth login`. | Parallel, billed |
+| `api` (always in the Docker image) | Anthropic API, billed to `ANTHROPIC_API_KEY` | Parallel, billed |
+
+Debug calls record a cost of $0, and `GET /health` reports the mode. To run one generation from the
+terminal, start the backend and run `npm run ask -- "Chelsea stats last season"`.
+See `Usage.md` for the pipeline and both modes.
 
 `OPENUI-LANG.md` explains the pipeline (Haiku plans, ESPN feeds and Parallel searches read by Sonnet
 answer every question at once, Opus designs the dataset and writes the screen), the component
@@ -41,7 +56,7 @@ library, follow-ups and the native renderer.
 src/lang/       OpenUI Lang: primitives, library, compiler, printer, snapshots
 src/sports/     plan and follow-up plan (Haiku), documents, ESPN client, parallel research (Parallel + Sonnet), dataset (Opus), screen pack
 src/research/   Parallel search, citations and dataset schema
-src/llm/        Anthropic client and structured completion
+src/llm/        Claude by mode (Anthropic API or Claude Code CLI) and structured completion
 src/routes/     HTTP routes
 preview/        Next.js preview (static export), Kino renderer for OpenUI
 catalog/        component schema index for clients (see catalog/README.md)

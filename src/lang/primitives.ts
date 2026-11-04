@@ -86,13 +86,14 @@ export const PRIMITIVES = [
       align: opt(copy.oneOf(["start", "center", "end", "stretch"])), justify: opt(copy.oneOf(["start", "center", "end", "between"])),
       overlap: opt(token("space", "children after the first overlap the previous one by this much (poster over a still)")),
       divided: opt(copy.bool("hairline between children (lists)")),
+      paddingX: opt(token("space")), paddingY: opt(token("space")),
     },
-    behaviors: ["stagger-in"], rules: ["gap is a spacing token", "inside a horizontal Stack, a vertical Stack takes the remaining width and its one-line Text truncates", "overlap is a spacing token, applied as a negative margin", "wrap: children keep their own width and flow into rows, gap between items and rows; an item wider than the row gets its own row", "divided: 1px separator between children"],
+    behaviors: ["stagger-in"], rules: ["gap is a spacing token", "inside a horizontal Stack, a vertical Stack takes the remaining width and its Text wraps to its lines, then truncates; one aligned end is a trailing column and keeps its own width instead", "overlap is a spacing token, applied as a negative margin", "wrap: children keep their own width and flow into rows, gap between items and rows; an item wider than the row gets its own row", "divided: 1px separator between children"],
     skeleton: "keeps its axis, gap and alignment; children draw their own skeletons (an @Each before data: 3 items)",
   }),
   P({
-    name: "Grid", category: "layout", intent: "Lays peer children in 2 to 4 equal columns.",
-    props: { columns: copy.oneOf(["2", "3", "4"]), gap: token("space"), children: nodes({ min: 2 }) },
+    name: "Grid", category: "layout", intent: "Lays peer children in 1 to 24 equal columns.",
+    props: { columns: copy.oneOf(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"]), gap: token("space"), children: nodes({ min: 1 }), rowGap: opt(token("space", "vertical gap; defaults to gap")) },
     behaviors: ["stagger-in"], rules: ["equal columns", "gap is a spacing token"],
     skeleton: "keeps its columns and gap",
   }),
@@ -107,7 +108,7 @@ export const PRIMITIVES = [
     props: {
       children: nodes({ min: 1 }), surface: opt(token("surface", "default card")),
       radius: opt(copy.oneOf(["container", "control"], "container 24 (default) · control 12 for small tiles")),
-      padding: opt(token("space", "default 16")), selected: opt(copy.bool("bindable per item (p.selected): brand outline")),
+      padding: opt(token("space", "default 16")), selected: opt(copy.bool("bindable per item (p.selected): brand outline")), gap: opt(token("space", "between children; defaults to 16")),
     },
     behaviors: ["press", "select"], rules: ["radius 24 (12 for control-size tiles), corner smoothing 60%", "padding 16 by default", "inner spacing 16", "selected = 1px brand stroke"],
     skeleton: "keeps its surface, radius and padding; children as skeletons",
@@ -164,6 +165,7 @@ export const PRIMITIVES = [
       align: opt(copy.oneOf(["start", "center", "end"])),
       tone: opt(token("tone", "colour by meaning (good / bad / warn / neutral), e.g. a verdict; overrides ink; bindable")),
       reserve: opt(copy.bool("keep the height of `lines` lines even when the text is shorter, so cards in a set match")),
+      color: opt(data.color("a colour from the data (a medal, a club); overrides tone and ink; empty uses them")),
     },
     behaviors: [], rules: ["SF Pro", "size and line height come from the role", "tone uses the theme's tone colours, never raw accents", "reserve: height = lines × the role's line height (SwiftUI lineLimit(_:reservesSpace:))"],
     skeleton: "one bar per line at the role's line height; width by role (title 50%, body 70%, footnote 40%), last line 60%",
@@ -198,8 +200,9 @@ export const PRIMITIVES = [
   }),
   P({
     name: "Avatar", category: "media", intent: "A person or company mark: image, or monogram on a tint.",
-    props: { name: copy.text(), size: token("avatarSize"), image: opt(data.image()), tint: opt(token("ink")), shape: opt(copy.oneOf(["circle", "rounded"])), color: opt(data.color("a club colour from the data; fills the disc, overrides tint")) },
-    behaviors: [], rules: ["fully round, or radius 8 when rounded", "scale the image proportionally to fit inside the fixed-size avatar without cropping or resizing the container", "image loads async (a URL or a server path resolved against the streaming server): the monogram shows first, the image fades in on load (150ms ease-out), and a failed load keeps the monogram"],
+    props: { name: copy.text(), size: token("avatarSize"), image: opt(data.image()), tint: opt(token("ink")), shape: opt(copy.oneOf(["circle", "rounded"])), color: opt(data.discColor("from the data: a player's club colour fills the disc behind the photo; \"clear\" for a club with a logo, whose crest has no fill; a club without a logo uses its colour for the monogram")),
+      kind: opt(copy.oneOf(["club", "player"], "club (default): a crest with nothing behind it · player: a headshot on the disc colour; both fit the whole frame")) },
+    behaviors: [], rules: ["fully round, or radius 8 when rounded", "the image scales proportionally to fit the whole frame with no padding, so a player's head is never cut off; the shape's corners mask a photo", "club: a loaded crest has nothing behind it and no mask", "player: the disc colour behind the image", "image loads async (a URL or a server path resolved against the streaming server): the monogram shows first, the loaded image replaces it (150ms ease-out), and a failed load keeps the monogram"],
     skeleton: "circle (or radius-8 square) at its size",
   }),
   P({
@@ -251,8 +254,13 @@ export const PRIMITIVES = [
   }),
   P({
     name: "Badge", category: "control", intent: "A static status label.",
-    props: { label: copy.text(), tone: token("tone"), icon: opt(copy.icon()) },
-    behaviors: [], rules: ["radius 4"], skeleton: "pill 22 tall, 56 wide",
+    props: {
+      label: copy.text(), tone: token("tone"), icon: opt(copy.icon()),
+      size: opt(copy.oneOf(["small", "regular", "large"], "small: 11 semibold, 16 tall, padding 4, for a value on an avatar; regular: 24 tall; large: title1 semibold, padding 12 horizontal and 4 vertical, radius 8")),
+      fill: opt(copy.oneOf(["none", "tone.good.fg", "tone.warn.fg", "tone.bad.fg", "tone.neutral.fg", "ink.brand", "surface.brand", "surface.filled"])),
+      ink: opt(copy.oneOf(["ink.primary", "ink.secondary", "ink.onBrand", "surface.screen"])),
+    },
+    behaviors: [], rules: ["small: 11 semibold, radius 4, height 16, padding 4 horizontal", "regular: footnote medium, radius 4, height 24", "large: title1 semibold, radius 8, padding 12 horizontal and 4 vertical", "fill and ink override the tone look", "fill none: plain text with no padding or background"], skeleton: "small: 16 tall label; regular: 24 tall label; large: 42 tall label, or 34 when fill none",
   }),
   P({
     name: "Chip", category: "control", intent: "A pill that filters or selects, or a tappable tag.",
@@ -280,6 +288,17 @@ export const PRIMITIVES = [
   }),
 
   // ---------------------------------------------------------------- data
+  P({
+    name: "ColorCell", category: "data", intent: "One blank filled square for a heatmap, activity grid, status matrix or legend, with a spoken label.",
+    props: {
+      label: copy.text("accessibility label only; never drawn inside the square"),
+      fill: copy.oneOf(["tone.good.fg", "tone.warn.fg", "tone.bad.fg", "tone.neutral.fg", "outline.control", "surface.filled", "surface.brand"]),
+      color: opt(data.color("a data colour #rrggbb, or empty to use fill")),
+      size: opt(copy.oneOf(["fill", "12", "24", "32"], "fill (default): square at the available width; fixed sizes for swatches")),
+    },
+    behaviors: [], rules: ["square aspect ratio", "radius 4", "fill is a palette token; a nonempty data color overrides it", "label is spoken only; no visible text", "fill size takes the available width; fixed sizes never stretch"],
+    skeleton: "radius-4 square at its fixed size or the available width",
+  }),
   P({
     name: "Progress", category: "data", intent: "How far a value is toward a goal, as a bar or a ring.",
     props: { value: data.number("percent"), style: copy.oneOf(["bar", "ring"]), tone: opt(token("tone")), label: opt(copy.text()), caption: opt(copy.text()) },
@@ -337,6 +356,20 @@ export const PRIMITIVES = [
     skeleton: "radius-12 box at the chart height, two footnote bars under it",
   }),
   P({
+    name: "StepTimeline", category: "data", intent: "A value over time as a stepped line in stretches, each in its own colour with its crest above its middle; scrub to read the stretch, date and value.",
+    props: {
+      value: data.text("the current value, the header's left side"),
+      segments: data.list(z.object({
+        name: z.string(), lineColor: z.string(), tagColor: z.string(), logo: z.string(),
+        points: z.array(z.object({ x: z.number(), label: z.string(), value: z.number(), display: z.string() })),
+      })),
+      ticks: data.list(z.object({ value: z.number(), display: z.string() })),
+      caption: opt(data.text("under the value")),
+    },
+    behaviors: ["scrub"], rules: ["vertical stack, leading, with no card: header, then the plot 200 tall", "the only axis: the ticks' labels at the plot's trailing edge in footnote tertiary, with no grid lines and no dates", "header: value in title1 semibold on the left, 68 tall so nothing jumps; while scrubbing, on the right a stack with spacing 6: the stretch's name in its line colour, the date in secondary ink, the value in a tag with the tag colour and white text", "x is time; the line holds each value until the next, 2 wide, and a stretch runs up to the next one's first point", "y starts at zero, with 28 of headroom for the crests", "crest: 20, with no fill, centred on its stretch, 4 above its highest value, so it never sits on the line; left out when the stretch is narrower than the crest", "a dot marks the last point, or the scrubbed one with a 1px rule"],
+    skeleton: "header bar, radius-12 box 200 tall",
+  }),
+  P({
     name: "Change", category: "data", intent: "A signed price change with its percent (−$1.20 · −0.52%), toned by its sign; \"percent\" shows only the percent with an arrow.",
     props: {
       value: data.number("decimal"), percent: data.number("decimal", "percent points, e.g. 1.4 for +1.4%"),
@@ -358,7 +391,7 @@ export const PRIMITIVES = [
   P({
     name: "Note", category: "data", intent: "A short highlighted message: a tip, a status or a warning (Atomize Info-note).",
     props: { text: copy.text(), tone: opt(copy.oneOf(["neutral", "brand", "good", "warn", "bad"])), title: opt(copy.text()), icon: opt(copy.icon()) },
-    behaviors: [], rules: ["radius 12", "padding 12"], skeleton: "radius-12 box 72 tall",
+    behaviors: [], rules: ["radius 12", "padding 12", "text shown in full, leading aligned", "icon and text centred vertically", "height follows the content, never fixed"], skeleton: "radius-12 box 72 tall",
   }),
 
   // ---------------------------------------------------------------- rows
@@ -369,7 +402,7 @@ export const PRIMITIVES = [
       trailing: opt(node(["Text", "Number", "Badge", "Chip", "Pill", "Stack", "Toggle", "Icon", "IconButton", "Button", "Change", "Sparkline"])),
       action: opt(copy.action()),
     },
-    behaviors: ["press"], rules: ["list padding 12 v · 20 h", "min height 44"],
+    behaviors: ["press"], rules: ["list padding 12 v · 20 h", "min height 44", "title and subtitle each wrap to at most 2 lines, then truncate"],
     skeleton: "leading shape + title bar (90%) and subtitle bar; trailing as its skeleton",
   }),
   P({

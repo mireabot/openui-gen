@@ -19,10 +19,31 @@ struct AskView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .background(screenColor.ignoresSafeArea())
                 .safeAreaInset(edge: .bottom) { promptBar }
+                .safeAreaInset(edge: .top) {
+                    if let session = model.session {
+                        GenerationStatusView(session: session, saveState: model.saveState) {
+                            Task { await model.save() }
+                        }
+                    }
+                }
                 .navigationTitle("OpenUIGen")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) { ServerStatusDot(state: health.state) }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink {
+                            ComponentGalleryView(theme: theme, screenColor: screenColor, baseURL: baseURL)
+                        } label: {
+                            Label("Components", systemImage: "square.grid.2x2")
+                        }
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        NavigationLink {
+                            PasteScreenView(theme: theme, screenColor: screenColor, baseURL: baseURL)
+                        } label: {
+                            Label("Paste schema", systemImage: "doc.on.clipboard")
+                        }
+                    }
                     if model.session != nil {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("New", systemImage: "square.and.pencil") { model.reset() }
@@ -37,18 +58,13 @@ struct AskView: View {
 
     @ViewBuilder
     private var content: some View {
-        if let session = model.session, session.hasContent {
-            OpenUISceneView(root: session.root, theme: theme) { session.edit($0, value: $1) }
-                .primitiveMediaBaseURL(baseURL)
-                .overlay(alignment: .top) {
-                    if session.phase == .updating {
-                        ActivityList(activities: Array(session.activities.suffix(1)))
-                            .padding(.top, 8)
-                    }
-                }
-        } else if let session = model.session, model.isBusy {
-            ActivityList(activities: session.activities)
-                .padding(PrimitiveMetrics.screenInset)
+        if let session = model.session, session.hasContent || !session.pendingBlocks.isEmpty {
+            OpenUISceneView(root: session.root, theme: theme, pending: session.pendingBlocks) {
+                session.edit($0, value: $1)
+            }
+            .primitiveMediaBaseURL(baseURL)
+        } else if model.isBusy {
+            Color.clear
         } else {
             emptyState
         }
@@ -101,34 +117,6 @@ struct AskView: View {
 
     private var screenColor: Color {
         theme?.color("surface.screen").map(Color.init) ?? Color(uiColor: .systemBackground)
-    }
-}
-
-/// The pipeline steps the server reported, newest last.
-private struct ActivityList: View {
-    let activities: [DSLActivity]
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if activities.isEmpty {
-                ProgressView()
-            }
-            ForEach(Array(activities.enumerated()), id: \.offset) { _, activity in
-                HStack(spacing: 10) {
-                    if activity.status == .completed {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundStyle(.green)
-                    } else {
-                        ProgressView()
-                    }
-                    Text(activity.title)
-                        .font(.subheadline.weight(.medium))
-                }
-            }
-        }
-        .padding(12)
-        .background(.regularMaterial)
-        .clipShape(.rect(cornerRadius: PrimitiveMetrics.controlRadius))
     }
 }
 

@@ -61,10 +61,12 @@ struct SkeletonFrameView: View {
 
     var body: some View {
         switch frame {
-        case let .stack(axis, gap, align, justify, children):
+        case let .stack(axis, gap, align, justify, children, paddingX, paddingY):
             SkeletonStack(axis: axis, gap: gap, align: align, justify: justify, children: children)
-        case let .grid(columns, gap, children):
-            ColumnsLayout(columns: columns, spacing: gap) {
+                .padding(.horizontal, paddingX ?? 0)
+                .padding(.vertical, paddingY ?? 0)
+        case let .grid(columns, gap, children, rowGap):
+            ColumnsLayout(columns: columns, spacing: gap, rowSpacing: rowGap.map { CGFloat($0) }) {
                 SkeletonChildren(frames: children, fill: true)
             }
         case let .rail(gap, width, children):

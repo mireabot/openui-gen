@@ -16,12 +16,15 @@ type Answer = Record<string, unknown>;
 const answerOf = (values: DatasetValues, q: QuestionId): Answer | undefined => ((values.answers ?? {}) as Record<string, Answer>)[q];
 const at = (q: QuestionId, ...keys: string[]): Expr => ["answers", q, ...keys].reduce<Expr>((obj, field) => ({ k: "Member", obj, field }), { k: "Ref", n: "d" });
 const ref = (q: QuestionId, ...keys: string[]): AnyRef => refAt(at(q, ...keys));
-const NOT_CONTENT = new Set<string>(["status", "question", "title", "source", "asOf"]);
+/** Reading only these names the subject of an answer; it does not answer anything. */
+const NOT_CONTENT = new Set<string>(["status", "question", "title", "source", "asOf", "team"]);
 
 function shows(q: QuestionId, reads: readonly DataPath[], values: DatasetValues): boolean {
   const answer = answerOf(values, q);
   if (!answer) return true;
   if (answer.status === "unavailable") return reads.some(path => path[0] === "note");
+  // Its facts were locked to another answer: nothing is left here to show.
+  if (Object.keys(answer).every(key => NOT_CONTENT.has(key))) return true;
   return reads.some(path => typeof path[0] === "string" && !NOT_CONTENT.has(path[0]));
 }
 
@@ -47,7 +50,9 @@ function fallback(q: QuestionId, values: DatasetValues): Expr {
   if (!answer || answer.status === "unavailable") return ui.Note({ title: ref(q, "title"), text: ref(q, "note"), tone: "warn" }).expr;
   const footnote = typeof answer.source === "string" && answer.source ? [ui.Text({ content: ref(q, "source"), role: "footnote", ink: "tertiary" })] : [];
   // An answer shaped for a Sports component shows as that component.
-  const placed = placements(answer)[0];
+  // Not a club's name line, though, when the answer has more to say than which club it is about.
+  const hasContent = Object.keys(answer).some(key => !(BASE_FIELDS as readonly string[]).includes(key) && key !== "team");
+  const placed = placements(answer).find(p => !(hasContent && p.keys[0] === "team"));
   if (placed) {
     const data = ref(q, ...placed.keys);
     const body = placed.list ? ui.Stack({ axis: "v", gap: 12, children: each(data, "x", (x: AnyRef) => placed.component.build(x, [])) }) : placed.component.build(data, []);
@@ -67,10 +72,13 @@ function fallback(q: QuestionId, values: DatasetValues): Expr {
     const first = items[0]!;
     const title = find(first, v => typeof v === "string" && v.length > 0);
     const number = find(first, v => typeof v === "number");
+    // Up to two more text fields, so a row of words (a source and its projected position) keeps its point.
+    const [detail, extra] = Object.keys(first).filter(k => k !== title?.[0] && typeof first[k] === "string" && first[k]);
     if (title) {
       children.push(ui.Stack({ axis: "v", gap: 12, divided: true, children: each(ref(q, key), "item", (item: AnyRef) => ui.Row({
         title: member(item, title),
-        ...(number ? { trailing: ui.Number({ value: member(item, number), format: "decimal", role: "body" }) } : {}),
+        ...(detail ? { subtitle: item[detail] } : {}),
+        ...(number ? { trailing: ui.Number({ value: member(item, number), format: "decimal", role: "body" }) } : extra ? { trailing: ui.Text({ content: item[extra], role: "body", weight: "medium" }) } : {}),
       })) }));
     }
   }
@@ -100,6 +108,29 @@ components that fit: ${placements(a).map(p => placementCall(p, `d.answers.${id}`
 data: ${JSON.stringify(preview(a))}`).join("\n\n")}`;
 }
 
+/**
+ * A hand-built home and away table where TeamPoints fits is refused: the writer's copy loses the
+ * card's total and rank. Anything that calls TeamPoints, or reads other fields, is fine.
+ */
+function refuses(statement: Expr, values: DatasetValues): string | null {
+  const answers = (values.answers ?? {}) as Record<string, Answer>;
+  const cards = Object.entries(answers).flatMap(([id, answer]) => placements(answer).filter(p => p.component.name === "TeamPoints" && !p.list).map(p => `d.answers.${id}.${p.keys.join(".")}`));
+  if (!cards.length) return null;
+  const dotted = (node: Record<string, unknown>): string | null => node.k === "Ref" ? String(node.n) : node.k === "Member" && isObject(node.obj) ? (base => base && `${base}.${String(node.field)}`)(dotted(node.obj)) : null;
+  let found: string | null = null;
+  const walk = (node: unknown): void => {
+    if (found) return;
+    if (Array.isArray(node)) { node.forEach(walk); return; }
+    if (!isObject(node)) return;
+    if (node.k === "Comp" && node.name === "TeamPoints") return;
+    const path = dotted(node);
+    if (path) { found = cards.find(card => path.startsWith(`${card}.home`) || path.startsWith(`${card}.away`)) ?? null; return; }
+    Object.values(node).forEach(walk);
+  };
+  walk(statement);
+  return found ? `This reads the home and away record by hand. Call TeamPoints(${found}) instead: it is the card for home, away and total points.` : null;
+}
+
 export const SPORTS_SCREEN: ScreenPack = {
   tool: "sports_dataset",
   /** A Sports component call (MatchCard(d.answers.q1.match), …) as primitives. */
@@ -113,8 +144,9 @@ export const SPORTS_SCREEN: ScreenPack = {
   },
   evidenceOf: path => path[0] === "answers" && typeof path[1] === "string" && /^q\d+$/.test(path[1]) ? { question: path[1] as QuestionId, rest: path.slice(2) } : null,
   shows,
+  refuses,
   listProblem: () => null,
   fallback,
   briefing,
-  templates: `Sports components: call one with a record that has every field it reads (the briefing lists where they fit), or copy its structure.\n${COMPONENT_SIGNATURES}`,
+  templates: `Sports components: call one with a record that has every field it reads (the briefing lists where they fit), or copy its structure. Lock every fact to one place: however the questions overlap, show each figure or record once on the screen, never again in another part. Names, titles and descriptions wrap: give their Text lines 2, never lines 1. A Text that reads a summary or a note has no lines: it shows in full. Data an answer lacks is skipped: write no Note or Text saying it is missing (an answer whose status is unavailable still shows its note), and type no figure, name or source of your own: read them from d. Keep the parts in the order the user asked for them. Keep a part under 16 statements by calling components and writing small pieces inline.\n${COMPONENT_SIGNATURES}`,
 };

@@ -4,16 +4,21 @@ import { basePart, compileScreen, type CompiledScreen, type ProgramIssue, type P
 import { printStatement } from "../lang/program.js";
 import type { DatasetSnapshot, SnapshotDataset, SnapshotStore } from "../lang/snapshots.js";
 import { programTree, type programSkeleton } from "../lang/tree.js";
-import { anthropicWriter } from "../llm/anthropic.js";
+import { claudeWriter } from "../llm/claude.js";
 import type { CompletionSender } from "../llm/structured-completion.js";
 import type { DataField, MockValue } from "../research/dataset-schema.js";
 import type { ContentReport, RunProgress, UsageReport } from "../run/recorder.js";
 import { designDataset, inferFields } from "./dataset.js";
 import type { DocumentPart, SportsDocument } from "./documents.js";
-import { clubDirectory, clubRecord, isTeam } from "./espn.js";
+import { clubRecord, isTeam } from "./espn.js";
+import { clubsForMarks, clubsWithColours, footballClubs, footballSourceName } from "./football.js";
 import { planFollowUp, planSports, type FollowUpContext, type FollowUpPlan, type SportsPlan } from "./plan.js";
+import { fitHeatmaps, lockFacts, settleMissing, settleVenues } from "./components.js";
+import { pickPlayer } from "./player-pick.js";
 import { answerSports, type ResearchDeps } from "./research.js";
 import { SPORTS_SCREEN } from "./screen.js";
+import { lookupPlayer, type PlayerLookup, type PlayerPicker, type PlayerProfile } from "./fotmob.js";
+import { componentPlayerQueries, createPlayerResolver, fillClubMarks, populatePlayerImages, rawPlayerQueries, savedPlayerProfiles } from "./player-images.js";
 
 /**
  * The sports pipeline: Haiku understands the request and plans the questions; every question is
@@ -22,8 +27,9 @@ import { SPORTS_SCREEN } from "./screen.js";
  * the saved questions, answers only the revised and added ones, and rewrites only their parts.
  */
 
-export interface SportsRequest { readonly prompt: string }
-export interface FollowUpRequest { readonly prompt: string; readonly targets?: readonly string[] | undefined }
+/** `timeZone` (IANA, e.g. "America/New_York") sets the clock kickoff times are shown in. */
+export interface SportsRequest { readonly prompt: string; readonly timeZone?: string | undefined }
+export interface FollowUpRequest extends SportsRequest { readonly targets?: readonly string[] | undefined }
 export interface SportsHooks {
   readonly progress?: (value: RunProgress) => void;
   readonly usage?: (value: UsageReport) => void;
@@ -40,6 +46,8 @@ export interface SportsDeps extends ResearchDeps {
   readonly schema?: CompletionSender;
   readonly write?: ProgramWriter;
   readonly now?: Date;
+  readonly player?: PlayerLookup;
+  readonly pickPlayer?: PlayerPicker;
 }
 export interface SportsResult {
   readonly run: string;
@@ -68,11 +76,11 @@ export async function askSports(request: SportsRequest, store: SnapshotStore, ho
   const plan = await (deps.plan ?? (prompt => planSports(prompt, now, { usage: llmUsage(hooks, "summarize") }, deps.espn)))(request.prompt);
   clock.mark("plan");
   hooks.content?.({ stage: "summarize", id: "plan", label: `Plan (${cfg.SPORTS_PLAN_MODEL})`, format: "json", data: plan });
-  hooks.progress?.({ stage: "summarize", status: "completed", detail: `${plan.subject.name} · ${plan.questions.map(q => `${q.id} ${q.source === "espn" ? `ESPN ${q.feed}` : "web"}`).join(" · ")}` });
+  hooks.progress?.({ stage: "summarize", status: "completed", detail: `${plan.subject.name} · ${plan.questions.map(q => `${q.id} ${q.source === "espn" ? `${footballSourceName()} ${q.feed}` : q.source}`).join(" · ")}` });
 
   const clubs = await clubsOf(plan, deps);
-  hooks.content?.({ stage: "summarize", id: "clubs", label: "Clubs (ESPN)", format: "json", data: clubs });
-  const dataset = await answer(plan, plan.questions, request.prompt, clubs, now, hooks, deps, clock);
+  hooks.content?.({ stage: "summarize", id: "clubs", label: `Clubs (${footballSourceName()})`, format: "json", data: clubs });
+  const dataset = await answer(plan, plan.questions, request, clubs, now, hooks, deps, clock);
   const snapshot = await store.put(run, dataset, "sports_dataset");
   hooks.data?.(snapshot);
   return compose({ run, request: request.prompt, values: dataset.values, required: plan.questions.map(q => ({ id: q.id, text: q.text })), base: [], editable: new Set(), explicitLayout: null },
@@ -98,18 +106,20 @@ export async function editSports(saved: SportsDocument, request: FollowUpRequest
   hooks.progress?.({ stage: "summarize", status: "completed", detail: [...followUp.questions.map(q => `${q.id} ${q.change}`), ...followUp.removed.map(id => `${id} removed`)].join(" · ") });
 
   const plan: SportsPlan = { subject: followUp.subject, questions: followUp.questions.map(({ change: _change, ...q }) => q) };
-  const previous = saved.snapshot.result as { answers: Answers; clubs?: Record<string, MockValue>[] };
+  const previous = saved.snapshot.result as { answers: Answers; clubs?: Record<string, MockValue>[]; players?: unknown };
   // Saved clubs keep their order, so kept parts reading d.clubs[i] still read the same club.
   const savedClubs = previous.clubs ?? [];
   const clubs = [...savedClubs, ...(await clubsOf(plan, deps)).filter(c => !savedClubs.some(s => s.id === c.id))];
-  hooks.content?.({ stage: "summarize", id: "clubs", label: "Clubs (ESPN)", format: "json", data: clubs });
-  const fresh = changed.length ? await answer(plan, changed, request.prompt, clubs, now, hooks, deps, clock) : null;
+  hooks.content?.({ stage: "summarize", id: "clubs", label: `Clubs (${footballSourceName()})`, format: "json", data: clubs });
+  const savedPlayers = savedPlayerProfiles(previous.players);
+  const fresh = changed.length ? await answer(plan, changed, request, clubs, now, hooks, deps, clock, savedPlayers) : null;
+  const players = fresh ? savedPlayerProfiles(fresh.values.players) : savedPlayers;
   const freshAnswers = (fresh?.values.answers ?? {}) as Answers;
   const answers: Answers = Object.fromEntries(plan.questions.map(q => [q.id, kept.has(q.id) ? previous.answers[q.id]! : freshAnswers[q.id]!]));
   const answerFields = (fields: readonly DataField[], keep: (id: string) => boolean) => fields.filter(f => f.path.startsWith("answers.") && keep(f.path.split(".")[1]!));
   const dataset: SnapshotDataset = {
-    values: { answers, ...(clubs.length ? { clubs } : {}) },
-    fields: [...answerFields(saved.snapshot.fields, id => kept.has(id)), ...answerFields(fresh?.fields ?? [], id => !kept.has(id)), ...(clubs.length ? inferFields(clubs, "clubs") : [])],
+    values: { answers, ...(clubs.length ? { clubs } : {}), ...(players.length ? { players } : {}) },
+    fields: [...answerFields(saved.snapshot.fields, id => kept.has(id)), ...answerFields(fresh?.fields ?? [], id => !kept.has(id)), ...(clubs.length ? inferFields(clubs, "clubs") : []), ...(players.length ? inferFields(players.map(player => ({ ...player })), "players") : [])],
     asOf: now.toISOString(), source: sourceOf(plan, answers),
   };
   const snapshot = await store.put(run, dataset, "sports_dataset");
@@ -131,48 +141,60 @@ export async function editSports(saved: SportsDocument, request: FollowUpRequest
 
 /** The clubs the request is about, from ESPN by id (colours, logo): every club a question names, and any directory club named in the subject ("Chelsea vs Manchester City"). */
 async function clubsOf(plan: SportsPlan, deps: SportsDeps): Promise<Record<string, MockValue>[]> {
-  const directory = await clubDirectory(deps.espn).catch(() => []);
+  const directory = await footballClubs(deps.espn).catch(() => []);
   const named = new Set(plan.questions.flatMap(q => (q.source === "espn" ? [q.team, q.opponent] : [])).filter((n): n is string => !!n));
   const seen = new Set<string>();
-  return directory.filter(c => named.has(c.name) || plan.subject.name.split(/\s+(?:vs?\.?|and|&)\s+/i).some(part => isTeam({ name: c.name, short: c.short, abbreviation: c.abbreviation }, part)))
-    .filter(c => !seen.has(c.id) && !!seen.add(c.id)).map(clubRecord);
+  const clubs = directory.filter(c => named.has(c.name) || plan.subject.name.split(/\s+(?:vs?\.?|and|&)\s+/i).some(part => isTeam({ name: c.name, short: c.short, abbreviation: c.abbreviation }, part)))
+    .filter(c => !seen.has(c.id) && !!seen.add(c.id));
+  return (await clubsWithColours(clubs, deps.espn)).map(clubRecord);
 }
 
 const sourceOf = (plan: SportsPlan, answers: Answers): SnapshotDataset["source"] => {
-  const answered = (source: "espn" | "web") => plan.questions.some(q => q.source === source && answers[q.id]?.status === "complete");
-  return answered("espn") && answered("web") ? "mixed" : answered("espn") ? "espn" : "web";
+  const answered = (web: boolean) => plan.questions.some(q => (q.source === "web") === web && answers[q.id]?.status === "complete");
+  return answered(false) && answered(true) ? "mixed" : answered(false) ? "espn" : "web";
 };
 
 /** Research and dataset design for `questions`, all at once. */
-async function answer(plan: SportsPlan, questions: SportsPlan["questions"], prompt: string, clubs: readonly Record<string, MockValue>[], now: Date, hooks: SportsHooks, deps: SportsDeps, clock: Clock) {
+async function answer(plan: SportsPlan, questions: SportsPlan["questions"], request: SportsRequest, clubs: readonly Record<string, MockValue>[], now: Date, hooks: SportsHooks, deps: SportsDeps, clock: Clock, savedPlayers: readonly PlayerProfile[] = []) {
   const cfg = config();
   const subset: SportsPlan = { subject: plan.subject, questions };
-  hooks.progress?.({ stage: "search", status: "started", detail: `Answering ${questions.length} questions in parallel` });
-  const answered = await answerSports(subset, prompt, now, {
-    progress: detail => hooks.progress?.({ stage: "search", status: "working", detail }),
+  const counts = { searches: questions.flatMap(q => q.source === "web" ? q.searchQueries : []).length, lookups: questions.filter(q => q.source !== "web").length };
+  hooks.progress?.({ stage: "search", status: "started", detail: `Answering ${questions.length} questions in parallel`, ...counts });
+  const pick: PlayerPicker = (query, candidates) => pickPlayer(query, candidates, request.prompt, { usage: llmUsage(hooks, "data") });
+  const answered = await answerSports(subset, request.prompt, now, {
+    progress: detail => hooks.progress?.({ stage: "search", status: "working", detail, ...counts }),
     // Parallel search is reported like stocks did: engine llm, model parallel/search.
     usage: entry => hooks.usage?.({ ...entry, engine: "llm" }),
     finding: (id, value) => hooks.content?.({ stage: "search", id: `finding-${id}`, label: `Answer ${id}`, format: "json", data: value }),
-  }, deps);
+  }, { ...deps, pickPlayer: deps.pickPlayer ?? pick }, request.timeZone);
   clock.mark("search");
   const statuses = Object.entries(answered.answers).map(([id, a]) => `${id} ${String(a.status)}`).join(" · ");
-  hooks.progress?.({ stage: "search", status: "completed", detail: statuses, ...(answered.sources.length ? { sources: answered.sources.slice(0, 12) } : {}) });
+  hooks.progress?.({ stage: "search", status: "completed", detail: statuses, ...counts, sourceCount: answered.sources.length, ...(answered.sources.length ? { sources: answered.sources.slice(0, 12) } : {}) });
 
   hooks.progress?.({ stage: "data", status: "started", detail: "Designing the dataset" });
+  const resolvePlayers = createPlayerResolver(query => (deps.player ?? lookupPlayer)(query, deps.pickPlayer ?? pick), savedPlayers);
+  const rawQueries = rawPlayerQueries(subset, answered.answers);
+  const initialPlayers = await resolvePlayers(rawQueries);
   const dataset = await designDataset(subset, answered.answers, sourceOf(subset, answered.answers), now, {
     usage: llmUsage(hooks, "data"),
     rejected: (id, problem) => hooks.content?.({ stage: "data", id: `rejected-${id}`, label: `Design rejected for ${id}; raw answer kept`, format: "text", data: problem }),
-  }, deps.schema, clubs);
+  }, deps.schema, clubs, initialPlayers);
+  const componentQueries = componentPlayerQueries(dataset.values.answers, clubs);
+  const players = await resolvePlayers(componentQueries);
+  const directory = await clubsForMarks((dataset.values as { answers?: unknown }).answers, deps.espn);
+  const locked = lockFacts(settleMissing(fitHeatmaps(settleVenues(fillClubMarks(populatePlayerImages(dataset, players, rawQueries), directory)))));
+  const enriched = locked.dataset;
+  if (locked.removed.length) hooks.content?.({ stage: "data", id: "fact-lock", label: "Repeated facts removed", format: "json", data: locked.removed });
   clock.mark("data");
-  hooks.content?.({ stage: "data", id: "dataset", label: `Dataset (${cfg.SPORTS_MODEL})`, format: "json", data: { fields: dataset.fields, values: dataset.values } });
-  hooks.progress?.({ stage: "data", status: "completed", detail: `${dataset.fields.length} fields · designed ${dataset.designed.join(", ") || "none"}` });
-  return dataset;
+  hooks.content?.({ stage: "data", id: "dataset", label: `Dataset (${cfg.SPORTS_MODEL})`, format: "json", data: { fields: enriched.fields, values: enriched.values } });
+  hooks.progress?.({ stage: "data", status: "completed", detail: `${enriched.fields.length} fields · designed ${dataset.designed.join(", ") || "none"}` });
+  return enriched;
 }
 
 /** The writer composes; the compiler admits, covers and falls back. */
 async function compose(source: ScreenSource, plan: SportsPlan, snapshot: DatasetSnapshot, hooks: SportsHooks, deps: SportsDeps, clock: Clock): Promise<SportsResult> {
   const model = config().SPORTS_MODEL;
-  const writer: ProgramWriter = deps.write ?? ((messages, emit) => anthropicWriter(messages, model, emit, 12_000, { effort: "high", fallbacks: true }));
+  const writer: ProgramWriter = deps.write ?? ((messages, emit) => claudeWriter(messages, model, emit, 12_000, { effort: "medium", fallbacks: true }));
   // The writer's own text, before templates expand: the trace shows whether it called components by name.
   const write: ProgramWriter = async (messages, emit) => {
     const result = await writer(messages, emit);
@@ -197,7 +219,7 @@ async function compose(source: ScreenSource, plan: SportsPlan, snapshot: Dataset
   const tree = programTree(screen.program, source.values);
   clock.mark("validate");
   hooks.content?.({ stage: "validate", id: "coverage", label: "Questions → parts", format: "json", data: Object.fromEntries(screen.coverage) });
-  hooks.progress?.({ stage: "validate", status: "completed", detail: `${tree.nodes.length} primitives · every question shown` });
+  hooks.progress?.({ stage: "validate", status: "completed", detail: `${tree.nodes.length} primitives · every question shown${screen.stats.fallbacks ? `, ${screen.stats.fallbacks} by default parts` : ""}` });
   const parts: DocumentPart[] = screen.parts.map(part => ({
     id: part.id,
     statements: Object.fromEntries([...part.statements].map(([name, expr]) => [name, printStatement(name, expr)])),

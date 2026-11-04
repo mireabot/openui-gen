@@ -91,7 +91,8 @@ export async function structuredCompletion<T>(options: {
       options.hooks?.retry?.(2, `Regenerating invalid JSON with the same model (finish reason: ${finishReason}; ${text.length} characters)`);
       request = {
         ...options.request,
-        maxTokens: Math.min(options.request.maxTokens * 2, 12_000),
+        // More room up to 12,000; a stage that starts above that keeps its own budget.
+        maxTokens: Math.max(options.request.maxTokens, Math.min(options.request.maxTokens * 2, 12_000)),
         messages: [...options.request.messages, {
           role: "user",
           content: `The previous output failed validation: ${detail.slice(0, 800)}. Regenerate the complete response from scratch. Return one valid JSON object satisfying the schema and all field/type rules. Keep it concise and finish every string and object.`,
