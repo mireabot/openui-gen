@@ -35,3 +35,29 @@ export const PLAYERS = [
   { name: "João Pedro", position: "Forward", club: TEAMS.chelsea, image: photo(1021382) },
   { name: "Declan Rice", position: "Midfielder", club: TEAMS.arsenal, image: photo(654096) },
 ];
+
+/**
+ * Injured players for the InjuryReport showcase. NFL and NBA are ESPN's injury feeds recorded
+ * 5 Nov 2026; Chelsea is the club's report of 4 Nov 2026. Waits count from 5 Nov 2026.
+ */
+const nflHeadshot = (id: number) => `https://a.espncdn.com/i/headshots/nfl/players/full/${id}.png`;
+const nbaHeadshot = (id: number) => `https://a.espncdn.com/i/headshots/nba/players/full/${id}.png`;
+
+export const INJURIES = {
+  soccer: [
+    { name: "João Pedro", position: "Forward", team: "Chelsea", color: "#144992", photo: photo(1021382), back: { date: "Nov 21", day: "Sat, Nov 21", until: "16 days" }, source: "The Standard" },
+    { name: "Reece James", position: "Defender", team: "Chelsea", color: "#144992", photo: photo(807729), returnNote: "Mid-January 2027", source: "The Standard" },
+    { name: "Jorrel Hato", position: "Defender", team: "Chelsea", color: "#144992", photo: photo(1413846) },
+  ],
+  nfl: [
+    { name: "Jeremiyah Love", position: "RB", team: "Cardinals", color: "#a40227", photo: nflHeadshot(4870808), status: { label: "IR", tone: "bad" }, back: { date: "Dec 6", day: "Sun, Dec 6", until: "31 days" }, source: "Cardinals' official site" },
+    { name: "Brian Robinson Jr.", position: "RB", team: "Falcons", color: "#a71930", photo: nflHeadshot(4241474), status: { label: "Questionable", tone: "warn" }, back: { date: "Nov 8", day: "Sun, Nov 8", until: "3 days" }, source: "Falcons' official website" },
+    { name: "Tyler Huntley", position: "QB", team: "Ravens", color: "#29126f", photo: nflHeadshot(4035671), status: { label: "Out", tone: "bad" }, returnNote: "Out for season", source: "ESPN" },
+    { name: "Walter Nolen III", position: "DT", team: "Cardinals", color: "#a40227", photo: nflHeadshot(4685503), status: { label: "Questionable", tone: "warn" }, back: { date: "Nov 8", day: "Sun, Nov 8", until: "3 days" } },
+  ],
+  nba: [
+    { name: "Jalen Duren", position: "C", team: "Pistons", color: "#1d428a", photo: nbaHeadshot(4433621), status: { label: "Out", tone: "bad" }, back: { date: "Nov 9", day: "Mon, Nov 9", until: "4 days" }, source: "ClutchPoints" },
+    { name: "Jock Landale", position: "C", team: "Hawks", color: "#c8102e", photo: nbaHeadshot(3146557), status: { label: "Day-to-day", tone: "info" }, back: { date: "Nov 6", day: "Fri, Nov 6", until: "Tomorrow" }, source: "Hawks' official site" },
+    { name: "Julian Strawther", position: "G", team: "Nuggets", color: "#0e2240", photo: nbaHeadshot(4432181), status: { label: "Out", tone: "bad" }, back: { date: "Nov 29", day: "Sun, Nov 29", until: "24 days" }, source: "The Denver Gazette" },
+  ],
+} as const;

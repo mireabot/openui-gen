@@ -1,0 +1,254 @@
+{
+ "urls": [
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams",
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/13/roster"
+ ],
+ "answer": {
+  "feed": "roster",
+  "league": "nba",
+  "source": "Source: ESPN · Los Angeles Lakers NBA roster",
+  "values": {
+   "league": "NBA",
+   "team": {
+    "id": "13",
+    "name": "Los Angeles Lakers",
+    "short": "Lakers",
+    "abbreviation": "LAL",
+    "color": "#552583",
+    "alternateColor": "#fdb927",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+   },
+   "coach": "JJ Redick",
+   "athletes": [
+    {
+     "athleteId": "5113969",
+     "name": "Cameron Carr",
+     "kind": "player",
+     "position": "G",
+     "jersey": "43",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5113969.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "3945274",
+     "name": "Luka Doncic",
+     "kind": "player",
+     "position": "G",
+     "jersey": "77",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3945274.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4397014",
+     "name": "Quentin Grimes",
+     "kind": "player",
+     "position": "G",
+     "jersey": "5",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4397014.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4868423",
+     "name": "Jaden Hardy",
+     "kind": "player",
+     "position": "G",
+     "jersey": "7",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4868423.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4683774",
+     "name": "Bronny James",
+     "kind": "player",
+     "position": "G",
+     "jersey": "9",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4683774.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4433599",
+     "name": "Arthur Kaluma",
+     "kind": "player",
+     "position": "F",
+     "jersey": "47",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4433599.png",
+     "team": "Los Angeles Lakers",
+     "detail": "F · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4433136",
+     "name": "Walker Kessler",
+     "kind": "player",
+     "position": "C",
+     "jersey": "14",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4433136.png",
+     "team": "Los Angeles Lakers",
+     "detail": "C · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4592691",
+     "name": "Jake LaRavia",
+     "kind": "player",
+     "position": "F",
+     "jersey": "12",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4592691.png",
+     "team": "Los Angeles Lakers",
+     "detail": "F · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "3155535",
+     "name": "Kevon Looney",
+     "kind": "player",
+     "position": "F",
+     "jersey": "55",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3155535.png",
+     "team": "Los Angeles Lakers",
+     "detail": "F · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4596528",
+     "name": "Lawson Lovering",
+     "kind": "player",
+     "position": "C",
+     "jersey": "",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4596528.png",
+     "team": "Los Angeles Lakers",
+     "detail": "C · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4278580",
+     "name": "Sandro Mamukelashvili",
+     "kind": "player",
+     "position": "F",
+     "jersey": "54",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278580.png",
+     "team": "Los Angeles Lakers",
+     "detail": "F · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4702972",
+     "name": "Chris Manon",
+     "kind": "player",
+     "position": "G",
+     "jersey": "30",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4702972.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "5114350",
+     "name": "AK Okereke",
+     "kind": "player",
+     "position": "F",
+     "jersey": "31",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5114350.png",
+     "team": "Los Angeles Lakers",
+     "detail": "F · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4066457",
+     "name": "Austin Reaves",
+     "kind": "player",
+     "position": "G",
+     "jersey": "15",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4066457.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4277811",
+     "name": "Collin Sexton",
+     "kind": "player",
+     "position": "G",
+     "jersey": "10",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4277811.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "5060631",
+     "name": "Adou Thiero",
+     "kind": "player",
+     "position": "F",
+     "jersey": "1",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5060631.png",
+     "team": "Los Angeles Lakers",
+     "detail": "F · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "3907498",
+     "name": "Matisse Thybulle",
+     "kind": "player",
+     "position": "G",
+     "jersey": "4",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3907498.png",
+     "team": "Los Angeles Lakers",
+     "detail": "G · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4278077",
+     "name": "Jarred Vanderbilt",
+     "kind": "player",
+     "position": "F",
+     "jersey": "2",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278077.png",
+     "team": "Los Angeles Lakers",
+     "detail": "F · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    },
+    {
+     "athleteId": "4433137",
+     "name": "Ziaire Williams",
+     "kind": "player",
+     "position": "F",
+     "jersey": "11",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4433137.png",
+     "team": "Los Angeles Lakers",
+     "detail": "F · Los Angeles Lakers",
+     "color": "#552583",
+     "status": "Active"
+    }
+   ]
+  }
+ }
+}

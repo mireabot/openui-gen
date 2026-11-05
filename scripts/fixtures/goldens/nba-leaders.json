@@ -1,0 +1,717 @@
+{
+ "urls": [
+  "https://site.web.api.espn.com/apis/site/v3/sports/basketball/nba/leaders"
+ ],
+ "answer": {
+  "feed": "leaders",
+  "league": "nba",
+  "source": "Source: ESPN · NBA leaders",
+  "values": {
+   "league": "NBA",
+   "leaderboards": [
+    {
+     "key": "pointsPerGame",
+     "title": "Points Per Game",
+     "metric": "PTS",
+     "entries": [
+      {
+       "rank": 1,
+       "athleteId": "3945274",
+       "name": "Luka Doncic",
+       "kind": "player",
+       "detail": "Los Angeles Lakers",
+       "team": "Los Angeles Lakers",
+       "value": "38.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3945274.png",
+       "color": "#552583"
+      },
+      {
+       "rank": 2,
+       "athleteId": "3975",
+       "name": "Stephen Curry",
+       "kind": "player",
+       "detail": "Golden State Warriors",
+       "team": "Golden State Warriors",
+       "value": "30.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3975.png",
+       "color": "#fdb927"
+      },
+      {
+       "rank": 3,
+       "athleteId": "4431678",
+       "name": "Tyrese Maxey",
+       "kind": "player",
+       "detail": "Philadelphia 76ers",
+       "team": "Philadelphia 76ers",
+       "value": "29.1",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4431678.png",
+       "color": "#1d428a"
+      },
+      {
+       "rank": 4,
+       "athleteId": "3032977",
+       "name": "Giannis Antetokounmpo",
+       "kind": "player",
+       "detail": "Miami Heat",
+       "team": "Miami Heat",
+       "value": "28.4",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3032977.png",
+       "color": "#98002e"
+      },
+      {
+       "rank": 5,
+       "athleteId": "4278073",
+       "name": "Shai Gilgeous-Alexander",
+       "kind": "player",
+       "detail": "Oklahoma City Thunder",
+       "team": "Oklahoma City Thunder",
+       "value": "28.4",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278073.png",
+       "color": "#007ac1"
+      },
+      {
+       "rank": 6,
+       "athleteId": "4065733",
+       "name": "Ty Jerome",
+       "kind": "player",
+       "detail": "Memphis Grizzlies",
+       "team": "Memphis Grizzlies",
+       "value": "28.2",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4065733.png",
+       "color": "#5d76a9"
+      },
+      {
+       "rank": 7,
+       "athleteId": "3936299",
+       "name": "Jamal Murray",
+       "kind": "player",
+       "detail": "Denver Nuggets",
+       "team": "Denver Nuggets",
+       "value": "27.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3936299.png",
+       "color": "#0e2240"
+      },
+      {
+       "rank": 8,
+       "athleteId": "4065648",
+       "name": "Jayson Tatum",
+       "kind": "player",
+       "detail": "Boston Celtics",
+       "team": "Boston Celtics",
+       "value": "27.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4065648.png",
+       "color": "#008348"
+      },
+      {
+       "rank": 9,
+       "athleteId": "5142620",
+       "name": "Darius Acuff Jr.",
+       "kind": "player",
+       "detail": "Sacramento Kings",
+       "team": "Sacramento Kings",
+       "value": "26.1",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5142620.png",
+       "color": "#5a2d81"
+      },
+      {
+       "rank": 10,
+       "athleteId": "5104157",
+       "name": "Victor Wembanyama",
+       "kind": "player",
+       "detail": "San Antonio Spurs",
+       "team": "San Antonio Spurs",
+       "value": "25.7",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5104157.png",
+       "color": "#000000"
+      }
+     ]
+    },
+    {
+     "key": "reboundsPerGame",
+     "title": "Rebounds Per Game",
+     "metric": "REB",
+     "entries": [
+      {
+       "rank": 1,
+       "athleteId": "3155942",
+       "name": "Domantas Sabonis",
+       "kind": "player",
+       "detail": "Sacramento Kings",
+       "team": "Sacramento Kings",
+       "value": "14.6",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3155942.png",
+       "color": "#5a2d81"
+      },
+      {
+       "rank": 2,
+       "athleteId": "3136195",
+       "name": "Karl-Anthony Towns",
+       "kind": "player",
+       "detail": "New York Knicks",
+       "team": "New York Knicks",
+       "value": "13.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3136195.png",
+       "color": "#1d428a"
+      },
+      {
+       "rank": 3,
+       "athleteId": "3032977",
+       "name": "Giannis Antetokounmpo",
+       "kind": "player",
+       "detail": "Miami Heat",
+       "team": "Miami Heat",
+       "value": "12.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3032977.png",
+       "color": "#98002e"
+      },
+      {
+       "rank": 4,
+       "athleteId": "3032976",
+       "name": "Rudy Gobert",
+       "kind": "player",
+       "detail": "Minnesota Timberwolves",
+       "team": "Minnesota Timberwolves",
+       "value": "12.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3032976.png",
+       "color": "#266092"
+      },
+      {
+       "rank": 5,
+       "athleteId": "5104157",
+       "name": "Victor Wembanyama",
+       "kind": "player",
+       "detail": "San Antonio Spurs",
+       "team": "San Antonio Spurs",
+       "value": "10.7",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5104157.png",
+       "color": "#000000"
+      },
+      {
+       "rank": 6,
+       "athleteId": "4433136",
+       "name": "Walker Kessler",
+       "kind": "player",
+       "detail": "Los Angeles Lakers",
+       "team": "Los Angeles Lakers",
+       "value": "10.5",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4433136.png",
+       "color": "#552583"
+      },
+      {
+       "rank": 7,
+       "athleteId": "5105565",
+       "name": "Donovan Clingan",
+       "kind": "player",
+       "detail": "Portland Trail Blazers",
+       "team": "Portland Trail Blazers",
+       "value": "10.5",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5105565.png",
+       "color": "#e03a3e"
+      },
+      {
+       "rank": 8,
+       "athleteId": "5041935",
+       "name": "Cameron Boozer",
+       "kind": "player",
+       "detail": "Memphis Grizzlies",
+       "team": "Memphis Grizzlies",
+       "value": "10.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5041935.png",
+       "color": "#5d76a9"
+      },
+      {
+       "rank": 9,
+       "athleteId": "4222252",
+       "name": "Isaiah Hartenstein",
+       "kind": "player",
+       "detail": "Oklahoma City Thunder",
+       "team": "Oklahoma City Thunder",
+       "value": "9.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4222252.png",
+       "color": "#007ac1"
+      },
+      {
+       "rank": 10,
+       "athleteId": "3112335",
+       "name": "Nikola Jokic",
+       "kind": "player",
+       "detail": "Denver Nuggets",
+       "team": "Denver Nuggets",
+       "value": "9.7",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3112335.png",
+       "color": "#0e2240"
+      }
+     ]
+    },
+    {
+     "key": "assistsPerGame",
+     "title": "Assists Per Game",
+     "metric": "AST",
+     "entries": [
+      {
+       "rank": 1,
+       "athleteId": "4277905",
+       "name": "Trae Young",
+       "kind": "player",
+       "detail": "Washington Wizards",
+       "team": "Washington Wizards",
+       "value": "10.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4277905.png",
+       "color": "#e31837"
+      },
+      {
+       "rank": 2,
+       "athleteId": "3112335",
+       "name": "Nikola Jokic",
+       "kind": "player",
+       "detail": "Denver Nuggets",
+       "team": "Denver Nuggets",
+       "value": "9.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3112335.png",
+       "color": "#0e2240"
+      },
+      {
+       "rank": 3,
+       "athleteId": "3945274",
+       "name": "Luka Doncic",
+       "kind": "player",
+       "detail": "Los Angeles Lakers",
+       "team": "Los Angeles Lakers",
+       "value": "8.1",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3945274.png",
+       "color": "#552583"
+      },
+      {
+       "rank": 4,
+       "athleteId": "4278053",
+       "name": "Davion Mitchell",
+       "kind": "player",
+       "detail": "Miami Heat",
+       "team": "Miami Heat",
+       "value": "8.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278053.png",
+       "color": "#98002e"
+      },
+      {
+       "rank": 5,
+       "athleteId": "4065648",
+       "name": "Jayson Tatum",
+       "kind": "player",
+       "detail": "Boston Celtics",
+       "team": "Boston Celtics",
+       "value": "7.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4065648.png",
+       "color": "#008348"
+      },
+      {
+       "rank": 6,
+       "athleteId": "4701230",
+       "name": "Jalen Johnson",
+       "kind": "player",
+       "detail": "Atlanta Hawks",
+       "team": "Atlanta Hawks",
+       "value": "7.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4701230.png",
+       "color": "#c8102e"
+      },
+      {
+       "rank": 7,
+       "athleteId": "4871145",
+       "name": "Josh Giddey",
+       "kind": "player",
+       "detail": "Chicago Bulls",
+       "team": "Chicago Bulls",
+       "value": "7.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4871145.png",
+       "color": "#ce1141"
+      },
+      {
+       "rank": 8,
+       "athleteId": "4871144",
+       "name": "Alperen Sengun",
+       "kind": "player",
+       "detail": "Houston Rockets",
+       "team": "Houston Rockets",
+       "value": "7.8",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4871144.png",
+       "color": "#ce0e2d"
+      },
+      {
+       "rank": 9,
+       "athleteId": "4566434",
+       "name": "Franz Wagner",
+       "kind": "player",
+       "detail": "Orlando Magic",
+       "team": "Orlando Magic",
+       "value": "7.6",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4566434.png",
+       "color": "#0150b5"
+      },
+      {
+       "rank": 10,
+       "athleteId": "1966",
+       "name": "LeBron James",
+       "kind": "player",
+       "detail": "Philadelphia 76ers",
+       "team": "Philadelphia 76ers",
+       "value": "7.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/1966.png",
+       "color": "#1d428a"
+      }
+     ]
+    },
+    {
+     "key": "stealsPerGame",
+     "title": "Steals Per Game",
+     "metric": "STL",
+     "entries": [
+      {
+       "rank": 1,
+       "athleteId": "4869342",
+       "name": "Dyson Daniels",
+       "kind": "player",
+       "detail": "Atlanta Hawks",
+       "team": "Atlanta Hawks",
+       "value": "3.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4869342.png",
+       "color": "#c8102e"
+      },
+      {
+       "rank": 2,
+       "athleteId": "2991139",
+       "name": "Kris Dunn",
+       "kind": "player",
+       "detail": "LA Clippers",
+       "team": "LA Clippers",
+       "value": "2.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/2991139.png",
+       "color": "#12173f"
+      },
+      {
+       "rank": 3,
+       "athleteId": "4278585",
+       "name": "Collin Gillespie",
+       "kind": "player",
+       "detail": "Phoenix Suns",
+       "team": "Phoenix Suns",
+       "value": "2.8",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278585.png",
+       "color": "#29127a"
+      },
+      {
+       "rank": 4,
+       "athleteId": "4395628",
+       "name": "Zion Williamson",
+       "kind": "player",
+       "detail": "New Orleans Pelicans",
+       "team": "New Orleans Pelicans",
+       "value": "2.7",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4395628.png",
+       "color": "#0a2240"
+      },
+      {
+       "rank": 5,
+       "athleteId": "5041939",
+       "name": "Cooper Flagg",
+       "kind": "player",
+       "detail": "Dallas Mavericks",
+       "team": "Dallas Mavericks",
+       "value": "2.5",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5041939.png",
+       "color": "#0064b1"
+      },
+      {
+       "rank": 6,
+       "athleteId": "4251",
+       "name": "Paul George",
+       "kind": "player",
+       "detail": "Boston Celtics",
+       "team": "Boston Celtics",
+       "value": "2.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4251.png",
+       "color": "#008348"
+      },
+      {
+       "rank": 7,
+       "athleteId": "4431767",
+       "name": "Christian Braun",
+       "kind": "player",
+       "detail": "Denver Nuggets",
+       "team": "Denver Nuggets",
+       "value": "2.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4431767.png",
+       "color": "#0e2240"
+      },
+      {
+       "rank": 8,
+       "athleteId": "4066261",
+       "name": "Bam Adebayo",
+       "kind": "player",
+       "detail": "Miami Heat",
+       "team": "Miami Heat",
+       "value": "2.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4066261.png",
+       "color": "#98002e"
+      },
+      {
+       "rank": 9,
+       "athleteId": "3062679",
+       "name": "Josh Hart",
+       "kind": "player",
+       "detail": "New York Knicks",
+       "team": "New York Knicks",
+       "value": "2.1",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3062679.png",
+       "color": "#1d428a"
+      },
+      {
+       "rank": 10,
+       "athleteId": "4433134",
+       "name": "Scottie Barnes",
+       "kind": "player",
+       "detail": "Toronto Raptors",
+       "team": "Toronto Raptors",
+       "value": "2.1",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4433134.png",
+       "color": "#d91244"
+      }
+     ]
+    },
+    {
+     "key": "blocksPerGame",
+     "title": "Blocks Per Game",
+     "metric": "BLK",
+     "entries": [
+      {
+       "rank": 1,
+       "athleteId": "5104157",
+       "name": "Victor Wembanyama",
+       "kind": "player",
+       "detail": "San Antonio Spurs",
+       "team": "San Antonio Spurs",
+       "value": "4.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5104157.png",
+       "color": "#000000"
+      },
+      {
+       "rank": 2,
+       "athleteId": "3133628",
+       "name": "Myles Turner",
+       "kind": "player",
+       "detail": "Milwaukee Bucks",
+       "team": "Milwaukee Bucks",
+       "value": "2.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3133628.png",
+       "color": "#00471b"
+      },
+      {
+       "rank": 3,
+       "athleteId": "4433136",
+       "name": "Walker Kessler",
+       "kind": "player",
+       "detail": "Los Angeles Lakers",
+       "team": "Los Angeles Lakers",
+       "value": "2.5",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4433136.png",
+       "color": "#552583"
+      },
+      {
+       "rank": 4,
+       "athleteId": "5105565",
+       "name": "Donovan Clingan",
+       "kind": "player",
+       "detail": "Portland Trail Blazers",
+       "team": "Portland Trail Blazers",
+       "value": "2.3",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5105565.png",
+       "color": "#e03a3e"
+      },
+      {
+       "rank": 5,
+       "athleteId": "4397077",
+       "name": "Jaxson Hayes",
+       "kind": "player",
+       "detail": "Utah Jazz",
+       "team": "Utah Jazz",
+       "value": "2.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4397077.png",
+       "color": "#4e008e"
+      },
+      {
+       "rank": 6,
+       "athleteId": "4278049",
+       "name": "Daniel Gafford",
+       "kind": "player",
+       "detail": "Dallas Mavericks",
+       "team": "Dallas Mavericks",
+       "value": "1.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278049.png",
+       "color": "#0064b1"
+      },
+      {
+       "rank": 7,
+       "athleteId": "4576087",
+       "name": "Peyton Watson",
+       "kind": "player",
+       "detail": "Cleveland Cavaliers",
+       "team": "Cleveland Cavaliers",
+       "value": "1.8",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4576087.png",
+       "color": "#860038"
+      },
+      {
+       "rank": 8,
+       "athleteId": "4066328",
+       "name": "Jarrett Allen",
+       "kind": "player",
+       "detail": "Cleveland Cavaliers",
+       "team": "Cleveland Cavaliers",
+       "value": "1.7",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4066328.png",
+       "color": "#860038"
+      },
+      {
+       "rank": 9,
+       "athleteId": "5174983",
+       "name": "Aday Mara",
+       "kind": "player",
+       "detail": "Oklahoma City Thunder",
+       "team": "Oklahoma City Thunder",
+       "value": "1.7",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5174983.png",
+       "color": "#007ac1"
+      },
+      {
+       "rank": 10,
+       "athleteId": "3202",
+       "name": "Kevin Durant",
+       "kind": "player",
+       "detail": "Houston Rockets",
+       "team": "Houston Rockets",
+       "value": "1.6",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3202.png",
+       "color": "#ce0e2d"
+      }
+     ]
+    },
+    {
+     "key": "3PointsMadePerGame",
+     "title": "Average 3-Point Field Goals Made",
+     "metric": "3PM",
+     "entries": [
+      {
+       "rank": 1,
+       "athleteId": "3945274",
+       "name": "Luka Doncic",
+       "kind": "player",
+       "detail": "Los Angeles Lakers",
+       "team": "Los Angeles Lakers",
+       "value": "5.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3945274.png",
+       "color": "#552583"
+      },
+      {
+       "rank": 2,
+       "athleteId": "3975",
+       "name": "Stephen Curry",
+       "kind": "player",
+       "detail": "Golden State Warriors",
+       "team": "Golden State Warriors",
+       "value": "4.5",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3975.png",
+       "color": "#fdb927"
+      },
+      {
+       "rank": 3,
+       "athleteId": "3936299",
+       "name": "Jamal Murray",
+       "kind": "player",
+       "detail": "Denver Nuggets",
+       "team": "Denver Nuggets",
+       "value": "4.5",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3936299.png",
+       "color": "#0e2240"
+      },
+      {
+       "rank": 4,
+       "athleteId": "4594268",
+       "name": "Anthony Edwards",
+       "kind": "player",
+       "detail": "Minnesota Timberwolves",
+       "team": "Minnesota Timberwolves",
+       "value": "4.5",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4594268.png",
+       "color": "#266092"
+      },
+      {
+       "rank": 5,
+       "athleteId": "3157465",
+       "name": "Duncan Robinson",
+       "kind": "player",
+       "detail": "Detroit Pistons",
+       "team": "Detroit Pistons",
+       "value": "4.0",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3157465.png",
+       "color": "#1d428a"
+      },
+      {
+       "rank": 6,
+       "athleteId": "4278039",
+       "name": "Nickeil Alexander-Walker",
+       "kind": "player",
+       "detail": "Atlanta Hawks",
+       "team": "Atlanta Hawks",
+       "value": "3.9",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278039.png",
+       "color": "#c8102e"
+      },
+      {
+       "rank": 7,
+       "athleteId": "4431736",
+       "name": "Toumani Camara",
+       "kind": "player",
+       "detail": "Portland Trail Blazers",
+       "team": "Portland Trail Blazers",
+       "value": "3.8",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4431736.png",
+       "color": "#e03a3e"
+      },
+      {
+       "rank": 8,
+       "athleteId": "4066320",
+       "name": "Desmond Bane",
+       "kind": "player",
+       "detail": "Orlando Magic",
+       "team": "Orlando Magic",
+       "value": "3.6",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4066320.png",
+       "color": "#0150b5"
+      },
+      {
+       "rank": 9,
+       "athleteId": "4395725",
+       "name": "Tyler Herro",
+       "kind": "player",
+       "detail": "Milwaukee Bucks",
+       "team": "Milwaukee Bucks",
+       "value": "3.6",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4395725.png",
+       "color": "#00471b"
+      },
+      {
+       "rank": 10,
+       "athleteId": "4278104",
+       "name": "Michael Porter Jr.",
+       "kind": "player",
+       "detail": "Brooklyn Nets",
+       "team": "Brooklyn Nets",
+       "value": "3.4",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278104.png",
+       "color": "#000000"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

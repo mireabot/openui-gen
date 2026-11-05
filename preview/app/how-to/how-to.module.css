@@ -97,6 +97,9 @@
 .annotationNote { border-left: 1px solid var(--color-kino-outline-control); padding-left: 10px; margin: 22px 0 18px; color: var(--color-kino-ink-secondary); font-size: 10px; line-height: 1.8; }
 .sourceLink { color: var(--subtle); font-size: 10px; display: inline-block; margin-right: 15px; text-decoration: underline; text-decoration-color: var(--color-kino-outline-control); text-underline-offset: 4px; }
 .sourceLink:hover { color: var(--accent); }
+.workingSource { display: inline-flex; flex-direction: column; max-width: 100%; margin: 5px 15px 5px 0; color: var(--subtle); font-size: 10px; }
+.workingSource code { overflow-wrap: anywhere; color: var(--faint); font-size: 9px; }
+.walkthrough > .demoToolbar { flex-wrap: wrap; }
 .demoFooter { display: flex; justify-content: space-between; align-items: center; gap: 14px; border-top: 1px solid var(--line); padding: 12px 16px; background: var(--color-kino-surface-screen); }
 .stageControls { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
 .stageControls > button:first-child { font-size: 11px; color: var(--subtle); }
@@ -107,6 +110,50 @@
 .segmented button { padding: 4px 12px; color: var(--subtle); font-size: 11px; border-radius: 3px; }
 .segmented button small { margin-left: 7px; color: var(--color-kino-ink-secondary); font-size: 9px; }
 .segmented button[data-active=true] { background: var(--color-kino-surface-card); color: var(--ink); box-shadow: 0 1px 3px transparent; }
+.routingDiagram { padding: 30px; border: 1px solid var(--line); border-radius: 12px; background: var(--ground); }
+.routeRequest, .routeAnswer { display: flex; flex-direction: column; align-items: center; gap: 5px; width: min(100%, 340px); margin: 0 auto; padding: 16px 20px; border: 1px solid var(--color-kino-outline-control); border-radius: 8px; background: var(--paper); text-align: center; }
+.routeRequest strong, .routeAnswer strong { font-size: 14px; font-weight: 550; }
+.routeRequest > span:last-child, .routeAnswer code { font-size: 10px; color: var(--subtle); }
+.routeStem { position: relative; height: 52px; width: 1px; margin: 0 auto; background: var(--color-kino-outline-control); }
+.routeStem span { position: absolute; left: 12px; top: 16px; color: var(--subtle); font-size: 9px; white-space: nowrap; }
+.routeStem::after { content: ""; position: absolute; bottom: -1px; left: -3px; border: solid transparent; border-width: 5px 3.5px 0; border-top-color: var(--color-kino-outline-control); }
+.routeDecision { position: relative; display: grid; place-items: center; width: 136px; height: 136px; margin: 0 auto; }
+.routeDecision::before { content: ""; position: absolute; inset: 20px; transform: rotate(45deg); border: 1px solid var(--accent); border-radius: 8px; background: var(--paper); }
+.routeDecision > div { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.routeDecision .nodeOverline { font-size: 8px; color: var(--accent); }
+.routeDecision strong { font-size: 12px; font-weight: 550; }
+.leagueBranches { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; padding-top: 31px; }
+.leagueBranches::before { content: ""; position: absolute; top: 0; left: 50%; width: 1px; height: 18px; background: var(--color-kino-outline-control); }
+.leagueBranches::after { content: ""; position: absolute; top: 17px; left: calc((100% - 28px) / 4); right: calc((100% - 28px) / 4); height: 1px; background: var(--color-kino-outline-control); }
+.leagueBranch { position: relative; display: flex; flex-direction: column; min-width: 0; }
+.leagueBranch::before { content: ""; position: absolute; left: 50%; top: -14px; height: 14px; width: 1px; background: var(--color-kino-outline-control); }
+.leagueLabel { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 5px 8px 20px; text-align: center; }
+.leagueLabel > span { font-size: 13px; font-weight: 550; }
+.leagueLabel small { font-size: 10px; color: var(--subtle); }
+.apiLayer { display: flex; flex-direction: column; gap: 12px; flex: 1; padding: 18px; border: 1px solid var(--color-kino-outline-control); border-radius: 9px; background: var(--paper); }
+.apiLayer > .nodeOverline { font-size: 8px; letter-spacing: 1px; }
+.soccerApis { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; flex: 1; }
+.apiNode { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 15px 13px; border: 1px solid var(--color-kino-outline-control); border-radius: 6px; background: var(--color-kino-surface-card); }
+.apiNode[data-enabled=false] { border-style: dashed; }
+.apiNode[data-enabled=false] .apiName { color: var(--subtle); }
+.apiName { display: flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 550; }
+.apiName i { width: 5px; height: 5px; border-radius: 50%; background: var(--color-kino-outline-control); }
+.apiNode[data-enabled=true] .apiName i { background: var(--accent); }
+.apiNode p { color: var(--subtle); font-size: 11px; line-height: 1.7; }
+.apiNode small { margin-top: auto; padding-top: 7px; color: var(--subtle); font-size: 9px; line-height: 1.6; }
+.apiLayerNote { margin: auto 0 0; padding-top: 2px; color: var(--subtle); font-size: 10px; }
+.routeMerge { position: relative; height: 66px; }
+.routeMerge::before { content: ""; position: absolute; top: 0; left: calc((100% - 28px) / 4); right: calc((100% - 28px) / 4); height: 22px; border: solid var(--color-kino-outline-control); border-width: 0 1px 1px; border-radius: 0 0 8px 8px; }
+.routeMerge::after { content: ""; position: absolute; top: 22px; bottom: 0; left: 50%; width: 1px; background: var(--color-kino-outline-control); }
+.routeMerge span { position: absolute; top: 33px; left: calc(50% + 12px); color: var(--subtle); font-size: 9px; }
+.routeAnswer { border-color: var(--accent); }
+.webRoute { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 20px; margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); }
+.webRoute .nodeOverline { font-size: 8px; letter-spacing: 1px; }
+.webRoute p { margin-top: 5px; color: var(--subtle); font-size: 11px; }
+.webRouteArrow { font-size: 20px; color: var(--subtle); }
+.webRoute > div:last-child { display: flex; flex-direction: column; gap: 4px; }
+.webRoute strong { font-size: 12px; font-weight: 550; }
+.webRoute small { font-size: 10px; color: var(--subtle); }
 .routingTable { width: 100%; text-align: left; border-collapse: collapse; }
 .routingTable th { font-size: 10px; font-weight: 500; color: var(--subtle); padding: 10px 12px; border-bottom: 1px solid var(--line); }
 .routingTable td { padding: 17px 12px; border-bottom: 1px solid var(--line); vertical-align: top; font-size: 11px; color: var(--subtle); line-height: 1.8; }
@@ -282,6 +329,25 @@
   .stageControls { width: 100%; justify-content: space-between; }
   .primaryButton { padding: 8px 12px; }
   .routeSettings { align-items: flex-start; flex-direction: column; padding: 14px; gap: 10px; }
+  .routingDiagram { padding: 22px 14px; }
+  .leagueBranches { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+  .leagueBranches::after, .routeMerge::before { left: calc((100% - 12px) / 4); right: calc((100% - 12px) / 4); }
+  .leagueLabel { min-height: 82px; padding-bottom: 14px; }
+  .leagueLabel > span { font-size: 11px; }
+  .leagueLabel small { font-size: 9px; }
+  .apiLayer { padding: 10px; gap: 10px; }
+  .apiLayer > .nodeOverline { font-size: 7px; letter-spacing: .6px; min-height: 24px; }
+  .soccerApis { grid-template-columns: minmax(0, 1fr); }
+  .apiNode { padding: 12px 10px; }
+  .apiName { font-size: 13px; }
+  .apiNode p { font-size: 10px; }
+  .apiNode small, .apiLayerNote { font-size: 9px; }
+  .routeMerge span { max-width: 120px; line-height: 1.4; }
+  .routeAnswer code { font-size: 8px; }
+  .webRoute { grid-template-columns: minmax(0, 1fr) auto; gap: 14px; }
+  .webRoute > div:first-child { grid-column: 1 / -1; }
+  .webRouteArrow { grid-column: 1; grid-row: 2; justify-self: start; transform: rotate(90deg); line-height: 1; }
+  .webRoute > div:last-child { grid-column: 1 / -1; grid-row: 3; }
   .routingTableWrap { overflow-x: auto; }
   .routingTable { min-width: 470px; }
   .routingTable th:nth-child(2), .routingTable td:nth-child(2) { width: 25%; }

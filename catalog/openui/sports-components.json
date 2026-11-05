@@ -77,14 +77,14 @@
     },
     {
       "name": "MatchCard",
-      "intent": "One match between two clubs: both teams on stacked rows with their scores, a side column (date and kickoff, or a status such as FT), and one details line.",
+      "intent": "One game between two teams: both teams on stacked rows with their scores, a side column (date and start time, or a status such as FT or Final), and one details line.",
       "useWhen": "a fixture or a result; a list of matches (@Each over them); the latest meeting between two clubs",
       "source": "ui-canvas sports-components/match-card (from match-card/stacked-rows) and match-result",
       "contract": [
         {
           "path": "home.name",
           "kind": "text",
-          "note": "club name"
+          "note": "team name"
         },
         {
           "path": "home.logo",
@@ -99,7 +99,7 @@
         {
           "path": "home.score",
           "kind": "text",
-          "note": "goals as text (\"2\"), \"\" before kick-off"
+          "note": "the score as text (\"2\"), \"\" before the start"
         },
         {
           "path": "home.ink",
@@ -109,7 +109,7 @@
         {
           "path": "away.name",
           "kind": "text",
-          "note": "club name"
+          "note": "team name"
         },
         {
           "path": "away.logo",
@@ -124,7 +124,7 @@
         {
           "path": "away.score",
           "kind": "text",
-          "note": "goals as text (\"2\"), \"\" before kick-off"
+          "note": "the score as text (\"2\"), \"\" before the start"
         },
         {
           "path": "away.ink",
@@ -151,7 +151,7 @@
     },
     {
       "name": "TeamDetail",
-      "intent": "A club on one line: logo or monogram, name, and a short secondary line (nickname, code or league).",
+      "intent": "A team on one line: logo or monogram, name, and a short secondary line (nickname, code or league).",
       "useWhen": "naming the clubs a screen is about, above stats or a comparison",
       "source": "ui-canvas sports-components/team-detail",
       "contract": [
@@ -283,14 +283,14 @@
     },
     {
       "name": "FixturesHeatmap",
-      "intent": "A team's run of fixtures: a headline figure, a caption saying what it is, one square per fixture in result colours, and the won · drawn · lost counts.",
+      "intent": "A team's run of fixtures: a headline figure, a caption saying what it is, one square per fixture in result colours, and the record.",
       "useWhen": "form, a season so far, a run of results; no title of its own",
       "source": "ui-canvas sports-components/fixtures-heatmap (layout from component-references/c24)",
       "contract": [
         {
           "path": "value",
           "kind": "text",
-          "note": "the headline figure, e.g. points per game \"1.6\" or \"13 pts\""
+          "note": "the headline figure, e.g. points per game \"1.6\", \"13 pts\" or a record \"6-2\""
         },
         {
           "path": "caption",
@@ -305,17 +305,17 @@
         {
           "path": "results[].label",
           "kind": "text",
-          "note": "spoken result, e.g. \"Win\", \"Draw\", \"Loss\" or \"Upcoming\"; not visible in the square"
+          "note": "spoken result, e.g. \"Win\", \"Draw\", \"Tie\", \"Loss\" or \"Upcoming\"; not visible in the square"
         },
         {
           "path": "results[].fill",
           "kind": "text",
-          "note": "win \"tone.good.fg\", loss \"tone.bad.fg\", draw \"outline.control\", upcoming \"surface.filled\""
+          "note": "win \"tone.good.fg\", loss \"tone.bad.fg\", draw or tie \"outline.control\", upcoming \"surface.filled\""
         },
         {
           "path": "summary",
           "kind": "text",
-          "note": "e.g. \"4 won · 1 drawn · 3 lost\""
+          "note": "e.g. \"4 won · 1 drawn · 3 lost\" or \"6-2\""
         },
         {
           "path": "columns",
@@ -584,7 +584,7 @@
     },
     {
       "name": "MatchTopPlayers",
-      "intent": "The top players of one match from both clubs, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
+      "intent": "The top players of one game from both teams, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
       "useWhen": "the top scorers, top rated or other best players of one match, from both sides; not a ranking across matches, which is a Leaderboard",
       "source": "ui-canvas sports-components/match-top-players (from the Fotmob match screen's Top rated card)",
       "contract": [
@@ -819,7 +819,7 @@
         {
           "path": "first.name",
           "kind": "text",
-          "note": "club name"
+          "note": "team name"
         },
         {
           "path": "first.logo",
@@ -839,7 +839,7 @@
         {
           "path": "second.name",
           "kind": "text",
-          "note": "club name"
+          "note": "team name"
         },
         {
           "path": "second.logo",
@@ -859,7 +859,7 @@
         {
           "path": "third.name",
           "kind": "text",
-          "note": "club name"
+          "note": "team name"
         },
         {
           "path": "third.logo",
@@ -875,6 +875,298 @@
           "path": "third.medal",
           "kind": "color",
           "note": "always \"#CD7F32\" (bronze): the place's colour, which a template cannot hold itself"
+        }
+      ],
+      "params": []
+    },
+    {
+      "name": "RecordTable",
+      "intent": "A table whose columns come from the data: a title, a row of column labels, then each row's name above its figures.",
+      "useWhen": "a box score, a team's record split, standings or a game log, where the columns depend on the sport",
+      "source": "OpenUI sports pipeline: Card, Grid and Text primitives",
+      "contract": [
+        {
+          "path": "title",
+          "kind": "text",
+          "note": "what the table shows, e.g. \"Passing\" or \"AFC West\""
+        },
+        {
+          "path": "columnCount",
+          "kind": "text",
+          "note": "\"5\"; the server sets it from the columns"
+        },
+        {
+          "path": "columns",
+          "kind": "list",
+          "note": "at most 7, in the order the cells follow"
+        },
+        {
+          "path": "columns[].label",
+          "kind": "text",
+          "note": "a short column label as the source writes it, e.g. \"YDS\" or \"W-L\""
+        },
+        {
+          "path": "rows",
+          "kind": "list",
+          "note": "one per player, team or game"
+        },
+        {
+          "path": "rows[].label",
+          "kind": "text",
+          "note": "whose figures these are, e.g. \"Patrick Mahomes\" or \"@ DET · W 112-106\""
+        },
+        {
+          "path": "rows[].cells",
+          "kind": "list",
+          "note": "one per column, in the same order"
+        },
+        {
+          "path": "rows[].cells[].value",
+          "kind": "text",
+          "note": "the figure as the source writes it, e.g. \"20/32\", or \"\""
+        }
+      ],
+      "params": []
+    },
+    {
+      "name": "InjuryReport",
+      "intent": "One injured player on a card: photo with a band-aid, name and position, the league's status badge when there is one, then how long until they are back, with the date and the source on the right.",
+      "useWhen": "one injured player, or a few as separate cards: are they hurt, when are they back, who says so; for a team's or a league's report use InjuryList",
+      "source": "ui-canvas sports-components/injury-report (from injury-report/countdown)",
+      "contract": [
+        {
+          "path": "name",
+          "kind": "text",
+          "note": "the player's full name"
+        },
+        {
+          "path": "kind",
+          "kind": "text",
+          "note": "\"player\""
+        },
+        {
+          "path": "position",
+          "kind": "text",
+          "note": "position as the data gives it, e.g. \"RB\" or \"Forward\""
+        },
+        {
+          "path": "team",
+          "kind": "text",
+          "note": "the player's team, e.g. \"Cardinals\" or \"Chelsea\""
+        },
+        {
+          "path": "logo",
+          "kind": "text",
+          "note": "photo URL, or \"\""
+        },
+        {
+          "path": "color",
+          "kind": "color",
+          "note": "their team's colour \"#rrggbb\" from d.clubs, or \"\""
+        },
+        {
+          "path": "status",
+          "kind": "text",
+          "note": "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"
+        },
+        {
+          "path": "returnDate",
+          "kind": "text",
+          "note": "the expected return as \"YYYY-MM-DD\", or \"\" when no date is given or the player is out for the season"
+        },
+        {
+          "path": "returnNote",
+          "kind": "text",
+          "note": "what stands in for a missing date, e.g. \"Out for season\" or \"Mid-January 2027\"; \"\" otherwise"
+        },
+        {
+          "path": "source",
+          "kind": "text",
+          "note": "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"
+        },
+        {
+          "path": "detail",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "badge.label",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "badge.tone",
+          "kind": "tone",
+          "note": "the server sets this"
+        },
+        {
+          "path": "badge.show",
+          "kind": "boolean",
+          "note": "the server sets this"
+        },
+        {
+          "path": "wait.label",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "wait.value",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "wait.day",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "wait.dated",
+          "kind": "boolean",
+          "note": "the server sets this"
+        },
+        {
+          "path": "wait.undated",
+          "kind": "boolean",
+          "note": "the server sets this"
+        },
+        {
+          "path": "line",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "sourceLine",
+          "kind": "text",
+          "note": "the server sets this"
+        }
+      ],
+      "params": []
+    },
+    {
+      "name": "InjuryList",
+      "intent": "An injury report as a list with no card: one row per player (photo with a band-aid, name, position · team, status badge), then the return and the source under the name.",
+      "useWhen": "a team's or a league's injured players, any number, in the order the data gives them",
+      "source": "ui-canvas sports-components/injury-report (from injury-report/card-or-row)",
+      "contract": [
+        {
+          "path": "title",
+          "kind": "text",
+          "note": "what the list is, e.g. \"Cardinals injuries\", or \"\""
+        },
+        {
+          "path": "showTitle",
+          "kind": "boolean",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players",
+          "kind": "list",
+          "note": "the injured players, at most 30"
+        },
+        {
+          "path": "players[].name",
+          "kind": "text",
+          "note": "the player's full name"
+        },
+        {
+          "path": "players[].kind",
+          "kind": "text",
+          "note": "\"player\""
+        },
+        {
+          "path": "players[].position",
+          "kind": "text",
+          "note": "position as the data gives it, e.g. \"RB\" or \"Forward\""
+        },
+        {
+          "path": "players[].team",
+          "kind": "text",
+          "note": "the player's team, e.g. \"Cardinals\" or \"Chelsea\""
+        },
+        {
+          "path": "players[].logo",
+          "kind": "text",
+          "note": "photo URL, or \"\""
+        },
+        {
+          "path": "players[].color",
+          "kind": "color",
+          "note": "their team's colour \"#rrggbb\" from d.clubs, or \"\""
+        },
+        {
+          "path": "players[].status",
+          "kind": "text",
+          "note": "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"
+        },
+        {
+          "path": "players[].returnDate",
+          "kind": "text",
+          "note": "the expected return as \"YYYY-MM-DD\", or \"\" when no date is given or the player is out for the season"
+        },
+        {
+          "path": "players[].returnNote",
+          "kind": "text",
+          "note": "what stands in for a missing date, e.g. \"Out for season\" or \"Mid-January 2027\"; \"\" otherwise"
+        },
+        {
+          "path": "players[].source",
+          "kind": "text",
+          "note": "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"
+        },
+        {
+          "path": "players[].detail",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].badge.label",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].badge.tone",
+          "kind": "tone",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].badge.show",
+          "kind": "boolean",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].wait.label",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].wait.value",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].wait.day",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].wait.dated",
+          "kind": "boolean",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].wait.undated",
+          "kind": "boolean",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].line",
+          "kind": "text",
+          "note": "the server sets this"
+        },
+        {
+          "path": "players[].sourceLine",
+          "kind": "text",
+          "note": "the server sets this"
         }
       ],
       "params": []

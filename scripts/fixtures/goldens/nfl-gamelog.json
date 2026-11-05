@@ -1,0 +1,139 @@
+{
+ "urls": [
+  "https://site.web.api.espn.com/apis/search/v2?query=Patrick%20Mahomes&limit=5&type=player",
+  "https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/athletes/3139477",
+  "https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/athletes/3139477/gamelog"
+ ],
+ "answer": {
+  "feed": "gamelog",
+  "league": "nfl",
+  "source": "Source: ESPN · Patrick Mahomes NFL game log",
+  "values": {
+   "league": "NFL",
+   "player": {
+    "athleteId": "3139477",
+    "name": "Patrick Mahomes",
+    "kind": "player",
+    "position": "QB",
+    "jersey": "15",
+    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+    "team": "Kansas City Chiefs",
+    "detail": "QB · Kansas City Chiefs",
+    "color": "#e31837",
+    "status": "Active"
+   },
+   "requestedGames": 3,
+   "gamesCounted": 3,
+   "log": {
+    "title": "Last 3 games",
+    "columnCount": "7",
+    "columns": [
+     {
+      "label": "CMP"
+     },
+     {
+      "label": "ATT"
+     },
+     {
+      "label": "YDS"
+     },
+     {
+      "label": "CMP%"
+     },
+     {
+      "label": "AVG"
+     },
+     {
+      "label": "TD"
+     },
+     {
+      "label": "INT"
+     }
+    ],
+    "rows": [
+     {
+      "label": "@ DEN · L 28-24",
+      "date": "2026-11-01T21:25:00.000+00:00",
+      "cells": [
+       {
+        "value": "30"
+       },
+       {
+        "value": "41"
+       },
+       {
+        "value": "321"
+       },
+       {
+        "value": "73.2"
+       },
+       {
+        "value": "7.8"
+       },
+       {
+        "value": "3"
+       },
+       {
+        "value": "0"
+       }
+      ]
+     },
+     {
+      "label": "@ SEA · L 20-3",
+      "date": "2026-10-26T00:20:00.000+00:00",
+      "cells": [
+       {
+        "value": "19"
+       },
+       {
+        "value": "33"
+       },
+       {
+        "value": "165"
+       },
+       {
+        "value": "57.6"
+       },
+       {
+        "value": "5.0"
+       },
+       {
+        "value": "0"
+       },
+       {
+        "value": "1"
+       }
+      ]
+     },
+     {
+      "label": "vs LAC · W 22-6",
+      "date": "2026-10-18T20:25:00.000+00:00",
+      "cells": [
+       {
+        "value": "23"
+       },
+       {
+        "value": "30"
+       },
+       {
+        "value": "272"
+       },
+       {
+        "value": "76.7"
+       },
+       {
+        "value": "9.1"
+       },
+       {
+        "value": "0"
+       },
+       {
+        "value": "1"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

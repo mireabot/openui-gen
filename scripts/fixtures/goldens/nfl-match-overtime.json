@@ -1,0 +1,1864 @@
+{
+ "urls": [
+  "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams",
+  "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/12/schedule",
+  "https://site.api.espn.com/apis/site/v2/sports/football/nfl/summary?event=401872945"
+ ],
+ "answer": {
+  "feed": "match",
+  "league": "nfl",
+  "source": "Source: ESPN · NFL box score",
+  "values": {
+   "league": "NFL",
+   "played": true,
+   "season": "2026",
+   "currentSeason": true,
+   "match": {
+    "id": "401872945",
+    "date": "2026-09-21T00:20Z",
+    "state": "final",
+    "status": "Final/OT",
+    "venue": "Arrowhead Stadium",
+    "broadcast": "NBC",
+    "home": {
+     "id": "12",
+     "name": "Kansas City Chiefs",
+     "short": "Chiefs",
+     "abbreviation": "KC",
+     "color": "",
+     "alternateColor": "",
+     "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+     "score": 33,
+     "winner": true,
+     "form": "",
+     "record": "",
+     "periods": "10 7 7 3 6"
+    },
+    "away": {
+     "id": "11",
+     "name": "Indianapolis Colts",
+     "short": "Colts",
+     "abbreviation": "IND",
+     "color": "",
+     "alternateColor": "",
+     "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png",
+     "score": 30,
+     "winner": false,
+     "form": "",
+     "record": "",
+     "periods": "7 13 0 7 3"
+    },
+    "venueSide": "home",
+    "result": "win"
+   },
+   "teamStats": [
+    {
+     "key": "firstDowns",
+     "label": "1st Downs",
+     "display": "29"
+    },
+    {
+     "key": "firstDownsPassing",
+     "label": "Passing 1st downs",
+     "display": "19"
+    },
+    {
+     "key": "firstDownsRushing",
+     "label": "Rushing 1st downs",
+     "display": "10"
+    },
+    {
+     "key": "firstDownsPenalty",
+     "label": "1st downs from penalties",
+     "display": "0"
+    },
+    {
+     "key": "thirdDownEff",
+     "label": "3rd down efficiency",
+     "display": "5-13"
+    },
+    {
+     "key": "fourthDownEff",
+     "label": "4th down efficiency",
+     "display": "2-2"
+    },
+    {
+     "key": "totalOffensivePlays",
+     "label": "Total Plays",
+     "display": "78"
+    },
+    {
+     "key": "totalYards",
+     "label": "Total Yards",
+     "display": "523"
+    },
+    {
+     "key": "yardsPerPlay",
+     "label": "Yards per Play",
+     "display": "6.7"
+    },
+    {
+     "key": "totalDrives",
+     "label": "Total Drives",
+     "display": "11"
+    },
+    {
+     "key": "netPassingYards",
+     "label": "Passing",
+     "display": "371"
+    },
+    {
+     "key": "completionAttempts",
+     "label": "Comp/Att",
+     "display": "32/47"
+    },
+    {
+     "key": "yardsPerPass",
+     "label": "Yards per pass",
+     "display": "7.6"
+    },
+    {
+     "key": "interceptions",
+     "label": "Interceptions thrown",
+     "display": "0"
+    },
+    {
+     "key": "sacksYardsLost",
+     "label": "Sacks-Yards Lost",
+     "display": "2-11"
+    },
+    {
+     "key": "rushingYards",
+     "label": "Rushing",
+     "display": "152"
+    },
+    {
+     "key": "rushingAttempts",
+     "label": "Rushing Attempts",
+     "display": "29"
+    },
+    {
+     "key": "yardsPerRushAttempt",
+     "label": "Yards per rush",
+     "display": "5.2"
+    },
+    {
+     "key": "redZoneAttempts",
+     "label": "Red Zone (Made-Att)",
+     "display": "3-5"
+    },
+    {
+     "key": "totalPenaltiesYards",
+     "label": "Penalties",
+     "display": "8-86"
+    },
+    {
+     "key": "turnovers",
+     "label": "Turnovers",
+     "display": "0"
+    },
+    {
+     "key": "fumblesLost",
+     "label": "Fumbles lost",
+     "display": "0"
+    },
+    {
+     "key": "interceptions",
+     "label": "Interceptions thrown",
+     "display": "0"
+    },
+    {
+     "key": "defensiveTouchdowns",
+     "label": "Defensive / Special Teams TDs",
+     "display": "0"
+    },
+    {
+     "key": "possessionTime",
+     "label": "Possession",
+     "display": "37:00"
+    }
+   ],
+   "opponentStats": [
+    {
+     "key": "firstDowns",
+     "label": "1st Downs",
+     "display": "24"
+    },
+    {
+     "key": "firstDownsPassing",
+     "label": "Passing 1st downs",
+     "display": "12"
+    },
+    {
+     "key": "firstDownsRushing",
+     "label": "Rushing 1st downs",
+     "display": "9"
+    },
+    {
+     "key": "firstDownsPenalty",
+     "label": "1st downs from penalties",
+     "display": "3"
+    },
+    {
+     "key": "thirdDownEff",
+     "label": "3rd down efficiency",
+     "display": "5-12"
+    },
+    {
+     "key": "fourthDownEff",
+     "label": "4th down efficiency",
+     "display": "2-2"
+    },
+    {
+     "key": "totalOffensivePlays",
+     "label": "Total Plays",
+     "display": "63"
+    },
+    {
+     "key": "totalYards",
+     "label": "Total Yards",
+     "display": "329"
+    },
+    {
+     "key": "yardsPerPlay",
+     "label": "Yards per Play",
+     "display": "5.2"
+    },
+    {
+     "key": "totalDrives",
+     "label": "Total Drives",
+     "display": "10"
+    },
+    {
+     "key": "netPassingYards",
+     "label": "Passing",
+     "display": "210"
+    },
+    {
+     "key": "completionAttempts",
+     "label": "Comp/Att",
+     "display": "22/31"
+    },
+    {
+     "key": "yardsPerPass",
+     "label": "Yards per pass",
+     "display": "6.8"
+    },
+    {
+     "key": "interceptions",
+     "label": "Interceptions thrown",
+     "display": "1"
+    },
+    {
+     "key": "sacksYardsLost",
+     "label": "Sacks-Yards Lost",
+     "display": "0-0"
+    },
+    {
+     "key": "rushingYards",
+     "label": "Rushing",
+     "display": "119"
+    },
+    {
+     "key": "rushingAttempts",
+     "label": "Rushing Attempts",
+     "display": "32"
+    },
+    {
+     "key": "yardsPerRushAttempt",
+     "label": "Yards per rush",
+     "display": "3.7"
+    },
+    {
+     "key": "redZoneAttempts",
+     "label": "Red Zone (Made-Att)",
+     "display": "2-3"
+    },
+    {
+     "key": "totalPenaltiesYards",
+     "label": "Penalties",
+     "display": "5-30"
+    },
+    {
+     "key": "turnovers",
+     "label": "Turnovers",
+     "display": "1"
+    },
+    {
+     "key": "fumblesLost",
+     "label": "Fumbles lost",
+     "display": "0"
+    },
+    {
+     "key": "interceptions",
+     "label": "Interceptions thrown",
+     "display": "1"
+    },
+    {
+     "key": "defensiveTouchdowns",
+     "label": "Defensive / Special Teams TDs",
+     "display": "0"
+    },
+    {
+     "key": "possessionTime",
+     "label": "Possession",
+     "display": "33:00"
+    }
+   ],
+   "teamTables": [
+    {
+     "title": "Kansas City Passing",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "C/ATT"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      },
+      {
+       "label": "INT"
+      },
+      {
+       "label": "SACKS"
+      },
+      {
+       "label": "QBR"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Patrick Mahomes",
+       "athleteId": "3139477",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+       "cells": [
+        {
+         "value": "32/47"
+        },
+        {
+         "value": "382"
+        },
+        {
+         "value": "8.1"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "2-11"
+        },
+        {
+         "value": "82.9"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kansas City Rushing",
+     "columnCount": "5",
+     "columns": [
+      {
+       "label": "CAR"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      },
+      {
+       "label": "LONG"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Kenneth Walker III",
+       "athleteId": "4567048",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4567048.png",
+       "cells": [
+        {
+         "value": "24"
+        },
+        {
+         "value": "117"
+        },
+        {
+         "value": "4.9"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "19"
+        }
+       ]
+      },
+      {
+       "label": "Patrick Mahomes",
+       "athleteId": "3139477",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+       "cells": [
+        {
+         "value": "2"
+        },
+        {
+         "value": "17"
+        },
+        {
+         "value": "8.5"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "13"
+        }
+       ]
+      },
+      {
+       "label": "Emmett Johnson",
+       "athleteId": "4832955",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4832955.png",
+       "cells": [
+        {
+         "value": "2"
+        },
+        {
+         "value": "15"
+        },
+        {
+         "value": "7.5"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "8"
+        }
+       ]
+      },
+      {
+       "label": "Khyiris Tonga",
+       "athleteId": "4256074",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4256074.png",
+       "cells": [
+        {
+         "value": "1"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "3.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "3"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kansas City Receiving",
+     "columnCount": "6",
+     "columns": [
+      {
+       "label": "REC"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      },
+      {
+       "label": "LONG"
+      },
+      {
+       "label": "TGTS"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Travis Kelce",
+       "athleteId": "15847",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/15847.png",
+       "cells": [
+        {
+         "value": "9"
+        },
+        {
+         "value": "101"
+        },
+        {
+         "value": "11.2"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "18"
+        },
+        {
+         "value": "11"
+        }
+       ]
+      },
+      {
+       "label": "Tyquan Thornton",
+       "athleteId": "4362921",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4362921.png",
+       "cells": [
+        {
+         "value": "4"
+        },
+        {
+         "value": "86"
+        },
+        {
+         "value": "21.5"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "45"
+        },
+        {
+         "value": "4"
+        }
+       ]
+      },
+      {
+       "label": "Rashee Rice",
+       "athleteId": "4428331",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4428331.png",
+       "cells": [
+        {
+         "value": "4"
+        },
+        {
+         "value": "83"
+        },
+        {
+         "value": "20.8"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "31"
+        },
+        {
+         "value": "6"
+        }
+       ]
+      },
+      {
+       "label": "Kenneth Walker III",
+       "athleteId": "4567048",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4567048.png",
+       "cells": [
+        {
+         "value": "6"
+        },
+        {
+         "value": "61"
+        },
+        {
+         "value": "10.2"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "22"
+        },
+        {
+         "value": "10"
+        }
+       ]
+      },
+      {
+       "label": "Xavier Worthy",
+       "athleteId": "4683062",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4683062.png",
+       "cells": [
+        {
+         "value": "5"
+        },
+        {
+         "value": "25"
+        },
+        {
+         "value": "5.0"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "16"
+        },
+        {
+         "value": "7"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kansas City Defense",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "TOT"
+      },
+      {
+       "label": "SOLO"
+      },
+      {
+       "label": "SACKS"
+      },
+      {
+       "label": "TFL"
+      },
+      {
+       "label": "PD"
+      },
+      {
+       "label": "QB HTS"
+      },
+      {
+       "label": "TD"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Nick Bolton",
+       "athleteId": "4362759",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4362759.png",
+       "cells": [
+        {
+         "value": "13"
+        },
+        {
+         "value": "6"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Jaden Hicks",
+       "athleteId": "4685232",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4685232.png",
+       "cells": [
+        {
+         "value": "10"
+        },
+        {
+         "value": "5"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Drue Tranquill",
+       "athleteId": "3129310",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3129310.png",
+       "cells": [
+        {
+         "value": "8"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "L'Jarius Sneed",
+       "athleteId": "4040432",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4040432.png",
+       "cells": [
+        {
+         "value": "7"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Chris Jones",
+       "athleteId": "3044859",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3044859.png",
+       "cells": [
+        {
+         "value": "6"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kansas City Interceptions",
+     "columnCount": "3",
+     "columns": [
+      {
+       "label": "INT"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "TD"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Kristian Fulton",
+       "athleteId": "4035433",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4035433.png",
+       "cells": [
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kansas City Kick Returns",
+     "columnCount": "5",
+     "columns": [
+      {
+       "label": "NO"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "LONG"
+      },
+      {
+       "label": "TD"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Brashard Smith",
+       "athleteId": "4596602",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4596602.png",
+       "cells": [
+        {
+         "value": "5"
+        },
+        {
+         "value": "133"
+        },
+        {
+         "value": "26.6"
+        },
+        {
+         "value": "31"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Emmett Johnson",
+       "athleteId": "4832955",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4832955.png",
+       "cells": [
+        {
+         "value": "1"
+        },
+        {
+         "value": "34"
+        },
+        {
+         "value": "34.0"
+        },
+        {
+         "value": "34"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kansas City Punt Returns",
+     "columnCount": "5",
+     "columns": [
+      {
+       "label": "NO"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "LONG"
+      },
+      {
+       "label": "TD"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Nikko Remigio",
+       "athleteId": "4372716",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4372716.png",
+       "cells": [
+        {
+         "value": "2"
+        },
+        {
+         "value": "8"
+        },
+        {
+         "value": "4.0"
+        },
+        {
+         "value": "6"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kansas City Kicking",
+     "columnCount": "5",
+     "columns": [
+      {
+       "label": "FG"
+      },
+      {
+       "label": "PCT"
+      },
+      {
+       "label": "LONG"
+      },
+      {
+       "label": "XP"
+      },
+      {
+       "label": "PTS"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Harrison Butker",
+       "athleteId": "3055899",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3055899.png",
+       "cells": [
+        {
+         "value": "4/5"
+        },
+        {
+         "value": "80.0"
+        },
+        {
+         "value": "46"
+        },
+        {
+         "value": "3/3"
+        },
+        {
+         "value": "15"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Kansas City Punting",
+     "columnCount": "6",
+     "columns": [
+      {
+       "label": "NO"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TB"
+      },
+      {
+       "label": "In 20"
+      },
+      {
+       "label": "LONG"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Matt Araiza",
+       "athleteId": "4361496",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4361496.png",
+       "cells": [
+        {
+         "value": "2"
+        },
+        {
+         "value": "109"
+        },
+        {
+         "value": "54.5"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "69"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "opponentTables": [
+    {
+     "title": "Indianapolis Passing",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "C/ATT"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      },
+      {
+       "label": "INT"
+      },
+      {
+       "label": "SACKS"
+      },
+      {
+       "label": "QBR"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Daniel Jones",
+       "athleteId": "3917792",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3917792.png",
+       "cells": [
+        {
+         "value": "22/31"
+        },
+        {
+         "value": "210"
+        },
+        {
+         "value": "6.8"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0-0"
+        },
+        {
+         "value": "69.3"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Indianapolis Rushing",
+     "columnCount": "5",
+     "columns": [
+      {
+       "label": "CAR"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      },
+      {
+       "label": "LONG"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Jonathan Taylor",
+       "athleteId": "4242335",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4242335.png",
+       "cells": [
+        {
+         "value": "24"
+        },
+        {
+         "value": "92"
+        },
+        {
+         "value": "3.8"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "24"
+        }
+       ]
+      },
+      {
+       "label": "Deion Burks",
+       "athleteId": "4683151",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4683151.png",
+       "cells": [
+        {
+         "value": "2"
+        },
+        {
+         "value": "14"
+        },
+        {
+         "value": "7.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "10"
+        }
+       ]
+      },
+      {
+       "label": "Daniel Jones",
+       "athleteId": "3917792",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3917792.png",
+       "cells": [
+        {
+         "value": "3"
+        },
+        {
+         "value": "10"
+        },
+        {
+         "value": "3.3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "5"
+        }
+       ]
+      },
+      {
+       "label": "Tyler Warren",
+       "athleteId": "4431459",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4431459.png",
+       "cells": [
+        {
+         "value": "1"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "3.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "3"
+        }
+       ]
+      },
+      {
+       "label": "Seth McGowan",
+       "athleteId": "4686468",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4686468.png",
+       "cells": [
+        {
+         "value": "2"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Indianapolis Receiving",
+     "columnCount": "6",
+     "columns": [
+      {
+       "label": "REC"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      },
+      {
+       "label": "LONG"
+      },
+      {
+       "label": "TGTS"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Josh Downs",
+       "athleteId": "4688813",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4688813.png",
+       "cells": [
+        {
+         "value": "7"
+        },
+        {
+         "value": "72"
+        },
+        {
+         "value": "10.3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "20"
+        },
+        {
+         "value": "9"
+        }
+       ]
+      },
+      {
+       "label": "Laquon Treadwell",
+       "athleteId": "3051889",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3051889.png",
+       "cells": [
+        {
+         "value": "3"
+        },
+        {
+         "value": "61"
+        },
+        {
+         "value": "20.3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "48"
+        },
+        {
+         "value": "3"
+        }
+       ]
+      },
+      {
+       "label": "Jonathan Taylor",
+       "athleteId": "4242335",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4242335.png",
+       "cells": [
+        {
+         "value": "4"
+        },
+        {
+         "value": "40"
+        },
+        {
+         "value": "10.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "15"
+        },
+        {
+         "value": "4"
+        }
+       ]
+      },
+      {
+       "label": "Tyler Warren",
+       "athleteId": "4431459",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4431459.png",
+       "cells": [
+        {
+         "value": "6"
+        },
+        {
+         "value": "21"
+        },
+        {
+         "value": "3.5"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "8"
+        },
+        {
+         "value": "7"
+        }
+       ]
+      },
+      {
+       "label": "Alec Pierce",
+       "athleteId": "4360078",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4360078.png",
+       "cells": [
+        {
+         "value": "1"
+        },
+        {
+         "value": "11"
+        },
+        {
+         "value": "11.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "11"
+        },
+        {
+         "value": "1"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Indianapolis Defense",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "TOT"
+      },
+      {
+       "label": "SOLO"
+      },
+      {
+       "label": "SACKS"
+      },
+      {
+       "label": "TFL"
+      },
+      {
+       "label": "PD"
+      },
+      {
+       "label": "QB HTS"
+      },
+      {
+       "label": "TD"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Akeem Davis-Gaither",
+       "athleteId": "3917142",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3917142.png",
+       "cells": [
+        {
+         "value": "14"
+        },
+        {
+         "value": "7"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Cam Bynum",
+       "athleteId": "4035861",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4035861.png",
+       "cells": [
+        {
+         "value": "9"
+        },
+        {
+         "value": "5"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Hunter Wohler",
+       "athleteId": "4432789",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4432789.png",
+       "cells": [
+        {
+         "value": "8"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Sauce Gardner",
+       "athleteId": "4427250",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4427250.png",
+       "cells": [
+        {
+         "value": "6"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Jaylon Carlies",
+       "athleteId": "4601021",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4601021.png",
+       "cells": [
+        {
+         "value": "6"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Indianapolis Kick Returns",
+     "columnCount": "5",
+     "columns": [
+      {
+       "label": "NO"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "LONG"
+      },
+      {
+       "label": "TD"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Anthony Gould",
+       "athleteId": "4429684",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4429684.png",
+       "cells": [
+        {
+         "value": "4"
+        },
+        {
+         "value": "102"
+        },
+        {
+         "value": "25.5"
+        },
+        {
+         "value": "29"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      },
+      {
+       "label": "Seth McGowan",
+       "athleteId": "4686468",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4686468.png",
+       "cells": [
+        {
+         "value": "2"
+        },
+        {
+         "value": "58"
+        },
+        {
+         "value": "29.0"
+        },
+        {
+         "value": "38"
+        },
+        {
+         "value": "0"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Indianapolis Kicking",
+     "columnCount": "5",
+     "columns": [
+      {
+       "label": "FG"
+      },
+      {
+       "label": "PCT"
+      },
+      {
+       "label": "LONG"
+      },
+      {
+       "label": "XP"
+      },
+      {
+       "label": "PTS"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Spencer Shrader",
+       "athleteId": "4571557",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4571557.png",
+       "cells": [
+        {
+         "value": "3/3"
+        },
+        {
+         "value": "100.0"
+        },
+        {
+         "value": "49"
+        },
+        {
+         "value": "3/3"
+        },
+        {
+         "value": "12"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Indianapolis Punting",
+     "columnCount": "6",
+     "columns": [
+      {
+       "label": "NO"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TB"
+      },
+      {
+       "label": "In 20"
+      },
+      {
+       "label": "LONG"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Rigoberto Sanchez",
+       "athleteId": "3914922",
+       "position": "",
+       "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3914922.png",
+       "cells": [
+        {
+         "value": "2"
+        },
+        {
+         "value": "86"
+        },
+        {
+         "value": "43.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "45"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "scoring": [
+    {
+     "text": "Tyler Warren 1 Yd pass from Daniel Jones (Spencer Shrader Kick)",
+     "period": 1,
+     "clock": "8:25",
+     "kind": "Touchdown",
+     "homeScore": 0,
+     "awayScore": 7
+    },
+    {
+     "text": "Harrison Butker 46 Yd Field Goal",
+     "period": 1,
+     "clock": "6:09",
+     "kind": "Field Goal",
+     "homeScore": 3,
+     "awayScore": 7
+    },
+    {
+     "text": "Travis Kelce 13 Yd pass from Patrick Mahomes (Harrison Butker Kick)",
+     "period": 1,
+     "clock": "4:34",
+     "kind": "Touchdown",
+     "homeScore": 10,
+     "awayScore": 7
+    },
+    {
+     "text": "Spencer Shrader 42 Yd Field Goal",
+     "period": 2,
+     "clock": "14:48",
+     "kind": "Field Goal",
+     "homeScore": 10,
+     "awayScore": 10
+    },
+    {
+     "text": "Spencer Shrader 49 Yd Field Goal",
+     "period": 2,
+     "clock": "9:44",
+     "kind": "Field Goal",
+     "homeScore": 10,
+     "awayScore": 13
+    },
+    {
+     "text": "Xavier Worthy 1 Yd pass from Patrick Mahomes (Harrison Butker Kick)",
+     "period": 2,
+     "clock": "2:25",
+     "kind": "Touchdown",
+     "homeScore": 17,
+     "awayScore": 13
+    },
+    {
+     "text": "Jonathan Taylor 24 Yd Rush (Spencer Shrader Kick)",
+     "period": 2,
+     "clock": "0:59",
+     "kind": "Touchdown",
+     "homeScore": 17,
+     "awayScore": 20
+    },
+    {
+     "text": "Jalen Royals 1 Yd pass from Patrick Mahomes (Harrison Butker Kick)",
+     "period": 3,
+     "clock": "8:01",
+     "kind": "Touchdown",
+     "homeScore": 24,
+     "awayScore": 20
+    },
+    {
+     "text": "Harrison Butker 28 Yd Field Goal",
+     "period": 4,
+     "clock": "14:15",
+     "kind": "Field Goal",
+     "homeScore": 27,
+     "awayScore": 20
+    },
+    {
+     "text": "Jonathan Taylor 5 Yd Rush (Spencer Shrader Kick)",
+     "period": 4,
+     "clock": "5:37",
+     "kind": "Touchdown",
+     "homeScore": 27,
+     "awayScore": 27
+    },
+    {
+     "text": "Harrison Butker 31 Yd Field Goal",
+     "period": 5,
+     "clock": "5:09",
+     "kind": "Field Goal",
+     "homeScore": 30,
+     "awayScore": 27
+    },
+    {
+     "text": "Spencer Shrader 38 Yd Field Goal",
+     "period": 5,
+     "clock": "3:11",
+     "kind": "Field Goal",
+     "homeScore": 30,
+     "awayScore": 30
+    },
+    {
+     "text": "Harrison Butker 40 Yd Field Goal ",
+     "period": 5,
+     "clock": "0:00",
+     "kind": "Field Goal",
+     "homeScore": 33,
+     "awayScore": 30
+    }
+   ],
+   "upcoming": []
+  }
+ }
+}

@@ -7,10 +7,9 @@ import { researchWithParallel, type ParallelTransport } from "../research/parall
 import { citationKey, type WebResearch, type WebSource } from "../research/web-research.js";
 import { lookupPlayer, matchRatings, playerValue, type FotmobTransport, type PlayerLookup, type PlayerPicker, type RatedPlayer } from "./fotmob.js";
 import { LEAGUES, withMatchCards, type EspnTransport } from "./espn.js";
-import { footballLookup, footballSourceName } from "./football.js";
+import { isSoccer, LEAGUE_CONFIG, leagueOf, sportOf } from "./leagues.js";
+import { sportsLookup, feedSourceName } from "./feeds.js";
 
-/** Kickoff times for a client that names no time zone: football's home clock. */
-export const DEFAULT_TIME_ZONE = "Europe/London";
 import type { SportsPlan, SportsQuestion } from "./plan.js";
 
 /**
@@ -20,8 +19,8 @@ import type { SportsPlan, SportsQuestion } from "./plan.js";
  * comes back unavailable with a note, so the screen says so instead of inventing an answer.
  */
 
-/** Football sources searched first; their pages lead the findings and win when pages disagree. */
-export const SPORTS_PREFERRED_SOURCES = ["espn.com", "bbc.com", "premierleague.com", "laliga.com", "bundesliga.com", "legaseriea.it", "transfermarkt.com", "fbref.com"];
+/** Soccer's sources searched first; their pages lead the findings and win when pages disagree. Other leagues name their own. */
+export const SPORTS_PREFERRED_SOURCES = [...LEAGUE_CONFIG["eng.1"].research.domains];
 
 export const FindingSchema = z.object({
   title: z.string().min(1),
@@ -99,9 +98,11 @@ export interface Answered {
   readonly web: boolean;
 }
 
-export async function answerSports(plan: SportsPlan, prompt: string, now: Date, hooks: ResearchHooks = {}, deps: ResearchDeps = {}, timeZone = DEFAULT_TIME_ZONE): Promise<Answered> {
+export async function answerSports(plan: SportsPlan, prompt: string, now: Date, hooks: ResearchHooks = {}, deps: ResearchDeps = {}, timeZone?: string): Promise<Answered> {
   const cfg = config();
   const today = now.toISOString().slice(0, 10);
+  // Web questions name no league of their own: they follow the screen's, and soccer otherwise.
+  const research = leagueOf(plan.subject.league ?? "eng.1").research;
   const sources: WebSource[] = [];
   const results = await Promise.all(plan.questions.map(async (question): Promise<[string, Record<string, MockValue>]> => {
     try {
@@ -114,36 +115,37 @@ export async function answerSports(plan: SportsPlan, prompt: string, now: Date, 
         return [question.id, { status: "complete", question: question.text, title: question.text.slice(0, 60), ...values, source: "Source: FotMob · SciSports market values" }];
       }
       if (question.source === "espn") {
-        hooks.progress?.(`${footballSourceName()} ${question.feed}${question.team ? ` · ${question.team}` : ""}${question.opponent ? ` v ${question.opponent}` : ""}: ${question.text.slice(0, 100)}`);
-        const espn = await footballLookup({ league: question.league, feed: question.feed, team: question.team, opponent: question.opponent, dates: question.date, season: question.season,
+        hooks.progress?.(`${feedSourceName(question.league)} ${question.feed}${question.team ? ` · ${question.team}` : ""}${question.opponent ? ` v ${question.opponent}` : ""}: ${question.text.slice(0, 100)}`);
+        const espn = await sportsLookup({ league: question.league, feed: question.feed, team: question.team, opponent: question.opponent, dates: question.date, season: question.season, ...(question.player ? { player: question.player } : {}), ...(question.week != null ? { week: question.week } : {}),
           ...(question.lastGames !== undefined ? { lastGames: question.lastGames } : {}), ...(question.allCompetitions !== undefined ? { allCompetitions: question.allCompetitions } : {}) }, deps.espn, now);
-        const values = withMatchCards(espn.values, LEAGUES[question.league], timeZone);
-        const rated = question.feed === "match" ? await withMatchRatings(values, deps.fotmob) : null;
+        const values = withMatchCards(espn.values, LEAGUES[question.league], timeZone ?? leagueOf(question.league).defaultTimeZone, sportOf(question.league));
+        // FotMob rates soccer only, so another sport must not spend a request on it.
+        const rated = question.feed === "match" && isSoccer(question.league) ? await withMatchRatings(values, deps.fotmob) : null;
         const complete = { ...values, ...rated };
         hooks.finding?.(question.id, complete);
         return [question.id, { status: "complete", question: question.text, title: question.text.slice(0, 60), ...complete, source: rated ? `${espn.source} · FotMob ratings` : espn.source }];
       }
       hooks.progress?.(`Searching: ${question.text.slice(0, 120)}`);
       const started = performance.now();
-      const research = await researchWithParallel(
-        `${question.text}\nAbout: ${plan.subject.name}${plan.subject.season ? `, ${plan.subject.season}` : ""}, as of ${today}. Prefer official league and club sites and established football data sources, with dates.\nThe user's full request, for context: "${prompt}"`,
-        { searchQueries: question.searchQueries, mode: cfg.PARALLEL_SEARCH_MODE, preferDomains: SPORTS_PREFERRED_SOURCES,
+      const found = await researchWithParallel(
+        `${question.text}\nAbout: ${plan.subject.name}${plan.subject.season ? `, ${plan.subject.season}` : ""}, as of ${today}. Prefer official league and club sites and ${research.phrase}, with dates.\nThe user's full request, for context: "${prompt}"`,
+        { searchQueries: question.searchQueries, mode: cfg.PARALLEL_SEARCH_MODE, preferDomains: [...research.domains],
           ...(deps.parallel ? { send: deps.parallel } : {}),
           usage: ({ model, costUSD, ms }) => hooks.usage?.({ stage: "search", model, inputTokens: 0, outputTokens: 0, costUSD, ms }) },
       );
-      sources.push(...research.sources);
+      sources.push(...found.sources);
       const extracted = await structuredCompletion({
         stage: "data",
         request: {
           model: cfg.SPORTS_SEARCH_MODEL, maxTokens: 8_000, schema: z.toJSONSchema(FindingSchema) as Record<string, unknown>,
-          messages: [{ role: "system", content: `${FINDING_SYSTEM}\nSub-question: ${question.text}` }, { role: "user", content: JSON.stringify({ findings: research.findings, sources: research.sources }) }],
+          messages: [{ role: "system", content: `${FINDING_SYSTEM}\nSub-question: ${question.text}` }, { role: "user", content: JSON.stringify({ findings: found.findings, sources: found.sources }) }],
         },
         send: deps.extract ?? claudeSender({ effort: "medium", fallbacks: true }),
         parse: text => FindingSchema.parse(JSON.parse(text)),
         hooks: { usage: ({ model, usage, attempt, ms }) => hooks.usage?.({ stage: "data", model, attempt, inputTokens: usage.promptTokens, outputTokens: usage.completionTokens, costUSD: usage.costUSD ?? 0, ms }) } satisfies StructuredCompletionHooks,
       });
       hooks.finding?.(question.id, extracted.value);
-      const answer = findingAnswer(extracted.value, question, research);
+      const answer = findingAnswer(extracted.value, question, found);
       hooks.progress?.(`${answer ? "Found" : "No cited answer"}: ${question.text.slice(0, 100)} (${Math.round(performance.now() - started)} ms)`);
       return [question.id, answer ?? unavailable(question, "No cited source answered this.")];
     } catch (error) {

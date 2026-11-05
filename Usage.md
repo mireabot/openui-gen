@@ -135,3 +135,9 @@ curl localhost:8080/health
 ```
 
 The backend logs the mode when it starts, and `npm run ask` prints it first.
+
+## Sports and ESPN fixtures
+
+Leagues live in `src/sports/leagues.ts`. Soccer keeps its own presenter in `espn.ts`, and NFL and NBA share `espn-generic.ts`.
+
+`npm run check:feeds` replays recorded ESPN responses from `scripts/fixtures/espn` against the goldens in `scripts/fixtures/goldens`, with no network. After an intended change to a feed's output, run `npm run check:feeds -- --update` and review the diff. To refresh responses from the live API, run `npm run record:espn`, or `npm run record:espn -- nba` for one league's cases.

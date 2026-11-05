@@ -38,10 +38,10 @@ export interface SportsComponent {
 const f = (path: string, kind: ContractField["kind"], note: string): ContractField => ({ path, kind, note });
 const CLUB_COLOR = "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\"";
 const team = (prefix: string): ContractField[] => [
-  f(`${prefix}.name`, "text", "club name"),
+  f(`${prefix}.name`, "text", "team name"),
   f(`${prefix}.logo`, "text", "logo URL, or \"\""),
   f(`${prefix}.color`, "color", CLUB_COLOR),
-  f(`${prefix}.score`, "text", "goals as text (\"2\"), \"\" before kick-off"),
+  f(`${prefix}.score`, "text", "the score as text (\"2\"), \"\" before the start"),
   f(`${prefix}.ink`, "ink", "\"secondary\" for the side that lost, else \"primary\""),
 ];
 
@@ -87,11 +87,70 @@ const venueDetail = (icon: string, label: string, detail: AnyRef) => ui.Stack({ 
 
 /** One place on a podium, as the record carries it. */
 const podiumPlace = (prefix: string, medal: string): ContractField[] => [
-  f(`${prefix}.name`, "text", "club name"),
+  f(`${prefix}.name`, "text", "team name"),
   f(`${prefix}.logo`, "text", "logo URL, or \"\""),
   f(`${prefix}.color`, "color", CLUB_COLOR),
   f(`${prefix}.medal`, "color", `always ${medal}: the place's colour, which a template cannot hold itself`),
 ];
+
+/**
+ * An injured player as the record carries it. The schema stage fills the data; the server fills
+ * `detail`, `badge`, `wait`, `line` and `sourceLine` from it (settleInjuries), because a template
+ * cannot count days or map a league's wording.
+ */
+const injuredPlayer = (prefix: string): ContractField[] => [
+  f(`${prefix}name`, "text", "the player's full name"),
+  f(`${prefix}kind`, "text", "\"player\""),
+  f(`${prefix}position`, "text", "position as the data gives it, e.g. \"RB\" or \"Forward\""),
+  f(`${prefix}team`, "text", "the player's team, e.g. \"Cardinals\" or \"Chelsea\""),
+  f(`${prefix}logo`, "text", "photo URL, or \"\""),
+  f(`${prefix}color`, "color", "their team's colour \"#rrggbb\" from d.clubs, or \"\""),
+  f(`${prefix}status`, "text", "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"),
+  f(`${prefix}returnDate`, "text", "the expected return as \"YYYY-MM-DD\", or \"\" when no date is given or the player is out for the season"),
+  f(`${prefix}returnNote`, "text", "what stands in for a missing date, e.g. \"Out for season\" or \"Mid-January 2027\"; \"\" otherwise"),
+  f(`${prefix}source`, "text", "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"),
+  f(`${prefix}detail`, "text", "the server sets this"),
+  f(`${prefix}badge.label`, "text", "the server sets this"),
+  f(`${prefix}badge.tone`, "tone", "the server sets this"),
+  f(`${prefix}badge.show`, "boolean", "the server sets this"),
+  f(`${prefix}wait.label`, "text", "the server sets this"),
+  f(`${prefix}wait.value`, "text", "the server sets this"),
+  f(`${prefix}wait.day`, "text", "the server sets this"),
+  f(`${prefix}wait.dated`, "boolean", "the server sets this"),
+  f(`${prefix}wait.undated`, "boolean", "the server sets this"),
+  f(`${prefix}line`, "text", "the server sets this"),
+  f(`${prefix}sourceLine`, "text", "the server sets this"),
+];
+
+/** The photo on the team colour, with a band-aid at its bottom right. */
+const injuredAvatar = (p: AnyRef, size: 40 | 56) => ui.ZStack({ alignment: "bottom-trailing", children: [
+  mark(p, size, p.kind),
+  ui.Badge({ label: "", icon: "bandage.fill", tone: "bad", size: "small" }),
+] });
+
+/** Avatar, name and a detail line, then the league's badge when there is one. */
+const injuryTop = (p: AnyRef, size: 40 | 56, detail: AnyRef) => ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
+  ui.Stack({ axis: "h", gap: 12, align: "center", children: [
+    injuredAvatar(p, size),
+    ui.Stack({ axis: "v", gap: 0, children: [
+      ui.Text({ content: p.name, role: "headline", weight: "semibold", lines: 1, align: "start" }),
+      ui.Text({ content: detail, role: "footnote", ink: "secondary", lines: 1, align: "start" }),
+    ] }),
+  ] }),
+  ui.Show({ when: p.badge.show, child: ui.Badge({ label: p.badge.label, tone: p.badge.tone }) }),
+] });
+
+/** A list element: the row at 40, then "Back Nov 8 · source" under the name (40 + 12 in). */
+const injuryRow = (p: AnyRef) => ui.Stack({ axis: "v", gap: 4, children: [
+  injuryTop(p, 40, p.detail),
+  ui.Stack({ axis: "h", gap: 12, children: [
+    ui.Spacer({ size: 40 }),
+    ui.Stack({ axis: "h", gap: 4, children: [
+      ui.Text({ content: p.line, role: "footnote", weight: "medium", lines: 1 }),
+      ui.Text({ content: p.sourceLine, role: "footnote", ink: "secondary", lines: 1, align: "start" }),
+    ] }),
+  ] }),
+] });
 
 /** A podium column: the numeral in its medal colour, the club's avatar scaled by place, its name. */
 const podiumColumn = (place: AnyRef, numeral: string, avatar: 40 | 56 | 80, role: "title1" | "title2", winner: boolean) => ui.Stack({ axis: "v", gap: 8, align: "center", children: [
@@ -164,7 +223,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   },
   {
     name: "MatchCard",
-    intent: "One match between two clubs: both teams on stacked rows with their scores, a side column (date and kickoff, or a status such as FT), and one details line.",
+    intent: "One game between two teams: both teams on stacked rows with their scores, a side column (date and start time, or a status such as FT or Final), and one details line.",
     useWhen: "a fixture or a result; a list of matches (@Each over them); the latest meeting between two clubs",
     source: "ui-canvas sports-components/match-card (from match-card/stacked-rows) and match-result",
     contract: [
@@ -190,7 +249,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   },
   {
     name: "TeamDetail",
-    intent: "A club on one line: logo or monogram, name, and a short secondary line (nickname, code or league).",
+    intent: "A team on one line: logo or monogram, name, and a short secondary line (nickname, code or league).",
     useWhen: "naming the clubs a screen is about, above stats or a comparison",
     source: "ui-canvas sports-components/team-detail",
     contract: [f("name", "text", "club name"), f("logo", "text", "logo URL, or \"\""), f("color", "color", CLUB_COLOR), f("detail", "text", "nickname, code or league, or \"\"")],
@@ -255,16 +314,16 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   },
   {
     name: "FixturesHeatmap",
-    intent: "A team's run of fixtures: a headline figure, a caption saying what it is, one square per fixture in result colours, and the won · drawn · lost counts.",
+    intent: "A team's run of fixtures: a headline figure, a caption saying what it is, one square per fixture in result colours, and the record.",
     useWhen: "form, a season so far, a run of results; no title of its own",
     source: "ui-canvas sports-components/fixtures-heatmap (layout from component-references/c24)",
     contract: [
-      f("value", "text", "the headline figure, e.g. points per game \"1.6\" or \"13 pts\""),
+      f("value", "text", "the headline figure, e.g. points per game \"1.6\", \"13 pts\" or a record \"6-2\""),
       f("caption", "text", "what the figure is, e.g. \"Points per game · Premier League 2026/27\""),
       f("results", "list", "one per fixture, oldest first, every fixture of the run however many: a season is one record, never split"),
-      f("results[].label", "text", "spoken result, e.g. \"Win\", \"Draw\", \"Loss\" or \"Upcoming\"; not visible in the square"),
-      f("results[].fill", "text", "win \"tone.good.fg\", loss \"tone.bad.fg\", draw \"outline.control\", upcoming \"surface.filled\""),
-      f("summary", "text", "e.g. \"4 won · 1 drawn · 3 lost\""),
+      f("results[].label", "text", "spoken result, e.g. \"Win\", \"Draw\", \"Tie\", \"Loss\" or \"Upcoming\"; not visible in the square"),
+      f("results[].fill", "text", "win \"tone.good.fg\", loss \"tone.bad.fg\", draw or tie \"outline.control\", upcoming \"surface.filled\""),
+      f("summary", "text", "e.g. \"4 won · 1 drawn · 3 lost\" or \"6-2\""),
       f("columns", "text", "\"10\"; the server sets it from the number of results"),
     ],
     params: [],
@@ -393,7 +452,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   },
   {
     name: "MatchTopPlayers",
-    intent: "The top players of one match from both clubs, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
+    intent: "The top players of one game from both teams, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
     useWhen: "the top scorers, top rated or other best players of one match, from both sides; not a ranking across matches, which is a Leaderboard",
     source: "ui-canvas sports-components/match-top-players (from the Fotmob match screen's Top rated card)",
     contract: [
@@ -455,7 +514,132 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       podiumColumn(p.third, "3", 40, "title2", false),
     ] }),
   },
+  {
+    name: "RecordTable",
+    intent: "A table whose columns come from the data: a title, a row of column labels, then each row's name above its figures.",
+    useWhen: "a box score, a team's record split, standings or a game log, where the columns depend on the sport",
+    source: "OpenUI sports pipeline: Card, Grid and Text primitives",
+    contract: [
+      f("title", "text", "what the table shows, e.g. \"Passing\" or \"AFC West\""),
+      f("columnCount", "text", "\"5\"; the server sets it from the columns"),
+      f("columns", "list", "at most 7, in the order the cells follow"),
+      f("columns[].label", "text", "a short column label as the source writes it, e.g. \"YDS\" or \"W-L\""),
+      f("rows", "list", "one per player, team or game"),
+      f("rows[].label", "text", "whose figures these are, e.g. \"Patrick Mahomes\" or \"@ DET · W 112-106\""),
+      f("rows[].cells", "list", "one per column, in the same order"),
+      f("rows[].cells[].value", "text", "the figure as the source writes it, e.g. \"20/32\", or \"\""),
+    ],
+    params: [],
+    build: t => ui.Card({ children: [
+      ui.Text({ content: t.title, role: "headline", weight: "semibold" }),
+      ui.Stack({ axis: "v", gap: 12, children: [
+        ui.Grid({ columns: t.columnCount, gap: 4, children: each(t.columns, "c", (c: AnyRef) => ui.Text({ content: c.label, role: "footnote", ink: "secondary", lines: 1 })) }),
+        ui.Stack({ axis: "v", gap: 12, divided: true, children: each(t.rows, "r", (r: AnyRef) => ui.Stack({ axis: "v", gap: 4, children: [
+          ui.Text({ content: r.label, role: "body", weight: "medium", lines: 2, align: "start" }),
+          ui.Grid({ columns: t.columnCount, gap: 4, children: each(r.cells, "v", (v: AnyRef) => ui.Text({ content: v.value, role: "footnote", lines: 1 })) }),
+        ] })) }),
+      ] }),
+    ] }),
+  },
+  {
+    name: "InjuryReport",
+    intent: "One injured player on a card: photo with a band-aid, name and position, the league's status badge when there is one, then how long until they are back, with the date and the source on the right.",
+    useWhen: "one injured player, or a few as separate cards: are they hurt, when are they back, who says so; for a team's or a league's report use InjuryList",
+    source: "ui-canvas sports-components/injury-report (from injury-report/countdown)",
+    contract: injuredPlayer(""),
+    params: [],
+    build: p => ui.Card({ gap: 12, children: [
+      injuryTop(p, 56, p.position),
+      ui.Divider({}),
+      ui.Stack({ axis: "h", gap: 12, align: "end", justify: "between", children: [
+        ui.Stack({ axis: "v", gap: 0, children: [
+          ui.Show({ when: p.wait.dated, child: ui.Stack({ axis: "v", gap: 0, children: [
+            ui.Text({ content: p.wait.label, role: "footnote", ink: "secondary" }),
+            ui.Text({ content: p.wait.value, role: "headline", weight: "semibold" }),
+          ] }) }),
+          ui.Show({ when: p.wait.undated, child: ui.Text({ content: p.wait.value, role: "footnote", ink: "secondary" }) }),
+        ] }),
+        ui.Stack({ axis: "v", gap: 0, align: "end", children: [
+          ui.Text({ content: p.wait.day, role: "footnote", ink: "secondary", align: "end" }),
+          ui.Text({ content: p.source, role: "footnote", ink: "secondary", lines: 1, align: "end" }),
+        ] }),
+      ] }),
+    ] }),
+  },
+  {
+    name: "InjuryList",
+    intent: "An injury report as a list with no card: one row per player (photo with a band-aid, name, position · team, status badge), then the return and the source under the name.",
+    useWhen: "a team's or a league's injured players, any number, in the order the data gives them",
+    source: "ui-canvas sports-components/injury-report (from injury-report/card-or-row)",
+    contract: [
+      f("title", "text", "what the list is, e.g. \"Cardinals injuries\", or \"\""),
+      f("showTitle", "boolean", "the server sets this"),
+      f("players", "list", "the injured players, at most 30"),
+      ...injuredPlayer("players[]."),
+    ],
+    params: [],
+    build: l => ui.Stack({ axis: "v", gap: 12, children: [
+      ui.Show({ when: l.showTitle, child: ui.Text({ content: l.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }) }),
+      ui.Stack({ axis: "v", gap: 12, divided: true, children: each(l.players, "p", (p: AnyRef) => injuryRow(p)) }),
+    ] }),
+  },
 ];
+
+/** A league's wording for a status, as the badge says it, and how bad it is. */
+const STATUS_BADGES: Record<string, { label: string; tone: string }> = {
+  "injured reserve": { label: "IR", tone: "bad" }, ir: { label: "IR", tone: "bad" },
+  "physically unable to perform": { label: "PUP", tone: "bad" }, pup: { label: "PUP", tone: "bad" },
+  out: { label: "Out", tone: "bad" }, suspension: { label: "Suspended", tone: "bad" }, suspended: { label: "Suspended", tone: "bad" },
+  doubtful: { label: "Doubtful", tone: "warn" }, questionable: { label: "Questionable", tone: "warn" },
+  "day-to-day": { label: "Day-to-day", tone: "warn" }, probable: { label: "Probable", tone: "neutral" },
+};
+
+const DAY = 86_400_000;
+const shortDate = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+const longDate = new Intl.DateTimeFormat("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" });
+
+/** The wait until `returnDate`, counted in whole days from `today` (UTC). A past or unreadable date is no date. */
+export function injuryWait(record: { returnDate?: unknown; returnNote?: unknown }, today: Date) {
+  const note = typeof record.returnNote === "string" ? record.returnNote.trim() : "";
+  const iso = typeof record.returnDate === "string" ? record.returnDate.trim().slice(0, 10) : "";
+  const back = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? Date.parse(`${iso}T00:00:00Z`) : NaN;
+  const start = Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate());
+  const days = Math.round((back - start) / DAY);
+  if (!Number.isFinite(days) || days < 0) {
+    const value = note || "No return date";
+    return { wait: { label: "", value, day: "", dated: false, undated: true }, line: value };
+  }
+  const when = new Date(back);
+  const [label, value] = days === 0 ? ["Back", "Today"] : days === 1 ? ["Back", "Tomorrow"] : ["Back in", `${days} days`];
+  return { wait: { label, value, day: longDate.format(when), dated: true, undated: false }, line: `Back ${shortDate.format(when)}` };
+}
+
+/**
+ * Fills what an injured player's templates show and cannot work out: "position · team", the badge
+ * from the league's wording, the wait from the date, and the list row's bottom line.
+ */
+export function settleInjuries<T extends { readonly values: Record<string, unknown>; readonly fields: readonly { readonly path: string; readonly kind: string; readonly format: string }[] }>(dataset: T, today = new Date()): T {
+  const fields = new Map(dataset.fields.map(field => [field.path, field]));
+  const add = (path: string, kind: string) => { if (!fields.has(path)) fields.set(path, { path, kind, format: "none" }); };
+  const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+  const walk = (value: unknown, path: string): unknown => {
+    if (Array.isArray(value)) return value.map(item => walk(item, `${path}[]`));
+    if (!isObject(value)) return value;
+    const record: Record<string, unknown> = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, walk(child, `${path}.${key}`)]));
+    if (Array.isArray(record.players) && "title" in record) { record.showTitle = text(record.title) !== ""; add(`${path}.showTitle`, "boolean"); }
+    if (typeof record.name !== "string" || !("returnDate" in record) || !("status" in record)) return record;
+    const status = text(record.status);
+    const badge = STATUS_BADGES[status.toLowerCase()] ?? { label: status, tone: "neutral" };
+    const source = text(record.source);
+    const { wait, line } = injuryWait(record, today);
+    for (const key of ["detail", "badge.label", "wait.label", "wait.value", "wait.day", "line", "sourceLine"]) add(`${path}.${key}`, "text");
+    for (const key of ["badge.show", "wait.dated", "wait.undated"]) add(`${path}.${key}`, "boolean");
+    add(`${path}.badge.tone`, "text");
+    return { ...record, detail: [text(record.position), text(record.team)].filter(Boolean).join(" · "),
+      badge: { ...badge, show: status !== "" }, wait, line, sourceLine: source ? `· ${source}` : "" };
+  };
+  return { ...dataset, values: { ...dataset.values, answers: walk(dataset.values.answers, "answers") }, fields: [...fields.values()] };
+}
 
 /** Up to 20 results sit 10 to a row. Past that the columns grow, keeping two rows, so the squares shrink and every result fits one card. */
 export const heatmapColumns = (results: number) => String(Math.min(24, Math.max(10, Math.ceil(results / 2))));
@@ -470,6 +654,12 @@ export function fitHeatmaps<T extends { readonly values: Record<string, unknown>
     if (Array.isArray(value)) return value.map(item => fit(item, `${path}[]`));
     if (!isObject(value)) return value;
     const result = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, fit(child, `${path}.${key}`)]));
+    // A RecordTable's columns follow its data the same way, up to what fits a phone.
+    if (Array.isArray(value.columns) && Array.isArray(value.rows) && "columnCount" in value) {
+      const columns = value.columns.slice(0, RECORD_TABLE_COLUMNS);
+      const rows = value.rows.map(row => (isObject(row) && Array.isArray(row.cells) ? { ...row, cells: row.cells.slice(0, columns.length) } : row));
+      return { ...result, columns, rows, columnCount: String(columns.length || 1) };
+    }
     if (!("caption" in value && "summary" in value && Array.isArray(value.results))) return result;
     if (!paths.has(`${path}.columns`)) added.push(`${path}.columns`);
     return { ...result, columns: heatmapColumns(value.results.length) };
@@ -609,6 +799,8 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
   return { dataset: { ...dataset, values: { ...dataset.values, answers }, fields }, removed };
 }
 
+const RECORD_TABLE_COLUMNS = 7;
+
 export const COMPONENT_BY_NAME: ReadonlyMap<string, SportsComponent> = new Map(SPORTS_COMPONENTS.map(c => [c.name, c]));
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
@@ -664,13 +856,19 @@ export const placementCall = (p: Placement, base: string) => {
   return p.list ? `@Each(${path}, "x", ${p.component.name}(x))` : `${p.component.name}(${path})`;
 };
 
+/** Soccer's own components: their shape is its points table, its market values or its final table. */
+const SOCCER_ONLY = new Set(["TeamPoints", "PlayerValue", "SeasonPodium"]);
+/** Drawn for leagues whose figures have no fixed columns. */
+const TEAM_SPORT_ONLY = new Set(["RecordTable"]);
+
 /** The writer's view: one signature line per component. */
 export const COMPONENT_SIGNATURES = SPORTS_COMPONENTS.map(c =>
   `${c.name}(record) · ${c.intent} Use for ${c.useWhen}. Reads: ${c.contract.map(x => x.path).join(", ")}.`).join("\n");
 
 /** The schema stage's view: each contract with its notes. */
-export const COMPONENT_CONTRACTS = SPORTS_COMPONENTS.map(c =>
-  `${c.name}: ${c.intent} Use for ${c.useWhen}.\n${c.contract.map(x => `  ${x.path} (${x.kind}): ${x.note}`).join("\n")}`).join("\n\n");
+export const contractsFor = (hasSoccer: boolean, hasTeamSports: boolean) => SPORTS_COMPONENTS
+  .filter(c => (hasSoccer || !SOCCER_ONLY.has(c.name)) && (hasTeamSports || !TEAM_SPORT_ONLY.has(c.name)))
+  .map(c => `${c.name}: ${c.intent} Use for ${c.useWhen}.\n${c.contract.map(x => `  ${x.path} (${x.kind}): ${x.note}`).join("\n")}`).join("\n\n");
 
 /** The index as clients and reviewers read it (catalog/openui/sports-components.json). */
 export const componentIndex = () => ({

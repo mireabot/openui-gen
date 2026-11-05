@@ -4,7 +4,8 @@ import type { QuestionId } from "../lang/compiler.js";
 import { claudeSender } from "../llm/claude.js";
 import { structuredCompletion, type StructuredCompletionHooks } from "../llm/structured-completion.js";
 import { CUP_CODES, ESPN_FEEDS, LEAGUE_CODES, LEAGUES, MISSING_FEEDS, type Club, type EspnTransport } from "./espn.js";
-import { footballClubs } from "./football.js";
+import { isSoccer, leagueOf, TEAM_SPORT_LEAGUE_CODES } from "./leagues.js";
+import { teamDirectory } from "./feeds.js";
 
 /**
  * Understanding the request (Haiku, SPORTS_PLAN_MODEL): what it is about and the questions the
@@ -24,7 +25,7 @@ export const SportsSubjectSchema = z.object({
 }).strict();
 /** A routed question, as saved with the document so a follow-up can keep or revise it by id. */
 export const SportsQuestionSchema = z.discriminatedUnion("source", [
-  z.object({ id: QuestionIdSchema, text: z.string(), source: z.literal("espn"), league: z.enum(LEAGUE_CODES), feed: z.enum(ESPN_FEEDS), team: z.string().nullable(), opponent: z.string().nullable(), date: z.string().nullable(), season: z.number().int().nullable(), lastGames: z.number().int().min(1).max(20).optional(), allCompetitions: z.boolean().optional() }).strict(),
+  z.object({ id: QuestionIdSchema, text: z.string(), source: z.literal("espn"), league: z.enum(LEAGUE_CODES), feed: z.enum(ESPN_FEEDS), team: z.string().nullable(), opponent: z.string().nullable(), date: z.string().nullable(), season: z.number().int().nullable(), lastGames: z.number().int().min(1).max(20).optional(), allCompetitions: z.boolean().optional(), player: z.string().optional(), week: z.number().int().optional() }).strict(),
   z.object({ id: QuestionIdSchema, text: z.string(), source: z.literal("web"), searchQueries: z.array(z.string()) }).strict(),
   z.object({ id: QuestionIdSchema, text: z.string(), source: z.literal("fotmob"), player: z.string(), team: z.string().nullable() }).strict(),
 ]);
@@ -38,7 +39,7 @@ export interface SportsPlan { readonly subject: SportsSubject; readonly question
  * names, so the model resolves "Barcelona", "Barça" or "Man City" itself and nothing downstream guesses.
  */
 const rawQuestion = (clubs: readonly Club[]) => {
-  const club = clubs.length ? z.enum(clubs.map(c => c.name) as [string, ...string[]]).nullable() : z.string().nullable();
+  const club = clubs.length ? z.enum([...new Set(clubs.map(c => c.name))] as [string, ...string[]]).nullable() : z.string().nullable();
   return z.object({
     text: z.string().min(3),
     source: z.enum(["espn", "web", "fotmob"]),
@@ -50,6 +51,7 @@ const rawQuestion = (clubs: readonly Club[]) => {
     date: z.string().nullable(),
     season: z.number().int().nullable(),
     lastGames: z.number().int().min(1).max(20).nullable().optional(),
+    week: z.number().int().min(1).max(23).nullable().optional(),
     searchQueries: z.array(z.string()),
   }).strict();
 };
@@ -59,16 +61,35 @@ type RawSubject = z.infer<typeof rawSubject>;
 
 export const rawSchema = (clubs: readonly Club[]) => z.object({ subject: rawSubject, questions: z.array(rawQuestion(clubs)).min(1).max(5) }).strict();
 
-const leagueList = LEAGUE_CODES.map(code => `${code} ${LEAGUES[code]}`).join(", ");
+const leagueList = LEAGUE_CODES.filter(isSoccer).map(code => `${code} ${LEAGUES[code]}`).join(", ");
 
 const clubList = (clubs: readonly Club[]) => LEAGUE_CODES.map(code => {
   const names = clubs.filter(c => c.league === code).map(c => (c.short && c.short !== c.name ? `${c.name} (${c.short})` : c.name));
   return names.length ? `${LEAGUES[code]} (${code}): ${names.join(", ")}` : "";
 }).filter(Boolean).join("\n");
 
+/** The team sports' feeds, written from the registry so a new league needs no new prompt. */
+const teamSportRouting = () => {
+  const leagues = TEAM_SPORT_LEAGUE_CODES.map(code => `${LEAGUES[code]} (${code})`).join(" and ");
+  const seasons = TEAM_SPORT_LEAGUE_CODES.map(code => `${LEAGUES[code]}: ${leagueOf(code).seasonRule}`).join("; ");
+  return `- source "espn" for ${leagues}. competition "league". A team's league comes from the team; with no team, set subject.league. Plain "football" means soccer unless the request names an NFL team, player or term; "soccer" always means soccer. These leagues have no "scorers" feed and no source "fotmob". Feeds:
+  "standings": conference and division tables with record, win percentage, games behind, streak and home and road records. Set team to mark a team and its division. Who won a past season is a playoff result: use the web.
+  "scoreboard": one day's games, date YYYYMMDD, null for the current slate. For the NFL, set week to read one regular-season week.
+  "schedule": one team's season, its record, recent games with scores by period and the next games; team required.
+  "match": the last meeting between two teams with team stats, a box score per stat group and scoring plays; team and opponent required.
+  "leaders": the league's leaders in its main statistics.
+  "teamStats": a team's season statistics; team required.
+  "roster": a team's players; team required.
+  "injuries": reported injuries, for one team when team is set.
+  "athlete": one player's season statistics, recent seasons and career (every team they have played for, by season, for a career or team history question); set player to their full name, and team when it is named.
+  "gamelog": one player's recent games; set player, and lastGames to the requested count.
+  season, for these leagues: ${seasons}; only when the user names a past season, else null.
+`;
+};
+
 /** How a question is routed to data, for the first plan and for follow-ups. */
 const routing = (clubs: readonly Club[]) => `Route each question to data. Use ESPN for anything it carries; search the web only for what it does not.
-- source "espn", for these competitions only (code: ${leagueList}). competition: a cup's code when the question is about that cup, else "league" (the club's own league, or the subject's). For "scorers", use "all" when no competition is named. The FA Cup has no "standings" or "leaders". Feeds:
+${teamSportRouting()}- source "espn" for soccer, for these competitions only (code: ${leagueList}). competition: a cup's code when the question is about that cup, else "league" (the club's own league, or the subject's). For "scorers", use "all" when no competition is named. The FA Cup has no "standings" or "leaders". Feeds:
   "standings": the league table (rank, played, W/D/L, goals, points). With a season, that season's final table: who won a past season and who came 2nd and 3rd reads this feed.
   "scoreboard": one day's matches; date YYYYMMDD, null for the current matchday.
   "schedule": one team's season, results and fixtures, oldest first, each with its result, plus its home and away totals; team required. A club's points, record or place in the table needs both this and "standings", as two questions.
@@ -77,13 +98,13 @@ const routing = (clubs: readonly Club[]) => `Route each question to data. Use ES
   "scorers": a club's top goalscorers across its last N completed games, calculated from match reports. Set team and lastGames (1–20) to the requested count. Use this for "Who are Chelsea's top scorers in the past 5 games?" and equivalent recent-game scoring rankings. competition "all" includes all competitions; choose "league" or a cup only when explicitly requested. Never use "schedule", season "leaders", or web search for a last-N-game scorer ranking. Assists and shootouts do not count as player goals, and own goals are reported separately.
   "teams": the league's clubs with colours and logos.
   Set team to the club the question is about (for standings too, so the table can mark it)${clubs.length ? ", written exactly as listed below, the opponent too. Resolve what the user typed to the club they mean: \"Barcelona\" or \"Barça\" is Barcelona, \"Man City\" is Manchester City, \"Inter\" is Internazionale. A club not listed is outside these competitions: use the web" : ""}. season: the season's start year (2025 for 2025/26) only when the user names a past season, else null.
-- source "fotmob": a player's market value, or how it changed over time. Set player to their full name and team to their club when it is named.
+- source "fotmob", soccer only: a player's market value, or how it changed over time. Set player to their full name and team to their club when it is named.
 - source "web" for everything else: season player ratings and per-season player statistics beyond the leaders, injuries, transfers, news, history, explanations, and any other league or competition (Europa League, League Cup). Give 2–3 keyword search queries (3–6 words each) naming the players, clubs, competition and season.
-For every feed other than "scorers", set lastGames null. A schedule has scores but no player goalscorers. Do not substitute team goals or season totals for a requested player ranking.
+For every feed other than "scorers" and "gamelog", set lastGames null. Set player null unless the feed is "athlete" or "gamelog", and week null unless the question reads one NFL week. A schedule has scores but no player goalscorers. Do not substitute team goals or season totals for a requested player ranking.
 For espn and fotmob questions set searchQueries to []; for fotmob questions set feed "none", competition "league", and opponent, date, season and lastGames null. Set player null on other questions. for web questions set feed "none", competition "league", and team, opponent, date, season and lastGames null.
 subject.name: the club, player, league or match by its full name (the listed club name for a club). subject.league: the ESPN league code the request is about, or "other". subject.season: e.g. "2026/27".${clubs.length ? `\n\nClubs ESPN covers, by league (exact name, then short name):\n${clubList(clubs)}` : ""}`;
 
-export const planSystem = (today: string, clubs: readonly Club[] = []) => `You plan a mobile screen that answers a football (soccer) request. Today is ${today}; "this season" means the season in progress.
+export const planSystem = (today: string, clubs: readonly Club[] = []) => `You plan a mobile screen that answers a sports request about soccer, NFL or NBA. Today is ${today}; "this season" means the season in progress.
 Return the subject and 1–5 questions. Each question is one part of the screen, in the user's terms, with every detail they asked for (period, competition, count). Ask only what the request needs.
 ${routing(clubs)}`;
 
@@ -93,22 +114,33 @@ ${routing(clubs)}`;
  * Premier League conversation is LaLiga).
  */
 function toQuestion(q: RawQuestion, id: QuestionId, subject: RawSubject, clubs: readonly Club[]): SportsQuestion {
-  if (q.source === "fotmob") return { id, text: q.text, source: "fotmob", player: q.player?.trim() || subject.name, team: q.team };
+  const own = clubs.find(c => c.name === q.team)?.league;
+  if (q.source === "fotmob") {
+    const league = own ?? (subject.league === "other" ? null : subject.league);
+    if (league && !isSoccer(league)) throw new Error(`${id}: FotMob has no ${LEAGUES[league]} data; use the web`);
+    return { id, text: q.text, source: "fotmob", player: q.player?.trim() || subject.name, team: q.team };
+  }
   if (q.source === "espn") {
-    const own = clubs.find(c => c.name === q.team)?.league;
     const league = q.competition !== "league" && q.competition !== "all" ? q.competition : own ?? (subject.league === "other" ? null : subject.league);
     if (!league) throw new Error(`${id}: an ESPN question needs one of ${LEAGUE_CODES.join(", ")}`);
     if (q.feed === "none") throw new Error(`${id}: an ESPN question needs a feed`);
     if (q.competition === "all" && q.feed !== "scorers") throw new Error(`${id}: all competitions is supported by the scorers feed`);
-    if (q.lastGames != null && q.feed !== "scorers") throw new Error(`${id}: lastGames needs the scorers feed, not ${q.feed}`);
-    if (MISSING_FEEDS[league]?.includes(q.feed)) throw new Error(`${id}: ESPN has no ${LEAGUES[league]} ${q.feed}; use the web`);
-    if ((q.feed === "schedule" || q.feed === "scorers") && !q.team) throw new Error(`${id}: the ${q.feed} feed needs a team`);
+    if (q.lastGames != null && q.feed !== "scorers" && q.feed !== "gamelog") throw new Error(`${id}: lastGames needs the scorers feed, not ${q.feed}`);
+    if (MISSING_FEEDS[league].includes(q.feed)) throw new Error(`${id}: ESPN has no ${LEAGUES[league]} ${q.feed}; use the web`);
+    if ((q.feed === "athlete" || q.feed === "gamelog") && !q.player?.trim()) throw new Error(`${id}: the ${q.feed} feed needs a player`);
+    if ((q.feed === "schedule" || q.feed === "scorers" || q.feed === "roster" || q.feed === "teamStats") && !q.team) throw new Error(`${id}: the ${q.feed} feed needs a team`);
     if (q.feed === "scorers" && (!Number.isInteger(q.lastGames) || q.lastGames == null || q.lastGames < 1 || q.lastGames > 20)) throw new Error(`${id}: scorers needs lastGames between 1 and 20`);
     if (q.feed === "match" && (!q.team || !q.opponent)) throw new Error(`${id}: the match feed needs a team and an opponent`);
     if (q.date && !/^\d{8}$/.test(q.date)) throw new Error(`${id}: date must be YYYYMMDD`);
-    const season = q.feed === "standings" || q.feed === "schedule" || q.feed === "match" || q.feed === "scorers" || (q.feed === "leaders" && config().DATA_SOURCE === "fotmob") ? q.season : null;
+    const soccer = isSoccer(league);
+    const season = q.feed === "standings" || q.feed === "schedule" || q.feed === "match" || q.feed === "scorers" || (q.feed === "leaders" && config().DATA_SOURCE === "fotmob")
+      || (!soccer && (q.feed === "leaders" || q.feed === "teamStats" || q.feed === "gamelog" || (q.feed === "scoreboard" && q.week != null))) ? q.season : null;
     return { id, text: q.text, source: "espn", league, feed: q.feed, team: q.team, opponent: q.feed === "match" ? q.opponent : null, date: q.feed === "scoreboard" ? q.date : null, season,
-      ...(q.feed === "scorers" && q.lastGames != null ? { lastGames: q.lastGames, allCompetitions: q.competition === "all" } : {}) };
+      ...(q.feed === "scorers" && q.lastGames != null ? { lastGames: q.lastGames, allCompetitions: q.competition === "all" } : {}),
+      // Only feeds that read them get these keys: a follow-up compares saved questions by their JSON.
+      ...(q.feed === "gamelog" && q.lastGames != null ? { lastGames: q.lastGames } : {}),
+      ...((q.feed === "athlete" || q.feed === "gamelog") && q.player ? { player: q.player.trim() } : {}),
+      ...(q.feed === "scoreboard" && q.week != null && !soccer ? { week: q.week } : {}) };
   }
   const searchQueries = q.searchQueries.map(s => s.trim()).filter(Boolean).slice(0, 3);
   if (searchQueries.length < 2) throw new Error(`${id}: a web question needs 2–3 search queries`);
@@ -121,11 +153,17 @@ export function toPlan(raw: z.infer<ReturnType<typeof rawSchema>>, clubs: readon
   return { subject: toSubject(raw.subject), questions: raw.questions.map((q, index) => toQuestion(q, `q${index + 1}`, raw.subject, clubs)) };
 }
 
-export async function planSports(prompt: string, now: Date, hooks?: StructuredCompletionHooks, espn?: EspnTransport): Promise<SportsPlan> {
+/** Today on the user's clock, so a late game in their evening is not dated tomorrow. */
+const localDay = (now: Date, timeZone?: string) => {
+  try { return new Intl.DateTimeFormat("en-CA", { timeZone: timeZone ?? "UTC", year: "numeric", month: "2-digit", day: "2-digit" }).format(now); }
+  catch { return now.toISOString().slice(0, 10); }
+};
+
+export async function planSports(prompt: string, now: Date, hooks?: StructuredCompletionHooks, espn?: EspnTransport, timeZone?: string): Promise<SportsPlan> {
   // Without the directory (ESPN down) club names stay free text and the feeds match them loosely.
-  const clubs = await footballClubs(espn).catch(() => [] as readonly Club[]);
+  const clubs = await teamDirectory(espn).catch(() => [] as readonly Club[]);
   const schema = rawSchema(clubs);
-  return plan(schema, planSystem(now.toISOString().slice(0, 10), clubs), prompt, text => toPlan(schema.parse(JSON.parse(text)), clubs), 3_000, hooks);
+  return plan(schema, planSystem(localDay(now, timeZone), clubs), prompt, text => toPlan(schema.parse(JSON.parse(text)), clubs), 3_000, hooks);
 }
 
 // ------------------------------------------------------------------ follow-ups
@@ -163,7 +201,7 @@ export const followUpSchema = (clubs: readonly Club[], ids: readonly [QuestionId
   add: z.array(rawQuestion(clubs)).max(3),
 }).strict();
 
-export const followUpSystem = (today: string, clubs: readonly Club[] = []) => `You update the plan of a mobile football (soccer) screen after a follow-up message. Today is ${today}; "this season" means the season in progress.
+export const followUpSystem = (today: string, clubs: readonly Club[] = []) => `You update the plan of a mobile sports screen after a follow-up message. Today is ${today}; "this season" means the season in progress.
 The screen shows the saved questions, one part each. Read the follow-up against the conversation and decide, for every saved question by id, exactly one of:
 - keep: the follow-up is not about it. Its answer and its part stay exactly as they are. Keep everything the follow-up does not change.
 - revise: the follow-up changes what it asks (a period, a count, a club, a competition, a statistic). Return the whole question again under the same id, in the user's terms with every detail, routed again.
@@ -196,14 +234,14 @@ export function toFollowUp(raw: z.infer<ReturnType<typeof followUpSchema>>, save
   return { subject: toSubject(raw.subject), questions, removed: saved.filter(q => raw.remove.includes(q.id)).map(q => q.id) };
 }
 
-export async function planFollowUp(context: FollowUpContext, now: Date, hooks?: StructuredCompletionHooks, espn?: EspnTransport): Promise<FollowUpPlan> {
-  const clubs = await footballClubs(espn).catch(() => [] as readonly Club[]);
+export async function planFollowUp(context: FollowUpContext, now: Date, hooks?: StructuredCompletionHooks, espn?: EspnTransport, timeZone?: string): Promise<FollowUpPlan> {
+  const clubs = await teamDirectory(espn).catch(() => [] as readonly Club[]);
   const ids = context.questions.map(q => q.id);
   if (!ids.length) throw new Error("A saved screen has at least one question");
   const schema = followUpSchema(clubs, ids as [QuestionId, ...QuestionId[]]);
   const { prompt, targets, ...saved } = context;
   const input = JSON.stringify({ ...saved, ...(targets?.length ? { pointedAt: targets } : {}), followUp: prompt });
-  return plan(schema, followUpSystem(now.toISOString().slice(0, 10), clubs), input, text => toFollowUp(schema.parse(JSON.parse(text)), context.questions, clubs), 2_500, hooks);
+  return plan(schema, followUpSystem(localDay(now, timeZone), clubs), input, text => toFollowUp(schema.parse(JSON.parse(text)), context.questions, clubs), 2_500, hooks);
 }
 
 async function plan<T>(schema: z.ZodType, system: string, user: string, parse: (text: string) => T, maxTokens: number, hooks?: StructuredCompletionHooks): Promise<T> {

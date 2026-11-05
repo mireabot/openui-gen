@@ -1,6 +1,7 @@
 import { z } from "zod";
 import type { MockValue } from "../research/dataset-schema.js";
-import { isTeam, LEAGUE_CODES, LEAGUES, seasonLabel, venueTotals, type Club, type EspnAnswer, type EspnRequest, type LeagueCode } from "./espn.js";
+import { SOCCER_LEAGUE_CODES, type SoccerLeagueCode } from "./leagues.js";
+import { isTeam, LEAGUES, seasonLabel, venueTotals, type Club, type EspnAnswer, type EspnRequest, type LeagueCode } from "./espn.js";
 import { playerTeamKey } from "./fotmob.js";
 
 /**
@@ -16,7 +17,7 @@ const DAY = 86_400_000;
 /** A club's colours need its whole team page, so one screen looks up only this many. */
 const COLOUR_LOOKUPS_MAX = 12;
 
-export const FOTMOB_LEAGUES: Readonly<Record<LeagueCode, number>> = { "eng.1": 47, "esp.1": 87, "ger.1": 54, "ita.1": 55, "uefa.champions": 42, "eng.fa": 132 };
+export const FOTMOB_LEAGUES: Readonly<Record<SoccerLeagueCode, number>> = { "eng.1": 47, "esp.1": 87, "ger.1": 54, "ita.1": 55, "uefa.champions": 42, "eng.fa": 132 };
 
 export type FotmobFeedTransport = (url: string) => Promise<unknown>;
 
@@ -103,7 +104,7 @@ function match(fixture: FixtureValue): Record<string, MockValue> {
 }
 
 const leaguePage = async (league: LeagueCode, season: number | null, send: FotmobFeedTransport): Promise<LeagueValue> =>
-  League.parse(await send(`${BASE}/leagues?id=${FOTMOB_LEAGUES[league]}${season === null ? "" : `&season=${season}/${season + 1}`}`));
+  League.parse(await send(`${BASE}/leagues?id=${FOTMOB_LEAGUES[league as SoccerLeagueCode]}${season === null ? "" : `&season=${season}/${season + 1}`}`));
 const seasonOf = (page: LeagueValue, requested: number | null) => { const year = Number(page.details?.selectedSeason?.slice(0, 4)); return Number.isInteger(year) && year > 0 ? year : requested; };
 const rowsOf = (page: LeagueValue) => page.table[0]?.data.table?.all ?? [];
 const fixturesOf = (page: LeagueValue) => page.fixtures?.allMatches ?? [];
@@ -262,7 +263,7 @@ export async function fotmobLookup(request: EspnRequest, send: FotmobFeedTranspo
   if (request.feed === "scoreboard" && request.dates) {
     if (!/^\d{8}$/.test(request.dates)) throw new Error("FotMob scoreboard dates must be one day, YYYYMMDD");
     const day = MatchDay.parse(await send(`${BASE}/matches?date=${request.dates}`));
-    const matches = day.leagues.filter(entry => (entry.primaryId ?? entry.id) === FOTMOB_LEAGUES[league]).flatMap(entry => entry.matches).map(match);
+    const matches = day.leagues.filter(entry => (entry.primaryId ?? entry.id) === FOTMOB_LEAGUES[league as SoccerLeagueCode]).flatMap(entry => entry.matches).map(match);
     const filtered = request.team ? matches.filter(m => isTeam(m.home as Record<string, MockValue>, request.team!) || isTeam(m.away as Record<string, MockValue>, request.team!)) : matches;
     return { feed: "scoreboard", league, source: `Source: FotMob · ${name} scoreboard`, values: { league: name, matches: filtered } };
   }
@@ -312,7 +313,7 @@ let directory: { readonly at: number; readonly clubs: readonly Club[] } | undefi
  */
 export async function fotmobClubDirectory(send: FotmobFeedTransport = fetchJSON, now = Date.now()): Promise<readonly Club[]> {
   if (directory && now - directory.at < DAY) return directory.clubs;
-  const leagues = await Promise.all(LEAGUE_CODES.map(async league => {
+  const leagues = await Promise.all(SOCCER_LEAGUE_CODES.map(async league => {
     try {
       return clubsIn(await leaguePage(league, null, send)).map((club): Club => ({ id: club.id, name: club.name, short: club.short, abbreviation: "", color: "", alternateColor: "", logo: `${TEAM_LOGO}/${club.id}.png`, league }));
     } catch { return []; }

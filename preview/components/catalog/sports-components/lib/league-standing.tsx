@@ -2,15 +2,18 @@ import { AirplaneTiltIcon } from "@phosphor-icons/react/dist/csr/AirplaneTilt";
 import { HouseLineIcon } from "@phosphor-icons/react/dist/csr/HouseLine";
 import { cn } from "@/lib/utils";
 
-export type StandingRow = { rank: number; name: string; points: number; isTeam?: boolean };
+/** `points` is a table's points, or a record ("6-2") in a league without them. */
+export type StandingRow = { rank: number; name: string; points: number | string; isTeam?: boolean };
 
-export type VenueStanding = { rank?: number; points: number; won: number; drawn: number; lost: number };
+export type VenueStanding = { rank?: number; points: number; won: number; drawn: number; lost: number } | { rank?: number; record: string };
 
 export type LeagueStandingProps = {
   /** The team and its nearest two, in table order, with the team marked by `isTeam`. */
   rows: StandingRow[];
   home: VenueStanding;
   away: VenueStanding;
+  /** The line under the place, for a league without points: "6-2 · leads the Pacific". By default, the points gap. */
+  summary?: string;
   /** Off when a TeamPoints card on the same screen answers home and away, its primary place. */
   showVenues?: boolean;
   className?: string;
@@ -27,10 +30,11 @@ function gapLine(rows: StandingRow[], team: StandingRow) {
   const above = rows.find((row) => row.rank === team.rank - 1);
   const below = rows.find((row) => row.rank === team.rank + 1);
   const points = `${team.points} points`;
-  const gap = team.points - (below?.points ?? 0);
-  if (above && below) return `${points} · ${above.points - team.points} behind ${ordinal(above.rank)}, ${gap === 0 ? `level with ${ordinal(below.rank)}` : `${gap} ahead of ${ordinal(below.rank)}`}`;
-  if (below) return `${points} · ${team.points - below.points} clear of ${ordinal(below.rank)}`;
-  if (above) return `${points} · ${above.points - team.points} behind ${ordinal(above.rank)}`;
+  const pointsOf = (row?: StandingRow) => Number(row?.points ?? 0);
+  const gap = pointsOf(team) - pointsOf(below);
+  if (above && below) return `${points} · ${pointsOf(above) - pointsOf(team)} behind ${ordinal(above.rank)}, ${gap === 0 ? `level with ${ordinal(below.rank)}` : `${gap} ahead of ${ordinal(below.rank)}`}`;
+  if (below) return `${points} · ${pointsOf(team) - pointsOf(below)} clear of ${ordinal(below.rank)}`;
+  if (above) return `${points} · ${pointsOf(above) - pointsOf(team)} behind ${ordinal(above.rank)}`;
   return points;
 }
 
@@ -45,7 +49,7 @@ function VenueDetail({ venue, record }: { venue: "home" | "away"; record: VenueS
       </span>
       <p className="mt-1 text-[13px] leading-[18px] tabular-nums text-kino-ink-secondary">
         {place}
-        {record.points} {record.points === 1 ? "pt" : "pts"} · {record.won}-{record.drawn}-{record.lost}
+        {"record" in record ? record.record : `${record.points} ${record.points === 1 ? "pt" : "pts"} · ${record.won}-${record.drawn}-${record.lost}`}
       </p>
     </div>
   );
@@ -55,7 +59,7 @@ function VenueDetail({ venue, record }: { venue: "home" | "away"; record: VenueS
  * A team in the league table: its place as the hero, the gap to its neighbours, its row between
  * its nearest two, then home and away. From team-points-breakdown/rank-context, without the screen.
  */
-export function LeagueStanding({ rows, home, away, showVenues = true, className }: LeagueStandingProps) {
+export function LeagueStanding({ rows, home, away, summary, showVenues = true, className }: LeagueStandingProps) {
   const team = rows.find((row) => row.isTeam) ?? rows[0];
   return (
     <section data-node-id="league-standing" className={cn("rounded-[24px] bg-kino-surface-card p-4", className)}>
@@ -65,7 +69,7 @@ export function LeagueStanding({ rows, home, away, showVenues = true, className 
             {ordinal(team.rank)}
           </span>
           <p data-node-id="points-total" className="mt-2 text-[15px] leading-[22px] tabular-nums text-kino-ink-secondary">
-            {gapLine(rows, team)}
+            {summary ?? gapLine(rows, team)}
           </p>
         </>
       )}

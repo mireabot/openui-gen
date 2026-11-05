@@ -9608,6 +9608,2295 @@
       }
     },
     {
+      "key": "RecordTable/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"RecordTable/full\"}, {})\npick1 = Card([Text(d.answers.q1.record.title, \"headline\", \"semibold\"), Stack(\"v\", 12, [Grid(d.answers.q1.record.columnCount, 4, @Each(d.answers.q1.record.columns, \"c\", Text(c.label, \"footnote\", null, \"secondary\", 1))), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Stack(\"v\", 4, [Text(r.label, \"body\", \"medium\", null, 2, \"start\"), Grid(d.answers.q1.record.columnCount, 4, @Each(r.cells, \"v\", Text(v.value, \"footnote\", null, null, 1)))])), null, null, null, true)])])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "RecordTable/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "RecordTable/full",
+              "title": "RecordTable/full",
+              "record": {
+                "title": "Passing",
+                "columnCount": "4",
+                "columns": [
+                  {
+                    "label": "C/ATT"
+                  },
+                  {
+                    "label": "YDS"
+                  },
+                  {
+                    "label": "TD"
+                  },
+                  {
+                    "label": "INT"
+                  }
+                ],
+                "rows": [
+                  {
+                    "label": "Patrick Mahomes",
+                    "cells": [
+                      {
+                        "value": "30/41"
+                      },
+                      {
+                        "value": "321"
+                      },
+                      {
+                        "value": "3"
+                      },
+                      {
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
+                    "label": "Gardner Minshew",
+                    "cells": [
+                      {
+                        "value": "1/2"
+                      },
+                      {
+                        "value": "9"
+                      },
+                      {
+                        "value": "0"
+                      },
+                      {
+                        "value": "0"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Text",
+                    "properties": {
+                      "content": "Passing",
+                      "role": "headline",
+                      "weight": "semibold"
+                    },
+                    "slots": {}
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 12
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Grid",
+                          "properties": {
+                            "columns": "4",
+                            "gap": 4
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "C/ATT",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "lines": 1
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "YDS",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "lines": 1
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "TD",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "lines": 1
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "INT",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "lines": 1
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 12,
+                            "divided": true
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "v",
+                                  "gap": 4
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Patrick Mahomes",
+                                        "role": "body",
+                                        "weight": "medium",
+                                        "lines": 2,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Grid",
+                                      "properties": {
+                                        "columns": "4",
+                                        "gap": 4
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "30/41",
+                                              "role": "footnote",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "321",
+                                              "role": "footnote",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "3",
+                                              "role": "footnote",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "0",
+                                              "role": "footnote",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "v",
+                                  "gap": 4
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Gardner Minshew",
+                                        "role": "body",
+                                        "weight": "medium",
+                                        "lines": 2,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Grid",
+                                      "properties": {
+                                        "columns": "4",
+                                        "gap": 4
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "1/2",
+                                              "role": "footnote",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "9",
+                                              "role": "footnote",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "0",
+                                              "role": "footnote",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "0",
+                                              "role": "footnote",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "RecordTable/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"RecordTable/sparse\"}, {})\npick1 = Card([Text(d.answers.q1.record.title, \"headline\", \"semibold\"), Stack(\"v\", 12, [Grid(d.answers.q1.record.columnCount, 4, @Each(d.answers.q1.record.columns, \"c\", Text(c.label, \"footnote\", null, \"secondary\", 1))), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Stack(\"v\", 4, [Text(r.label, \"body\", \"medium\", null, 2, \"start\"), Grid(d.answers.q1.record.columnCount, 4, @Each(r.cells, \"v\", Text(v.value, \"footnote\", null, null, 1)))])), null, null, null, true)])])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "RecordTable/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "RecordTable/sparse",
+              "title": "RecordTable/sparse",
+              "record": {
+                "title": "No games yet",
+                "columnCount": "1",
+                "columns": [],
+                "rows": []
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {},
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Text",
+                    "properties": {
+                      "content": "No games yet",
+                      "role": "headline",
+                      "weight": "semibold"
+                    },
+                    "slots": {}
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 12
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Grid",
+                          "properties": {
+                            "columns": "1",
+                            "gap": 4
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 12,
+                            "divided": true
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "InjuryReport/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/full\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [ZStack([Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Badge(\"\", \"bad\", \"bandage.fill\", \"small\")], \"bottom-trailing\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.source, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "InjuryReport/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "InjuryReport/full",
+              "title": "InjuryReport/full",
+              "record": {
+                "name": "Jeremiyah Love",
+                "kind": "player",
+                "position": "RB",
+                "team": "Cardinals",
+                "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4870808.png",
+                "color": "#a40227",
+                "status": "Injured Reserve",
+                "returnDate": "2026-12-06",
+                "returnNote": "",
+                "source": "Cardinals' official site",
+                "detail": "RB · Cardinals",
+                "badge": {
+                  "label": "IR",
+                  "tone": "bad",
+                  "show": true
+                },
+                "wait": {
+                  "label": "Back in",
+                  "value": "31 days",
+                  "day": "Sun, Dec 6",
+                  "dated": true,
+                  "undated": false
+                },
+                "line": "Back Dec 6",
+                "sourceLine": "· Cardinals' official site"
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {
+                "gap": 12
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "center",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "h",
+                            "gap": 12,
+                            "align": "center"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "ZStack",
+                                "properties": {
+                                  "alignment": "bottom-trailing"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Avatar",
+                                      "properties": {
+                                        "name": "Jeremiyah Love",
+                                        "size": 56,
+                                        "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4870808.png",
+                                        "color": "#a40227",
+                                        "kind": "player"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Badge",
+                                      "properties": {
+                                        "label": "",
+                                        "tone": "bad",
+                                        "icon": "bandage.fill",
+                                        "size": "small"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "v",
+                                  "gap": 0
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Jeremiyah Love",
+                                        "role": "headline",
+                                        "weight": "semibold",
+                                        "lines": 1,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "RB",
+                                        "role": "footnote",
+                                        "ink": "secondary",
+                                        "lines": 1,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Show",
+                          "properties": {
+                            "when": true
+                          },
+                          "slots": {
+                            "child": [
+                              {
+                                "kind": "Badge",
+                                "properties": {
+                                  "label": "IR",
+                                  "tone": "bad"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Divider",
+                    "properties": {},
+                    "slots": {}
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "end",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": true
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Back in",
+                                              "role": "footnote",
+                                              "ink": "secondary"
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "31 days",
+                                              "role": "headline",
+                                              "weight": "semibold"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": false
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "31 days",
+                                        "role": "footnote",
+                                        "ink": "secondary"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0,
+                            "align": "end"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Sun, Dec 6",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Cardinals' official site",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "lines": 1,
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "InjuryReport/tomorrow",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/tomorrow\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [ZStack([Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Badge(\"\", \"bad\", \"bandage.fill\", \"small\")], \"bottom-trailing\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.source, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "InjuryReport/tomorrow"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "InjuryReport/tomorrow",
+              "title": "InjuryReport/tomorrow",
+              "record": {
+                "name": "Jock Landale",
+                "kind": "player",
+                "position": "C",
+                "team": "Hawks",
+                "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3146557.png",
+                "color": "#c8102e",
+                "status": "Day-To-Day",
+                "returnDate": "2026-11-06",
+                "returnNote": "",
+                "source": "Hawks' official site",
+                "detail": "C · Hawks",
+                "badge": {
+                  "label": "Day-to-day",
+                  "tone": "warn",
+                  "show": true
+                },
+                "wait": {
+                  "label": "Back",
+                  "value": "Tomorrow",
+                  "day": "Fri, Nov 6",
+                  "dated": true,
+                  "undated": false
+                },
+                "line": "Back Nov 6",
+                "sourceLine": "· Hawks' official site"
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {
+                "gap": 12
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "center",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "h",
+                            "gap": 12,
+                            "align": "center"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "ZStack",
+                                "properties": {
+                                  "alignment": "bottom-trailing"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Avatar",
+                                      "properties": {
+                                        "name": "Jock Landale",
+                                        "size": 56,
+                                        "image": "https://a.espncdn.com/i/headshots/nba/players/full/3146557.png",
+                                        "color": "#c8102e",
+                                        "kind": "player"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Badge",
+                                      "properties": {
+                                        "label": "",
+                                        "tone": "bad",
+                                        "icon": "bandage.fill",
+                                        "size": "small"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "v",
+                                  "gap": 0
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Jock Landale",
+                                        "role": "headline",
+                                        "weight": "semibold",
+                                        "lines": 1,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "C",
+                                        "role": "footnote",
+                                        "ink": "secondary",
+                                        "lines": 1,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Show",
+                          "properties": {
+                            "when": true
+                          },
+                          "slots": {
+                            "child": [
+                              {
+                                "kind": "Badge",
+                                "properties": {
+                                  "label": "Day-to-day",
+                                  "tone": "warn"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Divider",
+                    "properties": {},
+                    "slots": {}
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "end",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": true
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Back",
+                                              "role": "footnote",
+                                              "ink": "secondary"
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Tomorrow",
+                                              "role": "headline",
+                                              "weight": "semibold"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": false
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Tomorrow",
+                                        "role": "footnote",
+                                        "ink": "secondary"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0,
+                            "align": "end"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Fri, Nov 6",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "Hawks' official site",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "lines": 1,
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "InjuryReport/noted",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/noted\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [ZStack([Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Badge(\"\", \"bad\", \"bandage.fill\", \"small\")], \"bottom-trailing\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.source, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "InjuryReport/noted"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "InjuryReport/noted",
+              "title": "InjuryReport/noted",
+              "record": {
+                "name": "Reece James",
+                "kind": "player",
+                "position": "Defender",
+                "team": "Chelsea",
+                "logo": "https://images.fotmob.com/image_resources/playerimages/807729.png",
+                "color": "#034694",
+                "status": "",
+                "returnDate": "",
+                "returnNote": "Mid-January 2027",
+                "source": "The Standard",
+                "detail": "Defender · Chelsea",
+                "badge": {
+                  "label": "",
+                  "tone": "neutral",
+                  "show": false
+                },
+                "wait": {
+                  "label": "",
+                  "value": "Mid-January 2027",
+                  "day": "",
+                  "dated": false,
+                  "undated": true
+                },
+                "line": "Mid-January 2027",
+                "sourceLine": "· The Standard"
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {
+                "gap": 12
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "center",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "h",
+                            "gap": 12,
+                            "align": "center"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "ZStack",
+                                "properties": {
+                                  "alignment": "bottom-trailing"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Avatar",
+                                      "properties": {
+                                        "name": "Reece James",
+                                        "size": 56,
+                                        "image": "https://images.fotmob.com/image_resources/playerimages/807729.png",
+                                        "color": "#034694",
+                                        "kind": "player"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Badge",
+                                      "properties": {
+                                        "label": "",
+                                        "tone": "bad",
+                                        "icon": "bandage.fill",
+                                        "size": "small"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "v",
+                                  "gap": 0
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Reece James",
+                                        "role": "headline",
+                                        "weight": "semibold",
+                                        "lines": 1,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Defender",
+                                        "role": "footnote",
+                                        "ink": "secondary",
+                                        "lines": 1,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Show",
+                          "properties": {
+                            "when": false
+                          },
+                          "slots": {
+                            "child": [
+                              {
+                                "kind": "Badge",
+                                "properties": {
+                                  "label": "",
+                                  "tone": "neutral"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Divider",
+                    "properties": {},
+                    "slots": {}
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "end",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": false
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "",
+                                              "role": "footnote",
+                                              "ink": "secondary"
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Mid-January 2027",
+                                              "role": "headline",
+                                              "weight": "semibold"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": true
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Mid-January 2027",
+                                        "role": "footnote",
+                                        "ink": "secondary"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0,
+                            "align": "end"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "The Standard",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "lines": 1,
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "InjuryReport/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/sparse\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [ZStack([Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Badge(\"\", \"bad\", \"bandage.fill\", \"small\")], \"bottom-trailing\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.source, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "InjuryReport/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "InjuryReport/sparse",
+              "title": "InjuryReport/sparse",
+              "record": {
+                "name": "Unknown player",
+                "kind": "player",
+                "position": "",
+                "team": "",
+                "logo": "",
+                "color": "",
+                "status": "",
+                "returnDate": "",
+                "returnNote": "",
+                "source": "",
+                "detail": "",
+                "badge": {
+                  "label": "",
+                  "tone": "neutral",
+                  "show": false
+                },
+                "wait": {
+                  "label": "",
+                  "value": "No return date",
+                  "day": "",
+                  "dated": false,
+                  "undated": true
+                },
+                "line": "No return date",
+                "sourceLine": ""
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Card",
+              "properties": {
+                "gap": 12
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "center",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "h",
+                            "gap": 12,
+                            "align": "center"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "ZStack",
+                                "properties": {
+                                  "alignment": "bottom-trailing"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Avatar",
+                                      "properties": {
+                                        "name": "Unknown player",
+                                        "size": 56,
+                                        "image": "",
+                                        "color": "",
+                                        "kind": "player"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Badge",
+                                      "properties": {
+                                        "label": "",
+                                        "tone": "bad",
+                                        "icon": "bandage.fill",
+                                        "size": "small"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "v",
+                                  "gap": 0
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "Unknown player",
+                                        "role": "headline",
+                                        "weight": "semibold",
+                                        "lines": 1,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "",
+                                        "role": "footnote",
+                                        "ink": "secondary",
+                                        "lines": 1,
+                                        "align": "start"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Show",
+                          "properties": {
+                            "when": false
+                          },
+                          "slots": {
+                            "child": [
+                              {
+                                "kind": "Badge",
+                                "properties": {
+                                  "label": "",
+                                  "tone": "neutral"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Divider",
+                    "properties": {},
+                    "slots": {}
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "h",
+                      "gap": 12,
+                      "align": "end",
+                      "justify": "between"
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": false
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "",
+                                              "role": "footnote",
+                                              "ink": "secondary"
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "No return date",
+                                              "role": "headline",
+                                              "weight": "semibold"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": true
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Text",
+                                      "properties": {
+                                        "content": "No return date",
+                                        "role": "footnote",
+                                        "ink": "secondary"
+                                      },
+                                      "slots": {}
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 0,
+                            "align": "end"
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              },
+                              {
+                                "kind": "Text",
+                                "properties": {
+                                  "content": "",
+                                  "role": "footnote",
+                                  "ink": "secondary",
+                                  "lines": 1,
+                                  "align": "end"
+                                },
+                                "slots": {}
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "InjuryList/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryList/full\"}, {})\npick1 = Stack(\"v\", 12, [Show(d.answers.q1.record.showTitle, Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\")), Stack(\"v\", 12, @Each(d.answers.q1.record.players, \"p\", Stack(\"v\", 4, [Stack(\"h\", 12, [Stack(\"h\", 12, [ZStack([Avatar(p.name, 40, p.logo, null, null, p.color, p.kind), Badge(\"\", \"bad\", \"bandage.fill\", \"small\")], \"bottom-trailing\"), Stack(\"v\", 0, [Text(p.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(p.detail, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(p.badge.show, Badge(p.badge.label, p.badge.tone))], \"center\", \"between\"), Stack(\"h\", 12, [Spacer(40), Stack(\"h\", 4, [Text(p.line, \"footnote\", \"medium\", null, 1), Text(p.sourceLine, \"footnote\", null, \"secondary\", 1, \"start\")])])])), null, null, null, true)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "InjuryList/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "InjuryList/full",
+              "title": "InjuryList/full",
+              "record": {
+                "title": "NFL injuries",
+                "showTitle": true,
+                "players": [
+                  {
+                    "name": "Jeremiyah Love",
+                    "kind": "player",
+                    "position": "RB",
+                    "team": "Cardinals",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4870808.png",
+                    "color": "#a40227",
+                    "status": "Injured Reserve",
+                    "returnDate": "2026-12-06",
+                    "returnNote": "",
+                    "source": "Cardinals' official site",
+                    "detail": "RB · Cardinals",
+                    "badge": {
+                      "label": "IR",
+                      "tone": "bad",
+                      "show": true
+                    },
+                    "wait": {
+                      "label": "Back in",
+                      "value": "31 days",
+                      "day": "Sun, Dec 6",
+                      "dated": true,
+                      "undated": false
+                    },
+                    "line": "Back Dec 6",
+                    "sourceLine": "· Cardinals' official site"
+                  },
+                  {
+                    "name": "Tyler Huntley",
+                    "kind": "player",
+                    "position": "QB",
+                    "team": "Ravens",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4035671.png",
+                    "color": "#29126f",
+                    "status": "Out",
+                    "returnDate": "",
+                    "returnNote": "Out for season",
+                    "source": "ESPN",
+                    "detail": "QB · Ravens",
+                    "badge": {
+                      "label": "Out",
+                      "tone": "bad",
+                      "show": true
+                    },
+                    "wait": {
+                      "label": "",
+                      "value": "Out for season",
+                      "day": "",
+                      "dated": false,
+                      "undated": true
+                    },
+                    "line": "Out for season",
+                    "sourceLine": "· ESPN"
+                  },
+                  {
+                    "name": "Walter Nolen III",
+                    "kind": "player",
+                    "position": "DT",
+                    "team": "Cardinals",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4685503.png",
+                    "color": "#a40227",
+                    "status": "Questionable",
+                    "returnDate": "2026-11-08",
+                    "returnNote": "",
+                    "source": "",
+                    "detail": "DT · Cardinals",
+                    "badge": {
+                      "label": "Questionable",
+                      "tone": "warn",
+                      "show": true
+                    },
+                    "wait": {
+                      "label": "Back in",
+                      "value": "3 days",
+                      "day": "Sun, Nov 8",
+                      "dated": true,
+                      "undated": false
+                    },
+                    "line": "Back Nov 8",
+                    "sourceLine": ""
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Stack",
+              "properties": {
+                "axis": "v",
+                "gap": 12
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Show",
+                    "properties": {
+                      "when": true
+                    },
+                    "slots": {
+                      "child": [
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "NFL injuries",
+                            "role": "footnote",
+                            "weight": "medium",
+                            "ink": "secondary",
+                            "lines": 2,
+                            "align": "start"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 12,
+                      "divided": true
+                    },
+                    "slots": {
+                      "children": [
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "justify": "between"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 12,
+                                        "align": "center"
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "ZStack",
+                                            "properties": {
+                                              "alignment": "bottom-trailing"
+                                            },
+                                            "slots": {
+                                              "children": [
+                                                {
+                                                  "kind": "Avatar",
+                                                  "properties": {
+                                                    "name": "Jeremiyah Love",
+                                                    "size": 40,
+                                                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4870808.png",
+                                                    "color": "#a40227",
+                                                    "kind": "player"
+                                                  },
+                                                  "slots": {}
+                                                },
+                                                {
+                                                  "kind": "Badge",
+                                                  "properties": {
+                                                    "label": "",
+                                                    "tone": "bad",
+                                                    "icon": "bandage.fill",
+                                                    "size": "small"
+                                                  },
+                                                  "slots": {}
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "kind": "Stack",
+                                            "properties": {
+                                              "axis": "v",
+                                              "gap": 0
+                                            },
+                                            "slots": {
+                                              "children": [
+                                                {
+                                                  "kind": "Text",
+                                                  "properties": {
+                                                    "content": "Jeremiyah Love",
+                                                    "role": "headline",
+                                                    "weight": "semibold",
+                                                    "lines": 1,
+                                                    "align": "start"
+                                                  },
+                                                  "slots": {}
+                                                },
+                                                {
+                                                  "kind": "Text",
+                                                  "properties": {
+                                                    "content": "RB · Cardinals",
+                                                    "role": "footnote",
+                                                    "ink": "secondary",
+                                                    "lines": 1,
+                                                    "align": "start"
+                                                  },
+                                                  "slots": {}
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "Show",
+                                      "properties": {
+                                        "when": true
+                                      },
+                                      "slots": {
+                                        "child": [
+                                          {
+                                            "kind": "Badge",
+                                            "properties": {
+                                              "label": "IR",
+                                              "tone": "bad"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Spacer",
+                                      "properties": {
+                                        "size": 40
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 4
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Back Dec 6",
+                                              "role": "footnote",
+                                              "weight": "medium",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "· Cardinals' official site",
+                                              "role": "footnote",
+                                              "ink": "secondary",
+                                              "lines": 1,
+                                              "align": "start"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "justify": "between"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 12,
+                                        "align": "center"
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "ZStack",
+                                            "properties": {
+                                              "alignment": "bottom-trailing"
+                                            },
+                                            "slots": {
+                                              "children": [
+                                                {
+                                                  "kind": "Avatar",
+                                                  "properties": {
+                                                    "name": "Tyler Huntley",
+                                                    "size": 40,
+                                                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4035671.png",
+                                                    "color": "#29126f",
+                                                    "kind": "player"
+                                                  },
+                                                  "slots": {}
+                                                },
+                                                {
+                                                  "kind": "Badge",
+                                                  "properties": {
+                                                    "label": "",
+                                                    "tone": "bad",
+                                                    "icon": "bandage.fill",
+                                                    "size": "small"
+                                                  },
+                                                  "slots": {}
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "kind": "Stack",
+                                            "properties": {
+                                              "axis": "v",
+                                              "gap": 0
+                                            },
+                                            "slots": {
+                                              "children": [
+                                                {
+                                                  "kind": "Text",
+                                                  "properties": {
+                                                    "content": "Tyler Huntley",
+                                                    "role": "headline",
+                                                    "weight": "semibold",
+                                                    "lines": 1,
+                                                    "align": "start"
+                                                  },
+                                                  "slots": {}
+                                                },
+                                                {
+                                                  "kind": "Text",
+                                                  "properties": {
+                                                    "content": "QB · Ravens",
+                                                    "role": "footnote",
+                                                    "ink": "secondary",
+                                                    "lines": 1,
+                                                    "align": "start"
+                                                  },
+                                                  "slots": {}
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "Show",
+                                      "properties": {
+                                        "when": true
+                                      },
+                                      "slots": {
+                                        "child": [
+                                          {
+                                            "kind": "Badge",
+                                            "properties": {
+                                              "label": "Out",
+                                              "tone": "bad"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Spacer",
+                                      "properties": {
+                                        "size": 40
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 4
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Out for season",
+                                              "role": "footnote",
+                                              "weight": "medium",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "· ESPN",
+                                              "role": "footnote",
+                                              "ink": "secondary",
+                                              "lines": 1,
+                                              "align": "start"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "kind": "Stack",
+                          "properties": {
+                            "axis": "v",
+                            "gap": 4
+                          },
+                          "slots": {
+                            "children": [
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "justify": "between"
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 12,
+                                        "align": "center"
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "ZStack",
+                                            "properties": {
+                                              "alignment": "bottom-trailing"
+                                            },
+                                            "slots": {
+                                              "children": [
+                                                {
+                                                  "kind": "Avatar",
+                                                  "properties": {
+                                                    "name": "Walter Nolen III",
+                                                    "size": 40,
+                                                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4685503.png",
+                                                    "color": "#a40227",
+                                                    "kind": "player"
+                                                  },
+                                                  "slots": {}
+                                                },
+                                                {
+                                                  "kind": "Badge",
+                                                  "properties": {
+                                                    "label": "",
+                                                    "tone": "bad",
+                                                    "icon": "bandage.fill",
+                                                    "size": "small"
+                                                  },
+                                                  "slots": {}
+                                                }
+                                              ]
+                                            }
+                                          },
+                                          {
+                                            "kind": "Stack",
+                                            "properties": {
+                                              "axis": "v",
+                                              "gap": 0
+                                            },
+                                            "slots": {
+                                              "children": [
+                                                {
+                                                  "kind": "Text",
+                                                  "properties": {
+                                                    "content": "Walter Nolen III",
+                                                    "role": "headline",
+                                                    "weight": "semibold",
+                                                    "lines": 1,
+                                                    "align": "start"
+                                                  },
+                                                  "slots": {}
+                                                },
+                                                {
+                                                  "kind": "Text",
+                                                  "properties": {
+                                                    "content": "DT · Cardinals",
+                                                    "role": "footnote",
+                                                    "ink": "secondary",
+                                                    "lines": 1,
+                                                    "align": "start"
+                                                  },
+                                                  "slots": {}
+                                                }
+                                              ]
+                                            }
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "kind": "Show",
+                                      "properties": {
+                                        "when": true
+                                      },
+                                      "slots": {
+                                        "child": [
+                                          {
+                                            "kind": "Badge",
+                                            "properties": {
+                                              "label": "Questionable",
+                                              "tone": "warn"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Stack",
+                                "properties": {
+                                  "axis": "h",
+                                  "gap": 12
+                                },
+                                "slots": {
+                                  "children": [
+                                    {
+                                      "kind": "Spacer",
+                                      "properties": {
+                                        "size": 40
+                                      },
+                                      "slots": {}
+                                    },
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "h",
+                                        "gap": 4
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Back Nov 8",
+                                              "role": "footnote",
+                                              "weight": "medium",
+                                              "lines": 1
+                                            },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "",
+                                              "role": "footnote",
+                                              "ink": "secondary",
+                                              "lines": 1,
+                                              "align": "start"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              }
+                            ]
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "InjuryList/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryList/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Show(d.answers.q1.record.showTitle, Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\")), Stack(\"v\", 12, @Each(d.answers.q1.record.players, \"p\", Stack(\"v\", 4, [Stack(\"h\", 12, [Stack(\"h\", 12, [ZStack([Avatar(p.name, 40, p.logo, null, null, p.color, p.kind), Badge(\"\", \"bad\", \"bandage.fill\", \"small\")], \"bottom-trailing\"), Stack(\"v\", 0, [Text(p.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(p.detail, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(p.badge.show, Badge(p.badge.label, p.badge.tone))], \"center\", \"between\"), Stack(\"h\", 12, [Spacer(40), Stack(\"h\", 4, [Text(p.line, \"footnote\", \"medium\", null, 1), Text(p.sourceLine, \"footnote\", null, \"secondary\", 1, \"start\")])])])), null, null, null, true)])\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "InjuryList/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "InjuryList/sparse",
+              "title": "InjuryList/sparse",
+              "record": {
+                "title": "",
+                "showTitle": false,
+                "players": []
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "Stack",
+              "properties": {
+                "axis": "v",
+                "gap": 12
+              },
+              "slots": {
+                "children": [
+                  {
+                    "kind": "Show",
+                    "properties": {
+                      "when": false
+                    },
+                    "slots": {
+                      "child": [
+                        {
+                          "kind": "Text",
+                          "properties": {
+                            "content": "",
+                            "role": "footnote",
+                            "weight": "medium",
+                            "ink": "secondary",
+                            "lines": 2,
+                            "align": "start"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "kind": "Stack",
+                    "properties": {
+                      "axis": "v",
+                      "gap": 12,
+                      "divided": true
+                    },
+                    "slots": {}
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
       "key": "ColorCell/fluid",
       "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"ColorCell/fluid\"}, {})\npick1 = Grid(\"7\", 4, @Each(d.answers.q1.cells, \"c\", ColorCell(c.label, c.fill)))\n",
       "dataset": {
