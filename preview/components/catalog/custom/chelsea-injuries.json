@@ -1,0 +1,224 @@
+{
+  "prompt": "Create a Chelsea men's 2026/27 injury report as of 4 Nov 2026. Cover first-team players injured this season, including recovered players with status. For each give the injury summary, latest update and expected return only if a source supplies a date or window; else Not confirmed. Prefer Chelsea and league reports. Label media estimates separately from club updates. Use primitive cards, wrapping Text and expandable details, no sports templates. Keep full text and dated sources.",
+  "program": "root = Screen([header, overview, panels])\nd = Query(\"sports_dataset\", {run: \"cacacfca-c933-4b95-8b5d-8d8bb69d515a\"}, {})\nheader = Stack(\"v\", 8, [Text(d.report.title, \"title2\", \"semibold\"), Stack(\"wrap\", 8, [Badge(\"Chelsea men\", \"neutral\"), Badge(d.report.season, \"neutral\"), Text(d.report.asOf, \"footnote\", null, \"secondary\")]), Text(d.report.scope, \"footnote\", null, \"secondary\")])\noverview = Card([Stack(\"wrap\", 8, [Badge(\"7 unavailable\", \"warn\", \"bandage.fill\"), Badge(\"5 returned in season\", \"good\", \"checkmark.circle.fill\")]), Text(d.report.returnNote, \"footnote\", null, \"secondary\")], \"card\", \"container\", 16, false, 12)\npanels = SegmentedControl([\"Injured · 7\", \"Returned · 5\"], 0, [injuries, returns])\ninjuries = Stack(\"v\", 12, @Each(d.report.injured, \"p\", Card([Stack(\"h\", 12, [ZStack([Avatar(p.name, 80, p.imageUrl, null, \"circle\", \"#144992\", \"player\"), ZStack([Avatar(\"\", 20, null, null, \"circle\", d.report.injuryColor), Icon(\"bandage.fill\", 16, \"inverse\")], \"center\")], \"bottom-trailing\"), Stack(\"v\", 4, [Text(p.name, \"headline\", \"semibold\"), Text(p.issue, \"footnote\", null, \"secondary\")])], \"center\"), Stack(\"v\", 4, [Text(\"Est. return · media\", \"footnote\", null, \"secondary\"), Text(p.returnShort, \"body\", \"semibold\")]), Disclosure(\"Details\", [Stack(\"v\", 8, [Text(\"Club update\", \"footnote\", \"semibold\"), Text(p.update, \"footnote\"), Text(p.clubReturn, \"footnote\", \"medium\"), Text(p.source, \"footnote\", null, \"tertiary\"), Text(\"Media estimate · The Standard\", \"footnote\", \"semibold\"), Text(p.estimate, \"footnote\"), Text(\"Reviewed 4 Nov 2026\", \"footnote\", null, \"tertiary\")])], false), Text(p.summary, \"footnote\", null, \"secondary\")], \"card\", \"container\", 16, false, 12)))\nreturns = Stack(\"v\", 12, @Each(d.report.returned, \"p\", Card([Stack(\"h\", 12, [ZStack([Avatar(p.name, 80, p.imageUrl, null, \"circle\", \"#144992\", \"player\"), Badge(\"\", \"good\", \"checkmark\")], \"bottom-trailing\"), Stack(\"v\", 4, [Text(p.name, \"headline\", \"semibold\"), Badge(p.status, \"good\", null, \"small\")])], \"center\"), Text(p.issue, \"footnote\", null, \"secondary\"), Disclosure(\"Details\", [Stack(\"v\", 8, [Text(p.returnWindow, \"footnote\", \"semibold\"), Text(p.update, \"footnote\"), Text(p.source, \"footnote\", null, \"tertiary\")])], false), Text(p.summary, \"footnote\", null, \"secondary\")], \"card\", \"container\", 16, false, 12)))\n",
+  "snapshot": {
+    "tool": "sports_dataset",
+    "args": {
+      "run": "cacacfca-c933-4b95-8b5d-8d8bb69d515a"
+    },
+    "result": {
+      "report": {
+        "title": "Chelsea injury report",
+        "season": "2026/27",
+        "asOf": "4 Nov 2026",
+        "injured": [
+          {
+            "name": "João Pedro",
+            "issue": "Thigh",
+            "status": "Unavailable",
+            "summary": "Injured in training before Tottenham. Earlier fitness problems also interrupted his season.",
+            "update": "Alonso confirmed a thigh injury before the Liverpool cup tie.",
+            "clubReturn": "A few weeks; no confirmed date.",
+            "estimate": "21 Nov 2026 · Leeds (H)",
+            "source": "Chelsea · liverpool",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-liverpool",
+            "estimateSourceUrl": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-joao-pedro-henderson-martinez-latest-news-return-dates-b1303090.html",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/1021382.png",
+            "fotmobId": 1021382,
+            "returnShort": "21 Nov 2026"
+          },
+          {
+            "name": "Reece James",
+            "issue": "Knee surgery",
+            "status": "Unavailable",
+            "summary": "A knee injury sustained in training required surgery. He had returned from an earlier fitness setback.",
+            "update": "Chelsea reported successful surgery before Everton.",
+            "clubReturn": "Several weeks; no confirmed date.",
+            "estimate": "Mid-January 2027",
+            "source": "Chelsea · everton",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-everton",
+            "estimateSourceUrl": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-joao-pedro-henderson-martinez-latest-news-return-dates-b1303090.html",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/807729.png",
+            "fotmobId": 807729,
+            "returnShort": "Mid-Jan 2027"
+          },
+          {
+            "name": "Maxence Lacroix",
+            "issue": "Hamstring",
+            "status": "Unavailable",
+            "summary": "Forced off during the Liverpool cup tie with a hamstring injury.",
+            "update": "Before Manchester United, Alonso ruled him out through the international break.",
+            "clubReturn": "After the November break at earliest; no confirmed date.",
+            "estimate": "January 2027",
+            "source": "Chelsea · manchester-united",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-manchester-united",
+            "estimateSourceUrl": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-joao-pedro-henderson-martinez-latest-news-return-dates-b1303090.html",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/950485.png",
+            "fotmobId": 950485,
+            "returnShort": "January 2027"
+          },
+          {
+            "name": "Emi Martínez",
+            "issue": "Fractured jaw",
+            "status": "Unavailable",
+            "summary": "Required jaw surgery after a collision at Everton.",
+            "update": "Alonso said a return before the international break was possible.",
+            "clubReturn": "Possible before the break; not confirmed.",
+            "estimate": "8 Nov 2026 · Sunderland (A)",
+            "source": "Chelsea · manchester-united",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-manchester-united",
+            "estimateSourceUrl": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-joao-pedro-henderson-martinez-latest-news-return-dates-b1303090.html",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/268375.png",
+            "fotmobId": 268375,
+            "returnShort": "8 Nov 2026"
+          },
+          {
+            "name": "Jorrel Hato",
+            "issue": "Back",
+            "status": "Unavailable",
+            "summary": "A back problem kept him out against Manchester United.",
+            "update": "Alonso gave no recovery timeframe.",
+            "clubReturn": "Not confirmed.",
+            "estimate": "8 Nov 2026 · Sunderland (A)",
+            "source": "Chelsea · manchester-united",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-manchester-united",
+            "estimateSourceUrl": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-joao-pedro-henderson-martinez-latest-news-return-dates-b1303090.html",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/1413846.png",
+            "fotmobId": 1413846,
+            "returnShort": "8 Nov 2026"
+          },
+          {
+            "name": "Jamie Gittens",
+            "issue": "Ankle",
+            "status": "Unavailable",
+            "summary": "Injured his ankle on England Under-21 duty.",
+            "update": "Before Everton, Alonso still expected weeks out.",
+            "clubReturn": "A few weeks; no confirmed date.",
+            "estimate": "November or December 2026",
+            "source": "Chelsea · everton",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-everton",
+            "estimateSourceUrl": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-joao-pedro-henderson-martinez-latest-news-return-dates-b1303090.html",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/1113692.png",
+            "fotmobId": 1113692,
+            "returnShort": "Nov–Dec 2026"
+          },
+          {
+            "name": "Aaron Anselmino",
+            "issue": "Multiple injuries",
+            "status": "Unavailable",
+            "summary": "Several setbacks have delayed his first appearance this season.",
+            "update": "Alonso said he needed more recovery time before full fitness.",
+            "clubReturn": "A few weeks; no confirmed date.",
+            "estimate": "November or December 2026",
+            "source": "Chelsea · manchester-united",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-manchester-united",
+            "estimateSourceUrl": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-joao-pedro-henderson-martinez-latest-news-return-dates-b1303090.html",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/1494947.png",
+            "fotmobId": 1494947,
+            "returnShort": "Nov–Dec 2026"
+          }
+        ],
+        "returned": [
+          {
+            "name": "Emmanuel Emegha",
+            "issue": "Hamstring",
+            "status": "Returned",
+            "summary": "Recovered from a hamstring injury after building fitness at Cobham.",
+            "update": "Alonso confirmed his inclusion for the Liverpool cup tie.",
+            "returnWindow": "Available for Liverpool cup tie",
+            "source": "Chelsea · liverpool",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-liverpool",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/1183148.png",
+            "fotmobId": 1183148
+          },
+          {
+            "name": "Moisés Caicedo",
+            "issue": "Early-season injury",
+            "status": "Returned",
+            "summary": "An early-season injury restricted his appearances.",
+            "update": "Returned to full training and selection before Bournemouth; also cleared before Manchester United.",
+            "returnWindow": "Available before Bournemouth",
+            "source": "Chelsea · bournemouth",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-bournemouth",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/1137668.png",
+            "fotmobId": 1137668
+          },
+          {
+            "name": "Marco Palestra",
+            "issue": "Pre-season injury",
+            "status": "Returned",
+            "summary": "Injured in the final week of pre-season.",
+            "update": "Returned to contention ahead of Bournemouth.",
+            "returnWindow": "Available before Bournemouth",
+            "source": "Chelsea · bournemouth",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-bournemouth",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/1473806.png",
+            "fotmobId": 1473806
+          },
+          {
+            "name": "Cole Palmer",
+            "issue": "Fitness concern",
+            "status": "Returned",
+            "summary": "Struggled with fitness around the Brentford game.",
+            "update": "Trained during the international break and was available before Bournemouth. No diagnosis was specified.",
+            "returnWindow": "Available before Bournemouth",
+            "source": "Chelsea · bournemouth",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-bournemouth",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/1096353.png",
+            "fotmobId": 1096353
+          },
+          {
+            "name": "Pep Chavarría",
+            "issue": "Training injury",
+            "status": "Returned",
+            "summary": "Missed matches with an unspecified training injury.",
+            "update": "Chelsea confirmed he was in contention before Manchester United; The Standard reported his substitute return.",
+            "returnWindow": "Returned 31 Oct 2026 · Man United",
+            "source": "Chelsea · manchester-united",
+            "sourceUrl": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-manchester-united",
+            "imageUrl": "https://images.fotmob.com/image_resources/playerimages/988805.png",
+            "fotmobId": 988805
+          }
+        ],
+        "sources": [
+          {
+            "name": "Chelsea · Manchester United team news",
+            "url": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-manchester-united"
+          },
+          {
+            "name": "Chelsea · Liverpool team news",
+            "url": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-liverpool"
+          },
+          {
+            "name": "Chelsea · Everton team news",
+            "url": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-everton"
+          },
+          {
+            "name": "Chelsea · Bournemouth team news",
+            "url": "https://www.chelseafc.com/en/news/article/xabi-alonso-confirms-chelsea-team-news-for-bournemouth"
+          },
+          {
+            "name": "The Standard · injury updates and potential return dates",
+            "url": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-joao-pedro-henderson-martinez-latest-news-return-dates-b1303090.html"
+          },
+          {
+            "name": "The Standard · earlier season updates",
+            "url": "https://www.standard.co.uk/sport/football/chelsea-fc-injury-update-caicedo-joao-pedro-lacroix-latest-news-return-dates-b1302935.html"
+          }
+        ],
+        "scope": "Published first-team injury and fitness updates reviewed for this season. Returned entries record earlier recoveries.",
+        "returnNote": "Club recovery windows and media estimates are shown separately. An estimate is not a confirmed return date.",
+        "injuryColor": "#E5484D"
+      }
+    },
+    "asOf": "2026-11-04T22:48:24.354Z",
+    "source": "web"
+  },
+  "provenance": {
+    "researchRun": "cacacfca-c933-4b95-8b5d-8d8bb69d515a",
+    "composition": "Composed from existing OpenUI primitives after the model writer reached its usage limit.",
+    "review": "Research findings checked against official Chelsea updates; earlier returns added; illness and non-injury absences excluded.",
+    "reviewedAt": "2026-11-04",
+    "portraits": "Player identities and image URLs resolved from FotMob; rendered by the Avatar primitive."
+  }
+}

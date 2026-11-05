@@ -41,7 +41,7 @@ const hash = (s: string) => {
 const WORDS = ["Apple", "Nvidia", "Morning run", "Protein", "Groceries", "Blue Bottle", "Sleep", "Rent", "Notion", "Coffee", "Strava", "Salary"];
 const TINTS = ["blue", "green", "orange", "indigo", "pink", "teal", "purple", "red"];
 
-/** A stable dummy for a data path (`earnings.thisWeek`, `.company.name`, `.eps.estimate`). */
+/** A stable dummy for a data path (`answers.q1.rows`, `.club.name`, `.goals`). */
 export function dummy(path: string, item = 0): string | number | boolean | Value[] {
   const key = path.split(".").filter(Boolean).at(-1)?.toLowerCase() ?? "";
   const h = hash(`${path}#${item}`);
@@ -55,9 +55,8 @@ export function dummy(path: string, item = 0): string | number | boolean | Value
   if (/time/.test(key)) return `${7 + (h % 10)}:${h % 2 ? "30" : "00"} ${h % 3 ? "AM" : "PM"}`;
   if (/date|day$/.test(key)) return ["Mon 12", "Tue 13", "Wed 14", "Thu 15"][h % 4]!;
   if (/pct|percent|share|progress|ratio/.test(key)) return (h % 90) + 10;
-  if (/amount|price|total|value|balance|revenue|estimate|actual|eps|score|count|kcal|calories|distance|pace|avg|average|current/.test(key)) {
+  if (/amount|total|value|estimate|actual|score|count|kcal|calories|distance|pace|avg|average|current/.test(key)) {
     return Math.round(((h % 9000) + 100) / (key.includes("eps") ? 100 : 1) * 100) / 100;
   }
-  if (/ticker|symbol/.test(key)) return ["AAPL", "NVDA", "MSFT", "TSLA"][h % 4]!;
   return WORDS[h % WORDS.length]!;
 }

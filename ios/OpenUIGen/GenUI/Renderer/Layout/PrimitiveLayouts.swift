@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Flows children left to right and wraps them into rows (Repeat `wrap`, ShareBar legend).
+/// Flows children left to right and wraps them into rows (ShareBar legend).
 struct FlowLayout: Layout {
     var spacing: CGFloat
 
@@ -67,7 +67,7 @@ struct FlowLayout: Layout {
     }
 }
 
-/// Equal-width columns in rows (Grid, Repeat `grid`). Each row is as tall as its tallest cell.
+/// Equal-width columns in rows (Grid). Each row is as tall as its tallest cell.
 struct ColumnsLayout: Layout {
     var columns: Int
     var spacing: CGFloat

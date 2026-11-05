@@ -6,22 +6,6 @@ public struct OpenUIElementID: RawRepresentable, Hashable, Codable, Sendable, Cu
     public var description: String { rawValue }
 }
 
-public enum OpenUIPathStep: Hashable, Codable, Sendable { case field(String), index(Int) }
-public struct OpenUISourceAddress: Hashable, Codable, Sendable {
-    public let query: String
-    public var path: [OpenUIPathStep]
-    public init(query: String, path: [OpenUIPathStep] = []) { self.query = query; self.path = path }
-}
-
-public struct OpenUIEditAddress: Hashable, Codable, Sendable {
-    public let element: OpenUIElementID
-    public let source: OpenUISourceAddress
-    public let input: String
-    public init(element: OpenUIElementID, source: OpenUISourceAddress, input: String) {
-        self.element = element; self.source = source; self.input = input
-    }
-}
-
 public struct OpenUIDataset: Codable, Equatable, Sendable {
     public let tool: String
     public let args: PValue
@@ -68,15 +52,12 @@ public struct OpenUISemanticElement: Equatable, Sendable {
     public let id: OpenUIElementID
     public let kind: String
     public var properties: [String: PValue]
-    public var bindings: [String: OpenUIEditAddress]
-    public var sources: [String: OpenUISourceAddress]
     public var slots: [String: [OpenUIElementID]]
 }
 
 public struct OpenUIScene: Equatable, Sendable {
     public let roots: [OpenUIElementID]
     public let elements: [OpenUIElementID: OpenUISemanticElement]
-    public let reads: [OpenUISourceAddress: Set<OpenUIElementID>]
 }
 
 public enum OpenUIError: Error, Equatable, Sendable {

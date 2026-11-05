@@ -2,7 +2,7 @@ import Foundation
 
 /// A sample for every primitive in `primitives.json`, grouped as the catalog groups them. Each one is
 /// the body of a `Screen`, written as the server writes programs: data props read the shared dataset
-/// through `d`, and copy props are literals. `ComponentGalleryTests` fails when a primitive has none.
+/// through `d`, and copy props are literals.
 enum PrimitiveSamples {
     struct Group {
         let title: String
@@ -37,14 +37,6 @@ enum PrimitiveSamples {
     ])
 
     private static let layout = Group(title: "Layout", samples: [
-        ("Calculation", #"""
-        Calculation(d.contract, [
-          Slider("Months", d.contract.months, 6, 60, 6, "mo"),
-          Slider("Yearly rise", d.contract.annualRate, 0, 20, 1, "%"),
-          Text("Fee at the end", "footnote", null, "secondary"),
-          Number(d.contract.endingValue, "currency", "title2", "semibold", null, true)
-        ])
-        """#),
         ("Stack", #"""
         Stack("v", 8, [Text("Vertical", "footnote", null, "secondary"), Text("Chelsea", "body"), Text("Arsenal", "body")]),
         Stack("h", 8, [Text("Horizontal, between", "body"), Badge("Live", "good")], "center", "between"),
@@ -163,13 +155,6 @@ enum PrimitiveSamples {
     ])
 
     private static let controls = Group(title: "Controls", samples: [
-        ("Slider", #"""
-        Slider("Minutes played", d.minutes, 0, 9000, 90, "min")
-        """#),
-        ("ChoiceTags", #"""
-        ChoiceTags("Formation", d.formations, d.formation),
-        ChoiceTags("Formation", d.formations, d.formation, "rows")
-        """#),
         ("Button", #"""
         Button("Follow Chelsea", "open", "primary", "bell", true),
         Stack("wrap", 8, [
@@ -246,19 +231,6 @@ enum PrimitiveSamples {
         ("Rating", #"""
         Rating(d.rating, d.reviews, 5)
         """#),
-        ("Sparkline", #"""
-        Sparkline(d.points, true),
-        Sparkline(d.points, null, d.average, true),
-        Row("Points per game", "Last 8 matches", null, Sparkline(d.points))
-        """#),
-        ("PriceChart", #"""
-        PriceChart(d.points, "regular", d.average, "Average", "threshold", true, true, null, null, "number"),
-        PriceChart(d.points, "compact", null, null, null, null, null, d.rival, "Arsenal", "number")
-        """#),
-        ("Change", #"""
-        Stack("wrap", 12, [Change(d.change.value, d.change.percent), Change(d.drop.value, d.drop.percent)]),
-        Stack("wrap", 12, [Change(d.change.value, d.change.percent, "text"), Change(d.drop.value, d.drop.percent, "percent")])
-        """#),
         ("SplitBar", #"""
         SplitBar(d.possession, null, null, true),
         SplitBar(d.votes, "thin", true, true),
@@ -293,7 +265,7 @@ enum PrimitiveSamples {
           "Chelsea",
           "Premier League",
           Avatar(d.club.name, 40, d.club.logo, null, null, d.club.color),
-          Change(d.change.value, d.change.percent, "percent")
+          Badge("3rd", "neutral")
         )
         """#),
         ("KeyValue", #"""
@@ -334,35 +306,13 @@ private enum GallerySampleData {
       ],
       "squad": ["Cole Palmer", "João Pedro", "Moisés Caicedo", "Enzo Fernández"],
       "goals": 11, "attendance": 40173, "wage": 325000, "xg": 9.42, "minutes": 5400,
-      "progress": 68, "rating": 4.5, "reviews": 128, "subs": 3, "average": 1.6,
-      "change": { "value": 2.5, "percent": 4.2 },
-      "drop": { "value": -1.2, "percent": -0.52 },
+      "progress": 68, "rating": 4.5, "reviews": 128, "subs": 3,
       "form": [
         { "label": "Aug", "value": 7 },
         { "label": "Sep", "value": 4 },
         { "label": "Oct", "value": 9 },
         { "label": "Nov", "value": 6 },
         { "label": "Dec", "value": 10 }
-      ],
-      "points": [
-        { "label": "MW1", "value": 1 },
-        { "label": "MW2", "value": 1.5 },
-        { "label": "MW3", "value": 1.2 },
-        { "label": "MW4", "value": 1.8 },
-        { "label": "MW5", "value": 1.6 },
-        { "label": "MW6", "value": 2.1 },
-        { "label": "MW7", "value": 1.9 },
-        { "label": "MW8", "value": 2.3 }
-      ],
-      "rival": [
-        { "label": "MW1", "value": 1.5 },
-        { "label": "MW2", "value": 1.4 },
-        { "label": "MW3", "value": 1.7 },
-        { "label": "MW4", "value": 1.5 },
-        { "label": "MW5", "value": 1.8 },
-        { "label": "MW6", "value": 1.7 },
-        { "label": "MW7", "value": 2 },
-        { "label": "MW8", "value": 1.9 }
       ],
       "shots": [
         { "label": "Foot", "value": 18, "ink": "blue", "detail": "18 shots" },
@@ -378,13 +328,6 @@ private enum GallerySampleData {
         { "label": "Draw", "count": 23, "tone": "neutral" },
         { "label": "Loss", "count": 25, "tone": "bad" }
       ],
-      "formations": [
-        { "label": "4-3-3", "value": 1, "icon": "sportscourt" },
-        { "label": "4-2-3-1", "value": 2, "icon": "soccerball", "detail": "Used in 6 matches", "trailing": "1.8 pts" },
-        { "label": "3-5-2", "value": 3, "icon": "trophy.fill", "detail": "Used in 2 matches", "trailing": "1.0 pts" }
-      ],
-      "formation": 2,
-      "contract": { "unitPrice": 100, "quantity": 10, "months": 24, "annualRate": 8 },
       "swatch": "#6f42c1"
     }
     """#

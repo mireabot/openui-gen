@@ -25,8 +25,8 @@ enum PrimitiveImages {
 }
 
 extension EnvironmentValues {
-    /// The server a tree streamed from, so data that carries server paths (company logos at
-    /// `/media/logos/<TICKER>`) resolves. Nil leaves those images out (the monogram stays).
+    /// The server a tree streamed from, so data that carries server paths (club logos at
+    /// `/media/logos/<CODE>`) resolves. Nil leaves those images out (the monogram stays).
     @Entry var primitiveMediaBaseURL: URL?
 }
 

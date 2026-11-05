@@ -6,31 +6,20 @@ struct ComponentGalleryView: View {
     let screenColor: Color
     let baseURL: URL
 
-    @State private var sections: [GallerySection] = []
+    @State private var components: [GalleryComponent] = []
     @State private var failure: String?
 
     var body: some View {
         ScrollView {
-            LazyVStack(alignment: .leading, spacing: 0, pinnedViews: .sectionHeaders) {
+            LazyVStack(alignment: .leading, spacing: 0) {
                 if let failure {
                     Text(failure)
                         .font(.footnote)
                         .foregroundStyle(.red)
                         .padding(PrimitiveMetrics.screenInset)
                 }
-                ForEach(sections) { section in
-                    Section {
-                        ForEach(section.components) { component in
-                            GalleryComponentView(component: component, theme: theme, baseURL: baseURL)
-                        }
-                    } header: {
-                        Text(section.title)
-                            .font(.title3.weight(.semibold))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.horizontal, PrimitiveMetrics.screenInset)
-                            .padding(.vertical, 12)
-                            .background(screenColor)
-                    }
+                ForEach(components) { component in
+                    GalleryComponentView(component: component, theme: theme, baseURL: baseURL)
                 }
             }
         }
@@ -39,9 +28,9 @@ struct ComponentGalleryView: View {
         .navigationTitle("Components")
         .navigationBarTitleDisplayMode(.inline)
         .task {
-            guard sections.isEmpty, failure == nil else { return }
+            guard components.isEmpty, failure == nil else { return }
             do {
-                sections = try ComponentGallery.sections(baseURL: baseURL)
+                components = try ComponentGallery.components(baseURL: baseURL)
             } catch {
                 failure = error.localizedDescription
             }
@@ -80,7 +69,7 @@ private struct GalleryComponentView: View {
                 }
                 switch sample.content {
                 case let .scene(.success(session)):
-                    OpenUISceneView(root: session.root, theme: theme, scrolls: false) { session.edit($0, value: $1) }
+                    OpenUISceneView(root: session.root, theme: theme, scrolls: false)
                         .primitiveMediaBaseURL(baseURL)
                 case let .scene(.failure(error)):
                     Text(error.localizedDescription)

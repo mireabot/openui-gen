@@ -2,6 +2,422 @@
   "version": 3,
   "fixtures": [
     {
+      "key": "ClubTimeline/full",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"ClubTimeline/full\"}, {})\npick1 = YearTimeline(d.answers.q1.record.clubs, d.answers.q1.record.initial)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "ClubTimeline/full"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "ClubTimeline/full",
+              "title": "ClubTimeline/full",
+              "record": {
+                "initial": 0,
+                "clubs": [
+                  {
+                    "id": "nassr",
+                    "name": "Al Nassr",
+                    "logo": "",
+                    "color": "#fbd129",
+                    "year": "2025",
+                    "dates": "Jan 2025 – Feb 2026",
+                    "location": "Riyadh, Saudi Arabia",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "fenerbahce",
+                    "name": "Fenerbahçe",
+                    "logo": "",
+                    "color": "#ffed00",
+                    "year": "2025",
+                    "dates": "Jul 2025 – Feb 2026",
+                    "location": "İstanbul, Turkey",
+                    "marker": "currency",
+                    "stats": []
+                  },
+                  {
+                    "id": "zenit",
+                    "name": "Zenit St. Petersburg",
+                    "logo": "",
+                    "color": "#7fcbf3",
+                    "year": "2026",
+                    "dates": "Feb 2026 – Jun 2026",
+                    "location": "",
+                    "marker": "currency",
+                    "stats": []
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "YearTimeline",
+              "properties": {
+                "items": [
+                  {
+                    "id": "nassr",
+                    "name": "Al Nassr",
+                    "logo": "",
+                    "color": "#fbd129",
+                    "year": "2025",
+                    "dates": "Jan 2025 – Feb 2026",
+                    "location": "Riyadh, Saudi Arabia",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "fenerbahce",
+                    "name": "Fenerbahçe",
+                    "logo": "",
+                    "color": "#ffed00",
+                    "year": "2025",
+                    "dates": "Jul 2025 – Feb 2026",
+                    "location": "İstanbul, Turkey",
+                    "marker": "currency",
+                    "stats": []
+                  },
+                  {
+                    "id": "zenit",
+                    "name": "Zenit St. Petersburg",
+                    "logo": "",
+                    "color": "#7fcbf3",
+                    "year": "2026",
+                    "dates": "Feb 2026 – Jun 2026",
+                    "location": "",
+                    "marker": "currency",
+                    "stats": []
+                  }
+                ],
+                "initial": 0
+              },
+              "slots": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "ClubTimeline/withStats",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"ClubTimeline/withStats\"}, {})\npick1 = YearTimeline(d.answers.q1.record.clubs, d.answers.q1.record.initial)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "ClubTimeline/withStats"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "ClubTimeline/withStats",
+              "title": "ClubTimeline/withStats",
+              "record": {
+                "initial": 2,
+                "clubs": [
+                  {
+                    "id": "nassr",
+                    "name": "Al Nassr",
+                    "logo": "",
+                    "color": "#fbd129",
+                    "year": "2025",
+                    "dates": "Jan 2025 – Feb 2026",
+                    "location": "Riyadh, Saudi Arabia",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "9"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "2"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fenerbahce",
+                    "name": "Fenerbahçe",
+                    "logo": "",
+                    "color": "#ffed00",
+                    "year": "2025",
+                    "dates": "Jul 2025 – Feb 2026",
+                    "location": "İstanbul, Turkey",
+                    "marker": "currency",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "9"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "2"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "zenit",
+                    "name": "Zenit St. Petersburg",
+                    "logo": "",
+                    "color": "#7fcbf3",
+                    "year": "2026",
+                    "dates": "Feb 2026 – Jun 2026",
+                    "location": "",
+                    "marker": "currency",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "9"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "2"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "YearTimeline",
+              "properties": {
+                "items": [
+                  {
+                    "id": "nassr",
+                    "name": "Al Nassr",
+                    "logo": "",
+                    "color": "#fbd129",
+                    "year": "2025",
+                    "dates": "Jan 2025 – Feb 2026",
+                    "location": "Riyadh, Saudi Arabia",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "9"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "2"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "fenerbahce",
+                    "name": "Fenerbahçe",
+                    "logo": "",
+                    "color": "#ffed00",
+                    "year": "2025",
+                    "dates": "Jul 2025 – Feb 2026",
+                    "location": "İstanbul, Turkey",
+                    "marker": "currency",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "9"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "2"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "zenit",
+                    "name": "Zenit St. Petersburg",
+                    "logo": "",
+                    "color": "#7fcbf3",
+                    "year": "2026",
+                    "dates": "Feb 2026 – Jun 2026",
+                    "location": "",
+                    "marker": "currency",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "9"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "2"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  }
+                ],
+                "initial": 2
+              },
+              "slots": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "ClubTimeline/oneYear",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"ClubTimeline/oneYear\"}, {})\npick1 = YearTimeline(d.answers.q1.record.clubs, d.answers.q1.record.initial)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "ClubTimeline/oneYear"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "ClubTimeline/oneYear",
+              "title": "ClubTimeline/oneYear",
+              "record": {
+                "initial": 0,
+                "clubs": [
+                  {
+                    "id": "nassr",
+                    "name": "Al Nassr",
+                    "logo": "",
+                    "color": "#fbd129",
+                    "year": "2025",
+                    "dates": "Jan 2025 – Feb 2026",
+                    "location": "Riyadh, Saudi Arabia",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "fenerbahce",
+                    "name": "Fenerbahçe",
+                    "logo": "",
+                    "color": "#ffed00",
+                    "year": "2025",
+                    "dates": "Jul 2025 – Feb 2026",
+                    "location": "İstanbul, Turkey",
+                    "marker": "currency",
+                    "stats": []
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "YearTimeline",
+              "properties": {
+                "items": [
+                  {
+                    "id": "nassr",
+                    "name": "Al Nassr",
+                    "logo": "",
+                    "color": "#fbd129",
+                    "year": "2025",
+                    "dates": "Jan 2025 – Feb 2026",
+                    "location": "Riyadh, Saudi Arabia",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "fenerbahce",
+                    "name": "Fenerbahçe",
+                    "logo": "",
+                    "color": "#ffed00",
+                    "year": "2025",
+                    "dates": "Jul 2025 – Feb 2026",
+                    "location": "İstanbul, Turkey",
+                    "marker": "currency",
+                    "stats": []
+                  }
+                ],
+                "initial": 0
+              },
+              "slots": {}
+            }
+          ]
+        }
+      }
+    },
+    {
+      "key": "ClubTimeline/sparse",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"ClubTimeline/sparse\"}, {})\npick1 = YearTimeline(d.answers.q1.record.clubs, d.answers.q1.record.initial)\n",
+      "dataset": {
+        "tool": "sports_dataset",
+        "args": {
+          "run": "ClubTimeline/sparse"
+        },
+        "result": {
+          "answers": {
+            "q1": {
+              "status": "complete",
+              "question": "ClubTimeline/sparse",
+              "title": "ClubTimeline/sparse",
+              "record": {
+                "initial": 0,
+                "clubs": []
+              }
+            }
+          }
+        }
+      },
+      "expected": {
+        "kind": "Screen",
+        "properties": {},
+        "slots": {
+          "children": [
+            {
+              "kind": "YearTimeline",
+              "properties": {
+                "items": [],
+                "initial": 0
+              },
+              "slots": {}
+            }
+          ]
+        }
+      }
+    },
+    {
       "key": "MatchCard/full",
       "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchCard/full\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 12, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.home.name, 20, d.answers.q1.record.home.logo, null, null, d.answers.q1.record.home.color, \"club\"), Text(d.answers.q1.record.home.name, \"body\", \"medium\", null, 2, \"start\")], \"center\"), Text(d.answers.q1.record.home.score, \"headline\", \"semibold\", d.answers.q1.record.home.ink)], \"center\", \"between\"), Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.away.name, 20, d.answers.q1.record.away.logo, null, null, d.answers.q1.record.away.color, \"club\"), Text(d.answers.q1.record.away.name, \"body\", \"medium\", null, 2, \"start\")], \"center\"), Text(d.answers.q1.record.away.score, \"headline\", \"semibold\", d.answers.q1.record.away.ink)], \"center\", \"between\")]), Stack(\"v\", 4, [Text(d.answers.q1.record.label, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.value, \"headline\", \"semibold\", null, null, \"end\")], \"end\")], \"center\"), Text(d.answers.q1.record.details, \"footnote\", null, \"secondary\", 2, \"start\")])\n",
       "dataset": {

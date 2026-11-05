@@ -141,6 +141,28 @@ const matchPlayerCell = (p: AnyRef, side: "home" | "away") => {
 
 export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
+    name: "ClubTimeline",
+    intent: "A player's club history as a swipeable row of club cards under one stop per year. Loans have a currency marker; brief stats are optional.",
+    useWhen: "a player's career, transfer history or clubs over time; use stats only when asked for and supplied by the research",
+    source: "ui-canvas club-timeline/m04 and club-timeline/m05",
+    contract: [
+      f("initial", "number", "zero-based card to open on; 0 for oldest, last index for current club"),
+      f("clubs", "list", "club spells oldest first; multiple clubs can share the same year"),
+      f("clubs[].id", "text", "unique spell ID; a return to the same club has a different ID"),
+      f("clubs[].name", "text", "club name"), f("clubs[].year", "text", "the year the spell starts, e.g. 2025"),
+      f("clubs[].dates", "text", "dates as the source gives them, e.g. Jul 2025 – Feb 2026"),
+      f("clubs[].location", "text", "club location, or an empty string when unavailable"),
+      f("clubs[].logo", "text", "club crest URL, or an empty string"),
+      f("clubs[].color", "color", "club colour for a monogram when there is no logo"),
+      f("clubs[].marker", "text", "currency for a loan, otherwise none"),
+      f("clubs[].stats", "list", "optional stats: [] when not requested or not known, at most 3 supplied label/value pairs"),
+      f("clubs[].stats[].label", "text", "stat name, e.g. Apps, Goals or Assists"),
+      f("clubs[].stats[].value", "text", "published value as shown; never invent a missing stat"),
+    ],
+    params: [],
+    build: t => ui.YearTimeline({ items: t.clubs, initial: t.initial }),
+  },
+  {
     name: "MatchCard",
     intent: "One match between two clubs: both teams on stacked rows with their scores, a side column (date and kickoff, or a status such as FT), and one details line.",
     useWhen: "a fixture or a result; a list of matches (@Each over them); the latest meeting between two clubs",

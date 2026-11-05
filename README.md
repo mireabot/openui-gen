@@ -4,8 +4,7 @@ OpenUI Lang generation for football (soccer): the sports endpoint, the OpenUI co
 its schema index, a preview page that renders generations, and the native iOS client. One service
 serves the API and the preview.
 
-Split from FitnessGin_BE at commit `1844a1c`, keeping only the OpenUI Ask path. The stocks pipeline
-(Massive and FMP market data) was retired in favour of sports. Design explorations
+Split from FitnessGin_BE at commit `1844a1c`, keeping only the OpenUI Ask path. Design explorations
 live in their own project, `~/Desktop/ui-canvas`; nothing here imports it.
 
 ## Run it

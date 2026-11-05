@@ -9,16 +9,16 @@ import { structuredCompletion } from "../src/llm/structured-completion.js";
 // A follow-up's shape: rules, replayed turns, the saved-screen state, then the new message.
 const mapped = anthropicMessages([
   { role: "system", content: "Resolve follow-ups." },
-  { role: "user", content: "NVDA upcoming earnings" },
-  { role: "assistant", content: "{\"ticker\":\"NVDA\"}" },
+  { role: "user", content: "Arsenal upcoming fixtures" },
+  { role: "assistant", content: "{\"club\":\"Arsenal\"}" },
   { role: "system", content: "{\"parts\":[]}" },
-  { role: "user", content: "get the latest report rather than upcoming" },
+  { role: "user", content: "get the latest result rather than upcoming" },
 ]);
 assert.deepEqual(mapped.system, [{ type: "text", text: "Resolve follow-ups.", cache_control: { type: "ephemeral" } }], "rules are the cached system prompt");
 assert.deepEqual(mapped.messages.map(m => m.role), ["user", "assistant", "user"]);
 const blocks = mapped.messages.map(m => (m.content as { text: string; cache_control?: unknown }[])[0]!);
 assert.ok(blocks[1]!.cache_control && !blocks[0]!.cache_control && !blocks[2]!.cache_control, "the replayed conversation ends the cached prefix; the newest turn is fresh");
-assert.match(blocks[2]!.text, /^<context>\n\{"parts":\[\]\}\n<\/context>\n\nget the latest report/, "a mid-conversation system message rides in front of the next user turn");
+assert.match(blocks[2]!.text, /^<context>\n\{"parts":\[\]\}\n<\/context>\n\nget the latest result/, "a mid-conversation system message rides in front of the next user turn");
 
 // Same-role turns merge; a lone writer request caches only its system prompt.
 const writer = anthropicMessages([{ role: "system", content: "Fill holes." }, { role: "user", content: "a" }, { role: "user", content: "b" }]);

@@ -8,12 +8,12 @@ struct OpenUIParserTests {
     private static let program = """
     root = Screen([pick1, pick2])
     d = Query("sports_dataset", {run: "r1"}, {})
-    pick1 = Section(pick1_title, [Grid("2", 12, @Each(d.peers, "p", Card([Text(p.ticker, "body", "semibold", null, 1)])))], pick1_subtitle)
+    pick1 = Section(pick1_title, [Grid("2", 12, @Each(d.rivals, "p", Card([Text(p.club, "body", "semibold", null, 1)])))], pick1_subtitle)
     pick1_title = ""
     pick1_subtitle = ""
-    pick2 = Card([Text(d.earnings.when, "footnote", null, "secondary")])
-    pick1_title = "Tesla Competitors & Earnings"
-    pick1_subtitle = "Peer movers and the latest TSLA report"
+    pick2 = Card([Text(d.fixture.when, "footnote", null, "secondary")])
+    pick1_title = "Rivals & Fixtures"
+    pick1_subtitle = "Rival form and the next fixture"
 
     """
 
@@ -21,15 +21,15 @@ struct OpenUIParserTests {
         var parser = OpenUIParser()
         let parsed = try parser.parse(Self.program)
         #expect(parsed.order == ["root", "d", "pick1", "pick1_title", "pick1_subtitle", "pick2"])
-        #expect(parsed.statements["pick1_title"] == .literal(.string("Tesla Competitors & Earnings")))
+        #expect(parsed.statements["pick1_title"] == .literal(.string("Rivals & Fixtures")))
     }
 
-    @Test func compilesTheStreamedTSLAProgram() throws {
+    @Test func compilesTheStreamedProgram() throws {
         let dataset = OpenUIDataset(
             args: .object(["run": .string("r1")]),
             result: .object([
-                "peers": .list([.object(["ticker": .string("RIVN")]), .object(["ticker": .string("GM")])]),
-                "earnings": .object(["when": .string("TSLA · Wed, Oct 22")]),
+                "rivals": .list([.object(["club": .string("Arsenal")]), .object(["club": .string("Chelsea")])]),
+                "fixture": .object(["when": .string("Arsenal · Wed, Oct 22")]),
             ])
         )
         let scene = try OpenUICompiler().compile(program: Self.program, documentID: "r1", datasets: [dataset])

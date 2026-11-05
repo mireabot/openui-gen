@@ -1,11 +1,10 @@
 import Foundation
 
 /// Coarse frames of what is about to stream, so the app can draw a shimmer with the real
-/// content's shape before the first DSL line arrives. Mirrors the backend's
-/// `src/dsl/skeleton.ts`: the `skeleton` SSE event, and the `skeleton` field of each
-/// bundled rebuild.
+/// content's shape before the first part arrives. Mirrors the backend's `src/lang/skeleton.ts`:
+/// the `skeleton` SSE event.
 ///
-/// `blocks[i]` stands in for the tree's i-th top block (`PrimitiveTree.topBlocks`).
+/// `blocks[i]` stands in for the screen's i-th top block.
 public struct PrimitiveSkeleton: Sendable, Equatable, Codable {
     /// Gap between blocks, from the top container.
     public let gap: Double

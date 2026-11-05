@@ -14,7 +14,7 @@ import { espnLookup, withMatchCards, type EspnTransport } from "../src/sports/es
 import { followUpSchema, rawSchema, toFollowUp, toPlan, type SportsPlan } from "../src/sports/plan.js";
 import { preview, SPORTS_SCREEN } from "../src/sports/screen.js";
 import { fitHeatmaps, heatmapColumns, lockFacts, placements, settleMissing, settleVenues } from "../src/sports/components.js";
-import { answerSports } from "../src/sports/research.js";
+import { answerSports, findingAnswer } from "../src/sports/research.js";
 
 /** The sports pipeline offline: scripted ESPN, Parallel, Sonnet, Opus and writer; no network, no keys. */
 
@@ -53,6 +53,19 @@ const espn: EspnTransport = async raw => {
 };
 
 const PAGE = "https://www.bbc.com/sport/football/scorers";
+const longText = "A complete streaming coverage description that must retain every word, including the channels, match availability and service limitations. ".repeat(4);
+const fullTextAnswer = findingAnswer({
+  title: longText, summary: longText, columns: [longText], rows: [{ label: longText, cells: [longText] }],
+  facts: [{ label: longText, value: longText, detail: longText }], asOf: "2026-11-04", sourceUrls: [PAGE],
+}, { id: "q1", text: "Where can I watch?", source: "web", searchQueries: ["streaming coverage"] }, {
+  query: "streaming coverage", findings: longText, sources: [{ url: PAGE, title: "Coverage" }], searchedAt: "2026-11-04", model: "test", usage: { promptTokens: 0, completionTokens: 0, costUSD: 0 },
+});
+assert.ok(fullTextAnswer);
+assert.equal(fullTextAnswer.title, longText);
+assert.equal(fullTextAnswer.summary, longText);
+assert.deepEqual(fullTextAnswer.columns, [longText]);
+assert.deepEqual(fullTextAnswer.rows, [{ label: longText, cells: [longText], pairs: [{ label: longText, value: longText }] }]);
+assert.deepEqual(fullTextAnswer.facts, [{ label: longText, value: longText, detail: longText }]);
 const parallel: ParallelTransport = async kind => kind === "search"
   ? { search_id: "s", results: [{ url: PAGE, title: "Top scorers", excerpts: ["João Pedro 5 goals, Cole Palmer 3 goals"] }] }
   : { extract_id: "e", results: [], errors: [] };

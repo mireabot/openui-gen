@@ -26,6 +26,21 @@ for (const component of SPORTS_COMPONENTS) {
 }
 
 const heatmap = suite.fixtures.find(item => item.key === "FixturesHeatmap/full");
+const timeline = suite.fixtures.find(item => item.key === "ClubTimeline/full");
+const timelineStats = suite.fixtures.find(item => item.key === "ClubTimeline/withStats");
+const timelineSparse = suite.fixtures.find(item => item.key === "ClubTimeline/sparse");
+assert.ok(timeline && timelineStats && timelineSparse);
+const yearTimeline = (fixture: Fixture) => flatten(fixture.expected).find(node => node.kind === "YearTimeline");
+const clubValues = yearTimeline(timeline)?.properties.items;
+assert.ok(Array.isArray(clubValues));
+assert.equal(clubValues[0].year, clubValues[1].year, "Two clubs in the same year must remain separate cards");
+assert.equal(clubValues[1].marker, "currency", "Loan markers must survive template expansion");
+assert.deepEqual(clubValues[0].stats, [], "The m04 layout has no statistics section");
+const statValues = yearTimeline(timelineStats)?.properties.items;
+assert.ok(Array.isArray(statValues));
+assert.equal(statValues[0].stats.length, 3, "The m05 layout keeps its supplied stats");
+assert.equal(yearTimeline(timelineStats)?.properties.initial, 2, "A current-club opening position must reach the client");
+assert.deepEqual(yearTimeline(timelineSparse)?.properties.items, [], "An empty history must remain empty");
 assert.ok(heatmap);
 const nodes = flatten(heatmap.expected);
 const grid = nodes.find(node => node.kind === "Grid");
@@ -63,7 +78,8 @@ if (sourceIndex >= 0) {
   const directory = process.argv[sourceIndex + 1];
   assert.ok(directory && !directory.startsWith("--"), "--source requires the source sports-components/lib directory");
   const designs = readdirSync(directory).filter(file => file.endsWith(".tsx") && file !== "rating.tsx").map(file => path.basename(file, ".tsx")).sort();
-  const indexed = SPORTS_COMPONENTS.map(component => component.name.replace(/[A-Z]/g, (letter, index) => `${index ? "-" : ""}${letter.toLowerCase()}`)).sort();
+  const indexed = SPORTS_COMPONENTS.filter(component => component.source.startsWith("ui-canvas sports-components/"))
+    .map(component => component.name.replace(/[A-Z]/g, (letter, index) => `${index ? "-" : ""}${letter.toLowerCase()}`)).sort();
   assert.deepEqual(indexed, designs, "Every reusable sports design must have a server template. rating.tsx is a shared helper");
   console.log(`sports source coverage: ${designs.length}/${designs.length} reusable designs indexed`);
 }

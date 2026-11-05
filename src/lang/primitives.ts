@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { NUMBER_FORMATS, CHILD_NAMES, copy, data, node, nodes, opt, style, token, TOKEN_SCHEMA, type PropMeta, type PropSpec } from "./props.js";
 import { TONE } from "../primitives/tokens.js";
+import { YearTimelineItemSchema } from "../primitives/year-timeline.js";
 
 /**
  * The primitive library: what OpenUI Lang programs compose and what renderers draw. This is the
@@ -69,16 +70,6 @@ export const PRIMITIVES = [
   }),
 
   // ---------------------------------------------------------------- layout
-  P({
-    name: "Calculation", category: "layout", intent: "A local calculation scope: child controls edit input bindings and child values recalculate together. No network request or model call.",
-    props: {
-      values: data.record(z.object({ unitPrice: z.number().nullable(), quantity: z.number().int().nullable(), months: z.number(), annualRate: z.number() })),
-      children: nodes({ min: 1 }),
-      model: opt(copy.oneOf(["compound-growth", "simple-growth"])),
-    },
-    behaviors: [], rules: ["transparent container; 24 between children", "initial inputs come from the record", "quantity is whole units; annualRate is percent points; months is positive", "derived startingValue, endingValue, change, periodRate, endUnitPrice and optional alternatives replace only values in this scope", "invalid inputs produce null outputs"],
-    skeleton: "transparent vertical container, child skeletons with gap 24",
-  }),
   P({
     name: "Stack", category: "layout", intent: "Lays children out in one direction with a token gap, or flows them into wrapping rows (\"wrap\": tags, chips, facts).",
     props: {
@@ -218,22 +209,6 @@ export const PRIMITIVES = [
 
   // ---------------------------------------------------------------- controls
   P({
-    name: "Slider", category: "control", intent: "A labelled range input. Inside Calculation it edits its bound input and updates sibling outputs; outside it owns local state.",
-    props: { label: copy.text(), value: data.number("decimal"), min: copy.decimal(), max: copy.decimal(), step: opt(copy.decimal()), unit: opt(copy.text()) },
-    behaviors: ["select"], rules: ["native: the system SwiftUI Slider(value:in:step:), tint surface.brand (system track, thumb, haptics, VoiceOver adjust)", "web preview: 44 hit area, 8 pill track surface.filled, 20 thumb surface.brand", "step defaults to 1; bounds and step must be finite and valid", "keyboard changes are immediate"],
-    skeleton: "label line and pill track in a 44 hit area",
-  }),
-  P({
-    name: "ChoiceTags", category: "control", intent: "Single selection in overflowing icon/text pills, or alternative rows. Edits its bound input inside Calculation.",
-    props: {
-      label: copy.text(),
-      options: data.list(z.object({ label: z.string(), value: z.number(), icon: z.string(), detail: z.string().optional(), trailing: z.string().optional() }), { min: 1 }),
-      value: data.number("decimal"), style: opt(copy.oneOf(["tags", "rows"])),
-    },
-    behaviors: ["select", "scroll"], rules: ["tags: outlined pills (Kino Secondary button), 44 hit area, 20 icon, gap 8, body semibold, no fill", "tags selected: ink.primary text and icon, outline.control 1.5 border (bright); unselected: outline.control text and icon, outline.subtle 1.5 border (subtle)", "intrinsic width; horizontal overflow", "rows: selected outline.strong fill, unselected surface.filled; optional detail and trailing text; single selection"],
-    skeleton: "three independent 44 tall pills in a horizontal row",
-  }),
-  P({
     name: "Button", category: "control", intent: "A labelled action.",
     props: {
       label: copy.text(), action: copy.action(), style: copy.oneOf(["primary", "secondary", "outline", "text"]), icon: opt(copy.icon()), wide: opt(copy.bool()),
@@ -329,31 +304,11 @@ export const PRIMITIVES = [
     behaviors: [], rules: ["star / star.fill"], skeleton: "bar 16 tall, 30% wide",
   }),
   P({
-    name: "Sparkline", category: "data", intent: "A tiny trend line of a series (a day or a week of prices), coloured by its direction; stretches to the space it gets.",
-    props: {
-      points: data.list(point, POINTS), baseline: opt(copy.bool("dotted line at the first value")),
-      reference: opt(data.number("decimal", "a dashed line at this value; with fill, the zones split here")),
-      fill: opt(copy.bool("gradient zone under the line: good above the reference, bad below (direction colour without a reference)")),
-      style: opt(style.line("line look (axis and grid are ignored at sparkline size)")),
-    },
-    behaviors: [], rules: ["style: token-only options, each one Swift Charts modifier (LineMark / AreaMark / PointMark)", "height 40; full width on its own, 72 wide inside a horizontal Stack (a row)", "fill: vertical gradient zones with a hard stop at the reference, as in PriceChart threshold", "good ink when the last value ≥ the first, bad ink otherwise", "no axes, no labels"],
-    skeleton: "radius-4 box 40 tall at its width (72 in a row)",
-  }),
-  P({
-    name: "PriceChart", category: "data", intent: "A price line over a period with a soft area fill and an optional dashed reference (e.g. the previous close); scrub to read a point, or pin and drag to measure a move.",
-    props: {
-      points: data.list(point.extend({ session: z.enum(["pre", "regular", "after"]).optional() }), POINTS),
-      height: opt(copy.oneOf(["compact", "regular"], "compact 120 · regular 200 (default)")),
-      reference: opt(data.number("decimal", "value of the dashed reference line")), referenceLabel: opt(copy.text("label at the line's end, e.g. \"Prev close\"")),
-      tone: opt(copy.oneOf(["direction", "threshold"], "direction (default): one colour from first vs last · threshold: good above the reference, bad below")),
-      annotate: opt(copy.bool("write the high and low on the line")), measure: opt(copy.bool("tap pins a start point, drag reads the move from it")),
-      comparison: opt(data.list(point, POINTS)), comparisonLabel: opt(copy.text()), unit: opt(copy.oneOf(["currency", "percent", "number"])),
-      style: opt(style.line("line look")),
-      sessions: opt(copy.oneOf(["auto", "off"], "auto (default): shade the points' pre-market and after-hours stretches · off")),
-    },
-    behaviors: ["scrub"], rules: ["area fill is a vertical gradient of the line colour",
-      "sessions: each pre / after stretch (sharing its boundary point with the regular one) is a full-height band, ink.primary 7% at the top fading to 0, labelled \"Pre-market\" / \"After hours\" at its top in footnote secondary; no label on a band under 18% of the width · Swift Charts RectangleMark(xStart:xEnd:yStart:yEnd:) + annotation(position: .overlay, alignment: .top)", "reference: 1px dashed, label at its end", "threshold: hard colour stop at the reference's height", "first and last labels under the plot, footnote tertiary", "comparison: dashed secondary line; identical labels and count required; both series share the scale", "unit affects every price readout and spoken value", "style: token-only options, each one Swift Charts modifier (LineMark / AreaMark / PointMark / RuleMark, chartXAxis / chartYAxis / chartYScale)"],
-    skeleton: "radius-12 box at the chart height, two footnote bars under it",
+    name: "YearTimeline", category: "data", intent: "Cards grouped by year: select a year to jump to its first card, or swipe cards while the year rail follows the centred card.",
+    props: { items: data.list(YearTimelineItemSchema, { min: 0, max: 40 }), initial: opt(data.number("integer", "zero-based card index to open on; defaults to 0")) },
+    behaviors: ["scroll", "select"],
+    rules: ["one stop per unique year; hide the year rail when fewer than two years", "96-wide, 40-high year stops, title2 semibold, dimmed away from the centre", "280-wide cards, 16 gap, radius 24 and padding 20; centre first and last cards with content margins", "56 crest without background; fall back to a monogram on the data colour", "name in headline semibold; dates in body medium; omit empty location", "currency marker in good tone beside the name", "stats are optional: omit an empty list; at most 3 label/value pairs below a divider", "swiping between cards in the same year holds the year rail still", "respect reduced motion"],
+    skeleton: "40-high year rail, 16 gap, radius-24 card 220 high",
   }),
   P({
     name: "StepTimeline", category: "data", intent: "A value over time as a stepped line in stretches, each in its own colour with its crest above its middle; scrub to read the stretch, date and value.",
@@ -370,16 +325,7 @@ export const PRIMITIVES = [
     skeleton: "header bar, radius-12 box 200 tall",
   }),
   P({
-    name: "Change", category: "data", intent: "A signed price change with its percent (−$1.20 · −0.52%), toned by its sign; \"percent\" shows only the percent with an arrow.",
-    props: {
-      value: data.number("decimal"), percent: data.number("decimal", "percent points, e.g. 1.4 for +1.4%"),
-      style: opt(copy.oneOf(["pill", "text", "percent"], "pill (default) · text · percent: arrow + %")), role: opt(token("type", "default footnote")),
-    },
-    behaviors: [], rules: ["good tone when ≥ 0, bad when < 0", "always signed", "arrow.up.right / arrow.down.right glyph in the pill and percent styles", "tabular figures"],
-    skeleton: "pill 22 tall, 96 wide (percent style 64)",
-  }),
-  P({
-    name: "SplitBar", category: "data", intent: "How votes split between two or three sides (Buy · Hold · Sell, Yes · No) in one bar, each side in its tone, in the given order.",
+    name: "SplitBar", category: "data", intent: "How a value splits between two or three sides (home · draw · away) in one bar, each side in its tone, in the given order.",
     props: {
       sides: data.list(z.object({ label: z.string(), count: z.number(), tone: z.enum(TONE), color: z.string().optional() }), { min: 2, max: 3 }),
       size: opt(copy.oneOf(["regular", "thin", "micro"], "regular 8 (default) · thin 6 · micro 4 (40 wide, for chips)")), dim: opt(copy.bool("losing sides at 35%")),
@@ -399,7 +345,7 @@ export const PRIMITIVES = [
     name: "Row", category: "row", intent: "One list row: leading mark, title and subtitle, trailing value or control.",
     props: {
       title: copy.text(), subtitle: opt(copy.text()), leading: opt(node(["Icon", "Avatar", "Image"])),
-      trailing: opt(node(["Text", "Number", "Badge", "Chip", "Pill", "Stack", "Toggle", "Icon", "IconButton", "Button", "Change", "Sparkline"])),
+      trailing: opt(node(["Text", "Number", "Badge", "Chip", "Pill", "Stack", "Toggle", "Icon", "IconButton", "Button"])),
       action: opt(copy.action()),
     },
     behaviors: ["press"], rules: ["list padding 12 v · 20 h", "min height 44", "title and subtitle each wrap to at most 2 lines, then truncate"],

@@ -2,6 +2,80 @@
   "version": 1,
   "components": [
     {
+      "name": "ClubTimeline",
+      "intent": "A player's club history as a swipeable row of club cards under one stop per year. Loans have a currency marker; brief stats are optional.",
+      "useWhen": "a player's career, transfer history or clubs over time; use stats only when asked for and supplied by the research",
+      "source": "ui-canvas club-timeline/m04 and club-timeline/m05",
+      "contract": [
+        {
+          "path": "initial",
+          "kind": "number",
+          "note": "zero-based card to open on; 0 for oldest, last index for current club"
+        },
+        {
+          "path": "clubs",
+          "kind": "list",
+          "note": "club spells oldest first; multiple clubs can share the same year"
+        },
+        {
+          "path": "clubs[].id",
+          "kind": "text",
+          "note": "unique spell ID; a return to the same club has a different ID"
+        },
+        {
+          "path": "clubs[].name",
+          "kind": "text",
+          "note": "club name"
+        },
+        {
+          "path": "clubs[].year",
+          "kind": "text",
+          "note": "the year the spell starts, e.g. 2025"
+        },
+        {
+          "path": "clubs[].dates",
+          "kind": "text",
+          "note": "dates as the source gives them, e.g. Jul 2025 – Feb 2026"
+        },
+        {
+          "path": "clubs[].location",
+          "kind": "text",
+          "note": "club location, or an empty string when unavailable"
+        },
+        {
+          "path": "clubs[].logo",
+          "kind": "text",
+          "note": "club crest URL, or an empty string"
+        },
+        {
+          "path": "clubs[].color",
+          "kind": "color",
+          "note": "club colour for a monogram when there is no logo"
+        },
+        {
+          "path": "clubs[].marker",
+          "kind": "text",
+          "note": "currency for a loan, otherwise none"
+        },
+        {
+          "path": "clubs[].stats",
+          "kind": "list",
+          "note": "optional stats: [] when not requested or not known, at most 3 supplied label/value pairs"
+        },
+        {
+          "path": "clubs[].stats[].label",
+          "kind": "text",
+          "note": "stat name, e.g. Apps, Goals or Assists"
+        },
+        {
+          "path": "clubs[].stats[].value",
+          "kind": "text",
+          "note": "published value as shown; never invent a missing stat"
+        }
+      ],
+      "params": []
+    },
+    {
       "name": "MatchCard",
       "intent": "One match between two clubs: both teams on stacked rows with their scores, a side column (date and kickoff, or a status such as FT), and one details line.",
       "useWhen": "a fixture or a result; a list of matches (@Each over them); the latest meeting between two clubs",

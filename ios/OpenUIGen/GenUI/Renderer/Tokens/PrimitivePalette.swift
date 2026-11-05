@@ -3,7 +3,7 @@ import SwiftUI
 /// Colour lookup for one brand in one appearance.
 ///
 /// A light brand drawn on a `Screen(…, "dark")` root takes the dark theme's neutrals and
-/// keeps its own brand colours, like the web's `themeVars`. Values the DSL or the data
+/// keeps its own brand colours, like the web's `themeVars`. Values a program or the data
 /// carry (`#hex`, an iOS accent name, a `group.token`) resolve through `value(_:)`.
 struct PrimitivePalette: Sendable, Equatable {
     /// Tokens a dark screen keeps from the brand; everything else comes from the dark theme.
@@ -15,11 +15,11 @@ struct PrimitivePalette: Sendable, Equatable {
     static let standard = PrimitivePalette(theme: DesignTheme.bundled(brand: DesignTheme.defaultBrand))
 
     let theme: DesignTheme?
-    let appearance: Placement.Appearance
+    let appearance: ScreenAppearance
     /// The dark theme, when a light brand renders dark.
     private let neutrals: DesignTheme?
 
-    init(theme: DesignTheme?, appearance: Placement.Appearance? = nil) {
+    init(theme: DesignTheme?, appearance: ScreenAppearance? = nil) {
         self.theme = theme
         let resolved = appearance ?? theme?.appearance ?? .light
         self.appearance = resolved
@@ -69,7 +69,7 @@ struct PrimitivePalette: Sendable, Equatable {
         }
     }
 
-    /// A value from the DSL or the data: `#hex`, a theme token with a dot, or an iOS
+    /// A value from the program or the data: `#hex`, a theme token with a dot, or an iOS
     /// accent name (`indigo`). `nil` for anything else.
     func value(_ value: String?) -> Color? {
         guard let value else { return nil }
@@ -98,7 +98,7 @@ struct PrimitivePalette: Sendable, Equatable {
         accents[name]
     }
 
-    /// The DSL's accent ink names (plus brown and gray) as iOS system colours.
+    /// The language's accent ink names (plus brown and gray) as iOS system colours.
     private static let accents: [String: Color] = [
         "red": .red, "orange": .orange, "yellow": .yellow, "green": .green, "mint": .mint,
         "teal": .teal, "cyan": .cyan, "blue": .blue, "indigo": .indigo, "purple": .purple,

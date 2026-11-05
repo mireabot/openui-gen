@@ -1,0 +1,862 @@
+{
+  "prompt": "Create a compact US streaming guide for the 2026/27 Premier League, Serie A, LaLiga and Bundesliga. Show each league, its major services/channels, coverage caveats and source attribution. Research current rights. Use only primitive Card, Stack, Text, Badge, Row, Disclosure and SegmentedControl; no sports templates. Make a polished Kino component with expandable coverage details. No prices. Explicitly label United States and as-of date.",
+  "program": "root = Screen([pick1, pick2])\nd = Query(\"sports_dataset\", {run: \"3ca2646f-4aad-443b-a6e1-3b9a28686dc6\"}, {})\npick1 = Stack(\"v\", 8, [pick1_title, pick1_leagues, pick1_meta])\npick1_title = Text(\"US streaming guide\", \"title2\", \"semibold\", null, 0)\npick1_leagues = Text(\"Premier League, Serie A, LaLiga and Bundesliga, 2026/27\", \"body\", null, \"secondary\", 0)\npick1_meta = Stack(\"wrap\", 8, [Badge(\"United States\", \"neutral\", \"globe.americas.fill\"), Stack(\"h\", 4, [Text(\"As of\", \"footnote\", null, \"secondary\"), Text(d.answers.q1.asOf, \"footnote\", \"semibold\")], \"center\")], \"center\")\npick2 = SegmentedControl([\"Premier\", \"Serie A\", \"LaLiga\", \"Bundesliga\"], 0, [pick2_premier, pick2_serieA, pick2_laLiga, pick2_bundesliga])\npick2_premier = Card([Text(d.answers.q1.title, \"headline\", \"semibold\", null, 0), Text(d.answers.q1.summary, \"footnote\", null, \"secondary\"), pick2_premierRows, pick2_premierDetails, Text(d.answers.q1.source, \"footnote\", null, \"tertiary\")], \"card\", \"container\", 16, false, 12)\npick2_serieA = Card([Text(d.answers.q2.title, \"headline\", \"semibold\", null, 0), Text(d.answers.q2.summary, \"footnote\", null, \"secondary\"), pick2_serieARows, pick2_serieADetails, Text(d.answers.q2.source, \"footnote\", null, \"tertiary\")], \"card\", \"container\", 16, false, 12)\npick2_laLiga = Card([Text(d.answers.q3.title, \"headline\", \"semibold\", null, 0), Text(d.answers.q3.summary, \"footnote\", null, \"secondary\"), pick2_laLigaRows, pick2_laLigaDetails, Text(d.answers.q3.source, \"footnote\", null, \"tertiary\")], \"card\", \"container\", 16, false, 12)\npick2_bundesliga = Card([Text(d.answers.q4.title, \"headline\", \"semibold\", null, 0), Text(d.answers.q4.summary, \"footnote\", null, \"secondary\"), pick2_bundesligaRows, pick2_bundesligaDetails, Text(d.answers.q4.source, \"footnote\", null, \"tertiary\")], \"card\", \"container\", 16, false, 12)\npick2_premierRows = Stack(\"v\", 8, @Each(d.answers.q1.rows, \"r\", Stack(\"v\", 4, [Stack(\"h\", 8, [Text(r.label, \"body\", \"medium\"), Badge(r.cells[0], \"neutral\", null, \"small\")], \"start\", \"between\"), Text(r.cells[1], \"footnote\", null, \"secondary\")])), null, null, null, true)\npick2_premierDetails = Disclosure(\"Coverage details\", [Stack(\"v\", 12, [Stack(\"v\", 4, [Text(d.answers.q1.facts[0].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q1.facts[0].value, \"body\", \"semibold\", null, 0), Text(d.answers.q1.facts[0].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q1.facts[1].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q1.facts[1].value, \"body\", \"semibold\", null, 0), Text(d.answers.q1.facts[1].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q1.facts[2].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q1.facts[2].value, \"body\", \"semibold\", null, 0), Text(d.answers.q1.facts[2].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q1.facts[3].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q1.facts[3].value, \"body\", \"semibold\", null, 0), Text(d.answers.q1.facts[3].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q1.facts[4].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q1.facts[4].value, \"body\", \"semibold\", null, 0), Text(d.answers.q1.facts[4].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q1.facts[5].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q1.facts[5].value, \"body\", \"semibold\", null, 0), Text(d.answers.q1.facts[5].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q1.facts[6].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q1.facts[6].value, \"body\", \"semibold\", null, 0), Text(d.answers.q1.facts[6].detail, \"footnote\", null, \"secondary\")])], null, null, null, true)], false)\npick2_serieARows = Stack(\"v\", 12, @Each(d.answers.q2.rows, \"r\", Stack(\"v\", 4, [Stack(\"h\", 8, [Text(r.label, \"body\", \"semibold\", null, 0), Badge(r.cells[0], \"neutral\", null, \"small\")], \"start\", \"between\"), Text(r.cells[1], \"footnote\", \"medium\", null, 0), Text(r.cells[2], \"footnote\", null, \"secondary\")])), null, null, null, true)\npick2_serieADetails = Disclosure(\"Coverage details\", [Stack(\"v\", 12, @Each(d.answers.q2.facts, \"f\", Stack(\"v\", 4, [Text(f.label, \"footnote\", null, \"secondary\", 0), Text(f.value, \"body\", \"semibold\", null, 0), Text(f.detail, \"footnote\", null, \"secondary\")])), null, null, null, true)], false)\npick2_laLigaRows = Stack(\"v\", 8, [Stack(\"v\", 4, [Stack(\"h\", 8, [Text(d.answers.q3.rows[0].label, \"body\", \"medium\"), Badge(d.answers.q3.rows[0].cells[1], \"neutral\", null, \"small\")], \"start\", \"between\"), Text(d.answers.q3.rows[0].cells[0], \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Text(d.answers.q3.rows[1].label, \"body\", \"medium\")], \"start\", \"between\"), Text(d.answers.q3.rows[1].cells[0], \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Text(d.answers.q3.rows[2].label, \"body\", \"medium\"), Badge(d.answers.q3.rows[2].cells[1], \"neutral\", null, \"small\")], \"start\", \"between\"), Text(d.answers.q3.rows[2].cells[0], \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Text(d.answers.q3.rows[3].label, \"body\", \"medium\")], \"start\", \"between\"), Text(d.answers.q3.rows[3].cells[0], \"footnote\", null, \"secondary\")])], null, null, null, true)\npick2_laLigaDetails = Disclosure(\"Coverage details\", [Stack(\"v\", 12, [Stack(\"v\", 4, [Text(d.answers.q3.facts[0].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q3.facts[0].value, \"body\", \"semibold\", null, 0), Text(d.answers.q3.facts[0].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q3.facts[1].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q3.facts[1].value, \"body\", \"semibold\", null, 0), Text(d.answers.q3.facts[1].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q3.facts[2].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q3.facts[2].value, \"body\", \"semibold\", null, 0), Text(d.answers.q3.facts[2].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q3.facts[3].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q3.facts[3].value, \"body\", \"semibold\", null, 0), Text(d.answers.q3.facts[3].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q3.facts[4].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q3.facts[4].value, \"body\", \"semibold\", null, 0), Text(d.answers.q3.facts[4].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q3.facts[5].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q3.facts[5].value, \"body\", \"semibold\", null, 0), Text(d.answers.q3.facts[5].detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Text(d.answers.q3.facts[6].label, \"footnote\", null, \"secondary\", 0), Text(d.answers.q3.facts[6].value, \"body\", \"semibold\", null, 0), Text(d.answers.q3.facts[6].detail, \"footnote\", null, \"secondary\")])], null, null, null, true)], false)\npick2_bundesligaRows = Stack(\"v\", 12, @Each(d.answers.q4.rows, \"r\", Stack(\"v\", 8, [Stack(\"h\", 8, [Text(r.label, \"body\", \"semibold\", null, 0), Badge(r.cells[0], \"neutral\", null, \"small\")], \"start\", \"between\"), Stack(\"wrap\", 8, [Badge(r.cells[1], \"neutral\", \"tv\", \"small\"), Badge(r.cells[2], \"neutral\", \"play.rectangle\", \"small\")]), Text(r.cells[3], \"footnote\", null, \"secondary\")])), null, null, null, true)\npick2_bundesligaDetails = Disclosure(\"Coverage details\", [Stack(\"v\", 12, @Each(d.answers.q4.facts, \"f\", Stack(\"v\", 4, [Text(f.label, \"footnote\", null, \"secondary\", 0), Text(f.value, \"body\", \"semibold\", null, 0), Text(f.detail, \"footnote\", null, \"secondary\")])), null, null, null, true)], false)\n",
+  "snapshot": {
+    "tool": "sports_dataset",
+    "args": {
+      "run": "3ca2646f-4aad-443b-a6e1-3b9a28686dc6"
+    },
+    "result": {
+      "answers": {
+        "q1": {
+          "columns": [
+            "Service / channel",
+            "Language",
+            "Coverage"
+          ],
+          "rows": [
+            {
+              "label": "NBC",
+              "cells": [
+                "English",
+                "Broadcast network; marquee fixtures, simulcast on Peacock and NBC.com",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "English"
+                },
+                {
+                  "label": "Language",
+                  "value": "Broadcast network; marquee fixtures, simulcast on Peacock and NBC.com"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "—"
+                }
+              ]
+            },
+            {
+              "label": "USA Network",
+              "cells": [
+                "English",
+                "Cable; hosts a large share of games; not streamed on Peacock per Goal.com",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "English"
+                },
+                {
+                  "label": "Language",
+                  "value": "Cable; hosts a large share of games; not streamed on Peacock per Goal.com"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "—"
+                }
+              ]
+            },
+            {
+              "label": "Peacock",
+              "cells": [
+                "English / Spanish",
+                "Streams NBC and Telemundo games plus about 175 matches per season; full replays; Multiview",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "English / Spanish"
+                },
+                {
+                  "label": "Language",
+                  "value": "Streams NBC and Telemundo games plus about 175 matches per season; full replays; Multiview"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "—"
+                }
+              ]
+            },
+            {
+              "label": "NBCSN",
+              "cells": [
+                "English",
+                "Overflow coverage when fixtures overlap (per Goal.com and The Athletic)",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "English"
+                },
+                {
+                  "label": "Language",
+                  "value": "Overflow coverage when fixtures overlap (per Goal.com and The Athletic)"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "—"
+                }
+              ]
+            },
+            {
+              "label": "Telemundo",
+              "cells": [
+                "Spanish",
+                "Exclusive Spanish-language rights; simulcasts on Peacock",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "Spanish"
+                },
+                {
+                  "label": "Language",
+                  "value": "Exclusive Spanish-language rights; simulcasts on Peacock"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "—"
+                }
+              ]
+            },
+            {
+              "label": "Universo",
+              "cells": [
+                "Spanish",
+                "Multiple games per matchweek; not on Peacock per Goal.com",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "Spanish"
+                },
+                {
+                  "label": "Language",
+                  "value": "Multiple games per matchweek; not on Peacock per Goal.com"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "—"
+                }
+              ]
+            }
+          ],
+          "facts": [
+            {
+              "label": "Rights holder",
+              "value": "NBC Sports (NBCUniversal)",
+              "detail": "Premier League lists United States - NBC Sports for 2025-28; the 2021 deal covers all 380 matches per season to 2028 plus exclusive Spanish-language rights."
+            },
+            {
+              "label": "Match count",
+              "value": "All 380 matches",
+              "detail": "NBC Sports (2026-10-29) says all 380 games are available across NBC, USA and Peacock."
+            },
+            {
+              "label": "Peacock exclusives",
+              "value": "About 175 matches per season",
+              "detail": "Goal.com says Peacock is the exclusive home of roughly 175 matches. Peacock says matches not on NBC or USA Network are typically exclusive to it, and selections vary by week."
+            },
+            {
+              "label": "Matchweek 9 example",
+              "value": "Split across NBC, USA and Peacock",
+              "detail": "Chelsea v Man United and Newcastle v Everton were on USA; Spurs v Crystal Palace on NBC; Liverpool v Arsenal on Peacock (NBC Sports schedule)."
+            },
+            {
+              "label": "Blackouts",
+              "value": "Not stated",
+              "detail": "None of the retrieved pages describes blackouts, so none are claimed."
+            },
+            {
+              "label": "Spanish-language",
+              "value": "Telemundo, Universo, Peacock",
+              "detail": "Goal.com says Peacock also carries a Spanish audio track for its exclusive matches."
+            },
+            {
+              "label": "Cable and live TV access",
+              "value": "Varies by provider",
+              "detail": "Goal.com says Sling TV lacks Telemundo and NBCSN, and Peacock does not carry USA Network or Universo matches."
+            },
+            {
+              "label": "Region",
+              "value": "United States",
+              "detail": "Figures are as of 2026-11-04."
+            }
+          ],
+          "status": "complete",
+          "question": "United States, as of 2026-11-04: Premier League 2026/27 broadcast and streaming rights. Name the major services and channels, the coverage caveats (match count, blackouts, which games are exclusive), and cite sources. Render as a Kino component with Card, Stack, Text, Badge, Row, SegmentedControl (filter by service) and an expandable Disclosure for coverage details. No prices.",
+          "title": "Premier League 2026/27 — US broadcast & streaming",
+          "summary": "In the US, NBC Sports (NBCUniversal) holds Premier League rights; all 380 matches air across NBC, USA Network and Peacock in English, with Telemundo and Universo in Spanish. Rights run to 2028.",
+          "source": "Source: premierleague.com, nbcsports.com, peacocktv.com",
+          "asOf": "2026-11-04"
+        },
+        "q2": {
+          "columns": [
+            "Language",
+            "Services / channels",
+            "Coverage"
+          ],
+          "rows": [
+            {
+              "label": "Paramount+ (CBS Sports)",
+              "cells": [
+                "English / Italian",
+                "Paramount+",
+                "All 380 Serie A matches streamed live, plus at least 20 Coppa Italia matches and every Supercoppa Italiana fixture"
+              ],
+              "pairs": [
+                {
+                  "label": "Language",
+                  "value": "English / Italian"
+                },
+                {
+                  "label": "Services / channels",
+                  "value": "Paramount+"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "All 380 Serie A matches streamed live, plus at least 20 Coppa Italia matches and every Supercoppa Italiana fixture"
+                }
+              ]
+            },
+            {
+              "label": "CBS linear and FAST (CBS Sports)",
+              "cells": [
+                "English / Italian",
+                "CBS Television Network, CBS Sports Network, CBS Sports Golazo Network",
+                "Select matches only; one third-party page says a number of matches are free on Golazo"
+              ],
+              "pairs": [
+                {
+                  "label": "Language",
+                  "value": "English / Italian"
+                },
+                {
+                  "label": "Services / channels",
+                  "value": "CBS Television Network, CBS Sports Network, CBS Sports Golazo Network"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "Select matches only; one third-party page says a number of matches are free on Golazo"
+                }
+              ]
+            },
+            {
+              "label": "Telemundo (NBCUniversal)",
+              "cells": [
+                "Spanish",
+                "Telemundo Network, Universo, Peacock, Telemundo Deportes Ahora (FAST)",
+                "Serie A, Coppa Italia and Supercoppa Italiana. Match count not stated; NBC Sports says 'select' games on Peacock, Universo and Telemundo"
+              ],
+              "pairs": [
+                {
+                  "label": "Language",
+                  "value": "Spanish"
+                },
+                {
+                  "label": "Services / channels",
+                  "value": "Telemundo Network, Universo, Peacock, Telemundo Deportes Ahora (FAST)"
+                },
+                {
+                  "label": "Coverage",
+                  "value": "Serie A, Coppa Italia and Supercoppa Italiana. Match count not stated; NBC Sports says 'select' games on Peacock, Universo and Telemundo"
+                }
+              ]
+            }
+          ],
+          "facts": [
+            {
+              "label": "CBS Sports rights",
+              "value": "Through the end of 2026/27",
+              "detail": "Exclusive English- and Italian-language US rights, extended by mutual agreement. The Paramount press release is dated 2026-06-04 and covers the US and its territories."
+            },
+            {
+              "label": "Match count (CBS)",
+              "value": "420 matches",
+              "detail": "All 380 Serie A matches, at least 20 Coppa Italia matches and every Supercoppa Italiana fixture."
+            },
+            {
+              "label": "Telemundo rights",
+              "value": "2026/27 to 2028/29",
+              "detail": "Exclusive Spanish-language rights for three seasons, announced by Lega Serie A (page dated 2026-09-01)."
+            },
+            {
+              "label": "Exclusivity",
+              "value": "Exclusive by language",
+              "detail": "CBS is exclusive in English and Italian. Telemundo is exclusive in Spanish. The pages state no blackouts."
+            },
+            {
+              "label": "Which games are on broadcast TV",
+              "value": "Select matches only",
+              "detail": "The pages do not list which matches air on CBS, CBS Sports Network or Golazo. CBS's official schedule is the place to check."
+            },
+            {
+              "label": "Free-to-air caveat",
+              "value": "Unverified on official pages",
+              "detail": "The Golazo free-viewing claim comes from watch-livefootball.tv, not an official source."
+            },
+            {
+              "label": "Season dates",
+              "value": "Aug 22 to May 30",
+              "detail": "cabletv.com gives the 2026-27 calendar as 38 matchdays."
+            }
+          ],
+          "status": "complete",
+          "question": "United States, as of 2026-11-04: Serie A 2026/27 broadcast and streaming rights. Name the major services and channels, the coverage caveats (match count, blackouts, which games are exclusive), and cite sources. Render as a Kino component with Card, Stack, Text, Badge, Row, SegmentedControl (filter by service) and an expandable Disclosure for coverage details. No prices.",
+          "title": "Serie A 2026/27 in the United States",
+          "summary": "CBS Sports holds exclusive English- and Italian-language US rights through 2026/27, with all 380 Serie A matches on Paramount+. Telemundo holds exclusive Spanish-language rights from 2026/27 through 2028/29.",
+          "source": "Source: paramountpressexpress.com, en.legaseriea.it, nbcsports.com",
+          "asOf": "2026-11-04"
+        },
+        "q3": {
+          "columns": [
+            "Service / channel",
+            "2026/27 coverage",
+            "Language"
+          ],
+          "rows": [
+            {
+              "label": "ESPN+ (ESPN App / ESPN Select)",
+              "cells": [
+                "All 380 matches live",
+                "English and Spanish",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "All 380 matches live"
+                },
+                {
+                  "label": "2026/27 coverage",
+                  "value": "English and Spanish"
+                },
+                {
+                  "label": "Language",
+                  "value": "—"
+                }
+              ]
+            },
+            {
+              "label": "ABC, ESPN, ESPN2",
+              "cells": [
+                "At least 20 matches combined (e.g. Real Madrid at Espanyol Aug. 22 and Elche vs Barcelona Aug. 23 on ABC)",
+                "—",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "At least 20 matches combined (e.g. Real Madrid at Espanyol Aug. 22 and Elche vs Barcelona Aug. 23 on ABC)"
+                },
+                {
+                  "label": "2026/27 coverage",
+                  "value": "—"
+                },
+                {
+                  "label": "Language",
+                  "value": "—"
+                }
+              ]
+            },
+            {
+              "label": "ESPN Deportes",
+              "cells": [
+                "At least 200 matches",
+                "Spanish",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "At least 200 matches"
+                },
+                {
+                  "label": "2026/27 coverage",
+                  "value": "Spanish"
+                },
+                {
+                  "label": "Language",
+                  "value": "—"
+                }
+              ]
+            },
+            {
+              "label": "Live-TV services (Fubo, DirecTV, YouTube TV, Hulu + Live TV)",
+              "cells": [
+                "Carry the linear ESPN and ESPN Deportes channels, per third-party guides",
+                "—",
+                "—"
+              ],
+              "pairs": [
+                {
+                  "label": "Service / channel",
+                  "value": "Carry the linear ESPN and ESPN Deportes channels, per third-party guides"
+                },
+                {
+                  "label": "2026/27 coverage",
+                  "value": "—"
+                },
+                {
+                  "label": "Language",
+                  "value": "—"
+                }
+              ]
+            }
+          ],
+          "facts": [
+            {
+              "label": "Rights holder",
+              "value": "ESPN (Disney)",
+              "detail": "LaLiga and ESPN announced 2026/27 US coverage on 2026-08-11; LaLiga North America is a joint venture of LaLiga and Relevent."
+            },
+            {
+              "label": "Match count",
+              "value": "380 on ESPN+",
+              "detail": "Every match is on ESPN+; ABC, ESPN, ESPN2 and ESPN Deportes are additional distribution, not a replacement (Laliga Update)."
+            },
+            {
+              "label": "Linear TV caveat",
+              "value": "Not every match is on TV",
+              "detail": "At least 20 matches are on ABC/ESPN/ESPN2, so ESPN+ is needed for the full schedule. Individual channel assignments vary by match."
+            },
+            {
+              "label": "Exclusivity",
+              "value": "ESPN-only; no Peacock or Prime",
+              "detail": "Antennaland says LaLiga is not on Peacock or Amazon Prime. Goal.com's page also says rights are exclusive to CBS/Paramount+, which conflicts with LaLiga's and ESPN's own announcement, so I did not rely on it."
+            },
+            {
+              "label": "Blackouts",
+              "value": "None stated",
+              "detail": "None of the retrieved pages describe US blackouts. Verify listings close to kickoff, since schedules can change."
+            },
+            {
+              "label": "Plan naming",
+              "value": "ESPN+ now sits inside ESPN Select",
+              "detail": "Antennaland says ESPN+ operates as a digital channel within ESPN Select, and ESPN Unlimited adds the linear networks. Plan names are given without prices."
+            },
+            {
+              "label": "Match listings",
+              "value": "Check before kickoff",
+              "detail": "The ESPN app publishes the channel and streaming listing for each fixture."
+            }
+          ],
+          "status": "complete",
+          "question": "United States, as of 2026-11-04: LaLiga 2026/27 broadcast and streaming rights. Name the major services and channels, the coverage caveats (match count, blackouts, which games are exclusive), and cite sources. Render as a Kino component with Card, Stack, Text, Badge, Row, SegmentedControl (filter by service) and an expandable Disclosure for coverage details. No prices.",
+          "title": "LaLiga 2026/27 – United States viewing",
+          "summary": "In the US, ESPN holds LaLiga 2026/27: all 380 matches stream on ESPN+ in English and Spanish, at least 20 air on ABC/ESPN/ESPN2, and ESPN Deportes shows at least 200.",
+          "source": "Source: laliga.com, prnewswire.com, espn.com",
+          "asOf": "2026-11-04"
+        },
+        "q4": {
+          "columns": [
+            "Language",
+            "Linear TV",
+            "Streaming",
+            "Match count"
+          ],
+          "rows": [
+            {
+              "label": "USA Sports (Versant)",
+              "cells": [
+                "English (exclusive)",
+                "USA Network",
+                "Fandango (free)",
+                "At least 30 on USA Network; all other matches on Fandango; 300+ total"
+              ],
+              "pairs": [
+                {
+                  "label": "Language",
+                  "value": "English (exclusive)"
+                },
+                {
+                  "label": "Linear TV",
+                  "value": "USA Network"
+                },
+                {
+                  "label": "Streaming",
+                  "value": "Fandango (free)"
+                },
+                {
+                  "label": "Match count",
+                  "value": "At least 30 on USA Network; all other matches on Fandango; 300+ total"
+                }
+              ]
+            },
+            {
+              "label": "Telemundo (NBCUniversal)",
+              "cells": [
+                "Spanish (exclusive)",
+                "Telemundo, Universo",
+                "Peacock",
+                "100+ on Telemundo/Universo; all matches on Peacock"
+              ],
+              "pairs": [
+                {
+                  "label": "Language",
+                  "value": "Spanish (exclusive)"
+                },
+                {
+                  "label": "Linear TV",
+                  "value": "Telemundo, Universo"
+                },
+                {
+                  "label": "Streaming",
+                  "value": "Peacock"
+                },
+                {
+                  "label": "Match count",
+                  "value": "100+ on Telemundo/Universo; all matches on Peacock"
+                }
+              ]
+            }
+          ],
+          "facts": [
+            {
+              "label": "Exclusivity",
+              "value": "English: USA Sports; Spanish: Telemundo",
+              "detail": "Each is described as the exclusive home in its language beginning with 2026/27 (Bundesliga.com, 2026-07-16)."
+            },
+            {
+              "label": "Match count, English",
+              "value": "At least 30 on USA Network; 300+ overall",
+              "detail": "All other matches stream free on Fandango. Versant says coverage includes all regular season matches. Clubs such as Bayern, Dortmund, Leverkusen, Schalke, Leipzig, Frankfurt and Hamburg are featured prominently on USA Network."
+            },
+            {
+              "label": "Match count, Spanish",
+              "value": "100+ on linear; all on Peacock",
+              "detail": "Telemundo and Universo carry more than 100 matches per season, and every match streams on Peacock."
+            },
+            {
+              "label": "Which games are on which channel",
+              "value": "Shown 3 days before kickoff",
+              "detail": "Bundesliga.com says the active broadcaster appears on its Fixtures & Results page 3 days before kickoff. The pages found do not give a full USA Network schedule."
+            },
+            {
+              "label": "Blackouts",
+              "value": "—",
+              "detail": "None of the retrieved pages state any blackout rules."
+            },
+            {
+              "label": "Previous rights holder",
+              "value": "ESPN+ no longer carries Bundesliga",
+              "detail": "Reuters calls this the league's first major shift in U.S. partners since ESPN+ acquired rights in 2019. One Bundesliga.com broadcaster page still lists ESPN+, which looks outdated."
+            },
+            {
+              "label": "Deal length",
+              "value": "Through 2030-31 (English)",
+              "detail": "Versant's press release says the partnership runs through the 2030-31 season."
+            },
+            {
+              "label": "Season opener on USA Network",
+              "value": "Aug 22, 2026",
+              "detail": "Franz Beckenbauer Supercup: Bayern Munich vs Borussia Dortmund."
+            }
+          ],
+          "status": "complete",
+          "question": "United States, as of 2026-11-04: Bundesliga 2026/27 broadcast and streaming rights. Name the major services and channels, the coverage caveats (match count, blackouts, which games are exclusive), and cite sources. Render as a Kino component with Card, Stack, Text, Badge, Row, SegmentedControl (filter by service) and an expandable Disclosure for coverage details. No prices.",
+          "title": "Bundesliga 2026/27 in the United States",
+          "summary": "USA Sports (Versant) is the exclusive English-language home: at least 30 matches on USA Network, the rest free on Fandango. Telemundo is the exclusive Spanish-language home: 100+ matches on Telemundo/Universo, all matches on Peacock.",
+          "source": "Source: bundesliga.com, versantmedia.com, bundesliga-group.com",
+          "asOf": "2026-11-04"
+        }
+      }
+    },
+    "fields": [
+      {
+        "path": "answers.q1.status",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.question",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.title",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.summary",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.source",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.asOf",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.columns[]",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.rows[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.rows[].cells[]",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.rows[].pairs[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.rows[].pairs[].value",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.facts[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.facts[].value",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q1.facts[].detail",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.status",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.question",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.title",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.summary",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.source",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.asOf",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.columns[]",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.rows[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.rows[].cells[]",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.rows[].pairs[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.rows[].pairs[].value",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.facts[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.facts[].value",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q2.facts[].detail",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.status",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.question",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.title",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.summary",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.source",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.asOf",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.columns[]",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.rows[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.rows[].cells[]",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.rows[].pairs[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.rows[].pairs[].value",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.facts[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.facts[].value",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q3.facts[].detail",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.status",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.question",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.title",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.summary",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.source",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.asOf",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.columns[]",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.rows[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.rows[].cells[]",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.rows[].pairs[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.rows[].pairs[].value",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.facts[].label",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.facts[].value",
+        "kind": "text",
+        "format": "none"
+      },
+      {
+        "path": "answers.q4.facts[].detail",
+        "kind": "text",
+        "format": "none"
+      }
+    ],
+    "asOf": "2026-11-04T22:33:05.357Z",
+    "source": "web"
+  },
+  "provenance": {
+    "run": "3ca2646f-4aad-443b-a6e1-3b9a28686dc6",
+    "generatedBy": "OpenUI sports pipeline",
+    "review": "Restored full reader findings from the generation trace. Replaced Row summaries with wrapping Text/Stack primitives and removed text line caps. Omitted an unverified season-end date."
+  }
+}

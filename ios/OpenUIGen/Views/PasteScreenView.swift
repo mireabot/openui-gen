@@ -15,7 +15,7 @@ struct PasteScreenView: View {
             case let .editing(failure):
                 editor(failure: failure)
             case let .rendered(session):
-                OpenUISceneView(root: session.root, theme: theme) { session.edit($0, value: $1) }
+                OpenUISceneView(root: session.root, theme: theme)
                     .primitiveMediaBaseURL(baseURL)
             }
         }

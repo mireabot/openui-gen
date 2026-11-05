@@ -1,6 +1,6 @@
 import Foundation
 
-/// The pinned emitted subset of OpenUI Lang, deliberately independent of the retired DSL.
+/// The pinned emitted subset of OpenUI Lang, used by the app compiler.
 public indirect enum OpenUIExpression: Equatable, Sendable {
     case literal(PValue), reference(String), member(OpenUIExpression, String), index(OpenUIExpression, Int)
     case call(String, [OpenUIExpression]), array([OpenUIExpression]), object([String: OpenUIExpression])

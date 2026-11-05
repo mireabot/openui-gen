@@ -12,7 +12,7 @@ struct PrimitiveNumberFormat: Equatable {
     var signed = false
     /// Replaces the format's default unit (` min`, ` km`, ` kcal`, ` g`).
     var suffix: String?
-    /// The web renderer formats money in USD; the DSL has no currency argument yet.
+    /// The web renderer formats money in USD; the language has no currency argument yet.
     var currencyCode = "USD"
 
     init(kind: Kind, compact: Bool = false, signed: Bool = false, suffix: String? = nil) {
@@ -32,7 +32,7 @@ struct PrimitiveNumberFormat: Equatable {
         )
     }
 
-    /// `percent` takes 0–100 (`42` → `42%`), as the DSL's percent values do.
+    /// `percent` takes 0–100 (`42` → `42%`), as program percent values do.
     func string(_ value: Double, locale: Locale = .current) -> String {
         guard value.isFinite else { return "—" }
         let magnitude = abs(value)

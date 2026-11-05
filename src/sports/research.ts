@@ -41,22 +41,22 @@ facts: labelled standalone facts (label, value, one-line detail).
 asOf: the date the figures are current to, as the pages state it (YYYY-MM-DD), or "".
 sourceUrls: the cited URLs the record relies on, most important first.`;
 
-const clip = (text: string, max: number) => (text.length > max ? `${text.slice(0, max - 1)}…` : text);
 const host = (url: string) => new URL(url).hostname.replace(/^www\./, "");
 
 /** A web finding as answer values, or null when nothing in it is backed by a page that was read. */
 export function findingAnswer(raw: Finding, question: SportsQuestion, research: WebResearch): Record<string, MockValue> | null {
   const cited = raw.sourceUrls.flatMap(url => research.sources.filter(source => citationKey(source.url) === citationKey(url)).slice(0, 1));
   if (!cited.length) return null;
-  const columns = raw.columns.slice(0, 6).map(c => clip(c, 24));
+  const columns = raw.columns.slice(0, 6);
   const rows = columns.length ? raw.rows.slice(0, 20).map(row => {
-    const cells = Array.from({ length: columns.length }, (_, i) => clip(row.cells[i] ?? "—", 40));
-    return { label: clip(row.label, 48), cells, pairs: cells.map((value, i) => ({ label: columns[i]!, value })) };
+    const cells = Array.from({ length: columns.length }, (_, i) => row.cells[i] ?? "—");
+    return { label: row.label, cells, pairs: cells.map((value, i) => ({ label: columns[i]!, value })) };
   }) : [];
   return {
-    status: "complete", question: question.text, title: clip(raw.title, 60), summary: clip(raw.summary, 320),
+    status: "complete", question: question.text, title: raw.title, summary: raw.summary,
     columns: rows.length ? columns : [], rows,
-    facts: raw.facts.slice(0, 8).map(f => ({ label: clip(f.label, 40), value: clip(f.value, 60), detail: clip(f.detail, 140) })),
+    // Bound collection sizes, but keep the sourced text. Presentation chooses how it wraps.
+    facts: raw.facts.slice(0, 8),
     asOf: raw.asOf, source: `Source: ${[...new Set(cited.map(source => host(source.url)))].slice(0, 3).join(", ")}`,
   };
 }

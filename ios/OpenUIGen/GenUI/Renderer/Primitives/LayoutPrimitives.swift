@@ -6,11 +6,10 @@ import SwiftUI
 /// children across the width (flex column `stretch`); a horizontal one centres them.
 struct StackPrimitive: View {
     let props: PrimitiveProps
-    @Environment(\.primitiveHiddenIDs) private var hidden
     @Environment(\.primitiveStackAxis) private var parentAxis
 
     var body: some View {
-        let ids = props.childReferences("children").filter { !hidden.contains($0.rawID) }
+        let ids = props.childReferences("children")
         Group {
             if props.string("axis") == "wrap" {
                 // Children keep their own width and flow into rows, one gap both ways.

@@ -27,7 +27,7 @@ fallback (`fallbacks: "default"`); Haiku has none.
 ## The component library
 
 `src/lang/primitives.ts` is the only list of primitives, including `Screen`, `Section`, `Card`, `Stack`,
-`Grid`, `Rail`, `Text`, `Number`, `ColorCell`, `PriceChart`, and `Calculation`. Each has zod props whose key order
+`Grid`, `Rail`, `Text`, `Number`, and `ColorCell`. Each has zod props whose key order
 is the positional order on the wire, a role per prop (`node`, `nodes`, `data`, `copy`, `token`), and
 ground rules the renderer applies (a Card has radius 24 and padding 16; props only choose between
 allowed tokens).
@@ -37,7 +37,7 @@ gives the JSON schema, the prompt signatures and the parser. Clients attach thei
 primitive name:
 
 - web: `preview/components/primitives/openui-render.tsx` maps every name to `KinoPrimitive`
-  (`Calculation` to `KinoCalculation`), using `@openuidev/react-lang`'s `Renderer`;
+  using `@openuidev/react-lang`'s `Renderer`;
 - SwiftUI: `OpenUICompiler` and the Kino views (see below).
 
 Templates are server-side compositions the writer may call, as typed builders (`ui.Card(...)`) that
@@ -100,9 +100,7 @@ through `POST /tools/sports_dataset` with `{run}`. Snapshots live in memory (bou
 `DATA_DIR/openui-snapshots`.
 
 `@Each` output can contain nested child arrays, which renderers flatten before laying out rails, grids
-and segmented panels. Data arrays, such as chart points, stay data. Calculators are special:
-evaluated numbers no longer carry their binding paths, so the `Calculation` renderer reads its source
-subtree by statement id. This keeps local slider and choice edits independent per calculator.
+and segmented panels. Data arrays, such as chart points, stay data.
 
 ## Follow-ups
 
@@ -141,11 +139,9 @@ program text + seeds → OpenUICompiler → scene {roots, elements by id}
 
 The element id is what keeps a view alive across revisions, so the compiler builds it from things that do not change between revisions. It starts with the document id. Then comes the statement name, such as `ref:pick2`. Then the path inside that statement, such as `children/1`. An `@Each` item adds `item:3`. The document id equals the first run id, and later run ids and request ids are never part of it. A statement mounts under its own name, so adding a part before `pick2` does not rename anything inside `pick2`.
 
-The compiler also handles calculators. When a `Calculation` reads its input record, the compiler overlays the user's local edits on that record and computes the outputs with `GrowthCalculation`. A slider's `value` property records which calculator input it edits.
-
 ### The session keeps the handles
 
-`OpenUISession` in `GenUI/Runtime` owns the program, the seeds, the local edits, and one handle per element. Views observe handles, not the scene.
+`OpenUISession` in `GenUI/Runtime` owns the program, the seeds, and one handle per element. Views observe handles, not the scene.
 
 ```text
 program text + seeds → OpenUICompiler → scene

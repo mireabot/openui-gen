@@ -6,12 +6,11 @@ struct RowPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveContext) private var context
-    @Environment(\.primitiveScope) private var scope
 
     var body: some View {
         if let action = props.string("action") {
             Button {
-                ActionTrigger(context: context, scope: scope)(action)
+                ActionTrigger(context: context)(action)
             } label: {
                 content.contentShape(.rect)
             }
@@ -61,7 +60,6 @@ struct KeyValuePrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveContext) private var context
-    @Environment(\.primitiveScope) private var scope
 
     var body: some View {
         let action = props.string("action")
@@ -72,7 +70,7 @@ struct KeyValuePrimitive: View {
             Spacer(minLength: 0)
             if let action {
                 Button(props.string("value") ?? "") {
-                    ActionTrigger(context: context, scope: scope)(action)
+                    ActionTrigger(context: context)(action)
                 }
                 .buttonStyle(PressStyle())
                 .primitiveFont(.body, weight: .medium)

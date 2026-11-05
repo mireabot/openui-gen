@@ -59,9 +59,7 @@ struct AskView: View {
     @ViewBuilder
     private var content: some View {
         if let session = model.session, session.hasContent || !session.pendingBlocks.isEmpty {
-            OpenUISceneView(root: session.root, theme: theme, pending: session.pendingBlocks) {
-                session.edit($0, value: $1)
-            }
+            OpenUISceneView(root: session.root, theme: theme, pending: session.pendingBlocks)
             .primitiveMediaBaseURL(baseURL)
         } else if model.isBusy {
             Color.clear

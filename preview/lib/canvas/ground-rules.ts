@@ -96,7 +96,7 @@ export const GROUND_RULES: RuleSection[] = [
       { label: "Zones by fill", value: "split series", note: "alternative: one series per zone sharing the boundary point, extended hours dotted, the main zone gradient; pass several <Area> children as an array or inline, never inside a fragment (EvilCharts collects them by reference)" },
       { label: "Reference line", value: "dashed markLine", note: "previous close, a target or an average: 1px dashed in the strong border colour, label at the line's end" },
       { label: "Threshold colour", value: "visualMap pieces", note: "chartOptions.visualMap colours the line and fill above / below a value (e.g. the previous close); colour is never the only cue — keep the signed number and arrow beside it" },
-      { label: "Price axis", value: "scaled", note: "chartOptions.yAxis min/max around the data (~12% padding), not from zero" },
+      { label: "Value axis", value: "scaled", note: "chartOptions.yAxis min/max around the data (~12% padding), not from zero" },
       { label: "Stable options", value: "useMemo", note: "seriesOptions / chartOptions objects must be memoised or module constants; a new object each render re-pushes the chart" },
     ],
   },

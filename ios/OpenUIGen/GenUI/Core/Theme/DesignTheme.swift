@@ -1,5 +1,11 @@
 import Foundation
 
+/// The dark theme's neutrals with the brand's colours, or light.
+public enum ScreenAppearance: String, Sendable, Codable, CaseIterable {
+    case light
+    case dark
+}
+
 /// One brand of the Atomize design language from the bundled `design.json`: flat colour
 /// tokens, shadow stacks and the per-primitive anatomy specs.
 ///
@@ -10,7 +16,7 @@ import Foundation
 public struct DesignTheme: Sendable, Equatable {
     public let brand: String
     /// `light` or `dark`.
-    public let appearance: Placement.Appearance
+    public let appearance: ScreenAppearance
     /// Flat tokens, including the `appearance` key.
     public let tokens: [String: String]
     /// Effect name → layers (`component`, `e2`, `pressed`, ...), with `{token}` colours unresolved.
@@ -45,7 +51,7 @@ public struct DesignTheme: Sendable, Equatable {
     private init(base: DesignTheme, saved: [String: String]) {
         brand = base.brand
         tokens = base.tokens.merging(saved) { _, saved in saved }
-        appearance = tokens["appearance"].flatMap(Placement.Appearance.init(rawValue:)) ?? base.appearance
+        appearance = tokens["appearance"].flatMap(ScreenAppearance.init(rawValue:)) ?? base.appearance
         effects = base.effects
         blur = base.blur
         specs = base.specs
@@ -63,7 +69,7 @@ public struct DesignTheme: Sendable, Equatable {
         var gradients: [String: [String]] = [:]
         Self.walk(theme, prefix: "", tokens: &tokens, gradients: &gradients)
         self.brand = brand
-        appearance = tokens["appearance"].flatMap(Placement.Appearance.init(rawValue:)) ?? .light
+        appearance = tokens["appearance"].flatMap(ScreenAppearance.init(rawValue:)) ?? .light
         self.tokens = tokens
         self.gradients = gradients
         specs = file.primitives
@@ -134,8 +140,12 @@ public struct DesignTheme: Sendable, Equatable {
     /// A value inside a primitive's spec by dotted path: `spec("Button", "styles.primary.fill")`.
     /// An empty path returns the whole spec.
     public func spec(_ primitive: String, _ path: String = "") -> PValue? {
-        guard let root = specs[primitive] else { return nil }
-        return DataScope(data: root).resolve(path)
+        guard var value = specs[primitive] else { return nil }
+        for key in path.split(separator: ".") {
+            guard let next = value[String(key)] else { return nil }
+            value = next
+        }
+        return value
     }
 }
 

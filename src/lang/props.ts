@@ -26,7 +26,7 @@ export type PropMeta =
   | { readonly role: "token"; readonly token: TokenName; readonly note?: string }
   | { readonly role: "node"; readonly accepts: readonly string[] | "any"; readonly note?: string }
   | { readonly role: "nodes"; readonly accepts: readonly string[] | "any"; readonly min?: number; readonly max?: number; readonly note?: string }
-  | { readonly role: "style"; readonly record: "line" | "bar" | "share"; readonly fields: Readonly<Record<string, StyleField>>; readonly note?: string };
+  | { readonly role: "style"; readonly record: "bar" | "share"; readonly fields: Readonly<Record<string, StyleField>>; readonly note?: string };
 
 /** One chart style field and the Swift Charts modifier it maps to (the Swift port contract). */
 export interface StyleField { readonly values: readonly string[]; readonly swift: string }
@@ -63,7 +63,7 @@ export const copy = {
   list: <T>(item: z.ZodType<T>, range: Range = {}, note?: string) => spec<T[], "copy">(ranged(z.array(item), range), { role: "copy", ...noted(note) }),
 };
 
-/** Data props hold a reference into the Query result (`d.peers[0].price`, or an `@Each` item), never a literal. */
+/** Data props hold a reference into the Query result (`d.clubs[0].points`, or an `@Each` item), never a literal. */
 export const data = {
   number: (format: NumberFormat, note?: string) => spec<number, "data">(z.number(), { role: "data", kind: "number", format, ...noted(note) }),
   text: (note?: string) => spec<string, "data">(z.string(), { role: "data", kind: "text", ...noted(note) }),
@@ -126,15 +126,6 @@ const GRID: StyleField = { values: ["true", "false"], swift: "AxisGridLine on th
 const INK_FIELD: StyleField = { values: [...INK, ...ACCENT], swift: "foregroundStyle(ink)" };
 
 const STYLE_FIELDS = {
-  line: {
-    curve: sf(["linear", "monotone", "smooth", "step"], "interpolationMethod(.linear | .monotone | .catmullRom | .stepCenter)"),
-    weight: sf(["thin", "regular", "bold"], "lineStyle(StrokeStyle(lineWidth: 1 | 2 | 3))"),
-    area: sf(["none", "gradient", "solid"], "AreaMark with a vertical LinearGradient (0.24 → 0) or a flat 0.12 tint"),
-    points: sf(["none", "last", "ends", "all"], "PointMark, symbol circle 8"),
-    axis: AXIS, grid: GRID,
-    domain: sf(["auto", "zero"], "chartYScale(domain: .automatic(includesZero:))"),
-    ink: INK_FIELD,
-  },
   bar: {
     orientation: sf(["vertical", "horizontal"], "BarMark x/y swap"),
     corners: sf(["pill", "soft", "square"], "BarMark.cornerRadius pill · 4 · 0"),
@@ -145,7 +136,7 @@ const STYLE_FIELDS = {
   share: {
     shape: sf(["bar", "donut", "pie"], "SectorMark(angle:, innerRadius: .ratio(0.62 | 0), angularInset: 1.5).cornerRadius(4)"),
   },
-} as const satisfies Record<"line" | "bar" | "share", Record<string, StyleField>>;
+} as const satisfies Record<"bar" | "share", Record<string, StyleField>>;
 
 type StyleOf<R extends keyof typeof STYLE_FIELDS> = {
   [K in keyof (typeof STYLE_FIELDS)[R]]?: (typeof STYLE_FIELDS)[R][K] extends typeof GRID ? boolean : (typeof STYLE_FIELDS)[R][K] extends { values: readonly (infer V)[] } ? V : never;
