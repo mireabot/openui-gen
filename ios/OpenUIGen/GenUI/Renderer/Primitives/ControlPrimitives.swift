@@ -126,9 +126,13 @@ struct BadgePrimitive: View {
         let large = props.string("size") == "large"
         let small = props.string("size") == "small"
         let plain = props.string("fill") == "none"
+        let label = props.string("label") ?? ""
         HStack(spacing: 4) {
             if let icon = props.string("icon") { SymbolGlyph(name: icon, size: 16) }
-            if small {
+            // An icon-only badge (InjuryReport's band-aid) has no text after its glyph, as on the web.
+            if label.isEmpty, props.string("icon") != nil {
+                EmptyView()
+            } else if small {
                 Text(props.string("label") ?? "")
                     .font(.system(size: 11, weight: .semibold))
                     .monospacedDigit()

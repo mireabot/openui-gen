@@ -1,6 +1,6 @@
 # openui-gen
 
-OpenUI Lang generation for football (soccer): the sports endpoint, the OpenUI component library and
+OpenUI Lang generation for soccer, NFL and NBA: the sports endpoint, the OpenUI component library and
 its schema index, a preview page that renders generations, and the native iOS client. One service
 serves the API and the preview.
 

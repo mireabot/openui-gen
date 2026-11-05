@@ -140,6 +140,8 @@ export function populatePlayerImages<T extends SnapshotDataset>(dataset: T, play
     const record = object(value);
     if (!record) return value;
     const result: RecordValue = Object.fromEntries(Object.entries(record).map(([key, child]) => [key, walk(child, path ? `${path}.${key}` : key)]));
+    // A feed's athlete has its own headshot, and a namesake in FotMob is someone else.
+    if (typeof record.athleteId === "string" && record.athleteId) return result;
     if (typeof record.name !== "string" || !candidateNames.has(playerNameKey(record.name))) return result;
     const query = queryOf(record);
     const candidates = query ? players.filter(player => matches(player, query)) : [];

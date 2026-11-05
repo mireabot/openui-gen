@@ -70,7 +70,7 @@ struct AskView: View {
 
     private var emptyState: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Ask about football")
+            Text("Ask about soccer, NFL or NBA")
                 .font(.title2.weight(.semibold))
             Text(baseURL.absoluteString)
                 .font(.footnote.monospaced())
@@ -93,7 +93,7 @@ struct AskView: View {
 
     private var promptBar: some View {
         HStack(spacing: 12) {
-            TextField(model.session == nil ? "Ask about football" : "Follow up", text: $model.prompt)
+            TextField(model.session == nil ? "Ask about soccer, NFL or NBA" : "Follow up", text: $model.prompt)
                 .textFieldStyle(.plain)
                 .submitLabel(.send)
                 .onSubmit { Task { await model.send() } }

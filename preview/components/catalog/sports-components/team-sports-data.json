@@ -1,0 +1,1582 @@
+{
+ "recorded": "2026-11-05",
+ "source": "ESPN",
+ "nba": {
+  "name": "NBA",
+  "season": "2026-27",
+  "hasTies": false,
+  "team": {
+   "name": "Los Angeles Lakers",
+   "nickname": "LAL",
+   "color": "#552583",
+   "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+  },
+  "rival": {
+   "name": "LA Clippers",
+   "nickname": "LAC",
+   "color": "#12173f",
+   "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png"
+  },
+  "homeTeam": {
+   "name": "LA Clippers",
+   "nickname": "LAC",
+   "color": "#12173f",
+   "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png"
+  },
+  "awayTeam": {
+   "name": "Los Angeles Lakers",
+   "nickname": "LAL",
+   "color": "#552583",
+   "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+  },
+  "teams": [
+   {
+    "name": "Los Angeles Lakers",
+    "nickname": "LAL",
+    "color": "#552583",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+   },
+   {
+    "name": "Atlanta Hawks",
+    "nickname": "ATL",
+    "color": "#c8102e",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/atl.png"
+   },
+   {
+    "name": "Boston Celtics",
+    "nickname": "BOS",
+    "color": "#008348",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png"
+   }
+  ],
+  "longName": {
+   "name": "Minnesota Timberwolves",
+   "nickname": "MIN",
+   "color": "#266092",
+   "logo": "https://a.espncdn.com/i/teamlogos/nba/500/min.png"
+  },
+  "matches": {
+   "report": {
+    "home": {
+     "name": "LA Clippers",
+     "nickname": "LAC",
+     "color": "#12173f",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png"
+    },
+    "away": {
+     "name": "Los Angeles Lakers",
+     "nickname": "LAL",
+     "color": "#552583",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+    },
+    "label": "Wed, Oct 28",
+    "value": "Final",
+    "details": [
+     "NBA",
+     "Intuit Dome"
+    ],
+    "score": {
+     "home": 87,
+     "away": 103
+    }
+   },
+   "recent": {
+    "home": {
+     "name": "Los Angeles Lakers",
+     "nickname": "LAL",
+     "color": "#552583",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+    },
+    "away": {
+     "name": "Miami Heat",
+     "nickname": "MIA",
+     "color": "#98002e",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/mia.png"
+    },
+    "label": "Mon, Nov 2",
+    "value": "Final",
+    "details": [
+     "NBA",
+     "crypto.com Arena"
+    ],
+    "score": {
+     "home": 138,
+     "away": 117
+    }
+   },
+   "upcoming": {
+    "home": {
+     "name": "Sacramento Kings",
+     "nickname": "SAC",
+     "color": "#5a2d81",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/sac.png"
+    },
+    "away": {
+     "name": "Los Angeles Lakers",
+     "nickname": "LAL",
+     "color": "#552583",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+    },
+    "label": "Wed, Nov 4",
+    "value": "10:00 PM",
+    "details": [
+     "NBA",
+     "Golden 1 Center"
+    ]
+   }
+  },
+  "statBars": [
+   {
+    "label": "Field Goal %",
+    "values": {
+     "home": 35,
+     "away": 44
+    },
+    "display": {
+     "home": "35",
+     "away": "44"
+    }
+   },
+   {
+    "label": "Three Point %",
+    "values": {
+     "home": 32,
+     "away": 29
+    },
+    "display": {
+     "home": "32",
+     "away": "29"
+    }
+   },
+   {
+    "label": "Rebounds",
+    "values": {
+     "home": 41,
+     "away": 48
+    },
+    "display": {
+     "home": "41",
+     "away": "48"
+    }
+   },
+   {
+    "label": "Assists",
+    "values": {
+     "home": 17,
+     "away": 16
+    },
+    "display": {
+     "home": "17",
+     "away": "16"
+    }
+   },
+   {
+    "label": "Turnovers",
+    "values": {
+     "home": 24,
+     "away": 19
+    },
+    "display": {
+     "home": "24",
+     "away": "19"
+    }
+   }
+  ],
+  "leaderboards": [
+   {
+    "title": "Points Per Game",
+    "metric": "PTS",
+    "entries": [
+     {
+      "name": "Luka Doncic",
+      "team": "Los Angeles Lakers",
+      "color": "#552583",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3945274.png",
+      "value": "38.3"
+     },
+     {
+      "name": "Stephen Curry",
+      "team": "Golden State Warriors",
+      "color": "#fdb927",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3975.png",
+      "value": "30.0"
+     },
+     {
+      "name": "Tyrese Maxey",
+      "team": "Philadelphia 76ers",
+      "color": "#1d428a",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4431678.png",
+      "value": "29.1"
+     },
+     {
+      "name": "Giannis Antetokounmpo",
+      "team": "Miami Heat",
+      "color": "#98002e",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3032977.png",
+      "value": "28.4"
+     },
+     {
+      "name": "Shai Gilgeous-Alexander",
+      "team": "Oklahoma City Thunder",
+      "color": "#007ac1",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4278073.png",
+      "value": "28.4"
+     }
+    ]
+   },
+   {
+    "title": "Assists Per Game",
+    "metric": "AST",
+    "entries": [
+     {
+      "name": "Trae Young",
+      "team": "Washington Wizards",
+      "color": "#e31837",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4277905.png",
+      "value": "10.0"
+     },
+     {
+      "name": "Nikola Jokic",
+      "team": "Denver Nuggets",
+      "color": "#0e2240",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3112335.png",
+      "value": "9.0"
+     },
+     {
+      "name": "Luka Doncic",
+      "team": "Los Angeles Lakers",
+      "color": "#552583",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3945274.png",
+      "value": "8.1"
+     },
+     {
+      "name": "Davion Mitchell",
+      "team": "Miami Heat",
+      "color": "#98002e",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4278053.png",
+      "value": "8.0"
+     },
+     {
+      "name": "Jayson Tatum",
+      "team": "Boston Celtics",
+      "color": "#008348",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4065648.png",
+      "value": "7.9"
+     }
+    ]
+   },
+   {
+    "title": "Rebounds Per Game",
+    "metric": "REB",
+    "entries": [
+     {
+      "name": "Domantas Sabonis",
+      "team": "Sacramento Kings",
+      "color": "#5a2d81",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3155942.png",
+      "value": "14.6"
+     },
+     {
+      "name": "Karl-Anthony Towns",
+      "team": "New York Knicks",
+      "color": "#1d428a",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3136195.png",
+      "value": "13.9"
+     },
+     {
+      "name": "Giannis Antetokounmpo",
+      "team": "Miami Heat",
+      "color": "#98002e",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3032977.png",
+      "value": "12.3"
+     },
+     {
+      "name": "Rudy Gobert",
+      "team": "Minnesota Timberwolves",
+      "color": "#266092",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3032976.png",
+      "value": "12.0"
+     },
+     {
+      "name": "Victor Wembanyama",
+      "team": "San Antonio Spurs",
+      "color": "#000000",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/5104157.png",
+      "value": "10.7"
+     }
+    ]
+   }
+  ],
+  "heatmap": {
+   "record": "6-2",
+   "results": [
+    "win",
+    "win",
+    "win",
+    "loss",
+    "win",
+    "loss",
+    "win",
+    "win",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming"
+   ],
+   "recentValue": "3-2",
+   "recent": [
+    "loss",
+    "win",
+    "loss",
+    "win",
+    "win"
+   ]
+  },
+  "standing": {
+   "place": 4,
+   "conference": "Western Conference",
+   "record": "6-2",
+   "division": "Pacific",
+   "rows": [
+    {
+     "rank": 3,
+     "name": "Portland Trail Blazers",
+     "points": "5-1"
+    },
+    {
+     "rank": 4,
+     "name": "Los Angeles Lakers",
+     "points": "6-2",
+     "isTeam": true
+    },
+    {
+     "rank": 5,
+     "name": "Oklahoma City Thunder",
+     "points": "5-2"
+    }
+   ],
+   "summary": "6-2 · leads the Pacific",
+   "home": {
+    "record": "4-1"
+   },
+   "away": {
+    "record": "2-1"
+   },
+   "divisionTable": {
+    "title": "Pacific",
+    "columns": [
+     "W-L",
+     "PCT",
+     "GB",
+     "HOME",
+     "ROAD",
+     "STRK"
+    ],
+    "rows": [
+     {
+      "label": "LA Clippers",
+      "cells": [
+       "1-6",
+       ".143",
+       "4.5",
+       "1-2",
+       "0-4",
+       "L6"
+      ]
+     },
+     {
+      "label": "Sacramento Kings",
+      "cells": [
+       "1-6",
+       ".143",
+       "4.5",
+       "0-2",
+       "1-4",
+       "W1"
+      ]
+     },
+     {
+      "label": "Phoenix Suns",
+      "cells": [
+       "1-4",
+       ".200",
+       "3.5",
+       "1-1",
+       "0-3",
+       "L3"
+      ]
+     },
+     {
+      "label": "Golden State Warriors",
+      "cells": [
+       "5-3",
+       ".625",
+       "1",
+       "3-1",
+       "2-2",
+       "W5"
+      ]
+     },
+     {
+      "label": "Los Angeles Lakers",
+      "cells": [
+       "6-2",
+       ".750",
+       "-",
+       "4-1",
+       "2-1",
+       "W2"
+      ]
+     }
+    ]
+   },
+   "conferenceTable": {
+    "title": "Western Conference",
+    "columns": [
+     "W-L",
+     "PCT",
+     "GB",
+     "STRK"
+    ],
+    "rows": [
+     {
+      "label": "1. Houston Rockets",
+      "cells": [
+       "7-1",
+       ".875",
+       "-",
+       "W2"
+      ]
+     },
+     {
+      "label": "2. Memphis Grizzlies",
+      "cells": [
+       "6-1",
+       ".857",
+       "0.5",
+       "L1"
+      ]
+     },
+     {
+      "label": "3. Portland Trail Blazers",
+      "cells": [
+       "5-1",
+       ".833",
+       "-",
+       "W2"
+      ]
+     },
+     {
+      "label": "4. Los Angeles Lakers",
+      "cells": [
+       "6-2",
+       ".750",
+       "-",
+       "W2"
+      ]
+     },
+     {
+      "label": "5. Oklahoma City Thunder",
+      "cells": [
+       "5-2",
+       ".714",
+       "0.5",
+       "W1"
+      ]
+     },
+     {
+      "label": "6. San Antonio Spurs",
+      "cells": [
+       "5-2",
+       ".714",
+       "1.5",
+       "W5"
+      ]
+     }
+    ]
+   }
+  },
+  "player": {
+   "name": "Luka Doncic",
+   "position": "G",
+   "image": "https://a.espncdn.com/i/headshots/nba/players/full/3945274.png",
+   "club": {
+    "name": "Los Angeles Lakers",
+    "nickname": "LAL",
+    "color": "#552583",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+   },
+   "stats": [
+    {
+     "label": "PPG",
+     "value": "38.3"
+    },
+    {
+     "label": "RPG",
+     "value": "8.0"
+    },
+    {
+     "label": "APG",
+     "value": "8.1"
+    },
+    {
+     "label": "FG%",
+     "value": "49.7"
+    }
+   ]
+  },
+  "teamCard": {
+   "stats": [
+    {
+     "label": "Record",
+     "value": "6-2"
+    },
+    {
+     "label": "Free Throw Percentage",
+     "value": "78.5"
+    },
+    {
+     "label": "3-Point Field Goal Percentage",
+     "value": "39.7"
+    },
+    {
+     "label": "Average Field Goals Made",
+     "value": "42.4"
+    },
+    {
+     "label": "Average Field Goals Attempted",
+     "value": "81.5"
+    },
+    {
+     "label": "Average 3-Point Field Goals Made",
+     "value": "14.9"
+    },
+    {
+     "label": "Average 3-Point Field Goals Attempted",
+     "value": "37.5"
+    },
+    {
+     "label": "Average Free Throws Made",
+     "value": "22.9"
+    },
+    {
+     "label": "Average Free Throws Attempted",
+     "value": "29.1"
+    }
+   ],
+   "detail": [
+    "NBA",
+    "2026-27"
+   ]
+  },
+  "topPlayers": {
+   "title": "Top scorers",
+   "metric": "Points",
+   "rows": [
+    {
+     "home": {
+      "name": "Derrick Jones Jr.",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/3936099.png",
+      "position": "F",
+      "value": "15"
+     },
+     "away": {
+      "name": "Quentin Grimes",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4397014.png",
+      "position": "G",
+      "value": "23"
+     }
+    },
+    {
+     "home": {
+      "name": "Darius Garland",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4396907.png",
+      "position": "G",
+      "value": "14"
+     },
+     "away": {
+      "name": "Collin Sexton",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4277811.png",
+      "position": "G",
+      "value": "21"
+     }
+    },
+    {
+     "home": {
+      "name": "Kobe Sanders",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4702352.png",
+      "position": "G",
+      "value": "9"
+     },
+     "away": {
+      "name": "Austin Reaves",
+      "image": "https://a.espncdn.com/i/headshots/nba/players/full/4066457.png",
+      "position": "G",
+      "value": "16"
+     }
+    }
+   ]
+  },
+  "tables": {
+   "box": {
+    "title": "Los Angeles Lakers · box score",
+    "columns": [
+     "MIN",
+     "PTS",
+     "REB",
+     "AST",
+     "STL",
+     "BLK",
+     "FG"
+    ],
+    "rows": [
+     {
+      "label": "Jake LaRavia",
+      "cells": [
+       "35",
+       "2",
+       "10",
+       "0",
+       "3",
+       "2",
+       "1-2"
+      ]
+     },
+     {
+      "label": "Walker Kessler",
+      "cells": [
+       "26",
+       "11",
+       "9",
+       "1",
+       "2",
+       "1",
+       "4-7"
+      ]
+     },
+     {
+      "label": "Matisse Thybulle",
+      "cells": [
+       "28",
+       "15",
+       "1",
+       "0",
+       "2",
+       "1",
+       "5-6"
+      ]
+     },
+     {
+      "label": "Austin Reaves",
+      "cells": [
+       "31",
+       "16",
+       "6",
+       "1",
+       "1",
+       "0",
+       "6-16"
+      ]
+     },
+     {
+      "label": "Quentin Grimes",
+      "cells": [
+       "38",
+       "23",
+       "3",
+       "5",
+       "4",
+       "0",
+       "7-15"
+      ]
+     },
+     {
+      "label": "Jarred Vanderbilt",
+      "cells": [
+       "21",
+       "0",
+       "7",
+       "2",
+       "0",
+       "0",
+       "0-1"
+      ]
+     },
+     {
+      "label": "Sandro Mamukelashvili",
+      "cells": [
+       "30",
+       "13",
+       "8",
+       "3",
+       "2",
+       "1",
+       "6-15"
+      ]
+     },
+     {
+      "label": "Collin Sexton",
+      "cells": [
+       "21",
+       "21",
+       "4",
+       "2",
+       "0",
+       "0",
+       "6-11"
+      ]
+     }
+    ]
+   },
+   "gamelog": {
+    "title": "LeBron James · last 3 games",
+    "columns": [
+     "MIN",
+     "PTS",
+     "REB",
+     "AST",
+     "STL",
+     "BLK",
+     "FG"
+    ],
+    "rows": [
+     {
+      "label": "@ DET · W 112-106",
+      "cells": [
+       "33",
+       "13",
+       "10",
+       "8",
+       "1",
+       "1",
+       "5-10"
+      ]
+     },
+     {
+      "label": "vs CHI · W 126-107",
+      "cells": [
+       "31",
+       "15",
+       "7",
+       "9",
+       "1",
+       "0",
+       "6-13"
+      ]
+     },
+     {
+      "label": "vs NY · W 98-93",
+      "cells": [
+       "34",
+       "20",
+       "9",
+       "8",
+       "1",
+       "1",
+       "8-15"
+      ]
+     }
+    ]
+   }
+  }
+ },
+ "nfl": {
+  "name": "NFL",
+  "season": "2026",
+  "hasTies": false,
+  "team": {
+   "name": "Kansas City Chiefs",
+   "nickname": "KC",
+   "color": "#e31837",
+   "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png"
+  },
+  "rival": {
+   "name": "Indianapolis Colts",
+   "nickname": "IND",
+   "color": "#003b75",
+   "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png"
+  },
+  "homeTeam": {
+   "name": "Kansas City Chiefs",
+   "nickname": "KC",
+   "color": "#e31837",
+   "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png"
+  },
+  "awayTeam": {
+   "name": "Indianapolis Colts",
+   "nickname": "IND",
+   "color": "#003b75",
+   "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png"
+  },
+  "teams": [
+   {
+    "name": "Kansas City Chiefs",
+    "nickname": "KC",
+    "color": "#e31837",
+    "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png"
+   },
+   {
+    "name": "Arizona Cardinals",
+    "nickname": "ARI",
+    "color": "#a40227",
+    "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ari.png"
+   },
+   {
+    "name": "Atlanta Falcons",
+    "nickname": "ATL",
+    "color": "#a71930",
+    "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/atl.png"
+   }
+  ],
+  "longName": {
+   "name": "Washington Commanders",
+   "nickname": "WSH",
+   "color": "#5a1414",
+   "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/wsh.png"
+  },
+  "matches": {
+   "report": {
+    "home": {
+     "name": "Kansas City Chiefs",
+     "nickname": "KC",
+     "color": "#e31837",
+     "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png"
+    },
+    "away": {
+     "name": "Indianapolis Colts",
+     "nickname": "IND",
+     "color": "#003b75",
+     "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/ind.png"
+    },
+    "label": "Sun, Sep 20",
+    "value": "Final/OT",
+    "details": [
+     "NFL",
+     "Arrowhead Stadium"
+    ],
+    "score": {
+     "home": 33,
+     "away": 30
+    }
+   },
+   "recent": {
+    "home": {
+     "name": "Denver Broncos",
+     "nickname": "DEN",
+     "color": "#0a2343",
+     "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/den.png"
+    },
+    "away": {
+     "name": "Kansas City Chiefs",
+     "nickname": "KC",
+     "color": "#e31837",
+     "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png"
+    },
+    "label": "Sun, Nov 1",
+    "value": "Final",
+    "details": [
+     "NFL",
+     "Empower Field at Mile High"
+    ],
+    "score": {
+     "home": 28,
+     "away": 24
+    }
+   },
+   "upcoming": {
+    "home": {
+     "name": "Kansas City Chiefs",
+     "nickname": "KC",
+     "color": "#e31837",
+     "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png"
+    },
+    "away": {
+     "name": "New York Jets",
+     "nickname": "NYJ",
+     "color": "#115740",
+     "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/nyj.png"
+    },
+    "label": "Sun, Nov 8",
+    "value": "1:00 PM",
+    "details": [
+     "NFL",
+     "Arrowhead Stadium"
+    ]
+   }
+  },
+  "statBars": [
+   {
+    "label": "Total Yards",
+    "values": {
+     "home": 523,
+     "away": 329
+    },
+    "display": {
+     "home": "523",
+     "away": "329"
+    }
+   },
+   {
+    "label": "Passing",
+    "values": {
+     "home": 371,
+     "away": 210
+    },
+    "display": {
+     "home": "371",
+     "away": "210"
+    }
+   },
+   {
+    "label": "Rushing",
+    "values": {
+     "home": 152,
+     "away": 119
+    },
+    "display": {
+     "home": "152",
+     "away": "119"
+    }
+   },
+   {
+    "label": "Turnovers",
+    "values": {
+     "home": 0,
+     "away": 1
+    },
+    "display": {
+     "home": "0",
+     "away": "1"
+    }
+   },
+   {
+    "label": "Yards per Play",
+    "values": {
+     "home": 6.7,
+     "away": 5.2
+    },
+    "display": {
+     "home": "6.7",
+     "away": "5.2"
+    }
+   }
+  ],
+  "leaderboards": [
+   {
+    "title": "Passing Yards",
+    "metric": "YDS",
+    "entries": [
+     {
+      "name": "Jordan Love",
+      "team": "Green Bay Packers",
+      "color": "#204e32",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4036378.png",
+      "value": "2246"
+     },
+     {
+      "name": "Matthew Stafford",
+      "team": "Los Angeles Rams",
+      "color": "#003594",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/12483.png",
+      "value": "2146"
+     },
+     {
+      "name": "Kirk Cousins",
+      "team": "Las Vegas Raiders",
+      "color": "#000000",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/14880.png",
+      "value": "2124"
+     },
+     {
+      "name": "Joe Burrow",
+      "team": "Cincinnati Bengals",
+      "color": "#fb4f14",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png",
+      "value": "2115"
+     },
+     {
+      "name": "Dak Prescott",
+      "team": "Dallas Cowboys",
+      "color": "#002a5c",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/2577417.png",
+      "value": "2046"
+     }
+    ]
+   },
+   {
+    "title": "Rushing Yards",
+    "metric": "YDS",
+    "entries": [
+     {
+      "name": "Bijan Robinson",
+      "team": "Atlanta Falcons",
+      "color": "#a71930",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4430807.png",
+      "value": "780"
+     },
+     {
+      "name": "Jahmyr Gibbs",
+      "team": "Detroit Lions",
+      "color": "#0076b6",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4429795.png",
+      "value": "773"
+     },
+     {
+      "name": "Kenneth Walker III",
+      "team": "Kansas City Chiefs",
+      "color": "#e31837",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4567048.png",
+      "value": "770"
+     },
+     {
+      "name": "Bucky Irving",
+      "team": "Tampa Bay Buccaneers",
+      "color": "#bd1c36",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4596448.png",
+      "value": "728"
+     },
+     {
+      "name": "James Cook III",
+      "team": "Buffalo Bills",
+      "color": "#00338d",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4379399.png",
+      "value": "707"
+     }
+    ]
+   },
+   {
+    "title": "Sacks",
+    "metric": "SACK",
+    "entries": [
+     {
+      "name": "T.J. Watt",
+      "team": "Pittsburgh Steelers",
+      "color": "#000000",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3045282.png",
+      "value": "8"
+     },
+     {
+      "name": "Will Anderson Jr.",
+      "team": "Houston Texans",
+      "color": "#021018",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4685724.png",
+      "value": "8"
+     },
+     {
+      "name": "Chase Young",
+      "team": "New Orleans Saints",
+      "color": "#d3bc8d",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4241986.png",
+      "value": "7"
+     },
+     {
+      "name": "Greg Rousseau",
+      "team": "Buffalo Bills",
+      "color": "#00338d",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4362506.png",
+      "value": "7"
+     },
+     {
+      "name": "Andrew Van Ginkel",
+      "team": "Minnesota Vikings",
+      "color": "#4f2683",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3133487.png",
+      "value": "6"
+     }
+    ]
+   }
+  ],
+  "heatmap": {
+   "record": "5-2",
+   "results": [
+    "win",
+    "win",
+    "win",
+    "win",
+    "win",
+    "loss",
+    "loss",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming",
+    "upcoming"
+   ],
+   "recentValue": "3-2",
+   "recent": [
+    "win",
+    "win",
+    "win",
+    "loss",
+    "loss"
+   ]
+  },
+  "standing": {
+   "place": 5,
+   "conference": "American Football Conference",
+   "record": "5-2",
+   "division": "AFC West",
+   "rows": [
+    {
+     "rank": 4,
+     "name": "Jacksonville Jaguars",
+     "points": "5-2"
+    },
+    {
+     "rank": 5,
+     "name": "Kansas City Chiefs",
+     "points": "5-2",
+     "isTeam": true
+    },
+    {
+     "rank": 6,
+     "name": "Cincinnati Bengals",
+     "points": "5-2"
+    }
+   ],
+   "summary": "5-2 · 0.5 behind in the AFC West",
+   "home": {
+    "record": "3-0"
+   },
+   "away": {
+    "record": "2-2"
+   },
+   "divisionTable": {
+    "title": "AFC West",
+    "columns": [
+     "W-L",
+     "PCT",
+     "GB",
+     "HOME",
+     "ROAD",
+     "STRK"
+    ],
+    "rows": [
+     {
+      "label": "Denver Broncos",
+      "cells": [
+       "6-2",
+       ".750",
+       "-",
+       "4-0",
+       "2-2",
+       "W4"
+      ]
+     },
+     {
+      "label": "Kansas City Chiefs",
+      "cells": [
+       "5-2",
+       ".714",
+       "0.5",
+       "3-0",
+       "2-2",
+       "L2"
+      ]
+     },
+     {
+      "label": "Las Vegas Raiders",
+      "cells": [
+       "4-4",
+       ".500",
+       "2",
+       "1-3",
+       "3-1",
+       "W1"
+      ]
+     },
+     {
+      "label": "Los Angeles Chargers",
+      "cells": [
+       "0-7",
+       ".000",
+       "5.5",
+       "0-3",
+       "0-4",
+       "L7"
+      ]
+     }
+    ]
+   },
+   "conferenceTable": {
+    "title": "American Football Conference",
+    "columns": [
+     "W-L",
+     "PCT",
+     "GB",
+     "STRK"
+    ],
+    "rows": [
+     {
+      "label": "1. Buffalo Bills",
+      "cells": [
+       "6-1",
+       ".857",
+       "-",
+       "W3"
+      ]
+     },
+     {
+      "label": "2. Denver Broncos",
+      "cells": [
+       "6-2",
+       ".750",
+       "-",
+       "W4"
+      ]
+     },
+     {
+      "label": "3. Pittsburgh Steelers",
+      "cells": [
+       "6-2",
+       ".750",
+       "-",
+       "W4"
+      ]
+     },
+     {
+      "label": "4. Jacksonville Jaguars",
+      "cells": [
+       "5-2",
+       ".714",
+       "-",
+       "W1"
+      ]
+     },
+     {
+      "label": "5. Kansas City Chiefs",
+      "cells": [
+       "5-2",
+       ".714",
+       "0.5",
+       "L2"
+      ]
+     },
+     {
+      "label": "6. Cincinnati Bengals",
+      "cells": [
+       "5-2",
+       ".714",
+       "0.5",
+       "W3"
+      ]
+     }
+    ]
+   }
+  },
+  "player": {
+   "name": "Patrick Mahomes",
+   "position": "QB",
+   "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+   "club": {
+    "name": "Kansas City Chiefs",
+    "nickname": "KC",
+    "color": "#e31837",
+    "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png"
+   },
+   "stats": [
+    {
+     "label": "Pass Yards",
+     "value": "1,795"
+    },
+    {
+     "label": "Touchdowns",
+     "value": "12"
+    },
+    {
+     "label": "INT",
+     "value": "4"
+    },
+    {
+     "label": "QBR",
+     "value": "67.4"
+    }
+   ]
+  },
+  "teamCard": {
+   "stats": [
+    {
+     "label": "Record",
+     "value": "5-2"
+    },
+    {
+     "label": "Completion Percentage",
+     "value": "66.4"
+    },
+    {
+     "label": "Completions",
+     "value": "154"
+    },
+    {
+     "label": "Interception Percentage",
+     "value": "1.70"
+    },
+    {
+     "label": "Interceptions",
+     "value": "4"
+    },
+    {
+     "label": "Longest Pass",
+     "value": "73"
+    },
+    {
+     "label": "Net Passing Yards",
+     "value": "1,743"
+    },
+    {
+     "label": "Net Passing Yards Per Game",
+     "value": "249.0"
+    },
+    {
+     "label": "Passing Attempts",
+     "value": "232"
+    }
+   ],
+   "detail": [
+    "NFL",
+    "2026"
+   ]
+  },
+  "topPlayers": {
+   "title": "Top rushers",
+   "metric": "Yards",
+   "rows": [
+    {
+     "home": {
+      "name": "Kenneth Walker III",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4567048.png",
+      "position": "",
+      "value": "117"
+     },
+     "away": {
+      "name": "Jonathan Taylor",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4242335.png",
+      "position": "",
+      "value": "92"
+     }
+    },
+    {
+     "home": {
+      "name": "Patrick Mahomes",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+      "position": "",
+      "value": "17"
+     },
+     "away": {
+      "name": "Deion Burks",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4683151.png",
+      "position": "",
+      "value": "14"
+     }
+    },
+    {
+     "home": {
+      "name": "Emmett Johnson",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4832955.png",
+      "position": "",
+      "value": "15"
+     },
+     "away": {
+      "name": "Daniel Jones",
+      "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3917792.png",
+      "position": "",
+      "value": "10"
+     }
+    }
+   ]
+  },
+  "tables": {
+   "box": {
+    "title": "Kansas City Receiving",
+    "columns": [
+     "REC",
+     "YDS",
+     "AVG",
+     "TD",
+     "LONG",
+     "TGTS"
+    ],
+    "rows": [
+     {
+      "label": "Travis Kelce",
+      "cells": [
+       "9",
+       "101",
+       "11.2",
+       "1",
+       "18",
+       "11"
+      ]
+     },
+     {
+      "label": "Tyquan Thornton",
+      "cells": [
+       "4",
+       "86",
+       "21.5",
+       "0",
+       "45",
+       "4"
+      ]
+     },
+     {
+      "label": "Rashee Rice",
+      "cells": [
+       "4",
+       "83",
+       "20.8",
+       "0",
+       "31",
+       "6"
+      ]
+     },
+     {
+      "label": "Kenneth Walker III",
+      "cells": [
+       "6",
+       "61",
+       "10.2",
+       "0",
+       "22",
+       "10"
+      ]
+     },
+     {
+      "label": "Xavier Worthy",
+      "cells": [
+       "5",
+       "25",
+       "5.0",
+       "1",
+       "16",
+       "7"
+      ]
+     }
+    ]
+   },
+   "gamelog": {
+    "title": "Patrick Mahomes · last 3 games",
+    "columns": [
+     "CMP",
+     "ATT",
+     "YDS",
+     "CMP%",
+     "AVG",
+     "TD",
+     "INT"
+    ],
+    "rows": [
+     {
+      "label": "@ DEN · L 28-24",
+      "cells": [
+       "30",
+       "41",
+       "321",
+       "73.2",
+       "7.8",
+       "3",
+       "0"
+      ]
+     },
+     {
+      "label": "@ SEA · L 20-3",
+      "cells": [
+       "19",
+       "33",
+       "165",
+       "57.6",
+       "5.0",
+       "0",
+       "1"
+      ]
+     },
+     {
+      "label": "vs LAC · W 22-6",
+      "cells": [
+       "23",
+       "30",
+       "272",
+       "76.7",
+       "9.1",
+       "0",
+       "1"
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

@@ -1,25 +1,37 @@
 import { config } from "../config.js";
 import type { MockValue } from "../research/dataset-schema.js";
 import { clubDirectory, espnLookup, type Club, type EspnAnswer, type EspnRequest, type EspnTransport } from "./espn.js";
+import { genericLookup } from "./espn-generic.js";
+import { isSoccer, TEAM_SPORT_LEAGUE_CODES, type LeagueCode } from "./leagues.js";
 import { clubsForDataset, fotmobClubDirectory, fotmobLookup, withClubColours } from "./fotmob-feeds.js";
 
 /**
- * Where the football feeds come from, by DATA_SOURCE. "mixed": ESPN for tables, matches and clubs,
- * FotMob for players. "fotmob": FotMob for all of it. A transport passed in is a test scripting ESPN.
+ * Where structured feeds come from. Soccer, by DATA_SOURCE: "mixed" reads ESPN for tables, matches and
+ * clubs and FotMob for players; "fotmob" reads FotMob for all of it. Every other sport reads ESPN through
+ * the generic adapter. A transport passed in is a test scripting ESPN.
  */
 const onFotmob = (send?: EspnTransport) => !send && config().DATA_SOURCE === "fotmob";
 
-export const footballSourceName = () => config().DATA_SOURCE === "fotmob" ? "FotMob" : "ESPN";
+export const feedSourceName = (league?: LeagueCode | null) => (league && !isSoccer(league)) || config().DATA_SOURCE !== "fotmob" ? "ESPN" : "FotMob";
 
-export const footballLookup = (request: EspnRequest, send?: EspnTransport, now?: Date): Promise<EspnAnswer> =>
-  onFotmob(send) ? fotmobLookup(request, undefined, now) : espnLookup(request, send, now);
+export const sportsLookup = (request: EspnRequest, send?: EspnTransport, now?: Date): Promise<EspnAnswer> => {
+  if (!isSoccer(request.league)) return genericLookup(request, send, now);
+  return onFotmob(send) ? fotmobLookup(request, undefined, now) : espnLookup(request, send, now);
+};
 
-export const footballClubs = (send?: EspnTransport): Promise<readonly Club[]> =>
-  onFotmob(send) ? fotmobClubDirectory() : clubDirectory(send);
+/** Every team the planner can name. FotMob covers soccer only, so other sports always come from ESPN. */
+export const teamDirectory = async (send?: EspnTransport): Promise<readonly Club[]> => {
+  if (!onFotmob(send)) return clubDirectory(send);
+  const [soccer, others] = await Promise.all([fotmobClubDirectory(), clubDirectory(send, Date.now(), TEAM_SPORT_LEAGUE_CODES)]);
+  return [...soccer, ...others];
+};
 
 /** The clubs a screen is about, with colours: FotMob's directory has none until they're asked for. */
-export const clubsWithColours = async (clubs: readonly Club[], send?: EspnTransport): Promise<readonly Club[]> =>
-  onFotmob(send) ? withClubColours(clubs) : clubs;
+export const clubsWithColours = async (clubs: readonly Club[], send?: EspnTransport): Promise<readonly Club[]> => {
+  if (!onFotmob(send)) return clubs;
+  const coloured = new Map((await withClubColours(clubs.filter(club => isSoccer(club.league)))).map(club => [`${club.league}:${club.id}`, club]));
+  return clubs.map(club => coloured.get(`${club.league}:${club.id}`) ?? club);
+};
 
 /** Club names in a dataset's answers: records with no crest, and what a player's record names. */
 function clubNames(answers: unknown) {
@@ -40,7 +52,7 @@ function clubNames(answers: unknown) {
 
 /** The directory `fillClubMarks` reads for one dataset. On FotMob it also finds clubs outside the six competitions. */
 export async function clubsForMarks(answers: unknown, send?: EspnTransport): Promise<readonly Club[]> {
-  const base = await footballClubs(send).catch(() => [] as readonly Club[]);
+  const base = await teamDirectory(send).catch(() => [] as readonly Club[]);
   if (!onFotmob(send)) return base;
   const { searched, known } = clubNames(answers);
   return clubsForDataset(base, searched, known).catch(() => base);

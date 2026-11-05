@@ -1,0 +1,416 @@
+{
+ "urls": [
+  "https://site.api.espn.com/apis/v2/sports/soccer/esp.1/standings?season=2025"
+ ],
+ "answer": {
+  "feed": "standings",
+  "league": "esp.1",
+  "source": "Source: ESPN · LaLiga table 2025/26",
+  "values": {
+   "league": "LaLiga",
+   "season": "2025/26",
+   "table": [
+    {
+     "rank": 1,
+     "team": {
+      "id": "83",
+      "name": "Barcelona",
+      "short": "Barcelona",
+      "abbreviation": "BAR",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/83.png"
+     },
+     "played": 38,
+     "won": 31,
+     "drawn": 1,
+     "lost": 6,
+     "goalsFor": 95,
+     "goalsAgainst": 36,
+     "goalDifference": 59,
+     "points": 94
+    },
+    {
+     "rank": 2,
+     "team": {
+      "id": "86",
+      "name": "Real Madrid",
+      "short": "Real Madrid",
+      "abbreviation": "RMA",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/86.png"
+     },
+     "played": 38,
+     "won": 27,
+     "drawn": 5,
+     "lost": 6,
+     "goalsFor": 77,
+     "goalsAgainst": 35,
+     "goalDifference": 42,
+     "points": 86
+    },
+    {
+     "rank": 3,
+     "team": {
+      "id": "102",
+      "name": "Villarreal",
+      "short": "Villarreal",
+      "abbreviation": "VIL",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/102.png"
+     },
+     "played": 38,
+     "won": 22,
+     "drawn": 6,
+     "lost": 10,
+     "goalsFor": 72,
+     "goalsAgainst": 46,
+     "goalDifference": 26,
+     "points": 72
+    },
+    {
+     "rank": 4,
+     "team": {
+      "id": "1068",
+      "name": "Atlético Madrid",
+      "short": "Atlético",
+      "abbreviation": "ATM",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/1068.png"
+     },
+     "played": 38,
+     "won": 21,
+     "drawn": 6,
+     "lost": 11,
+     "goalsFor": 62,
+     "goalsAgainst": 44,
+     "goalDifference": 18,
+     "points": 69
+    },
+    {
+     "rank": 5,
+     "team": {
+      "id": "244",
+      "name": "Real Betis",
+      "short": "Betis",
+      "abbreviation": "BET",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/244.png"
+     },
+     "played": 38,
+     "won": 15,
+     "drawn": 15,
+     "lost": 8,
+     "goalsFor": 59,
+     "goalsAgainst": 48,
+     "goalDifference": 11,
+     "points": 60
+    },
+    {
+     "rank": 6,
+     "team": {
+      "id": "85",
+      "name": "Celta Vigo",
+      "short": "Celta Vigo",
+      "abbreviation": "CEL",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/85.png"
+     },
+     "played": 38,
+     "won": 14,
+     "drawn": 12,
+     "lost": 12,
+     "goalsFor": 53,
+     "goalsAgainst": 48,
+     "goalDifference": 5,
+     "points": 54
+    },
+    {
+     "rank": 7,
+     "team": {
+      "id": "2922",
+      "name": "Getafe",
+      "short": "Getafe",
+      "abbreviation": "GET",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/2922.png"
+     },
+     "played": 38,
+     "won": 15,
+     "drawn": 6,
+     "lost": 17,
+     "goalsFor": 32,
+     "goalsAgainst": 38,
+     "goalDifference": -6,
+     "points": 51
+    },
+    {
+     "rank": 8,
+     "team": {
+      "id": "101",
+      "name": "Rayo Vallecano",
+      "short": "Rayo",
+      "abbreviation": "RAY",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/101.png"
+     },
+     "played": 38,
+     "won": 12,
+     "drawn": 14,
+     "lost": 12,
+     "goalsFor": 41,
+     "goalsAgainst": 44,
+     "goalDifference": -3,
+     "points": 50
+    },
+    {
+     "rank": 9,
+     "team": {
+      "id": "94",
+      "name": "Valencia",
+      "short": "Valencia",
+      "abbreviation": "VAL",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/94.png"
+     },
+     "played": 38,
+     "won": 13,
+     "drawn": 10,
+     "lost": 15,
+     "goalsFor": 46,
+     "goalsAgainst": 55,
+     "goalDifference": -9,
+     "points": 49
+    },
+    {
+     "rank": 10,
+     "team": {
+      "id": "89",
+      "name": "Real Sociedad",
+      "short": "Real Sociedad",
+      "abbreviation": "RSO",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/89.png"
+     },
+     "played": 38,
+     "won": 11,
+     "drawn": 13,
+     "lost": 14,
+     "goalsFor": 59,
+     "goalsAgainst": 61,
+     "goalDifference": -2,
+     "points": 46
+    },
+    {
+     "rank": 11,
+     "team": {
+      "id": "88",
+      "name": "Espanyol",
+      "short": "Espanyol",
+      "abbreviation": "ESP",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/88.png"
+     },
+     "played": 38,
+     "won": 12,
+     "drawn": 10,
+     "lost": 16,
+     "goalsFor": 43,
+     "goalsAgainst": 55,
+     "goalDifference": -12,
+     "points": 46
+    },
+    {
+     "rank": 12,
+     "team": {
+      "id": "93",
+      "name": "Athletic Club",
+      "short": "Athletic",
+      "abbreviation": "ATH",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/93.png"
+     },
+     "played": 38,
+     "won": 13,
+     "drawn": 6,
+     "lost": 19,
+     "goalsFor": 43,
+     "goalsAgainst": 58,
+     "goalDifference": -15,
+     "points": 45
+    },
+    {
+     "rank": 13,
+     "team": {
+      "id": "243",
+      "name": "Sevilla",
+      "short": "Sevilla",
+      "abbreviation": "SEV",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/243.png"
+     },
+     "played": 38,
+     "won": 12,
+     "drawn": 7,
+     "lost": 19,
+     "goalsFor": 46,
+     "goalsAgainst": 60,
+     "goalDifference": -14,
+     "points": 43
+    },
+    {
+     "rank": 14,
+     "team": {
+      "id": "96",
+      "name": "Alavés",
+      "short": "Alavés",
+      "abbreviation": "ALA",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/96.png"
+     },
+     "played": 38,
+     "won": 11,
+     "drawn": 10,
+     "lost": 17,
+     "goalsFor": 44,
+     "goalsAgainst": 56,
+     "goalDifference": -12,
+     "points": 43
+    },
+    {
+     "rank": 15,
+     "team": {
+      "id": "3751",
+      "name": "Elche",
+      "short": "Elche",
+      "abbreviation": "ELC",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/3751.png"
+     },
+     "played": 38,
+     "won": 10,
+     "drawn": 13,
+     "lost": 15,
+     "goalsFor": 49,
+     "goalsAgainst": 57,
+     "goalDifference": -8,
+     "points": 43
+    },
+    {
+     "rank": 16,
+     "team": {
+      "id": "1538",
+      "name": "Levante",
+      "short": "Levante",
+      "abbreviation": "LEV",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/1538.png"
+     },
+     "played": 38,
+     "won": 11,
+     "drawn": 9,
+     "lost": 18,
+     "goalsFor": 47,
+     "goalsAgainst": 61,
+     "goalDifference": -14,
+     "points": 42
+    },
+    {
+     "rank": 17,
+     "team": {
+      "id": "97",
+      "name": "Osasuna",
+      "short": "Osasuna",
+      "abbreviation": "OSA",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/97.png"
+     },
+     "played": 38,
+     "won": 11,
+     "drawn": 9,
+     "lost": 18,
+     "goalsFor": 44,
+     "goalsAgainst": 50,
+     "goalDifference": -6,
+     "points": 42
+    },
+    {
+     "rank": 18,
+     "team": {
+      "id": "84",
+      "name": "Mallorca",
+      "short": "Mallorca",
+      "abbreviation": "MLL",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/84.png"
+     },
+     "played": 38,
+     "won": 11,
+     "drawn": 9,
+     "lost": 18,
+     "goalsFor": 47,
+     "goalsAgainst": 57,
+     "goalDifference": -10,
+     "points": 42
+    },
+    {
+     "rank": 19,
+     "team": {
+      "id": "9812",
+      "name": "Girona",
+      "short": "Girona",
+      "abbreviation": "GIR",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/9812.png"
+     },
+     "played": 38,
+     "won": 9,
+     "drawn": 14,
+     "lost": 15,
+     "goalsFor": 39,
+     "goalsAgainst": 55,
+     "goalDifference": -16,
+     "points": 41
+    },
+    {
+     "rank": 20,
+     "team": {
+      "id": "92",
+      "name": "Real Oviedo",
+      "short": "Real Oviedo",
+      "abbreviation": "OVI",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/92.png"
+     },
+     "played": 38,
+     "won": 6,
+     "drawn": 11,
+     "lost": 21,
+     "goalsFor": 26,
+     "goalsAgainst": 60,
+     "goalDifference": -34,
+     "points": 29
+    }
+   ]
+  }
+ }
+}

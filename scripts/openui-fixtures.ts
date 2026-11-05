@@ -3,7 +3,7 @@ import { LIBRARY, PARSER } from "../src/lang/library.js";
 import { PRIMITIVE_BY_NAME } from "../src/lang/primitives.js";
 import { exprOfRef, printExpr, queryPath } from "../src/lang/program.js";
 import { isElement } from "../src/lang/tree.js";
-import { SPORTS_COMPONENTS, fits } from "../src/sports/components.js";
+import { SPORTS_COMPONENTS, fits, settleInjuries } from "../src/sports/components.js";
 import { valueTicks } from "../src/sports/fotmob.js";
 import { SPORTS_SCREEN } from "../src/sports/screen.js";
 
@@ -25,6 +25,14 @@ const arsenal = { name: "Arsenal", logo: crest(359), color: "clear" };
 const noPlayer = { present: false, name: "", kind: "player", detail: "", logo: "", color: "", value: "", fill: "surface.filled", ink: "ink.primary", club: { name: "", logo: "", color: "" } };
 const fromChelsea = (name: string, detail: string, photo: number, value: string, fill: string, ink: string) => ({ present: true, name, kind: "player", detail, logo: photo ? `https://images.fotmob.com/image_resources/playerimages/${photo}.png` : "", color: "#034694", value, fill, ink, club: chelsea });
 const fromArsenal = (name: string, detail: string, photo: number, value: string, fill: string, ink: string) => ({ ...fromChelsea(name, detail, photo, value, fill, ink), color: "#e20520", club: arsenal });
+
+/** An injured player as the schema stage writes it, settled as the server would on 5 Nov 2026. */
+const INJURY_DAY = new Date("2026-11-05T12:00:00Z");
+const injured = (name: string, position: string, team: string, logo: string, color: string, status: string, returnDate: string, returnNote: string, source: string) => {
+  const raw = { name, kind: "player", position, team, logo, color, status, returnDate, returnNote, source };
+  return (settleInjuries({ values: { answers: { q: raw } }, fields: [] }, INJURY_DAY).values.answers as { q: Record<string, unknown> }).q;
+};
+const nflPhoto = (id: number) => `https://a.espncdn.com/i/headshots/nfl/players/full/${id}.png`;
 
 const valueStretch = (name: string, lineColor: string, tagColor: string, team: number, points: readonly (readonly [string, number, string])[]) => ({
   name, lineColor, tagColor, logo: `https://images.fotmob.com/image_resources/logo/teamlogo/${team}.png`,
@@ -160,6 +168,28 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
       valueStretch("Chelsea", "#033cc1", "#051495", 8455, [["2025-06-30", 150_000, "€150k"], ["2025-12-31", 400_000, "€400k"], ["2026-06-30", 900_000, "€900k"]]),
     ], ticks: valueTicks(900_000) },
     sparse: { value: "", caption: "", segments: [], ticks: [] },
+  },
+  RecordTable: {
+    full: { title: "Passing", columnCount: "4", columns: [{ label: "C/ATT" }, { label: "YDS" }, { label: "TD" }, { label: "INT" }],
+      rows: [{ label: "Patrick Mahomes", cells: [{ value: "30/41" }, { value: "321" }, { value: "3" }, { value: "0" }] }, { label: "Gardner Minshew", cells: [{ value: "1/2" }, { value: "9" }, { value: "0" }, { value: "0" }] }] },
+    sparse: { title: "No games yet", columnCount: "1", columns: [], rows: [] },
+  },
+  InjuryReport: {
+    full: injured("Jeremiyah Love", "RB", "Cardinals", nflPhoto(4870808), "#a40227", "Injured Reserve", "2026-12-06", "", "Cardinals' official site"),
+    tomorrow: injured("Jock Landale", "C", "Hawks", "https://a.espncdn.com/i/headshots/nba/players/full/3146557.png", "#c8102e", "Day-To-Day", "2026-11-06", "", "Hawks' official site"),
+    noted: injured("Reece James", "Defender", "Chelsea", "https://images.fotmob.com/image_resources/playerimages/807729.png", "#034694", "", "", "Mid-January 2027", "The Standard"),
+    sparse: injured("Unknown player", "", "", "", "", "", "", "", ""),
+  },
+  InjuryList: {
+    full: (() => {
+      const players = [
+        injured("Jeremiyah Love", "RB", "Cardinals", nflPhoto(4870808), "#a40227", "Injured Reserve", "2026-12-06", "", "Cardinals' official site"),
+        injured("Tyler Huntley", "QB", "Ravens", nflPhoto(4035671), "#29126f", "Out", "", "Out for season", "ESPN"),
+        injured("Walter Nolen III", "DT", "Cardinals", nflPhoto(4685503), "#a40227", "Questionable", "2026-11-08", "", ""),
+      ];
+      return { title: "NFL injuries", showTitle: true, players };
+    })(),
+    sparse: { title: "", showTitle: false, players: [] },
   },
   SeasonPodium: {
     full: {

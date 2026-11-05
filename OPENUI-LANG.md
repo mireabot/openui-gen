@@ -42,7 +42,7 @@ primitive name:
 
 Templates are server-side compositions the writer may call, as typed builders (`ui.Card(...)`) that
 expand to primitives when admitted, so clients never learn a template, only primitives. The
-sports pack includes MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, and SeasonPodium.
+sports pack includes MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, SeasonPodium, InjuryReport, and InjuryList.
 Their contracts live in `src/sports/components.ts`. See `catalog/sports-parity.md` for source-design coverage and remaining visual differences.
 
 ```text

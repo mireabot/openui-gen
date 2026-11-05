@@ -29,6 +29,8 @@ export type FixturesHeatmapProps = {
   columns?: number;
   /** The won · drawn · lost counts under the grid. */
   overview?: boolean;
+  /** The word for a draw in the counts, or null for a league where draws are not a result. */
+  drawLabel?: string | null;
   className?: string;
 };
 
@@ -38,7 +40,7 @@ export type FixturesHeatmapProps = {
  * grid of squares, green for a win, red for a loss, gray for a draw and empty for one to come,
  * and the counts under it.
  */
-export function FixturesHeatmap({ value, caption, results, columns = heatmapColumns(results.length), overview = true, className }: FixturesHeatmapProps) {
+export function FixturesHeatmap({ value, caption, results, columns = heatmapColumns(results.length), overview = true, drawLabel = "Drawn", className }: FixturesHeatmapProps) {
   return (
     <section data-node-id="fixtures-heatmap" className={cn("flex flex-col items-center gap-4 rounded-[24px] bg-kino-surface-card p-4 text-center", className)}>
       <div className="flex flex-col items-center">
@@ -52,10 +54,10 @@ export function FixturesHeatmap({ value, caption, results, columns = heatmapColu
       </div>
       {overview && (
         <div data-node-id="overview" className="flex items-center justify-center gap-4 text-[13px] leading-[18px] text-kino-ink-secondary tabular-nums">
-          {OVERVIEW.map(({ result, label }) => (
+          {OVERVIEW.filter(({ result }) => result !== "draw" || drawLabel !== null).map(({ result, label }) => (
             <span key={result} className="flex items-center gap-2">
               <span className={cn("size-3 rounded-[4px]", SQUARE[result])} />
-              <span><span className="font-semibold text-kino-ink-primary">{results.filter((r) => r === result).length}</span> {label}</span>
+              <span><span className="font-semibold text-kino-ink-primary">{results.filter((r) => r === result).length}</span> {result === "draw" ? drawLabel : label}</span>
             </span>
           ))}
         </div>

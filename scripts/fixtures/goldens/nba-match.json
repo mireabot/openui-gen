@@ -1,0 +1,915 @@
+{
+ "urls": [
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams",
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/13/schedule",
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401909892"
+ ],
+ "answer": {
+  "feed": "match",
+  "league": "nba",
+  "source": "Source: ESPN · NBA box score",
+  "values": {
+   "league": "NBA",
+   "played": true,
+   "season": "2026-27",
+   "currentSeason": true,
+   "match": {
+    "id": "401909892",
+    "date": "2026-10-29T02:30Z",
+    "state": "final",
+    "status": "Final",
+    "venue": "Intuit Dome",
+    "broadcast": "NBA League Pass, Spectrum Sports Net, Spectrum Sports Net +, KTLA, ClipperVision",
+    "home": {
+     "id": "12",
+     "name": "LA Clippers",
+     "short": "Clippers",
+     "abbreviation": "LAC",
+     "color": "",
+     "alternateColor": "",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
+     "score": 87,
+     "winner": false,
+     "form": "",
+     "record": "",
+     "periods": "22 16 28 21"
+    },
+    "away": {
+     "id": "13",
+     "name": "Los Angeles Lakers",
+     "short": "Lakers",
+     "abbreviation": "LAL",
+     "color": "",
+     "alternateColor": "",
+     "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+     "score": 103,
+     "winner": true,
+     "form": "",
+     "record": "",
+     "periods": "25 31 29 18"
+    },
+    "venueSide": "away",
+    "result": "win"
+   },
+   "teamStats": [
+    {
+     "key": "fieldGoalsMade-fieldGoalsAttempted",
+     "label": "FG",
+     "display": "35-79"
+    },
+    {
+     "key": "fieldGoalPct",
+     "label": "Field Goal %",
+     "display": "44"
+    },
+    {
+     "key": "threePointFieldGoalsMade-threePointFieldGoalsAttempted",
+     "label": "3PT",
+     "display": "9-31"
+    },
+    {
+     "key": "threePointFieldGoalPct",
+     "label": "Three Point %",
+     "display": "29"
+    },
+    {
+     "key": "freeThrowsMade-freeThrowsAttempted",
+     "label": "FT",
+     "display": "24-33"
+    },
+    {
+     "key": "freeThrowPct",
+     "label": "Free Throw %",
+     "display": "73"
+    },
+    {
+     "key": "totalRebounds",
+     "label": "Rebounds",
+     "display": "48"
+    },
+    {
+     "key": "offensiveRebounds",
+     "label": "Offensive Rebounds",
+     "display": "17"
+    },
+    {
+     "key": "defensiveRebounds",
+     "label": "Defensive Rebounds",
+     "display": "31"
+    },
+    {
+     "key": "assists",
+     "label": "Assists",
+     "display": "16"
+    },
+    {
+     "key": "steals",
+     "label": "Steals",
+     "display": "15"
+    },
+    {
+     "key": "blocks",
+     "label": "Blocks",
+     "display": "5"
+    },
+    {
+     "key": "turnovers",
+     "label": "Turnovers",
+     "display": "19"
+    },
+    {
+     "key": "teamTurnovers",
+     "label": "Team Turnovers",
+     "display": "2"
+    },
+    {
+     "key": "totalTurnovers",
+     "label": "Total Turnovers",
+     "display": "21"
+    },
+    {
+     "key": "technicalFouls",
+     "label": "Technical Fouls",
+     "display": "0"
+    },
+    {
+     "key": "totalTechnicalFouls",
+     "label": "Total Technical Fouls",
+     "display": "0"
+    },
+    {
+     "key": "flagrantFouls",
+     "label": "Flagrant Fouls",
+     "display": "0"
+    },
+    {
+     "key": "turnoverPoints",
+     "label": "Points Conceded Off Turnovers",
+     "display": "18"
+    },
+    {
+     "key": "fastBreakPoints",
+     "label": "Fast Break Points",
+     "display": "24"
+    },
+    {
+     "key": "pointsInPaint",
+     "label": "Points in Paint",
+     "display": "48"
+    },
+    {
+     "key": "fouls",
+     "label": "Fouls",
+     "display": "21"
+    },
+    {
+     "key": "largestLead",
+     "label": "Largest Lead",
+     "display": "23"
+    },
+    {
+     "key": "leadChanges",
+     "label": "Lead Changes",
+     "display": "4"
+    },
+    {
+     "key": "leadPercentage",
+     "label": "Percent Led",
+     "display": "86"
+    }
+   ],
+   "opponentStats": [
+    {
+     "key": "fieldGoalsMade-fieldGoalsAttempted",
+     "label": "FG",
+     "display": "26-74"
+    },
+    {
+     "key": "fieldGoalPct",
+     "label": "Field Goal %",
+     "display": "35"
+    },
+    {
+     "key": "threePointFieldGoalsMade-threePointFieldGoalsAttempted",
+     "label": "3PT",
+     "display": "10-31"
+    },
+    {
+     "key": "threePointFieldGoalPct",
+     "label": "Three Point %",
+     "display": "32"
+    },
+    {
+     "key": "freeThrowsMade-freeThrowsAttempted",
+     "label": "FT",
+     "display": "25-27"
+    },
+    {
+     "key": "freeThrowPct",
+     "label": "Free Throw %",
+     "display": "93"
+    },
+    {
+     "key": "totalRebounds",
+     "label": "Rebounds",
+     "display": "41"
+    },
+    {
+     "key": "offensiveRebounds",
+     "label": "Offensive Rebounds",
+     "display": "12"
+    },
+    {
+     "key": "defensiveRebounds",
+     "label": "Defensive Rebounds",
+     "display": "29"
+    },
+    {
+     "key": "assists",
+     "label": "Assists",
+     "display": "17"
+    },
+    {
+     "key": "steals",
+     "label": "Steals",
+     "display": "13"
+    },
+    {
+     "key": "blocks",
+     "label": "Blocks",
+     "display": "5"
+    },
+    {
+     "key": "turnovers",
+     "label": "Turnovers",
+     "display": "24"
+    },
+    {
+     "key": "teamTurnovers",
+     "label": "Team Turnovers",
+     "display": "0"
+    },
+    {
+     "key": "totalTurnovers",
+     "label": "Total Turnovers",
+     "display": "24"
+    },
+    {
+     "key": "technicalFouls",
+     "label": "Technical Fouls",
+     "display": "0"
+    },
+    {
+     "key": "totalTechnicalFouls",
+     "label": "Total Technical Fouls",
+     "display": "0"
+    },
+    {
+     "key": "flagrantFouls",
+     "label": "Flagrant Fouls",
+     "display": "0"
+    },
+    {
+     "key": "turnoverPoints",
+     "label": "Points Conceded Off Turnovers",
+     "display": "31"
+    },
+    {
+     "key": "fastBreakPoints",
+     "label": "Fast Break Points",
+     "display": "6"
+    },
+    {
+     "key": "pointsInPaint",
+     "label": "Points in Paint",
+     "display": "28"
+    },
+    {
+     "key": "fouls",
+     "label": "Fouls",
+     "display": "24"
+    },
+    {
+     "key": "largestLead",
+     "label": "Largest Lead",
+     "display": "5"
+    },
+    {
+     "key": "leadChanges",
+     "label": "Lead Changes",
+     "display": "4"
+    },
+    {
+     "key": "leadPercentage",
+     "label": "Percent Led",
+     "display": "11"
+    }
+   ],
+   "teamTables": [
+    {
+     "title": "Box score",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "MIN"
+      },
+      {
+       "label": "PTS"
+      },
+      {
+       "label": "REB"
+      },
+      {
+       "label": "AST"
+      },
+      {
+       "label": "STL"
+      },
+      {
+       "label": "BLK"
+      },
+      {
+       "label": "FG"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Jake LaRavia",
+       "athleteId": "4592691",
+       "position": "F",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4592691.png",
+       "cells": [
+        {
+         "value": "35"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "10"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "1-2"
+        }
+       ]
+      },
+      {
+       "label": "Walker Kessler",
+       "athleteId": "4433136",
+       "position": "C",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4433136.png",
+       "cells": [
+        {
+         "value": "26"
+        },
+        {
+         "value": "11"
+        },
+        {
+         "value": "9"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "4-7"
+        }
+       ]
+      },
+      {
+       "label": "Matisse Thybulle",
+       "athleteId": "3907498",
+       "position": "G",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3907498.png",
+       "cells": [
+        {
+         "value": "28"
+        },
+        {
+         "value": "15"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "5-6"
+        }
+       ]
+      },
+      {
+       "label": "Austin Reaves",
+       "athleteId": "4066457",
+       "position": "G",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4066457.png",
+       "cells": [
+        {
+         "value": "31"
+        },
+        {
+         "value": "16"
+        },
+        {
+         "value": "6"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "6-16"
+        }
+       ]
+      },
+      {
+       "label": "Quentin Grimes",
+       "athleteId": "4397014",
+       "position": "G",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4397014.png",
+       "cells": [
+        {
+         "value": "38"
+        },
+        {
+         "value": "23"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "5"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "7-15"
+        }
+       ]
+      },
+      {
+       "label": "Jarred Vanderbilt",
+       "athleteId": "4278077",
+       "position": "F",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278077.png",
+       "cells": [
+        {
+         "value": "21"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "7"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0-1"
+        }
+       ]
+      },
+      {
+       "label": "Sandro Mamukelashvili",
+       "athleteId": "4278580",
+       "position": "F",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4278580.png",
+       "cells": [
+        {
+         "value": "30"
+        },
+        {
+         "value": "13"
+        },
+        {
+         "value": "8"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "6-15"
+        }
+       ]
+      },
+      {
+       "label": "Collin Sexton",
+       "athleteId": "4277811",
+       "position": "G",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4277811.png",
+       "cells": [
+        {
+         "value": "21"
+        },
+        {
+         "value": "21"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "6-11"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "opponentTables": [
+    {
+     "title": "Box score",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "MIN"
+      },
+      {
+       "label": "PTS"
+      },
+      {
+       "label": "REB"
+      },
+      {
+       "label": "AST"
+      },
+      {
+       "label": "STL"
+      },
+      {
+       "label": "BLK"
+      },
+      {
+       "label": "FG"
+      }
+     ],
+     "rows": [
+      {
+       "label": "Derrick Jones Jr.",
+       "athleteId": "3936099",
+       "position": "F",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3936099.png",
+       "cells": [
+        {
+         "value": "28"
+        },
+        {
+         "value": "15"
+        },
+        {
+         "value": "5"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "6-10"
+        }
+       ]
+      },
+      {
+       "label": "Isaiah Jackson",
+       "athleteId": "4432170",
+       "position": "F",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4432170.png",
+       "cells": [
+        {
+         "value": "19"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "5"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1-3"
+        }
+       ]
+      },
+      {
+       "label": "Kris Dunn",
+       "athleteId": "2991139",
+       "position": "G",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/2991139.png",
+       "cells": [
+        {
+         "value": "27"
+        },
+        {
+         "value": "5"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "2-5"
+        }
+       ]
+      },
+      {
+       "label": "Darius Garland",
+       "athleteId": "4396907",
+       "position": "G",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4396907.png",
+       "cells": [
+        {
+         "value": "26"
+        },
+        {
+         "value": "14"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "5"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "4-12"
+        }
+       ]
+      },
+      {
+       "label": "Kobe Sanders",
+       "athleteId": "4702352",
+       "position": "G",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/4702352.png",
+       "cells": [
+        {
+         "value": "27"
+        },
+        {
+         "value": "9"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "2-7"
+        }
+       ]
+      },
+      {
+       "label": "Baba Miller",
+       "athleteId": "5075626",
+       "position": "F",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5075626.png",
+       "cells": [
+        {
+         "value": "17"
+        },
+        {
+         "value": "4"
+        },
+        {
+         "value": "7"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "2-3"
+        }
+       ]
+      },
+      {
+       "label": "Nick Martinelli",
+       "athleteId": "5105832",
+       "position": "F",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5105832.png",
+       "cells": [
+        {
+         "value": "6"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1-2"
+        }
+       ]
+      },
+      {
+       "label": "Brook Lopez",
+       "athleteId": "3448",
+       "position": "C",
+       "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3448.png",
+       "cells": [
+        {
+         "value": "22"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "3"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "1-5"
+        }
+       ]
+      }
+     ]
+    }
+   ],
+   "scoring": [],
+   "upcoming": [
+    {
+     "id": "401910318",
+     "date": "2027-01-12T03:00Z",
+     "state": "scheduled",
+     "status": "1/11 - 10:00 PM EST",
+     "venue": "Intuit Dome",
+     "broadcast": "NBCSN, Spectrum Sports Net, Spectrum Sports Net +, ClipperVision",
+     "home": {
+      "id": "12",
+      "name": "LA Clippers",
+      "short": "Clippers",
+      "abbreviation": "LAC",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
+      "score": null,
+      "winner": false,
+      "form": "",
+      "record": "",
+      "periods": ""
+     },
+     "away": {
+      "id": "13",
+      "name": "Los Angeles Lakers",
+      "short": "Lakers",
+      "abbreviation": "LAL",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+      "score": null,
+      "winner": false,
+      "form": "",
+      "record": "",
+      "periods": ""
+     },
+     "venueSide": "away",
+     "result": "upcoming"
+    },
+    {
+     "id": "401910544",
+     "date": "2027-02-11T03:00Z",
+     "state": "scheduled",
+     "status": "2/10 - 10:00 PM EST",
+     "venue": "crypto.com Arena",
+     "broadcast": "ESPN, Spectrum Sports Net, Spectrum Sports Net +, KTLA, ClipperVision",
+     "home": {
+      "id": "13",
+      "name": "Los Angeles Lakers",
+      "short": "Lakers",
+      "abbreviation": "LAL",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png",
+      "score": null,
+      "winner": false,
+      "form": "",
+      "record": "",
+      "periods": ""
+     },
+     "away": {
+      "id": "12",
+      "name": "LA Clippers",
+      "short": "Clippers",
+      "abbreviation": "LAC",
+      "color": "",
+      "alternateColor": "",
+      "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png",
+      "score": null,
+      "winner": false,
+      "form": "",
+      "record": "",
+      "periods": ""
+     },
+     "venueSide": "home",
+     "result": "upcoming"
+    }
+   ]
+  }
+ }
+}

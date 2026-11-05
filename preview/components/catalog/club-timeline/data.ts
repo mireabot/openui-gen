@@ -1,3 +1,5 @@
+import type { ClubStop } from "./lib/club-timeline";
+
 export type ClubSpell = {
   id: string;
   name: string;
@@ -44,4 +46,24 @@ export const DURAN: (Omit<ClubSpell, "from" | "to"> & { loan?: boolean })[] = [
   { id: "fenerbahce", name: "Fenerbahçe", logo: crest(8695), color: "#ffed00", year: "2025", dates: "Jul 2025 – Feb 2026", location: "İstanbul, Turkey", appearances: 21, goals: 5, assists: 2, loan: true },
   { id: "zenit", name: "Zenit St. Petersburg", logo: crest(8698), color: "#7fcbf3", year: "2026", dates: "Feb 2026 – Jun 2026", location: "St. Petersburg, Russia", appearances: 9, goals: 2, assists: 0, loan: true },
   { id: "benfica", name: "Benfica", logo: crest(9772), color: "#c00001", year: "2026", dates: "Jul 2026 – Jun 2027", location: "Lisboa, Portugal", appearances: 17, goals: 5, assists: 0, loan: true },
+];
+
+/**
+ * Team sport careers, as the server builds them from ESPN's athlete stats (careerOf): one spell per
+ * run of seasons with a team, a mid-season trade starting the next. Recorded 2026-11-05.
+ */
+export const HARDEN: ClubStop[] = [
+  { id: "oklahoma-city-thunder-2009-10", name: "Oklahoma City Thunder", logo: "https://a.espncdn.com/i/teamlogos/nba/500/okc.png", color: "#c67c03", year: "2009", dates: "2009-10 – 2011-12", location: "Oklahoma City" },
+  { id: "houston-rockets-2012-13", name: "Houston Rockets", logo: "https://a.espncdn.com/i/teamlogos/nba/500/hou.png", color: "#d40026", year: "2012", dates: "2012-13 – 2020-21", location: "Houston" },
+  { id: "brooklyn-nets-2020-21", name: "Brooklyn Nets", logo: "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png", color: "#000000", year: "2020", dates: "2020-21 – 2021-22", location: "Brooklyn" },
+  { id: "philadelphia-76ers-2021-22", name: "Philadelphia 76ers", logo: "https://a.espncdn.com/i/teamlogos/nba/500/phi.png", color: "#000000", year: "2021", dates: "2021-22 – 2022-23", location: "Philadelphia" },
+  { id: "la-clippers-2023-24", name: "LA Clippers", logo: "https://a.espncdn.com/i/teamlogos/nba/500/lac.png", color: "#1d428a", year: "2023", dates: "2023-24 – 2025-26", location: "LA" },
+  { id: "cleveland-cavaliers-2025-26", name: "Cleveland Cavaliers", logo: "https://a.espncdn.com/i/teamlogos/nba/500/cle.png", color: "#860038", year: "2025", dates: "2025-26 – 2026-27", location: "Cleveland" },
+];
+
+export const WILSON: ClubStop[] = [
+  { id: "seattle-seahawks-2012", name: "Seattle Seahawks", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/sea.png", color: "#224970", year: "2012", dates: "2012 – 2021", location: "Seattle" },
+  { id: "denver-broncos-2022", name: "Denver Broncos", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/den.png", color: "#002e4d", year: "2022", dates: "2022 – 2023", location: "Denver" },
+  { id: "pittsburgh-steelers-2024", name: "Pittsburgh Steelers", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/pit.png", color: "#000000", year: "2024", dates: "2024", location: "Pittsburgh" },
+  { id: "new-york-giants-2025", name: "New York Giants", logo: "https://a.espncdn.com/i/teamlogos/nfl/500/nyg.png", color: "#003c7f", year: "2025", dates: "2025", location: "New York" },
 ];

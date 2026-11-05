@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { config } from "../config.js";
 import type { MockValue } from "../research/dataset-schema.js";
+import { LEAGUE_CODES, LEAGUE_CONFIG, LEAGUES, sportOf, type EspnFeed, type LeagueCode, type Sport } from "./leagues.js";
 
 /**
  * ESPN's public site API for the four leagues and two cups it covers here: a day's scoreboard, the team list,
@@ -10,34 +11,19 @@ import type { MockValue } from "../research/dataset-schema.js";
  * shows, so the schema stage and the writer read a few hundred tokens, not ESPN's full payload.
  */
 
-/** Domestic leagues first: a club's league is the first competition that lists it. */
-export const LEAGUES = {
-  "eng.1": "Premier League",
-  "esp.1": "LaLiga",
-  "ger.1": "Bundesliga",
-  "ita.1": "Serie A",
-  "uefa.champions": "Champions League",
-  "eng.fa": "FA Cup",
-} as const;
-export type LeagueCode = keyof typeof LEAGUES;
-export const LEAGUE_CODES = Object.keys(LEAGUES) as LeagueCode[];
-export const CUP_CODES = ["uefa.champions", "eng.fa"] as const satisfies readonly LeagueCode[];
-
-export const ESPN_FEEDS = ["scoreboard", "standings", "teams", "schedule", "leaders", "match", "scorers"] as const;
-export type EspnFeed = (typeof ESPN_FEEDS)[number];
-/** Feeds a competition has no data for: a knockout cup has no table and ESPN keeps no FA Cup leaders. */
-export const MISSING_FEEDS: Partial<Record<LeagueCode, readonly EspnFeed[]>> = { "eng.fa": ["standings", "leaders"] };
+export { CUP_CODES, ESPN_FEEDS, LEAGUE_CODES, LEAGUES, MISSING_FEEDS } from "./leagues.js";
+export type { EspnFeed, LeagueCode } from "./leagues.js";
 
 /** Injectable for offline checks: a URL in, parsed JSON out. */
 export type EspnTransport = (url: string) => Promise<unknown>;
 
-async function fetchJSON(url: string): Promise<unknown> {
+export async function fetchJSON(url: string): Promise<unknown> {
   const response = await fetch(url, { signal: AbortSignal.timeout(15_000), headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error(`ESPN HTTP ${response.status} for ${new URL(url).pathname}`);
   return response.json();
 }
 
-const Team = z.object({
+export const Team = z.object({
   id: z.string(), displayName: z.string(), shortDisplayName: z.string().optional(), abbreviation: z.string().optional(),
   color: z.string().optional(), alternateColor: z.string().optional(), logo: z.string().optional(),
   logos: z.array(z.object({ href: z.string() })).optional(),
@@ -50,7 +36,7 @@ const Competitor = z.object({
   team: Team, records: z.array(z.object({ summary: z.string() }).loose()).optional(),
 }).loose();
 const Status = z.object({ type: z.object({ state: z.enum(["pre", "in", "post"]), completed: z.boolean().optional(), name: z.string().optional(), detail: z.string().optional(), shortDetail: z.string().optional() }).loose() }).loose();
-const Scoreboard = z.object({
+export const Scoreboard = z.object({
   /** A team schedule names the season it returned here; `season` is always the current one. */
   requestedSeason: z.object({ year: z.number() }).loose().optional(),
   events: z.array(z.object({
@@ -65,7 +51,7 @@ const Scoreboard = z.object({
     }).loose()).min(1),
   }).loose()),
 }).loose();
-const Teams = z.object({ sports: z.array(z.object({ leagues: z.array(z.object({ teams: z.array(z.object({ team: Team }).loose()) }).loose()) }).loose()) }).loose();
+export const Teams = z.object({ sports: z.array(z.object({ leagues: z.array(z.object({ teams: z.array(z.object({ team: Team }).loose()) }).loose()) }).loose()) }).loose();
 const Standings = z.object({
   children: z.array(z.object({ standings: z.object({ entries: z.array(z.object({
     team: Team, stats: z.array(z.object({ name: z.string(), value: z.number().optional(), displayValue: z.string().optional() }).loose()),
@@ -99,9 +85,9 @@ const ScorerReport = z.object({
   }).loose()),
 }).loose();
 
-const logoOf = (team: z.infer<typeof Team>) => team.logo ?? team.logos?.[0]?.href ?? "";
-const colorOf = (hex: string | undefined) => (hex && /^[0-9a-f]{6}$/i.test(hex) ? `#${hex.toLowerCase()}` : "");
-const teamRecord = (team: z.infer<typeof Team>): Record<string, MockValue> => ({
+export const logoOf = (team: z.infer<typeof Team>) => team.logo ?? team.logos?.[0]?.href ?? "";
+export const colorOf = (hex: string | undefined) => (hex && /^[0-9a-f]{6}$/i.test(hex) ? `#${hex.toLowerCase()}` : "");
+export const teamRecord = (team: z.infer<typeof Team>): Record<string, MockValue> => ({
   id: team.id, name: team.displayName, short: team.shortDisplayName ?? team.displayName, abbreviation: team.abbreviation ?? "",
   color: colorOf(team.color), alternateColor: colorOf(team.alternateColor), logo: logoOf(team),
 });
@@ -141,6 +127,10 @@ export interface EspnRequest {
   readonly season?: number | null;
   readonly lastGames?: number;
   readonly allCompetitions?: boolean;
+  /** `athlete` and `gamelog`: the player. */
+  readonly player?: string | null;
+  /** NFL `scoreboard`: a week of the regular season. */
+  readonly week?: number | null;
 }
 
 /** One club ESPN covers: its id, exact name (what feeds take), short name, code, colours, logo and league. */
@@ -160,17 +150,17 @@ let directory: { readonly at: number; readonly clubs: readonly Club[] } | undefi
 const DAY = 86_400_000;
 
 /**
- * Every club in the six competitions, for the planner to resolve "Barcelona", "Barça" or "Man City" to
+ * Every team in every league, for the planner to resolve "Barcelona", "Barça" or "Man City" to
  * ESPN's exact name and its league. A club in a domestic league and a cup is listed once, under its
  * league; a cup-only club (PSG, Benfica) is listed under the cup. Cached for a day; a competition that
  * fails to load is left out.
  */
-export async function clubDirectory(send: EspnTransport = fetchJSON, now = Date.now()): Promise<readonly Club[]> {
+export async function clubDirectory(send: EspnTransport = fetchJSON, now = Date.now(), codes: readonly LeagueCode[] = LEAGUE_CODES): Promise<readonly Club[]> {
   if (directory && now - directory.at < DAY) return directory.clubs;
   const base = config().ESPN_BASE_URL;
-  const leagues = await Promise.all(LEAGUE_CODES.map(async league => {
+  const leagues = await Promise.all(codes.map(async league => {
     try {
-      const data = Teams.parse(await send(`${base}/site/v2/sports/soccer/${league}/teams`));
+      const data = Teams.parse(await send(`${base}/site/v2/sports/${LEAGUE_CONFIG[league].espnPath}/teams`));
       return data.sports.flatMap(s => s.leagues.flatMap(l => l.teams.map(({ team }): Club => ({
         id: team.id, name: team.displayName, short: team.shortDisplayName ?? team.displayName, abbreviation: team.abbreviation ?? "",
         color: colorOf(team.color), alternateColor: colorOf(team.alternateColor), logo: logoOf(team), league,
@@ -179,8 +169,9 @@ export async function clubDirectory(send: EspnTransport = fetchJSON, now = Date.
       return [];
     }
   }));
+  // ESPN's team ids repeat across sports, and a soccer club repeats across its competitions.
   const seen = new Set<string>();
-  const clubs = leagues.flat().filter(club => !seen.has(club.id) && !!seen.add(club.id));
+  const clubs = leagues.flat().filter(club => { const key = `${sportOf(club.league)}:${club.id}`; return !seen.has(key) && !!seen.add(key); });
   if (clubs.length) directory = { at: now, clubs };
   return clubs;
 }
@@ -199,7 +190,7 @@ export async function espnLookup(request: EspnRequest, send: EspnTransport = fet
   const name = LEAGUES[league];
   if (request.feed === "scorers") return recentScorers(base, request, send, now);
   if (request.feed === "teams") {
-    const data = Teams.parse(await send(`${base}/site/v2/sports/soccer/${league}/teams`));
+    const data = Teams.parse(await send(`${base}/site/v2/sports/${LEAGUE_CONFIG[league].espnPath}/teams`));
     const teams = data.sports.flatMap(s => s.leagues.flatMap(l => l.teams.map(t => teamRecord(t.team))));
     return { feed: "teams", league, source: `Source: ESPN · ${name} teams`, values: { league: name, teams } };
   }
@@ -355,8 +346,8 @@ export function venueTotals(matches: readonly Record<string, MockValue>[], venue
 /** "2026/27" for ESPN's season 2026. */
 export const seasonLabel = (year: number | null) => (year === null ? "" : `${year}/${String((year + 1) % 100).padStart(2, "0")}`);
 
-async function findTeam(base: string, league: LeagueCode, query: string, send: EspnTransport) {
-  const teams = Teams.parse(await send(`${base}/site/v2/sports/soccer/${league}/teams`)).sports.flatMap(s => s.leagues.flatMap(l => l.teams.map(t => t.team)));
+export async function findTeam(base: string, league: LeagueCode, query: string, send: EspnTransport) {
+  const teams = Teams.parse(await send(`${base}/site/v2/sports/${LEAGUE_CONFIG[league].espnPath}/teams`)).sports.flatMap(s => s.leagues.flatMap(l => l.teams.map(t => t.team)));
   const team = teams.find(t => isTeam(teamRecord(t), query));
   if (!team) throw new Error(`ESPN has no ${LEAGUES[league]} team matching "${query}"`);
   return team;
@@ -402,8 +393,8 @@ const isMatch = (v: unknown): v is Record<string, MockValue> & { home: Record<st
  * date as `label`, kickoff or status as `value` in the user's time zone, and competition · venue ·
  * broadcast as `details`. Runs after the feed's own logic, which compares scores as numbers.
  */
-export function withMatchCards(values: Record<string, MockValue>, competition: string, timeZone: string): Record<string, MockValue> {
-  const clubs = new Map((directory?.clubs ?? []).map(c => [c.id, c]));
+export function withMatchCards(values: Record<string, MockValue>, competition: string, timeZone: string, sport: Sport = "soccer"): Record<string, MockValue> {
+  const clubs = new Map((directory?.clubs ?? []).filter(c => sportOf(c.league) === sport).map(c => [c.id, c]));
   const date = (iso: string, options: Intl.DateTimeFormatOptions) => { try { return new Intl.DateTimeFormat("en-US", { timeZone, ...options }).format(new Date(iso)); } catch { return ""; } };
   const card = (m: Record<string, MockValue> & { home: Record<string, MockValue>; away: Record<string, MockValue> }) => {
     const goals = (side: Record<string, MockValue>) => (typeof side.goals === "number" ? side.goals : typeof side.score === "number" ? side.score : null);
@@ -423,7 +414,7 @@ export function withMatchCards(values: Record<string, MockValue>, competition: s
 }
 
 /** One match, from a scoreboard event or a schedule event (which keeps its status on the competition). */
-function match(event: z.infer<typeof Scoreboard>["events"][number]): Record<string, MockValue> {
+export function match(event: z.infer<typeof Scoreboard>["events"][number]): Record<string, MockValue> {
   const competition = event.competitions[0]!;
   const type = (event.status ?? competition.status)?.type;
   const state = type?.state ?? "pre";

@@ -17,7 +17,7 @@ export default function Home() {
     <main className={`${styles.workspace} flex h-full flex-col gap-6 overflow-y-auto p-5 md:p-8`}>
       <header className="flex flex-col gap-1">
         <h1 className="text-[18px] leading-[22px] font-medium">OpenUI generation</h1>
-        <p className="text-[14px] leading-[18px] text-muted-foreground">Ask about a football league, club or player. Follow the pipeline as the screen takes shape.</p>
+        <p className="text-[14px] leading-[18px] text-muted-foreground">Ask about a soccer, NFL or NBA team, league or player. Follow the pipeline as the screen takes shape.</p>
       </header>
       <SportsLive theme={theme} specs={design?.primitives} appearance={appearance} />
     </main>

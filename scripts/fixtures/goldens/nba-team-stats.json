@@ -1,0 +1,194 @@
+{
+ "urls": [
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams",
+  "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/13/statistics"
+ ],
+ "answer": {
+  "feed": "teamStats",
+  "league": "nba",
+  "source": "Source: ESPN · Los Angeles Lakers NBA team stats",
+  "values": {
+   "league": "NBA",
+   "team": {
+    "id": "13",
+    "name": "Los Angeles Lakers",
+    "short": "Lakers",
+    "abbreviation": "LAL",
+    "color": "#552583",
+    "alternateColor": "#fdb927",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+   },
+   "season": "",
+   "categories": [
+    {
+     "key": "offensive",
+     "title": "Offensive",
+     "stats": [
+      {
+       "key": "freeThrowPct",
+       "label": "Free Throw Percentage",
+       "display": "78.5",
+       "value": 78.54100036621094
+      },
+      {
+       "key": "threePointPct",
+       "label": "3-Point Field Goal Percentage",
+       "display": "39.7",
+       "value": 39.66699981689453
+      },
+      {
+       "key": "avgFieldGoalsMade",
+       "label": "Average Field Goals Made",
+       "display": "42.4",
+       "value": 42.375
+      },
+      {
+       "key": "avgFieldGoalsAttempted",
+       "label": "Average Field Goals Attempted",
+       "display": "81.5",
+       "value": 81.5
+      },
+      {
+       "key": "avgThreePointFieldGoalsMade",
+       "label": "Average 3-Point Field Goals Made",
+       "display": "14.9",
+       "value": 14.875
+      },
+      {
+       "key": "avgThreePointFieldGoalsAttempted",
+       "label": "Average 3-Point Field Goals Attempted",
+       "display": "37.5",
+       "value": 37.5
+      },
+      {
+       "key": "avgFreeThrowsMade",
+       "label": "Average Free Throws Made",
+       "display": "22.9",
+       "value": 22.875
+      },
+      {
+       "key": "avgFreeThrowsAttempted",
+       "label": "Average Free Throws Attempted",
+       "display": "29.1",
+       "value": 29.125
+      },
+      {
+       "key": "avgPoints",
+       "label": "Points Per Game",
+       "display": "122.5",
+       "value": 122.5
+      },
+      {
+       "key": "avgOffensiveRebounds",
+       "label": "Offensive Rebounds Per Game",
+       "display": "10.1",
+       "value": 10.125
+      }
+     ]
+    },
+    {
+     "key": "defensive",
+     "title": "Defensive",
+     "stats": [
+      {
+       "key": "avgDefensiveRebounds",
+       "label": "Defensive Rebounds Per Game",
+       "display": "30.0",
+       "value": 30
+      },
+      {
+       "key": "avgBlocks",
+       "label": "Blocks Per Game",
+       "display": "6.4",
+       "value": 6.375
+      },
+      {
+       "key": "avgSteals",
+       "label": "Steals Per Game",
+       "display": "10.1",
+       "value": 10.125
+      },
+      {
+       "key": "defensiveRebounds",
+       "label": "Defensive Rebounds",
+       "display": "240",
+       "value": 240
+      },
+      {
+       "key": "steals",
+       "label": "Steals",
+       "display": "81",
+       "value": 81
+      },
+      {
+       "key": "blocks",
+       "label": "Blocks",
+       "display": "51",
+       "value": 51
+      }
+     ]
+    },
+    {
+     "key": "general",
+     "title": "General",
+     "stats": [
+      {
+       "key": "avgRebounds",
+       "label": "Rebounds Per Game",
+       "display": "40.1",
+       "value": 40.125
+      },
+      {
+       "key": "assistTurnoverRatio",
+       "label": "Assist To Turnover Ratio",
+       "display": "1.4",
+       "value": 1.4397163
+      },
+      {
+       "key": "avgFouls",
+       "label": "Fouls Per Game",
+       "display": "23.9",
+       "value": 23.875
+      },
+      {
+       "key": "gamesPlayed",
+       "label": "Games Played",
+       "display": "8",
+       "value": 8
+      },
+      {
+       "key": "gamesStarted",
+       "label": "Games Started",
+       "display": "0",
+       "value": 0
+      },
+      {
+       "key": "minutes",
+       "label": "Minutes",
+       "display": "0",
+       "value": 0
+      },
+      {
+       "key": "avgMinutes",
+       "label": "Minutes Per Game",
+       "display": "0.0",
+       "value": 0
+      },
+      {
+       "key": "totalRebounds",
+       "label": "Rebounds",
+       "display": "321",
+       "value": 321
+      },
+      {
+       "key": "rebounds",
+       "label": "Rebounds",
+       "display": "321",
+       "value": 321
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

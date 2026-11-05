@@ -1,0 +1,157 @@
+{
+ "urls": [
+  "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/statistics"
+ ],
+ "answer": {
+  "feed": "leaders",
+  "league": "eng.1",
+  "source": "Source: ESPN · Premier League leaders",
+  "values": {
+   "league": "Premier League",
+   "goals": [
+    {
+     "rank": 1,
+     "name": "Erling Haaland",
+     "team": "Manchester City",
+     "teamAbbreviation": "MNC",
+     "value": 9
+    },
+    {
+     "rank": 2,
+     "name": "Alexander Isak",
+     "team": "Liverpool",
+     "teamAbbreviation": "LIV",
+     "value": 6
+    },
+    {
+     "rank": 3,
+     "name": "Morgan Rogers",
+     "team": "Chelsea",
+     "teamAbbreviation": "CHE",
+     "value": 5
+    },
+    {
+     "rank": 4,
+     "name": "Marcus Tavernier",
+     "team": "AFC Bournemouth",
+     "teamAbbreviation": "BOU",
+     "value": 5
+    },
+    {
+     "rank": 5,
+     "name": "Nicolas Jackson",
+     "team": "Aston Villa",
+     "teamAbbreviation": "AVL",
+     "value": 5
+    },
+    {
+     "rank": 6,
+     "name": "João Pedro",
+     "team": "Chelsea",
+     "teamAbbreviation": "CHE",
+     "value": 5
+    },
+    {
+     "rank": 7,
+     "name": "Bryan Mbeumo",
+     "team": "Manchester United",
+     "teamAbbreviation": "MAN",
+     "value": 4
+    },
+    {
+     "rank": 8,
+     "name": "Thierno Barry",
+     "team": "Everton",
+     "teamAbbreviation": "EVE",
+     "value": 4
+    },
+    {
+     "rank": 9,
+     "name": "Evanilson",
+     "team": "AFC Bournemouth",
+     "teamAbbreviation": "BOU",
+     "value": 4
+    },
+    {
+     "rank": 10,
+     "name": "Rayan Cherki",
+     "team": "Manchester City",
+     "teamAbbreviation": "MNC",
+     "value": 4
+    }
+   ],
+   "assists": [
+    {
+     "rank": 1,
+     "name": "Declan Rice",
+     "team": "Arsenal",
+     "teamAbbreviation": "ARS",
+     "value": 5
+    },
+    {
+     "rank": 2,
+     "name": "Pascal Gross",
+     "team": "Brighton & Hove Albion",
+     "teamAbbreviation": "BHA",
+     "value": 4
+    },
+    {
+     "rank": 3,
+     "name": "Evanilson",
+     "team": "AFC Bournemouth",
+     "teamAbbreviation": "BOU",
+     "value": 4
+    },
+    {
+     "rank": 4,
+     "name": "Daichi Kamada",
+     "team": "Crystal Palace",
+     "teamAbbreviation": "CRY",
+     "value": 3
+    },
+    {
+     "rank": 5,
+     "name": "Cole Palmer",
+     "team": "Chelsea",
+     "teamAbbreviation": "CHE",
+     "value": 3
+    },
+    {
+     "rank": 6,
+     "name": "Maxim De Cuyper",
+     "team": "Brighton & Hove Albion",
+     "teamAbbreviation": "BHA",
+     "value": 3
+    },
+    {
+     "rank": 7,
+     "name": "John McGinn",
+     "team": "Aston Villa",
+     "teamAbbreviation": "AVL",
+     "value": 3
+    },
+    {
+     "rank": 8,
+     "name": "Josko Gvardiol",
+     "team": "Manchester City",
+     "teamAbbreviation": "MNC",
+     "value": 3
+    },
+    {
+     "rank": 9,
+     "name": "Mohammed Kudus",
+     "team": "Tottenham Hotspur",
+     "teamAbbreviation": "TOT",
+     "value": 3
+    },
+    {
+     "rank": 10,
+     "name": "Antoine Semenyo",
+     "team": "Manchester City",
+     "teamAbbreviation": "MNC",
+     "value": 3
+    }
+   ]
+  }
+ }
+}

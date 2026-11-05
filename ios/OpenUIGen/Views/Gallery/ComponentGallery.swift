@@ -73,7 +73,7 @@ enum ComponentGallery {
         return sports + [clubCard] + primitives
     }
 
-    /// Real careers only, one for each way the years group.
+    /// Real careers only, one for each way the years group, then an NBA and an NFL career.
     private static var careerTimelines: [GallerySample] {
         [
             GallerySample(
@@ -85,6 +85,16 @@ enum ComponentGallery {
                 id: "ClubTimeline/one-per-year",
                 variant: "One club per year: Erling Haaland, 5 clubs",
                 content: .clubTimeline(ClubSamples.haaland)
+            ),
+            GallerySample(
+                id: "ClubTimeline/nba",
+                variant: "NBA, ESPN seasons: James Harden, 6 teams, 2 mid-season trades",
+                content: .clubTimeline(ClubSamples.harden, initial: ClubSamples.harden.count - 1)
+            ),
+            GallerySample(
+                id: "ClubTimeline/nfl",
+                variant: "NFL, ESPN seasons: Russell Wilson, 4 teams",
+                content: .clubTimeline(ClubSamples.wilson, initial: ClubSamples.wilson.count - 1)
             ),
         ]
     }

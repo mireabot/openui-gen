@@ -39,6 +39,8 @@ const Schema = z.object({
   SPORTS_MODEL: z.string().min(1).default("claude-opus-5-5"),
   // ESPN's public site API (scoreboard, teams, standings). No key.
   ESPN_BASE_URL: z.string().url().default("https://site.api.espn.com/apis"),
+  // The same API's leaders, players and search. No key.
+  ESPN_WEB_BASE_URL: z.string().url().default("https://site.web.api.espn.com/apis"),
 
   // Saved OpenUI state: dataset snapshots (/tools/sports_dataset) and documents (follow-ups).
   DATA_DIR: z.string().min(1).default("data"),

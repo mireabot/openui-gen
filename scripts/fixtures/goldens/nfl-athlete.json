@@ -1,0 +1,398 @@
+{
+ "urls": [
+  "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams",
+  "https://site.api.espn.com/apis/site/v2/sports/football/nfl/teams/12/roster",
+  "https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/athletes/3139477",
+  "https://site.web.api.espn.com/apis/common/v3/sports/football/nfl/athletes/3139477/stats"
+ ],
+ "answer": {
+  "feed": "athlete",
+  "league": "nfl",
+  "source": "Source: ESPN · Patrick Mahomes NFL stats",
+  "values": {
+   "league": "NFL",
+   "player": {
+    "athleteId": "3139477",
+    "name": "Patrick Mahomes",
+    "kind": "player",
+    "position": "QB",
+    "jersey": "15",
+    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+    "team": "Kansas City Chiefs",
+    "detail": "QB · Kansas City Chiefs",
+    "color": "#e31837",
+    "status": "Active"
+   },
+   "career": {
+    "initial": 0,
+    "clubs": [
+     {
+      "id": "kansas-city-chiefs-2017",
+      "name": "Kansas City Chiefs",
+      "year": "2017",
+      "dates": "2017 – 2026",
+      "location": "Kansas City",
+      "logo": "https://a.espncdn.com/i/teamlogos/nfl/500/kc.png",
+      "color": "#be1415",
+      "marker": "none",
+      "stats": []
+     }
+    ]
+   },
+   "seasonSummary": "2026 regular season stats",
+   "seasonStats": [
+    {
+     "key": "passingYards",
+     "label": "Pass Yards",
+     "display": "1,795",
+     "value": 1795,
+     "rank": "13th"
+    },
+    {
+     "key": "passingTouchdowns",
+     "label": "Touchdowns",
+     "display": "12",
+     "value": 12,
+     "rank": "Tied-13th"
+    },
+    {
+     "key": "interceptions",
+     "label": "INT",
+     "display": "4",
+     "value": 4,
+     "rank": "Tied-11th"
+    },
+    {
+     "key": "adjQBR",
+     "label": "QBR",
+     "display": "67.4",
+     "value": 67.38,
+     "rank": "8th"
+    }
+   ],
+   "tables": [
+    {
+     "title": "Passing",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "GP"
+      },
+      {
+       "label": "CMP"
+      },
+      {
+       "label": "ATT"
+      },
+      {
+       "label": "CMP%"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      }
+     ],
+     "rows": [
+      {
+       "label": "2026",
+       "cells": [
+        {
+         "value": "7"
+        },
+        {
+         "value": "154"
+        },
+        {
+         "value": "232"
+        },
+        {
+         "value": "66.4"
+        },
+        {
+         "value": "1,795"
+        },
+        {
+         "value": "7.7"
+        },
+        {
+         "value": "12"
+        }
+       ]
+      },
+      {
+       "label": "2025",
+       "cells": [
+        {
+         "value": "14"
+        },
+        {
+         "value": "315"
+        },
+        {
+         "value": "502"
+        },
+        {
+         "value": "62.7"
+        },
+        {
+         "value": "3,587"
+        },
+        {
+         "value": "7.1"
+        },
+        {
+         "value": "22"
+        }
+       ]
+      },
+      {
+       "label": "2024",
+       "cells": [
+        {
+         "value": "16"
+        },
+        {
+         "value": "392"
+        },
+        {
+         "value": "581"
+        },
+        {
+         "value": "67.5"
+        },
+        {
+         "value": "3,928"
+        },
+        {
+         "value": "6.8"
+        },
+        {
+         "value": "26"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Rushing",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "GP"
+      },
+      {
+       "label": "CAR"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      },
+      {
+       "label": "LNG"
+      },
+      {
+       "label": "FD"
+      }
+     ],
+     "rows": [
+      {
+       "label": "2026",
+       "cells": [
+        {
+         "value": "7"
+        },
+        {
+         "value": "21"
+        },
+        {
+         "value": "77"
+        },
+        {
+         "value": "3.7"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "15"
+        },
+        {
+         "value": "7"
+        }
+       ]
+      },
+      {
+       "label": "2025",
+       "cells": [
+        {
+         "value": "14"
+        },
+        {
+         "value": "64"
+        },
+        {
+         "value": "422"
+        },
+        {
+         "value": "6.6"
+        },
+        {
+         "value": "5"
+        },
+        {
+         "value": "22"
+        },
+        {
+         "value": "27"
+        }
+       ]
+      },
+      {
+       "label": "2024",
+       "cells": [
+        {
+         "value": "16"
+        },
+        {
+         "value": "58"
+        },
+        {
+         "value": "307"
+        },
+        {
+         "value": "5.3"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "33"
+        },
+        {
+         "value": "22"
+        }
+       ]
+      }
+     ]
+    },
+    {
+     "title": "Receiving",
+     "columnCount": "7",
+     "columns": [
+      {
+       "label": "GP"
+      },
+      {
+       "label": "REC"
+      },
+      {
+       "label": "TGTS"
+      },
+      {
+       "label": "YDS"
+      },
+      {
+       "label": "AVG"
+      },
+      {
+       "label": "TD"
+      },
+      {
+       "label": "LNG"
+      }
+     ],
+     "rows": [
+      {
+       "label": "2025",
+       "cells": [
+        {
+         "value": "14"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "-10"
+        },
+        {
+         "value": "-10.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "-10"
+        }
+       ]
+      },
+      {
+       "label": "2024",
+       "cells": [
+        {
+         "value": "16"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "2"
+        },
+        {
+         "value": "2.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "2"
+        }
+       ]
+      },
+      {
+       "label": "2022",
+       "cells": [
+        {
+         "value": "17"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "1"
+        },
+        {
+         "value": "6"
+        },
+        {
+         "value": "6.0"
+        },
+        {
+         "value": "0"
+        },
+        {
+         "value": "6"
+        }
+       ]
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

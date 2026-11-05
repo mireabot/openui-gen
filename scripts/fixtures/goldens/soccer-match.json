@@ -1,0 +1,214 @@
+{
+ "urls": [
+  "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams",
+  "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/teams/363/schedule?season=2025",
+  "https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1/summary?event=740871"
+ ],
+ "answer": {
+  "feed": "match",
+  "league": "eng.1",
+  "source": "Source: ESPN · Premier League match report",
+  "values": {
+   "league": "Premier League",
+   "played": true,
+   "season": "2025/26",
+   "currentSeason": false,
+   "match": {
+    "id": "740871",
+    "date": "2026-03-01T16:30Z",
+    "state": "final",
+    "status": "FT",
+    "venue": "Emirates Stadium",
+    "broadcast": "NBCSN, Tele, Peacock",
+    "home": {
+     "id": "359",
+     "name": "Arsenal",
+     "short": "Arsenal",
+     "abbreviation": "ARS",
+     "color": "",
+     "alternateColor": "",
+     "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/359.png",
+     "score": 2,
+     "winner": true,
+     "form": "",
+     "record": ""
+    },
+    "away": {
+     "id": "363",
+     "name": "Chelsea",
+     "short": "Chelsea",
+     "abbreviation": "CHE",
+     "color": "",
+     "alternateColor": "",
+     "logo": "https://a.espncdn.com/i/teamlogos/soccer/500/363.png",
+     "score": 1,
+     "winner": false,
+     "form": "",
+     "record": ""
+    },
+    "venueSide": "away",
+    "result": "loss"
+   },
+   "teamStats": {
+    "possession": 58.9,
+    "shots": 9,
+    "shotsOnTarget": 3,
+    "corners": 10,
+    "fouls": 14,
+    "yellowCards": 3,
+    "redCards": 1,
+    "saves": 3
+   },
+   "opponentStats": {
+    "possession": 41.1,
+    "shots": 12,
+    "shotsOnTarget": 5,
+    "corners": 5,
+    "fouls": 11,
+    "yellowCards": 1,
+    "redCards": 0,
+    "saves": 4
+   },
+   "goals": [
+    {
+     "minute": "21'",
+     "team": "Arsenal",
+     "scorer": "William Saliba",
+     "assist": "Gabriel Magalhães",
+     "kind": "Goal - Header"
+    },
+    {
+     "minute": "45'+2'",
+     "team": "Chelsea",
+     "scorer": "Piero Hincapié",
+     "assist": "",
+     "kind": "Own Goal"
+    },
+    {
+     "minute": "66'",
+     "team": "Arsenal",
+     "scorer": "Jurriën Timber",
+     "assist": "Declan Rice",
+     "kind": "Goal - Header"
+    }
+   ],
+   "teamPlayers": [
+    {
+     "name": "João Pedro",
+     "position": "F",
+     "goals": 0,
+     "assists": 0,
+     "shots": 4,
+     "shotsOnTarget": 2
+    },
+    {
+     "name": "Mamadou Sarr",
+     "position": "CD-L",
+     "goals": 0,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 0
+    },
+    {
+     "name": "Enzo Fernández",
+     "position": "LM",
+     "goals": 0,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 1
+    },
+    {
+     "name": "Moisés Caicedo",
+     "position": "RM",
+     "goals": 0,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 0
+    },
+    {
+     "name": "Cole Palmer",
+     "position": "LF",
+     "goals": 0,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 0
+    },
+    {
+     "name": "Pedro Neto",
+     "position": "RF",
+     "goals": 0,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 0
+    }
+   ],
+   "opponentPlayers": [
+    {
+     "name": "Jurriën Timber",
+     "position": "RB",
+     "goals": 1,
+     "assists": 0,
+     "shots": 2,
+     "shotsOnTarget": 2
+    },
+    {
+     "name": "William Saliba",
+     "position": "CD-R",
+     "goals": 1,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 1
+    },
+    {
+     "name": "Gabriel Magalhães",
+     "position": "CD-L",
+     "goals": 0,
+     "assists": 1,
+     "shots": 1,
+     "shotsOnTarget": 1
+    },
+    {
+     "name": "Declan Rice",
+     "position": "LM",
+     "goals": 0,
+     "assists": 1,
+     "shots": 1,
+     "shotsOnTarget": 0
+    },
+    {
+     "name": "Eberechi Eze",
+     "position": "AM",
+     "goals": 0,
+     "assists": 0,
+     "shots": 3,
+     "shotsOnTarget": 1
+    },
+    {
+     "name": "Martín Zubimendi",
+     "position": "RM",
+     "goals": 0,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 0
+    },
+    {
+     "name": "Viktor Gyökeres",
+     "position": "F",
+     "goals": 0,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 0
+    },
+    {
+     "name": "Leandro Trossard",
+     "position": "AM-L",
+     "goals": 0,
+     "assists": 0,
+     "shots": 1,
+     "shotsOnTarget": 0
+    }
+   ],
+   "upcoming": []
+  }
+ }
+}

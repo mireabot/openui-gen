@@ -13,7 +13,8 @@ import { DocumentStore, type SportsDocument } from "../src/sports/documents.js";
 import { espnLookup, withMatchCards, type EspnTransport } from "../src/sports/espn.js";
 import { followUpSchema, rawSchema, toFollowUp, toPlan, type SportsPlan } from "../src/sports/plan.js";
 import { preview, SPORTS_SCREEN } from "../src/sports/screen.js";
-import { fitHeatmaps, heatmapColumns, lockFacts, placements, settleMissing, settleVenues } from "../src/sports/components.js";
+import { fitHeatmaps, heatmapColumns, lockFacts, placements, settleInjuries, settleMissing, settleVenues } from "../src/sports/components.js";
+import { careerOf, reportSource } from "../src/sports/espn-generic.js";
 import { answerSports, findingAnswer } from "../src/sports/research.js";
 
 /** The sports pipeline offline: scripted ESPN, Parallel, Sonnet, Opus and writer; no network, no keys. */
@@ -410,4 +411,28 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
   assert.equal(SPORTS_SCREEN.shows("q2", [], twice.dataset.values as Parameters<typeof SPORTS_SCREEN.shows>[2]), true);
 }
 
-console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback, components, empty lists, component defaults, list previews and follow-ups passed");
+// Injuries: the server turns the league's wording and a date into the badge and the wait.
+{
+  const day = new Date("2026-11-05T23:30:00Z");
+  const raw = (status: string, returnDate: string, returnNote = "", source = "") => ({ name: "P", kind: "player", position: "RB", team: "Cardinals", logo: "", color: "", status, returnDate, returnNote, source });
+  const settled = settleInjuries({ values: { answers: { q1: { list: { title: "", players: [raw("Injured Reserve", "2026-12-06", "", "ESPN"), raw("Day-To-Day", "2026-11-06"), raw("", "", "Out for season"), raw("Questionable", "2026-11-01")] } } } }, fields: [] }, day);
+  const list = (settled.values.answers as unknown as { q1: { list: { showTitle: boolean; players: Record<string, unknown>[] } } }).q1.list;
+  const [ir, dtd, season, stale] = list.players as { badge: { label: string; tone: string; show: boolean }; wait: { label: string; value: string; day: string; dated: boolean }; line: string; sourceLine: string; detail: string }[];
+  assert.equal(list.showTitle, false, "an empty title is not shown");
+  assert.deepEqual([ir!.badge, ir!.wait.value, ir!.wait.day, ir!.line, ir!.sourceLine, ir!.detail], [{ label: "IR", tone: "bad", show: true }, "31 days", "Sun, Dec 6", "Back Dec 6", "· ESPN", "RB · Cardinals"]);
+  assert.deepEqual([dtd!.badge.label, dtd!.wait.label, dtd!.wait.value], ["Day-to-day", "Back", "Tomorrow"], "the wait counts whole days, whatever the hour");
+  assert.deepEqual([season!.badge.show, season!.wait.dated, season!.wait.value, season!.line], [false, false, "Out for season", "Out for season"], "no status, no badge; the note stands in for a date");
+  assert.deepEqual([stale!.wait.dated, stale!.line], [false, "No return date"], "a date already past is no date");
+  assert.ok((settled.fields as readonly { path: string }[]).some(field => field.path === "answers.q1.list.players[].wait.value"));
+  assert.equal(reportSource("Conner (foot) won't return from IR this week, Darren Urban of the team's official site reports.", "Arizona Cardinals"), "Cardinals' official site");
+  assert.equal(reportSource("Knight (concussion) did not practice Wednesday, Theo Mackie of The Arizona Republic reports."), "The Arizona Republic");
+  // A trade splits a season into two rows plus a Totals row; consecutive seasons with one team are one spell.
+  const row = (season: string, teamSlug: string) => ({ season: { displayName: season }, teamSlug });
+  const career = careerOf({ teams: { hou: { slug: "hou", displayName: "Houston Rockets", location: "Houston", color: "CE1141", logos: [{ href: "h.png" }] }, bkn: { slug: "bkn", displayName: "Brooklyn Nets", location: "Brooklyn", color: "000000" } },
+    categories: [{ statistics: [row("2019-20", "hou"), row("2020-21", "hou"), row("2020-21", "bkn"), row("2020-21", "2020-21 Totals"), row("2021-22", "bkn")] }] });
+  assert.deepEqual(career.clubs.map(club => [club.name, club.year, club.dates, club.color, club.logo]), [["Houston Rockets", "2019", "2019-20 – 2020-21", "#ce1141", "h.png"], ["Brooklyn Nets", "2020", "2020-21 – 2021-22", "#000000", ""]]);
+  assert.equal(career.initial, 1, "the timeline opens on the current team");
+  assert.equal(reportSource("The Ravens placed Loop (groin) on injured reserve Tuesday."), "", "a note that names no one has no source");
+}
+
+console.log("sports: pipeline wiring, uncited answers, rejected designs, plan routing, schedule results, match fallback, components, empty lists, component defaults, list previews, injuries, careers and follow-ups passed");

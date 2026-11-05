@@ -11,9 +11,10 @@ import type { ContentReport, RunProgress, UsageReport } from "../run/recorder.js
 import { designDataset, inferFields } from "./dataset.js";
 import type { DocumentPart, SportsDocument } from "./documents.js";
 import { clubRecord, isTeam } from "./espn.js";
-import { clubsForMarks, clubsWithColours, footballClubs, footballSourceName } from "./football.js";
+import { isSoccer, sportOf } from "./leagues.js";
+import { clubsForMarks, clubsWithColours, teamDirectory, feedSourceName } from "./feeds.js";
 import { planFollowUp, planSports, type FollowUpContext, type FollowUpPlan, type SportsPlan } from "./plan.js";
-import { fitHeatmaps, lockFacts, settleMissing, settleVenues } from "./components.js";
+import { fitHeatmaps, lockFacts, settleInjuries, settleMissing, settleVenues } from "./components.js";
 import { pickPlayer } from "./player-pick.js";
 import { answerSports, type ResearchDeps } from "./research.js";
 import { SPORTS_SCREEN } from "./screen.js";
@@ -73,13 +74,13 @@ export async function askSports(request: SportsRequest, store: SnapshotStore, ho
   const now = deps.now ?? new Date();
   const clock = timer();
   hooks.progress?.({ stage: "summarize", status: "started", detail: "Understanding the request" });
-  const plan = await (deps.plan ?? (prompt => planSports(prompt, now, { usage: llmUsage(hooks, "summarize") }, deps.espn)))(request.prompt);
+  const plan = await (deps.plan ?? (prompt => planSports(prompt, now, { usage: llmUsage(hooks, "summarize") }, deps.espn, request.timeZone)))(request.prompt);
   clock.mark("plan");
   hooks.content?.({ stage: "summarize", id: "plan", label: `Plan (${cfg.SPORTS_PLAN_MODEL})`, format: "json", data: plan });
-  hooks.progress?.({ stage: "summarize", status: "completed", detail: `${plan.subject.name} · ${plan.questions.map(q => `${q.id} ${q.source === "espn" ? `${footballSourceName()} ${q.feed}` : q.source}`).join(" · ")}` });
+  hooks.progress?.({ stage: "summarize", status: "completed", detail: `${plan.subject.name} · ${plan.questions.map(q => `${q.id} ${q.source === "espn" ? `${feedSourceName()} ${q.feed}` : q.source}`).join(" · ")}` });
 
   const clubs = await clubsOf(plan, deps);
-  hooks.content?.({ stage: "summarize", id: "clubs", label: `Clubs (${footballSourceName()})`, format: "json", data: clubs });
+  hooks.content?.({ stage: "summarize", id: "clubs", label: `Clubs (${feedSourceName()})`, format: "json", data: clubs });
   const dataset = await answer(plan, plan.questions, request, clubs, now, hooks, deps, clock);
   const snapshot = await store.put(run, dataset, "sports_dataset");
   hooks.data?.(snapshot);
@@ -98,7 +99,7 @@ export async function editSports(saved: SportsDocument, request: FollowUpRequest
   const clock = timer();
   hooks.progress?.({ stage: "summarize", status: "started", detail: "Reading the follow-up against the screen" });
   const context: FollowUpContext = { prompt: request.prompt, subject: saved.subject, questions: saved.questions, parts: saved.parts.map(p => ({ id: p.id, questions: p.questions })), turns: saved.turns, targets: request.targets };
-  const followUp = await (deps.planFollowUp ?? (input => planFollowUp(input, now, { usage: llmUsage(hooks, "summarize") }, deps.espn)))(context);
+  const followUp = await (deps.planFollowUp ?? (input => planFollowUp(input, now, { usage: llmUsage(hooks, "summarize") }, deps.espn, request.timeZone)))(context);
   clock.mark("plan");
   hooks.content?.({ stage: "summarize", id: "follow-up-plan", label: `Follow-up plan (${cfg.SPORTS_PLAN_MODEL})`, format: "json", data: followUp });
   const changed = followUp.questions.filter(q => q.change !== "kept");
@@ -109,8 +110,8 @@ export async function editSports(saved: SportsDocument, request: FollowUpRequest
   const previous = saved.snapshot.result as { answers: Answers; clubs?: Record<string, MockValue>[]; players?: unknown };
   // Saved clubs keep their order, so kept parts reading d.clubs[i] still read the same club.
   const savedClubs = previous.clubs ?? [];
-  const clubs = [...savedClubs, ...(await clubsOf(plan, deps)).filter(c => !savedClubs.some(s => s.id === c.id))];
-  hooks.content?.({ stage: "summarize", id: "clubs", label: `Clubs (${footballSourceName()})`, format: "json", data: clubs });
+  const clubs = [...savedClubs, ...(await clubsOf(plan, deps)).filter(c => !savedClubs.some(s => s.id === c.id && s.league === c.league))];
+  hooks.content?.({ stage: "summarize", id: "clubs", label: `Clubs (${feedSourceName()})`, format: "json", data: clubs });
   const savedPlayers = savedPlayerProfiles(previous.players);
   const fresh = changed.length ? await answer(plan, changed, request, clubs, now, hooks, deps, clock, savedPlayers) : null;
   const players = fresh ? savedPlayerProfiles(fresh.values.players) : savedPlayers;
@@ -141,11 +142,14 @@ export async function editSports(saved: SportsDocument, request: FollowUpRequest
 
 /** The clubs the request is about, from ESPN by id (colours, logo): every club a question names, and any directory club named in the subject ("Chelsea vs Manchester City"). */
 async function clubsOf(plan: SportsPlan, deps: SportsDeps): Promise<Record<string, MockValue>[]> {
-  const directory = await footballClubs(deps.espn).catch(() => []);
+  // "Chicago" is a Bear or a Bull: only this screen's sports can match the subject's name.
+  const sports = new Set([...plan.questions.flatMap(q => (q.source === "espn" ? [sportOf(q.league)] : [])), ...(plan.subject.league ? [sportOf(plan.subject.league)] : [])]);
+  if (!sports.size) sports.add("soccer");
+  const directory = (await teamDirectory(deps.espn).catch(() => [])).filter(c => sports.has(sportOf(c.league)));
   const named = new Set(plan.questions.flatMap(q => (q.source === "espn" ? [q.team, q.opponent] : [])).filter((n): n is string => !!n));
   const seen = new Set<string>();
   const clubs = directory.filter(c => named.has(c.name) || plan.subject.name.split(/\s+(?:vs?\.?|and|&)\s+/i).some(part => isTeam({ name: c.name, short: c.short, abbreviation: c.abbreviation }, part)))
-    .filter(c => !seen.has(c.id) && !!seen.add(c.id));
+    .filter(c => { const key = `${c.league}:${c.id}`; return !seen.has(key) && !!seen.add(key); });
   return (await clubsWithColours(clubs, deps.espn)).map(clubRecord);
 }
 
@@ -160,6 +164,9 @@ async function answer(plan: SportsPlan, questions: SportsPlan["questions"], requ
   const subset: SportsPlan = { subject: plan.subject, questions };
   const counts = { searches: questions.flatMap(q => q.source === "web" ? q.searchQueries : []).length, lookups: questions.filter(q => q.source !== "web").length };
   hooks.progress?.({ stage: "search", status: "started", detail: `Answering ${questions.length} questions in parallel`, ...counts });
+  // ESPN's feeds carry team sports' headshots, and FotMob knows only soccer players.
+  const fotmobPlan: SportsPlan = { subject: plan.subject.league && !isSoccer(plan.subject.league) ? { ...plan.subject, kind: "topic" } : plan.subject, questions: questions.filter(q => q.source !== "espn" || isSoccer(q.league)) };
+  const noFotmob = plan.subject.league !== null && !isSoccer(plan.subject.league) && !fotmobPlan.questions.some(q => q.source === "espn");
   const pick: PlayerPicker = (query, candidates) => pickPlayer(query, candidates, request.prompt, { usage: llmUsage(hooks, "data") });
   const answered = await answerSports(subset, request.prompt, now, {
     progress: detail => hooks.progress?.({ stage: "search", status: "working", detail, ...counts }),
@@ -173,16 +180,17 @@ async function answer(plan: SportsPlan, questions: SportsPlan["questions"], requ
 
   hooks.progress?.({ stage: "data", status: "started", detail: "Designing the dataset" });
   const resolvePlayers = createPlayerResolver(query => (deps.player ?? lookupPlayer)(query, deps.pickPlayer ?? pick), savedPlayers);
-  const rawQueries = rawPlayerQueries(subset, answered.answers);
+  const rawQueries = noFotmob ? [] : rawPlayerQueries(fotmobPlan, answered.answers);
   const initialPlayers = await resolvePlayers(rawQueries);
   const dataset = await designDataset(subset, answered.answers, sourceOf(subset, answered.answers), now, {
     usage: llmUsage(hooks, "data"),
     rejected: (id, problem) => hooks.content?.({ stage: "data", id: `rejected-${id}`, label: `Design rejected for ${id}; raw answer kept`, format: "text", data: problem }),
   }, deps.schema, clubs, initialPlayers);
-  const componentQueries = componentPlayerQueries(dataset.values.answers, clubs);
+  const soccerAnswers = Object.fromEntries(Object.entries(dataset.values.answers as Answers).filter(([id]) => fotmobPlan.questions.some(q => q.id === id)));
+  const componentQueries = noFotmob ? [] : componentPlayerQueries(soccerAnswers, clubs);
   const players = await resolvePlayers(componentQueries);
   const directory = await clubsForMarks((dataset.values as { answers?: unknown }).answers, deps.espn);
-  const locked = lockFacts(settleMissing(fitHeatmaps(settleVenues(fillClubMarks(populatePlayerImages(dataset, players, rawQueries), directory)))));
+  const locked = lockFacts(settleInjuries(settleMissing(fitHeatmaps(settleVenues(fillClubMarks(populatePlayerImages(dataset, players, rawQueries), directory))))));
   const enriched = locked.dataset;
   if (locked.removed.length) hooks.content?.({ stage: "data", id: "fact-lock", label: "Repeated facts removed", format: "json", data: locked.removed });
   clock.mark("data");
