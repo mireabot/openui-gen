@@ -163,7 +163,7 @@ async function answer(plan: SportsPlan, questions: SportsPlan["questions"], requ
   const pick: PlayerPicker = (query, candidates) => pickPlayer(query, candidates, request.prompt, { usage: llmUsage(hooks, "data") });
   const answered = await answerSports(subset, request.prompt, now, {
     progress: detail => hooks.progress?.({ stage: "search", status: "working", detail, ...counts }),
-    // Parallel search is reported like stocks did: engine llm, model parallel/search.
+    // Parallel search is reported with engine llm and model parallel/search.
     usage: entry => hooks.usage?.({ ...entry, engine: "llm" }),
     finding: (id, value) => hooks.content?.({ stage: "search", id: `finding-${id}`, label: `Answer ${id}`, format: "json", data: value }),
   }, { ...deps, pickPlayer: deps.pickPlayer ?? pick }, request.timeZone);

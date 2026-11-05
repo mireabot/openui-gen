@@ -1,7 +1,7 @@
 {
   "version": 1,
   "langCore": "1.0.0",
-  "digest": "83b4dfb2b80cc7868e55e09e38af18a31f33105ad72808f90ed5f0b38dbc8054",
+  "digest": "8541604c2cee13c68b1f53e1984c2bdb9c0162e5d651e16cbdbda5ff02664616",
   "primitives": [
     {
       "name": "Screen",
@@ -20,29 +20,6 @@
         },
         {
           "name": "appearance",
-          "optional": true,
-          "role": "copy"
-        }
-      ]
-    },
-    {
-      "name": "Calculation",
-      "args": [
-        {
-          "name": "values",
-          "optional": false,
-          "role": "data",
-          "kind": "record"
-        },
-        {
-          "name": "children",
-          "optional": false,
-          "role": "nodes",
-          "accepts": "any",
-          "min": 1
-        },
-        {
-          "name": "model",
           "optional": true,
           "role": "copy"
         }
@@ -630,71 +607,6 @@
       ]
     },
     {
-      "name": "Slider",
-      "args": [
-        {
-          "name": "label",
-          "optional": false,
-          "role": "copy"
-        },
-        {
-          "name": "value",
-          "optional": false,
-          "role": "data",
-          "kind": "number",
-          "format": "decimal"
-        },
-        {
-          "name": "min",
-          "optional": false,
-          "role": "copy"
-        },
-        {
-          "name": "max",
-          "optional": false,
-          "role": "copy"
-        },
-        {
-          "name": "step",
-          "optional": true,
-          "role": "copy"
-        },
-        {
-          "name": "unit",
-          "optional": true,
-          "role": "copy"
-        }
-      ]
-    },
-    {
-      "name": "ChoiceTags",
-      "args": [
-        {
-          "name": "label",
-          "optional": false,
-          "role": "copy"
-        },
-        {
-          "name": "options",
-          "optional": false,
-          "role": "data",
-          "kind": "list"
-        },
-        {
-          "name": "value",
-          "optional": false,
-          "role": "data",
-          "kind": "number",
-          "format": "decimal"
-        },
-        {
-          "name": "style",
-          "optional": true,
-          "role": "copy"
-        }
-      ]
-    },
-    {
       "name": "Button",
       "args": [
         {
@@ -1157,276 +1069,21 @@
       ]
     },
     {
-      "name": "Sparkline",
+      "name": "YearTimeline",
       "args": [
         {
-          "name": "points",
+          "name": "items",
           "optional": false,
           "role": "data",
           "kind": "list"
         },
         {
-          "name": "baseline",
-          "optional": true,
-          "role": "copy",
-          "note": "dotted line at the first value"
-        },
-        {
-          "name": "reference",
+          "name": "initial",
           "optional": true,
           "role": "data",
           "kind": "number",
-          "format": "decimal",
-          "note": "a dashed line at this value; with fill, the zones split here"
-        },
-        {
-          "name": "fill",
-          "optional": true,
-          "role": "copy",
-          "note": "gradient zone under the line: good above the reference, bad below (direction colour without a reference)"
-        },
-        {
-          "name": "style",
-          "optional": true,
-          "role": "style",
-          "record": "line",
-          "fields": {
-            "curve": {
-              "values": [
-                "linear",
-                "monotone",
-                "smooth",
-                "step"
-              ],
-              "swift": "interpolationMethod(.linear | .monotone | .catmullRom | .stepCenter)"
-            },
-            "weight": {
-              "values": [
-                "thin",
-                "regular",
-                "bold"
-              ],
-              "swift": "lineStyle(StrokeStyle(lineWidth: 1 | 2 | 3))"
-            },
-            "area": {
-              "values": [
-                "none",
-                "gradient",
-                "solid"
-              ],
-              "swift": "AreaMark with a vertical LinearGradient (0.24 → 0) or a flat 0.12 tint"
-            },
-            "points": {
-              "values": [
-                "none",
-                "last",
-                "ends",
-                "all"
-              ],
-              "swift": "PointMark, symbol circle 8"
-            },
-            "axis": {
-              "values": [
-                "none",
-                "x",
-                "y",
-                "both"
-              ],
-              "swift": "chartXAxis / chartYAxis(.hidden | AxisMarks), labels footnote tertiary"
-            },
-            "grid": {
-              "values": [
-                "true",
-                "false"
-              ],
-              "swift": "AxisGridLine on the y axis, outline.subtle"
-            },
-            "domain": {
-              "values": [
-                "auto",
-                "zero"
-              ],
-              "swift": "chartYScale(domain: .automatic(includesZero:))"
-            },
-            "ink": {
-              "values": [
-                "primary",
-                "secondary",
-                "tertiary",
-                "inverse",
-                "red",
-                "orange",
-                "yellow",
-                "green",
-                "mint",
-                "teal",
-                "cyan",
-                "blue",
-                "indigo",
-                "purple",
-                "pink"
-              ],
-              "swift": "foregroundStyle(ink)"
-            }
-          },
-          "note": "line look (axis and grid are ignored at sparkline size)"
-        }
-      ]
-    },
-    {
-      "name": "PriceChart",
-      "args": [
-        {
-          "name": "points",
-          "optional": false,
-          "role": "data",
-          "kind": "list"
-        },
-        {
-          "name": "height",
-          "optional": true,
-          "role": "copy",
-          "note": "compact 120 · regular 200 (default)"
-        },
-        {
-          "name": "reference",
-          "optional": true,
-          "role": "data",
-          "kind": "number",
-          "format": "decimal",
-          "note": "value of the dashed reference line"
-        },
-        {
-          "name": "referenceLabel",
-          "optional": true,
-          "role": "copy",
-          "note": "label at the line's end, e.g. \"Prev close\""
-        },
-        {
-          "name": "tone",
-          "optional": true,
-          "role": "copy",
-          "note": "direction (default): one colour from first vs last · threshold: good above the reference, bad below"
-        },
-        {
-          "name": "annotate",
-          "optional": true,
-          "role": "copy",
-          "note": "write the high and low on the line"
-        },
-        {
-          "name": "measure",
-          "optional": true,
-          "role": "copy",
-          "note": "tap pins a start point, drag reads the move from it"
-        },
-        {
-          "name": "comparison",
-          "optional": true,
-          "role": "data",
-          "kind": "list"
-        },
-        {
-          "name": "comparisonLabel",
-          "optional": true,
-          "role": "copy"
-        },
-        {
-          "name": "unit",
-          "optional": true,
-          "role": "copy"
-        },
-        {
-          "name": "style",
-          "optional": true,
-          "role": "style",
-          "record": "line",
-          "fields": {
-            "curve": {
-              "values": [
-                "linear",
-                "monotone",
-                "smooth",
-                "step"
-              ],
-              "swift": "interpolationMethod(.linear | .monotone | .catmullRom | .stepCenter)"
-            },
-            "weight": {
-              "values": [
-                "thin",
-                "regular",
-                "bold"
-              ],
-              "swift": "lineStyle(StrokeStyle(lineWidth: 1 | 2 | 3))"
-            },
-            "area": {
-              "values": [
-                "none",
-                "gradient",
-                "solid"
-              ],
-              "swift": "AreaMark with a vertical LinearGradient (0.24 → 0) or a flat 0.12 tint"
-            },
-            "points": {
-              "values": [
-                "none",
-                "last",
-                "ends",
-                "all"
-              ],
-              "swift": "PointMark, symbol circle 8"
-            },
-            "axis": {
-              "values": [
-                "none",
-                "x",
-                "y",
-                "both"
-              ],
-              "swift": "chartXAxis / chartYAxis(.hidden | AxisMarks), labels footnote tertiary"
-            },
-            "grid": {
-              "values": [
-                "true",
-                "false"
-              ],
-              "swift": "AxisGridLine on the y axis, outline.subtle"
-            },
-            "domain": {
-              "values": [
-                "auto",
-                "zero"
-              ],
-              "swift": "chartYScale(domain: .automatic(includesZero:))"
-            },
-            "ink": {
-              "values": [
-                "primary",
-                "secondary",
-                "tertiary",
-                "inverse",
-                "red",
-                "orange",
-                "yellow",
-                "green",
-                "mint",
-                "teal",
-                "cyan",
-                "blue",
-                "indigo",
-                "purple",
-                "pink"
-              ],
-              "swift": "foregroundStyle(ink)"
-            }
-          },
-          "note": "line look"
-        },
-        {
-          "name": "sessions",
-          "optional": true,
-          "role": "copy",
-          "note": "auto (default): shade the points' pre-market and after-hours stretches · off"
+          "format": "integer",
+          "note": "zero-based card index to open on; defaults to 0"
         }
       ]
     },
@@ -1458,39 +1115,6 @@
           "role": "data",
           "kind": "text",
           "note": "under the value"
-        }
-      ]
-    },
-    {
-      "name": "Change",
-      "args": [
-        {
-          "name": "value",
-          "optional": false,
-          "role": "data",
-          "kind": "number",
-          "format": "decimal"
-        },
-        {
-          "name": "percent",
-          "optional": false,
-          "role": "data",
-          "kind": "number",
-          "format": "decimal",
-          "note": "percent points, e.g. 1.4 for +1.4%"
-        },
-        {
-          "name": "style",
-          "optional": true,
-          "role": "copy",
-          "note": "pill (default) · text · percent: arrow + %"
-        },
-        {
-          "name": "role",
-          "optional": true,
-          "role": "token",
-          "token": "type",
-          "note": "default footnote"
         }
       ]
     },
@@ -1586,9 +1210,7 @@
             "Toggle",
             "Icon",
             "IconButton",
-            "Button",
-            "Change",
-            "Sparkline"
+            "Button"
           ]
         },
         {

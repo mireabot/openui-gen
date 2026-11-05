@@ -32,7 +32,18 @@ const valueStretch = (name: string, lineColor: string, tagColor: string, team: n
 });
 
 const side = (name: string, logo: string, color: string, score: string, ink: string) => ({ name, logo, color, score, ink });
+const timelineClubs = [
+  { id: "nassr", name: "Al Nassr", logo: "", color: "#fbd129", year: "2025", dates: "Jan 2025 – Feb 2026", location: "Riyadh, Saudi Arabia", marker: "none", stats: [] },
+  { id: "fenerbahce", name: "Fenerbahçe", logo: "", color: "#ffed00", year: "2025", dates: "Jul 2025 – Feb 2026", location: "İstanbul, Turkey", marker: "currency", stats: [] },
+  { id: "zenit", name: "Zenit St. Petersburg", logo: "", color: "#7fcbf3", year: "2026", dates: "Feb 2026 – Jun 2026", location: "", marker: "currency", stats: [] },
+];
 const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
+  ClubTimeline: {
+    full: { initial: 0, clubs: timelineClubs },
+    withStats: { initial: 2, clubs: timelineClubs.map(club => ({ ...club, stats: [{ label: "Apps", value: "9" }, { label: "Goals", value: "2" }, { label: "Assists", value: "0" }] })) },
+    oneYear: { initial: 0, clubs: timelineClubs.slice(0, 2) },
+    sparse: { initial: 0, clubs: [] },
+  },
   MatchCard: {
     full: {
       home: side("Chelsea", "https://a.espncdn.com/i/teamlogos/soccer/500/363.png", "clear", "0", "secondary"),

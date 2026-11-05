@@ -89,93 +89,6 @@ struct SectionPrimitive: View {
     }
 }
 
-// MARK: Repeat
-
-/// `Repeat(@items, template, layout, gap, divided?, columns?)`: the template once per item,
-/// each in a data scope where `@.field` reads that item.
-struct RepeatPrimitive: View {
-    let props: PrimitiveProps
-    @Environment(\.primitiveScope) private var scope
-    @Environment(\.primitiveBleed) private var bleed
-
-    /// A stable identity per item: its `id` field when the data has one, else its index.
-    struct Slot: Identifiable {
-        let id: String
-        let index: Int
-    }
-
-    var body: some View {
-        let gap = props.cgFloat("gap") ?? 0
-        switch props.string("layout") {
-        case "rail":
-            RailContainer(gap: gap) {
-                ForEach(slots) { slot in
-                    item(slot).modifier(RailColumnWidth(
-                        width: props.cgFloat("width"), columns: props.number("columns"), gap: gap, bleed: bleed
-                    ))
-                }
-            }
-        case "grid":
-            ColumnsLayout(columns: props.int("columns") ?? 2, spacing: gap) {
-                ForEach(slots) { item($0).frame(maxWidth: .infinity, alignment: .topLeading) }
-            }
-        case "wrap":
-            FlowLayout(spacing: gap) {
-                ForEach(slots) { item($0) }
-            }
-        default:
-            stack(gap: gap)
-        }
-    }
-
-    private func stack(gap: CGFloat) -> some View {
-        let divided = props.flag("divided")
-        return VStack(alignment: .leading, spacing: gap) {
-            ForEach(slots) { slot in
-                VStack(alignment: .leading, spacing: gap) {
-                    if divided, slot.index > 0 {
-                        DividerPrimitive(props: PrimitiveProps(node: Self.plainDivider, scope: scope))
-                    }
-                    item(slot).frame(maxWidth: .infinity, alignment: .leading)
-                }
-            }
-        }
-    }
-
-    private var path: String? {
-        props.dataPath("items")
-    }
-
-    private var slots: [Slot] {
-        guard let path else { return [] }
-        let items = scope.resolve(path)?.listValue ?? []
-        var seen: Set<String> = []
-        return items.enumerated().map { index, item in
-            let key = item["id"].flatMap(PrimitiveProps.text) ?? ""
-            let id = !key.isEmpty && seen.insert(key).inserted ? "id:\(key)" : "index:\(index)"
-            return Slot(id: id, index: index)
-        }
-    }
-
-    @ViewBuilder
-    private func item(_ slot: Slot) -> some View {
-        if let template = props.childReferences("template").first, let path {
-            PrimitiveNodeView(id: template)
-                .environment(\.primitiveScope, scope.entering(path, at: slot.index))
-                .modifier(StaggerIn(index: slot.index))
-        }
-    }
-
-    private static let plainDivider = PNode(
-        id: "",
-        primitive: "Divider",
-        props: [:],
-        children: [:],
-        line: 0,
-        itemOf: nil
-    )
-}
-
 /// A rail item's width: `width` points (170 is the standard), else `columns` visible across the
 /// width with a peek of the next one, else the item's own width.
 private struct RailColumnWidth: ViewModifier {
@@ -187,7 +100,7 @@ private struct RailColumnWidth: ViewModifier {
 
     func body(content: Content) -> some View {
         if let width, width > 0 {
-            // A card in a rail lays out vertically inside (a sparkline fills it, not the 72 row width).
+            // A card in a rail lays out vertically inside (a chart fills it).
             content.environment(\.primitiveStackAxis, .vertical)
                 .fixedSize(horizontal: false, vertical: true).frame(width: width)
         } else if let columns, columns > 0, railWidth > 0 {

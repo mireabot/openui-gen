@@ -17,7 +17,7 @@ const HOLE = Symbol("hole");
 // ---------------------------------------------------------------- refs
 export interface RefBase<T> { readonly [REF]: Expr; readonly __type?: T }
 /**
- * A typed path into the Query result: `d.peers.at(0).price` prints `d.peers[0].price`. Typed by
+ * A typed path into the Query result: `d.clubs.at(0).points` prints `d.clubs[0].points`. Typed by
  * the pack's dataset schema, so a block can only read fields that exist, with their type.
  */
 export type Ref<T> = RefBase<T> &
@@ -36,7 +36,7 @@ function refOf<T>(expr: Expr): Ref<T> {
   });
 }
 
-/** A typed ref over any reference expression, so a template can be bound to what a writer passed (`EarningsCard(p)`). */
+/** A typed ref over any reference expression, so a template can be bound to what a writer passed (`MatchCard(p)`). */
 export const refAt = <T>(expr: Expr): Ref<T> => refOf<T>(expr);
 
 /** The dataset root, read through the `d = Query(...)` statement every program declares. */
@@ -87,7 +87,7 @@ type OptionalKeys<S> = { [K in keyof S]: S[K] extends PropSpec<unknown, Role, tr
 export type PropsIn<S> = { readonly [K in Exclude<keyof S, OptionalKeys<S>>]: In<S[K]> } & { readonly [K in OptionalKeys<S>]?: In<S[K]> | null };
 
 /**
- * `ui.Text({ content: p.ticker, role: "body", weight: "semibold" })`. Named props in, a
+ * `ui.Text({ content: p.name, role: "body", weight: "semibold" })`. Named props in, a
  * positional call out (zod key order; trailing absent props trimmed, inner ones printed as null).
  * A literal in a data prop does not compile.
  */

@@ -1,5 +1,6 @@
 import { SportsLive } from "@/components/primitives/sports-live";
 import { appearanceOf, readDesignWithKino, themeVars } from "@/lib/primitives/design";
+import styles from "./preview.module.css";
 
 /**
  * Live OpenUI generation for sports: a prompt, the streamed program rendered in an iPhone frame
@@ -13,10 +14,10 @@ export default function Home() {
   const theme = design ? themeVars(design, brand, appearance) : undefined;
 
   return (
-    <main className="flex h-full flex-col gap-6 overflow-y-auto p-8">
+    <main className={`${styles.workspace} flex h-full flex-col gap-6 overflow-y-auto p-5 md:p-8`}>
       <header className="flex flex-col gap-1">
         <h1 className="text-[18px] leading-[22px] font-medium">OpenUI generation</h1>
-        <p className="text-[14px] leading-[18px] text-muted-foreground">Football leagues, teams and players, streamed as OpenUI Lang from POST /lang/sports/stream.</p>
+        <p className="text-[14px] leading-[18px] text-muted-foreground">Ask about a football league, club or player. Follow the pipeline as the screen takes shape.</p>
       </header>
       <SportsLive theme={theme} specs={design?.primitives} appearance={appearance} />
     </main>

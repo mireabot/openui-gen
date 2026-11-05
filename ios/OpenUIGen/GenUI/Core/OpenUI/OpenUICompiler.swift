@@ -23,8 +23,8 @@ public struct OpenUICatalog: Decodable, Sendable {
     }
 }
 
-/// One evaluation owner. Source-read indexes describe consumers; this first implementation
-/// evaluates a complete immutable scene, then the runtime publishes only semantic changes.
+/// One evaluation owner. It evaluates a complete immutable scene, then the runtime publishes only
+/// semantic changes.
 public struct OpenUICompiler {
     private let definitions: [String: OpenUIPrimitiveDefinition]
     public init(catalog: OpenUICatalog? = nil) throws {
@@ -36,7 +36,6 @@ public struct OpenUICompiler {
         program source: String,
         documentID: String,
         datasets: [OpenUIDataset],
-        edits: [OpenUIEditAddress: Double] = [:],
         allowIncomplete: Bool = false
     ) throws -> OpenUIScene {
         var parser = OpenUIParser(); let program = try parser.parse(source, allowIncomplete: allowIncomplete)
@@ -44,26 +43,21 @@ public struct OpenUICompiler {
             definitions: definitions,
             program: program,
             documentID: documentID,
-            datasets: datasets,
-            edits: edits
+            datasets: datasets
         )
-        guard let root = program.statements["root"] else { return .init(roots: [], elements: [:], reads: [:]) }
+        guard let root = program.statements["root"] else { return .init(roots: [], elements: [:]) }
         let value = try evaluator.evaluate(root, mount: "root", context: .init(), stack: ["root"])
-        return .init(roots: value.nodes, elements: evaluator.elements, reads: evaluator.reads)
+        return .init(roots: value.nodes, elements: evaluator.elements)
     }
 }
 
 private struct Evaluated {
     var value: PValue = .null
-    var source: OpenUISourceAddress?
     var nodes: [OpenUIElementID] = []
 }
 
 private struct Context {
     var aliases: [String: Evaluated] = [:]
-    var calculation: OpenUIElementID?
-    var calculationSource: OpenUISourceAddress?
-    var calculationValues: PValue?
 }
 
 private struct Evaluator {
@@ -71,9 +65,7 @@ private struct Evaluator {
     let program: OpenUIProgram
     let documentID: String
     let datasets: [OpenUIDataset]
-    let edits: [OpenUIEditAddress: Double]
     var elements: [OpenUIElementID: OpenUISemanticElement] = [:]
-    var reads: [OpenUISourceAddress: Set<OpenUIElementID>] = [:]
     /// Statements mounted so far. A statement mounts under its own name the first time, so its
     /// elements keep their ids when the root reorders or gains parts.
     var mounted: Set<String> = []
@@ -88,12 +80,12 @@ private struct Evaluator {
         case let .literal(value): .init(value: value)
         case let .reference(name): try reference(name, mount: mount, context: context, stack: stack)
         case let .member(base, name):
-            try access(base, step: .field(name), mount: mount, context: context, stack: stack) { $0[name] }
+            try access(base, mount: mount, context: context, stack: stack) { $0[name] }
         case let .index(base, index):
-            try access(base, step: .index(index), mount: mount, context: context, stack: stack) { $0[index] }
+            try access(base, mount: mount, context: context, stack: stack) { $0[index] }
         case let .array(expressions): try array(expressions, mount: mount, context: context, stack: stack)
         case let .object(expressions): try object(expressions, mount: mount, context: context, stack: stack)
-        case let .call("Query", args): try query(expression, args: args, mount: mount, context: context, stack: stack)
+        case let .call("Query", args): try query(args: args, mount: mount, context: context, stack: stack)
         case let .call("Each", args): try each(args, mount: mount, context: context, stack: stack)
         case let .call(name, args): try element(name, args: args, mount: mount, context: context, stack: stack)
         }
@@ -114,16 +106,13 @@ private struct Evaluator {
 
     private mutating func access(
         _ base: OpenUIExpression,
-        step: OpenUIPathStep,
         mount: String,
         context: Context,
         stack: Set<String>,
         read: (PValue) -> PValue?
     ) throws -> Evaluated {
         let parent = try evaluate(base, mount: mount, context: context, stack: stack)
-        var source = parent.source
-        source?.path.append(step)
-        return scoped(.init(value: read(parent.value) ?? .null, source: source), context: context)
+        return .init(value: read(parent.value) ?? .null)
     }
 
     private mutating func array(
@@ -155,7 +144,6 @@ private struct Evaluator {
     }
 
     private mutating func query(
-        _ expression: OpenUIExpression,
         args: [OpenUIExpression],
         mount: String,
         context: Context,
@@ -166,9 +154,7 @@ private struct Evaluator {
         let arguments = try evaluate(args[1], mount: mount, context: context, stack: stack).value
         guard let dataset = datasets.last(where: { $0.tool == tool && $0.args == arguments })
         else { throw OpenUIError.missingQuery(tool) }
-        // The alias is logical and stable across immutable snapshot/run changes.
-        let alias = program.order.first(where: { program.statements[$0] == expression }) ?? "d"
-        return .init(value: dataset.result, source: .init(query: alias))
+        return .init(value: dataset.result)
     }
 
     private mutating func each(
@@ -184,9 +170,7 @@ private struct Evaluator {
         var nodes: [OpenUIElementID] = []
         for (index, item) in (list.value.listValue ?? []).enumerated() {
             var child = context
-            var source = list.source
-            source?.path.append(.index(index))
-            child.aliases[alias] = .init(value: item, source: source)
+            child.aliases[alias] = .init(value: item)
             nodes += try evaluate(args[2], mount: mount + "/item:\(index)", context: child, stack: stack).nodes
         }
         return .init(nodes: nodes)
@@ -206,80 +190,16 @@ private struct Evaluator {
             id: id,
             kind: name,
             properties: [:],
-            bindings: [:],
-            sources: [:],
             slots: [:]
         )
-        let childContext = name == "Calculation"
-            ? try calculationContext(id, args: args, mount: mount, context: context, stack: stack)
-            : context
         for (index, spec) in definition.args.enumerated() {
             let isSlot = spec.role == "node" || spec.role == "nodes"
             if isSlot { element.slots[spec.name] = [] }
             guard index < args.count else { continue }
-            let result = try evaluate(args[index], mount: mount + "/" + spec.name, context: childContext, stack: stack)
-            if isSlot { element.slots[spec.name] = result.nodes } else {
-                assign(result, to: spec.name, of: &element, context: childContext)
-            }
+            let result = try evaluate(args[index], mount: mount + "/" + spec.name, context: context, stack: stack)
+            if isSlot { element.slots[spec.name] = result.nodes } else { element.properties[spec.name] = result.value }
         }
         elements[id] = element
         return .init(nodes: [id])
-    }
-
-    /// A Calculation's children read its recomputed record; local edits overlay the sourced inputs.
-    private mutating func calculationContext(
-        _ id: OpenUIElementID,
-        args: [OpenUIExpression],
-        mount: String,
-        context: Context,
-        stack: Set<String>
-    ) throws -> Context {
-        guard let first = args.first else { return context }
-        let record = try evaluate(first, mount: mount + "/values", context: context, stack: stack)
-        guard var inputs = record.value.objectValue, let source = record.source else { return context }
-        for (address, value) in edits where address.element == id && address.source.query == source.query
-            && address.source.path.starts(with: source.path)
-        {
-            inputs[address.input] = .number(value)
-        }
-        let model = args.count > 2
-            ? try evaluate(args[2], mount: mount, context: context, stack: stack).value.stringValue ?? "compound-growth"
-            : "compound-growth"
-        var child = context
-        child.calculation = id
-        child.calculationSource = source
-        child.calculationValues = .object(GrowthCalculation.evaluate(inputs, model: model))
-        return child
-    }
-
-    private mutating func assign(
-        _ result: Evaluated,
-        to property: String,
-        of element: inout OpenUISemanticElement,
-        context: Context
-    ) {
-        element.properties[property] = result.value
-        guard let source = result.source else { return }
-        element.sources[property] = source
-        reads[source, default: []].insert(element.id)
-        if let calculation = context.calculation, let calculationSource = context.calculationSource,
-           source.query == calculationSource.query, source.path.starts(with: calculationSource.path),
-           case let .field(input)? = source.path.last, ["quantity", "months", "annualRate"].contains(input)
-        {
-            element.bindings[property] = .init(element: calculation, source: source, input: input)
-        }
-    }
-
-    private func scoped(_ result: Evaluated, context: Context) -> Evaluated {
-        guard let source = result.source, let base = context.calculationSource, source.query == base.query,
-              source.path.starts(with: base.path), let values = context.calculationValues else { return result }
-        var value = values
-        for step in source.path.dropFirst(base.path.count) {
-            switch step {
-            case let .field(name): value = value[name] ?? .null; case let .index(index): value = value[index] ??
-                .null
-            }
-        }
-        return .init(value: value, source: source)
     }
 }

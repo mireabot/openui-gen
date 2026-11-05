@@ -23,6 +23,8 @@ const previewDir = path.join(fileURLToPath(PROJECT_ROOT), "preview", "out");
 if (existsSync(previewDir)) {
   const root = path.relative(process.cwd(), previewDir) || ".";
   app.use("/*", serveStatic({ root }));
+  // Next exports nested pages as .html files. Resolve their clean URLs before the home fallback.
+  app.get("/*", serveStatic({ root, rewriteRequestPath: requestPath => `${requestPath.replace(/\/$/, "")}.html` }));
   app.get("/*", serveStatic({ root, path: "index.html" }));
 }
 

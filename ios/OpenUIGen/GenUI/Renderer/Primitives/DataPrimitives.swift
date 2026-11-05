@@ -1,6 +1,61 @@
 import Charts
 import SwiftUI
 
+/// A chart primitive's `style` object (catalog BAR_STYLE / SHARE_STYLE). Each field
+/// maps onto one Swift Charts modifier; unset fields keep the primitive's defaults.
+struct ChartLook {
+    let curve: String?
+    let weight: String?
+    let area: String?
+    let points: String?
+    let axis: String?
+    let grid: Bool
+    let domain: String?
+    let ink: String?
+    let orientation: String?
+    let corners: String?
+    let highlight: String?
+    let shape: String?
+
+    init(_ value: PValue?) {
+        let field = { (key: String) in value?[key]?.stringValue }
+        curve = field("curve")
+        weight = field("weight")
+        area = field("area")
+        points = field("points")
+        axis = field("axis")
+        grid = value?["grid"]?.boolValue ?? false
+        domain = field("domain")
+        ink = field("ink")
+        orientation = field("orientation")
+        corners = field("corners")
+        highlight = field("highlight")
+        shape = field("shape")
+    }
+
+    /// `curve` → `interpolationMethod`: linear (default), monotone, smooth (Catmull-Rom), step.
+    var interpolation: InterpolationMethod {
+        switch curve {
+        case "monotone": .monotone
+        case "smooth": .catmullRom
+        case "step": .stepCenter
+        default: .linear
+        }
+    }
+
+    /// `weight` → line width 1 · 2 (default) · 3.
+    var lineWidth: CGFloat {
+        switch weight {
+        case "thin": 1
+        case "bold": 3
+        default: 2
+        }
+    }
+
+    var showsXAxis: Bool { axis == "x" || axis == "both" }
+    var showsYAxis: Bool { axis == "y" || axis == "both" }
+}
+
 struct ColorCellPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
@@ -100,7 +155,7 @@ struct ProgressPrimitive: View {
 // MARK: Bars
 
 /// `Bars(@series, selectable?, average?, selected?, values?, style?)` on Swift Charts. Tap selects a
-/// bar; a horizontal drag scrubs across them with the readout above the chart, as on PriceChart.
+/// bar; a horizontal drag scrubs across them with the readout above the chart.
 struct BarsPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette

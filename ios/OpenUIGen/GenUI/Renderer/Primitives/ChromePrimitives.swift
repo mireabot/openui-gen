@@ -6,7 +6,6 @@ struct NavBarPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveContext) private var context
-    @Environment(\.primitiveScope) private var scope
 
     var body: some View {
         HStack(spacing: 0) {
@@ -33,7 +32,7 @@ struct NavBarPrimitive: View {
         let kind = props.string("leading") ?? "back"
         if kind != "none" {
             Button {
-                ActionTrigger(context: context, scope: scope)(kind == "close" ? "close" : "back")
+                ActionTrigger(context: context)(kind == "close" ? "close" : "back")
             } label: {
                 SymbolGlyph(name: kind == "close" ? "xmark" : "chevron.left", size: 24)
                     .frame(width: PrimitiveMetrics.controlHeight, height: PrimitiveMetrics.controlHeight)
@@ -49,7 +48,7 @@ struct NavBarPrimitive: View {
 }
 
 /// `Dock(children)`: the bottom bar that keeps the main action in reach, on the screen
-/// surface with the spec's elevation. Pinned by `PrimitiveTreeView` when it ends the page.
+/// surface with the spec's elevation.
 struct DockPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette

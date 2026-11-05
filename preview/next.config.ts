@@ -17,6 +17,7 @@ const nextConfig: NextConfig = {
       "./primitives.js": "../src/lang/primitives.ts",
       "./props.js": "../src/lang/props.ts",
       "../primitives/tokens.js": "../src/primitives/tokens.ts",
+      "../primitives/year-timeline.js": "../src/primitives/year-timeline.ts",
     },
   },
   devIndicators: { position: "bottom-right" },

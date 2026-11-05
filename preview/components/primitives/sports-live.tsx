@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { z } from "zod";
-import { IPhoneFrame, SCREEN_HEIGHT } from "@/components/canvas/iphone-frame";
+import { CaretDownIcon } from "@phosphor-icons/react/dist/csr/CaretDown";
+import { IPhoneFrame, SCREEN_HEIGHT, SCREEN_WIDTH } from "@/components/canvas/iphone-frame";
 import { StateToggle, type PreviewState } from "@/components/primitives/state-toggle";
 import { Frame, pendingFrames, type Skeleton } from "@/components/primitives/skeleton";
 import { BE_URL } from "@/lib/be-url";
@@ -22,11 +23,15 @@ function useFitScale(ref: RefObject<HTMLElement | null>): number {
   useEffect(() => {
     const fit = () => {
       const top = ref.current ? ref.current.getBoundingClientRect().top + window.scrollY : 0;
-      setScale(Math.min(1, Math.max(0.5, (window.innerHeight - top - 24) / SCREEN_HEIGHT)));
+      const width = ref.current?.parentElement?.clientWidth ?? window.innerWidth;
+      const heightScale = window.innerWidth >= 1024 ? Math.max(0.5, (window.innerHeight - top - 24) / SCREEN_HEIGHT) : 1;
+      setScale(Math.min(1, width / SCREEN_WIDTH, heightScale));
     };
     fit();
+    const observer = new ResizeObserver(fit);
+    if (ref.current?.parentElement) observer.observe(ref.current.parentElement);
     window.addEventListener("resize", fit);
-    return () => window.removeEventListener("resize", fit);
+    return () => { observer.disconnect(); window.removeEventListener("resize", fit); };
   }, [ref]);
   return scale;
 }
@@ -222,10 +227,10 @@ export function SportsLive({ theme, specs, appearance }: {
   }
 
   return (
-    <div className="flex flex-wrap gap-6">
-      <div className="flex flex-col gap-3">
-        <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); void run(); }}>
-          <input value={prompt} onChange={(e) => setPrompt(e.target.value)} className="h-11 w-[300px] rounded-lg border bg-background px-3 text-[14px]" />
+    <div className="grid min-w-0 grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] xl:gap-12">
+      <section data-preview-controls className="flex min-w-0 flex-col gap-3">
+        <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); void run(); }}>
+          <input value={prompt} onChange={(e) => setPrompt(e.target.value)} className="h-11 min-w-0 flex-1 basis-[220px] rounded-lg border bg-background px-3 text-[14px]" />
           <button type="submit" disabled={state === "running"} className="h-11 rounded-lg bg-foreground px-4 text-[14px] font-medium text-background disabled:opacity-50">
             {state === "running" ? "Generating…" : "Generate"}
           </button>
@@ -236,10 +241,13 @@ export function SportsLive({ theme, specs, appearance }: {
           )}
         </form>
         <div className="flex flex-wrap items-center gap-2 text-[14px]">
-          <select value="" onFocus={loadRuns} onChange={(e) => { if (e.target.value) void replayRun(e.target.value); }} disabled={state === "running"} className="h-11 w-[300px] rounded-lg border bg-background px-3">
-            <option value="">Replay a previous run (no model)</option>
-            {runs.map((r) => <option key={r.id} value={r.id}>{r.updatedAt.slice(5, 16).replace("T", " ")} · {r.model.replace("claude-", "")} · {r.prompt.slice(0, 60)}</option>)}
-          </select>
+          <span className="relative min-w-0 max-w-full">
+            <select value="" onFocus={loadRuns} onChange={(e) => { if (e.target.value) void replayRun(e.target.value); }} disabled={state === "running"} className="h-11 w-full min-w-0 appearance-none rounded-lg border bg-background pr-9 pl-3 [field-sizing:content] disabled:opacity-50">
+              <option value="">Replay a previous run (no model)</option>
+              {runs.map((r) => <option key={r.id} value={r.id}>{r.updatedAt.slice(5, 16).replace("T", " ")} · {r.model.replace("claude-", "")} · {r.prompt.slice(0, 60)}</option>)}
+            </select>
+            <CaretDownIcon size={12} weight="bold" className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground" />
+          </span>
           <label className="flex h-11 cursor-pointer items-center rounded-lg border px-4 font-medium">
             Import schema
             <input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) void importFile(file); e.target.value = ""; }} />
@@ -248,10 +256,39 @@ export function SportsLive({ theme, specs, appearance }: {
         </div>
         {replayed && <p className="text-xs font-medium text-muted-foreground">Replayed from a saved schema · no model calls · Generate runs this prompt for real</p>}
         {document && <p className="text-xs text-muted-foreground">Revision {document.revision}{state === "done" ? " · the next Generate is a follow-up on this screen" : ""}</p>}
+        <section data-preview-pipeline className="mt-4 flex min-w-0 flex-col gap-3 text-[14px] leading-[18px]">
+          <h2 className="text-[13px] font-medium">Progress pipeline</h2>
+          {state === "idle" && <p className="text-[13px] text-muted-foreground">Generation progress will appear here.</p>}
+          {state !== "idle" && !replayed && (
+            <div className="flex flex-col gap-2 rounded-lg border p-3">
+              <p className="flex justify-between gap-3 font-medium tabular-nums">
+                <span>{state === "running" ? steps.at(-1)?.stage ?? "Starting" : state === "done" ? "Done" : "Stopped"}</span>
+                <span>${steps.reduce((sum, step) => sum + step.cost, 0).toFixed(3)} · {clock(now - startedAt)}</span>
+              </p>
+              {steps.map(step => (
+                <p key={step.stage} className="flex justify-between gap-3 text-muted-foreground tabular-nums">
+                  <span>{step.done ? "✓" : "…"} {step.stage}{step.summary ? ` · ${step.summary}` : ""}</span>
+                  <span>${step.cost.toFixed(3)}</span>
+                </p>
+              ))}
+              {state === "done" && document && (
+                <button type="button" onClick={save} disabled={saved === "saving" || saved === "saved"} className="h-11 rounded-lg border px-4 font-medium disabled:opacity-50">
+                  {saved === "saved" ? "Saved" : saved === "saving" ? "Saving…" : saved === "failed" ? "Could not save. Try again" : "Save result"}
+                </button>
+              )}
+            </div>
+          )}
+          <ol className="flex min-w-0 flex-col gap-1 break-words text-muted-foreground">{activity.map((a, i) => <li key={i}>{a}</li>)}</ol>
+          {issues.length > 0 && <ul className="list-disc rounded-lg border border-destructive/40 p-3 pl-7 text-destructive">{issues.map((x, i) => <li key={i}>{x.statementId ? `${x.statementId}: ` : ""}{x.message}</li>)}</ul>}
+          {program && <p className="text-xs font-medium text-muted-foreground">OpenUI Lang</p>}
+          {program && <pre className="max-h-[420px] min-w-0 overflow-auto rounded-lg border bg-muted/40 p-3 font-mono text-[12px] leading-[18px] whitespace-pre-wrap [overflow-wrap:anywhere]">{program}</pre>}
+        </section>
+      </section>
+      <section data-preview-screen className="flex min-w-0 justify-center lg:sticky lg:top-0">
         <div ref={device} className="relative w-fit">
           <StateToggle value={view} onChange={setView} className="absolute top-3 right-3 z-30" />
           <div style={{ zoom: scale }}>
-            <IPhoneFrame appearance={appearance}>
+            <IPhoneFrame appearance={appearance} className="border border-kino-outline-control">
               {program ? (
                 <OpenUIPreview key={seed?.args.run ?? "loading"} program={program} seed={seed} theme={theme} specs={specs} isStreaming={state === "running"} skeleton={view === "skeleton"} pending={state === "running" && skeleton ? pendingFrames(skeleton, program).map((f, i) => <Frame key={i} f={f} />) : null} />
               ) : skeleton ? (
@@ -267,32 +304,7 @@ export function SportsLive({ theme, specs, appearance }: {
             </IPhoneFrame>
           </div>
         </div>
-      </div>
-      <div className="flex min-w-[320px] flex-1 flex-col gap-3 pt-14 text-[14px] leading-[18px]">
-        {state !== "idle" && !replayed && (
-          <div className="flex flex-col gap-2 rounded-lg border p-3">
-            <p className="flex justify-between gap-3 font-medium tabular-nums">
-              <span>{state === "running" ? steps.at(-1)?.stage ?? "Starting" : state === "done" ? "Done" : "Stopped"}</span>
-              <span>${steps.reduce((sum, step) => sum + step.cost, 0).toFixed(3)} · {clock(now - startedAt)}</span>
-            </p>
-            {steps.map(step => (
-              <p key={step.stage} className="flex justify-between gap-3 text-muted-foreground tabular-nums">
-                <span>{step.done ? "✓" : "…"} {step.stage}{step.summary ? ` · ${step.summary}` : ""}</span>
-                <span>${step.cost.toFixed(3)}</span>
-              </p>
-            ))}
-            {state === "done" && document && (
-              <button type="button" onClick={save} disabled={saved === "saving" || saved === "saved"} className="h-11 rounded-lg border px-4 font-medium disabled:opacity-50">
-                {saved === "saved" ? "Saved" : saved === "saving" ? "Saving…" : saved === "failed" ? "Could not save. Try again" : "Save result"}
-              </button>
-            )}
-          </div>
-        )}
-        <ol className="flex flex-col gap-1 text-muted-foreground">{activity.map((a, i) => <li key={i}>{a}</li>)}</ol>
-        {issues.length > 0 && <ul className="list-disc rounded-lg border border-destructive/40 p-3 pl-7 text-destructive">{issues.map((x, i) => <li key={i}>{x.statementId ? `${x.statementId}: ` : ""}{x.message}</li>)}</ul>}
-        {program && <p className="text-xs font-medium text-muted-foreground">OpenUI Lang</p>}
-        {program && <pre className="overflow-x-auto rounded-lg border bg-muted/40 p-3 font-mono text-[12px] leading-[18px] whitespace-pre">{program}</pre>}
-      </div>
+      </section>
     </div>
   );
 }

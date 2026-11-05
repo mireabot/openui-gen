@@ -9,7 +9,6 @@ public final class OpenUIElementHandle {
     public nonisolated let id: OpenUIElementID
     public nonisolated let kind: String
     public private(set) var properties: [String: PValue]
-    public private(set) var bindings: [String: OpenUIEditAddress]
     /// One stable handle per child slot. A slot observes its own children, not theirs.
     public let slots: [String: OpenUISlotHandle]
 
@@ -17,16 +16,14 @@ public final class OpenUIElementHandle {
         id = element.id
         kind = element.kind
         properties = element.properties
-        bindings = element.bindings
         slots = element.slots.mapValues { _ in OpenUISlotHandle() }
     }
 
     /// Returns whether anything observable changed.
     func update(_ element: OpenUISemanticElement) -> Bool {
-        var changed = false
-        if properties != element.properties { properties = element.properties; changed = true }
-        if bindings != element.bindings { bindings = element.bindings; changed = true }
-        return changed
+        guard properties != element.properties else { return false }
+        properties = element.properties
+        return true
     }
 }
 
@@ -64,8 +61,8 @@ public struct OpenUICommit: Equatable, Sendable {
     public var root = false
 }
 
-/// One OpenUI document on screen: the program, its dataset seeds, local calculator edits and the
-/// retained handles. Initial generation commits accepted statements as they stream. A follow-up
+/// One OpenUI document on screen: the program, its dataset seeds and the retained handles.
+/// Initial generation commits each finished part as it streams. A follow-up
 /// keeps the screen as it is until the backend completes, then commits the new revision once.
 ///
 ///     let session = try OpenUISession(service: OpenUIStreamService(baseURL: server))
@@ -94,7 +91,6 @@ public final class OpenUISession {
     @ObservationIgnored private var registry: [OpenUIElementID: OpenUIElementHandle] = [:]
     @ObservationIgnored private var program = ""
     @ObservationIgnored private var datasets: [OpenUIDataset] = []
-    @ObservationIgnored private var edits: [OpenUIEditAddress: Double] = [:]
     @ObservationIgnored private var documentKey = "draft"
     @ObservationIgnored public private(set) var lastCommit = OpenUICommit()
     /// Every request, raw event, compile failure and error since the session started, oldest first.
@@ -130,12 +126,6 @@ public final class OpenUISession {
         }
     }
 
-    /// A calculator input changed on screen. Only the session owns edits.
-    public func edit(_ address: OpenUIEditAddress, value: Double) {
-        edits[address] = value
-        try? recompile(allowIncomplete: phase == .loading)
-    }
-
     public func archive(origin: URL) throws -> OpenUIArchive {
         guard let document else { throw OpenUIError.missingDocument }
         return OpenUIArchive(
@@ -162,7 +152,6 @@ public final class OpenUISession {
         begin(.loading)
         program = ""
         datasets = []
-        edits = [:]
         let request = request(prompt)
         trace("ask", request)
         do {
@@ -329,7 +318,6 @@ public final class OpenUISession {
             program: program,
             documentID: documentKey,
             datasets: datasets,
-            edits: edits,
             allowIncomplete: allowIncomplete
         )
         lastCommit = commit(scene)

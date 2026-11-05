@@ -9,16 +9,15 @@ import { phosphorFor } from "@/lib/primitives/icons";
 import { Bar, Frame, Shimmer, type SkeletonFrame } from "./skeleton";
 import { BE_URL } from "@/lib/be-url";
 import { cn } from "@/lib/utils";
-import { calculatedGrowth, type ChoiceOption } from "../../../src/primitives/growth";
-import controlStyles from "./inputs.module.css";
-import { NumberText } from "./number-text";
+import { ClubTimeline } from "@/components/catalog/club-timeline/lib/club-timeline";
+import { YearTimelineItemsSchema } from "../../../src/primitives/year-timeline";
 
 /**
  * Web preview renderer for the primitive format, bound to the design language
  * (design/atomize/design.json): colours, surfaces, outlines and effects come from the brand
  * theme's CSS variables (`--ds-*`, set by the page) and from each primitive's spec; sizes,
  * spacing and type are the ground rules, baked in here as they will be in SwiftUI.
- * OpenUI programs render through `KinoPrimitive`; `$data` values (inside a Calculation) resolve
+ * OpenUI programs render through `KinoPrimitive`; `$data` values resolve
  * against the dataset, or to dummies while it loads.
  */
 
@@ -78,46 +77,6 @@ function useResolve() {
   };
 }
 
-function absoluteBinding(v: Value | undefined, ctx: Ctx): string | null {
-  if (!v || typeof v !== "object" || !("$data" in v)) return null;
-  const path = (v as { $data: string }).$data;
-  return path.startsWith(".") && ctx.item ? `${ctx.item.path}[${ctx.item.index}]${path === "." ? "" : path}` : path;
-}
-/** Replaces one record only within this subtree; adjacent calculators remain independent. */
-function Calculation({ node }: { node: PNode }) {
-  const ctx = useContext(TreeCtx);
-  const resolve = useResolve();
-  const [edits, setEdits] = useState<Record<string, number>>({});
-  const [animateNumbers, setAnimateNumbers] = useState(true);
-  const path = absoluteBinding(node.props.values, ctx);
-  const initial = resolve(node.props.values);
-  if (!path || !initial || typeof initial !== "object") return <>{kids(node, "children")}</>;
-  const record = calculatedGrowth({ ...initial as Record<string, unknown>, ...edits }, String(resolve(node.props.model) ?? "compound-growth"));
-  const edit = (binding: string, value: number) => {
-    const key = binding.startsWith(`${path}.`) ? binding.slice(path.length + 1) : "";
-    if (["quantity", "months", "annualRate"].includes(key) && Number.isFinite(value)) setEdits(previous => ({ ...previous, [key]: value }));
-    else ctx.edit?.(binding, value);
-  };
-  return <TreeCtx value={{ ...ctx, overrides: { ...ctx.overrides, [path]: record }, edit, animateNumbers }}><div className="flex min-w-0 flex-col gap-6" onKeyDownCapture={() => setAnimateNumbers(false)} onPointerDownCapture={() => setAnimateNumbers(true)}>{kids(node, "children")}</div></TreeCtx>;
-}
-
-function RangeInput({ node }: { node: PNode }) {
-  const ctx = useContext(TreeCtx), resolve = useResolve(), id = useId();
-  const [local, setLocal] = useState<number | null>(null);
-  const min = Number(resolve(node.props.min)), max = Number(resolve(node.props.max)), step = Number(resolve(node.props.step) ?? 1);
-  const raw = resolve(node.props.value);
-  const value = ctx.edit ? raw : local ?? raw;
-  const enabled = Number.isFinite(min) && Number.isFinite(max) && max > min && Number.isFinite(step) && step > 0;
-  const valid = enabled && typeof value === "number" && Number.isFinite(value) && value >= min && value <= max;
-  const change = (next: number) => { const path = absoluteBinding(node.props.value, ctx); if (ctx.edit && path) ctx.edit(path, next); else setLocal(next); };
-  const unit = String(resolve(node.props.unit) ?? ""), label = String(resolve(node.props.label));
-  return <div className={cn(controlStyles.controls, "flex min-w-0 flex-col gap-2")} data-no-pan="">
-    <div className="flex items-baseline justify-between gap-3"><label htmlFor={id} style={textStyle("body", "medium", tv("ink.primary"))}>{label}</label><span className="tabular-nums" style={textStyle("title2", "medium", tv("ink.primary"))}>{valid ? <NumberFlow value={value} animated={ctx.animateNumbers ?? true} respectMotionPreference transformTiming={ROLL} spinTiming={ROLL} opacityTiming={FADE} /> : "—"} {unit}</span></div>
-    <input id={id} aria-label={label} aria-valuetext={valid ? `${value} ${unit}` : "Unavailable"} type="range" min={Number.isFinite(min) ? min : 0} max={Number.isFinite(max) ? max : 100} step={Number.isFinite(step) && step > 0 ? step : 1} value={valid ? value : Number.isFinite(min) ? min : 0} disabled={!enabled} onChange={event => change(Number(event.target.value))} />
-    <div className="flex justify-between gap-3" style={textStyle("footnote", "regular", tv("ink.secondary"))}><span>{min} {unit}</span><span>{max} {unit}</span></div>
-    {!valid && <p role="status" style={textStyle("footnote", "regular", tv("ink.secondary"))}>Choose an initial value with the slider.</p>}
-  </div>;
-}
 const ROLL = { duration: 200, easing: "cubic-bezier(0.77, 0, 0.175, 1)" };
 /**
  * Horizontal scroll: the scroller runs edge to edge with no padding of its own; the items carry the
@@ -127,245 +86,15 @@ const ROLL = { duration: 200, easing: "cubic-bezier(0.77, 0, 0.175, 1)" };
 const H_SCROLL = "-mx-[var(--inset,24px)] flex snap-x overflow-x-auto overscroll-x-contain scroll-px-[var(--inset,24px)] py-1 [scrollbar-width:none] [&>*]:shrink-0 [&>*]:snap-start [&>*:first-child]:ml-[var(--inset,24px)] [&>*:last-child]:mr-[var(--inset,24px)]";
 
 const FADE = { duration: 125, easing: "cubic-bezier(0.23, 1, 0.32, 1)" };
-function ChoiceTags({ node }: { node: PNode }) {
-  const ctx = useContext(TreeCtx), resolve = useResolve();
-  const [local, setLocal] = useState<number | null>(null);
-  const options = (resolve(node.props.options) ?? []) as ChoiceOption[];
-  const current = ctx.edit ? resolve(node.props.value) : local ?? resolve(node.props.value);
-  const rows = resolve(node.props.style) === "rows";
-  const pick = (value: number) => { const path = absoluteBinding(node.props.value, ctx); if (path && ctx.edit) ctx.edit(path, value); else setLocal(value); };
-  return <fieldset data-node-id="tag-selector" data-no-pan="" className="w-full min-w-0"><legend className="mb-2" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{String(resolve(node.props.label))}</legend><div className={cn(controlStyles.controls, rows ? "flex flex-col gap-2" : cn(H_SCROLL, "snap-proximity gap-2"))}>
-    {options.map(option => { const selected = current === option.value; return <button key={option.value} type="button" aria-pressed={selected} onClick={() => pick(option.value)} className={cn("inline-flex min-h-11 shrink-0 items-center gap-2 px-4 text-left", rows ? "w-full rounded-[8px] border py-3 font-medium" : "whitespace-nowrap rounded-full border-[1.5px] font-semibold")} style={rows
-      ? { ...textStyle("footnote", "medium", selected ? tv("ink.primary") : tv("ink.secondary")), background: selected ? tv("outline.strong") : tv("surface.filled"), borderColor: selected ? tv("outline.strong") : tv("outline.subtle") }
-      // Tags: Kino's outlined Secondary button. Selected is bright (primary ink, strong border), unselected subtle (dim ink, subtle border); no fill.
-      : { ...textStyle("body", "semibold", selected ? tv("ink.primary") : tv("outline.control")), background: "transparent", borderColor: selected ? tv("outline.control") : tv("outline.subtle") }}><span aria-hidden="true"><Icon name={option.icon} size={rows ? 16 : 20} /></span><span className="flex min-w-0 flex-1 flex-col"><span>{option.label}</span>{rows && option.detail && <span className="font-normal" style={{ color: tv("ink.secondary") }}><NumberText text={option.detail} animated={ctx.animateNumbers ?? true} /></span>}</span>{rows && <span className="tabular-nums"><NumberText text={option.trailing ?? ""} animated={ctx.animateNumbers ?? true} /></span>}</button>; })}
-  </div></fieldset>;
-}
-
-/** A theme may set its own size per role (`--ds-type-<role>-size/line`, e.g. Kino); the ground-rule size is the fallback. */
 function textStyle(role: unknown, weight: unknown, color: string | undefined): CSSProperties {
   const key = TYPE[String(role)] ? String(role) : "body";
   const [size, leading] = TYPE[key]!;
   return { fontSize: `var(--ds-type-${key}-size, ${size}px)`, lineHeight: `var(--ds-type-${key}-line, ${leading}px)`, fontWeight: WEIGHT[String(weight)] ?? 400, color };
 }
 
-type Session = "pre" | "regular" | "after";
-type Point = { label: string; value: number; session?: Session };
-/** A series prop as points, or a sample week when the data isn't there (previews). */
-function pointsOf(raw: unknown): Point[] {
-  const list = Array.isArray(raw) ? (raw as { label?: unknown; value?: unknown; session?: unknown }[]) : [];
-  const points = list.map((x, i) => ({
-    label: String(x?.label ?? i + 1), value: Number(x?.value),
-    ...(x?.session === "pre" || x?.session === "regular" || x?.session === "after" ? { session: x.session as Session } : {}),
-  })).filter((x) => Number.isFinite(x.value));
-  return points.length >= 2 ? points : [101, 104, 102, 107, 106].map((value, i) => ({ label: ["Mon", "Tue", "Wed", "Thu", "Fri"][i]!, value }));
-}
-const directionTone = (points: Point[]) => (points[points.length - 1]!.value >= points[0]!.value ? "good" : "bad");
-const money = (v: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(v);
-
-/**
- * Sparkline and PriceChart: one line with a vertical gradient fill. Tone is the direction
- * (first vs last) or a threshold at the reference (good above, bad below: hard stops at its
- * height). The reference is a dashed line with its label; annotate writes the high and low;
- * scrub reads a point; measure pins a start and reads the move to the finger.
- */
-/** A chart primitive's `style` object (catalog LINE_STYLE / BAR_STYLE / SHARE_STYLE); unknown or missing fields are defaults. */
-type ChartLook = { curve?: string; weight?: string; area?: string; points?: string; axis?: string; grid?: boolean; domain?: string; ink?: string; orientation?: string; corners?: string; highlight?: string; shape?: string };
+/** A chart primitive's `style` object (catalog BAR_STYLE / SHARE_STYLE); unknown or missing fields are defaults. */
+type ChartLook = { orientation?: string; corners?: string; highlight?: string; shape?: string; grid?: boolean; ink?: string; domain?: string; axis?: string };
 const lookOf = (v: unknown): ChartLook => (v && typeof v === "object" && !Array.isArray(v) ? (v as ChartLook) : {});
-
-/**
- * SVG path through the points with Swift Charts' interpolation methods: linear, monotone
- * (Fritsch–Carlson, never overshoots), smooth (uniform Catmull-Rom) and step (stepCenter).
- */
-function curvePath(pts: [number, number][], curve = "linear"): string {
-  const f = (n: number) => n.toFixed(2);
-  if (pts.length < 2 || curve === "linear") return pts.map(([x, y], i) => `${i ? "L" : "M"}${f(x)},${f(y)}`).join("");
-  if (curve === "step") {
-    return pts.map(([x, y], i) => {
-      if (!i) return `M${f(x)},${f(y)}`;
-      const mid = (pts[i - 1]![0] + x) / 2;
-      return `H${f(mid)}V${f(y)}H${f(x)}`;
-    }).join("");
-  }
-  let tangents: number[];
-  if (curve === "monotone") {
-    const d = pts.slice(1).map(([x, y], i) => (y - pts[i]![1]) / (x - pts[i]![0] || 1));
-    tangents = pts.map((_, i) => (i === 0 ? d[0]! : i === pts.length - 1 ? d[i - 1]! : d[i - 1]! * d[i]! <= 0 ? 0 : (d[i - 1]! + d[i]!) / 2));
-    for (let i = 0; i < d.length; i++) {
-      if (d[i] === 0) { tangents[i] = 0; tangents[i + 1] = 0; continue; }
-      const a = tangents[i]! / d[i]!, b = tangents[i + 1]! / d[i]!, h = a * a + b * b;
-      if (h > 9) { const t = 3 / Math.sqrt(h); tangents[i] = t * a * d[i]!; tangents[i + 1] = t * b * d[i]!; }
-    }
-  } else {
-    tangents = pts.map((_, i) => {
-      const a = pts[Math.max(0, i - 1)]!, b = pts[Math.min(pts.length - 1, i + 1)]!;
-      return (b[1] - a[1]) / (b[0] - a[0] || 1);
-    });
-  }
-  let out = `M${f(pts[0]![0])},${f(pts[0]![1])}`;
-  for (let i = 1; i < pts.length; i++) {
-    const [x0, y0] = pts[i - 1]!, [x1, y1] = pts[i]!, dx = (x1 - x0) / 3;
-    out += `C${f(x0 + dx)},${f(y0 + tangents[i - 1]! * dx)} ${f(x1 - dx)},${f(y1 - tangents[i]! * dx)} ${f(x1)},${f(y1)}`;
-  }
-  return out;
-}
-
-/**
- * PriceChart's extended-hours bands: each run of pre / after points as index bounds, widened to
- * share its boundary point with the regular session (as the line does), so the band meets the
- * regular stretch with no gap. Same rule as the Swift renderer.
- */
-function sessionBands(points: Point[]): { start: number; end: number; session: "pre" | "after" }[] {
-  const bands: { start: number; end: number; session: "pre" | "after" }[] = [];
-  for (let k = 0; k < points.length; k++) {
-    const s = points[k]!.session;
-    if (s !== "pre" && s !== "after") continue;
-    let b = k;
-    while (b + 1 < points.length && points[b + 1]!.session === s) b++;
-    bands.push({ start: k > 0 ? k - 1 : k, end: b < points.length - 1 ? b + 1 : b, session: s });
-    k = b;
-  }
-  return bands.filter((band) => band.end > band.start);
-}
-
-/** Three evenly spaced y ticks across the data range (Swift Charts' automatic AxisMarks, approximated). */
-const ticksOf = (lo: number, hi: number) => [lo, (lo + hi) / 2, hi];
-
-function LineChart({ points, height, baseline, scrub, reference, referenceLabel, threshold, annotate, measure, fill = true, comparison = [], comparisonLabel, unit = "currency", look = {}, compact = false, sessions = false }: {
-  points: Point[]; height: number; baseline: boolean; scrub: boolean; reference?: number; referenceLabel?: string; threshold?: boolean; annotate?: boolean; measure?: boolean; fill?: boolean; comparison?: Point[]; comparisonLabel?: string; unit?: "currency" | "percent" | "number";
-  look?: ChartLook; compact?: boolean;
-  /** Shade the points' pre-market and after-hours stretches (PriceChart `sessions`). */
-  sessions?: boolean;
-}) {
-  const [hover, setHover] = useState<number | null>(null);
-  const [pin, setPin] = useState<number | null>(null);
-  const W = 300;
-  const values = points.map((x) => x.value);
-  const display = (v: number) => unit === "currency" ? money(v) : `${v.toFixed(2)}${unit === "percent" ? "%" : ""}`;
-  const aligned = comparison.length === points.length && comparison.every((p, i) => p.label === points[i]!.label) ? comparison : [];
-  const scale = [...values, ...aligned.map(p => p.value)];
-  const ref = reference !== undefined && Number.isFinite(reference) ? reference : undefined;
-  // The scale includes the reference so its line is always on the plot.
-  const zero = look.domain === "zero";
-  const lo = Math.min(...scale, ref ?? Infinity, zero ? 0 : Infinity);
-  const hi = Math.max(...scale, ref ?? -Infinity, zero ? 0 : -Infinity);
-  const pad = (hi - lo || 1) * 0.1;
-  const floor = zero && lo >= 0 ? 0 : lo - pad;
-  const y = (v: number) => height - ((v - floor) / (hi + pad - floor)) * height;
-  const x = (k: number) => (k / (points.length - 1)) * W;
-  const line = curvePath(points.map((pt, k) => [x(k), y(pt.value)]), look.curve);
-  const area = `${line}L${W},${height}L0,${height}Z`;
-  const fixed = look.ink ? ink(look.ink) : undefined;
-  const up = fixed ?? tv("tone.good.fg");
-  const down = fixed ?? tv("tone.bad.fg");
-  const stroke = fixed ?? tv(`tone.${directionTone(points)}.fg`);
-  const width = look.weight === "thin" ? 1 : look.weight === "bold" ? 3 : 2;
-  const areaStyle = look.area ?? (fill ? "gradient" : "none");
-  const yAxis = !compact && (look.axis === "y" || look.axis === "both");
-  const xAxis = !compact && (look.axis === "x" || look.axis === "both");
-  const ticks = ticksOf(Math.min(...scale), Math.max(...scale));
-  const dots = look.points === "all" ? points.map((_, k) => k) : look.points === "ends" ? [0, points.length - 1] : look.points === "last" ? [points.length - 1] : [];
-  const id = useId().replace(/:/g, "");
-  // Threshold: the stop sits at the reference's height in the SVG's own units (userSpaceOnUse).
-  const at = ref !== undefined ? Math.min(1, Math.max(0, y(ref) / height)) : 0;
-  const lineColor = threshold && ref !== undefined ? `url(#line-${id})` : stroke;
-  const i = hover ?? points.length - 1;
-  const from = measure ? pin ?? 0 : null;
-  const pick = (e: ReactPointerEvent<SVGSVGElement>) => {
-    const box = e.currentTarget.getBoundingClientRect();
-    setHover(Math.max(0, Math.min(points.length - 1, Math.round(((e.clientX - box.left) / box.width) * (points.length - 1)))));
-  };
-  const bands = sessions && !compact ? sessionBands(points) : [];
-  const iHi = values.indexOf(Math.max(...values));
-  const iLo = values.lastIndexOf(Math.min(...values));
-  const pct = (k: number) => `${(100 * k) / (points.length - 1)}%`;
-  const readout = from !== null && hover !== null
-    ? (() => {
-        const [a, b] = from <= hover ? [from, hover] : [hover, from];
-        const d = points[b]!.value - points[a]!.value;
-        return { left: `${points[a]!.label} → ${points[b]!.label}`, right: unit === "percent" ? `${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(2)} pts` : `${d >= 0 ? "+" : "−"}${display(Math.abs(d))}${points[a]!.value ? ` · ${d >= 0 ? "+" : "−"}${Math.abs((100 * d) / points[a]!.value).toFixed(2)}%` : ""}`, tone: d >= 0 ? up : down };
-      })()
-    : { left: display(points[i]!.value), right: points[i]!.label, tone: undefined };
-  return (
-    <div className="flex min-w-0 flex-1 flex-col gap-2">
-      {scrub && (
-        // The readout only while scrubbing (the block's own price says the rest); it keeps its space so nothing jumps.
-        <div className={cn("flex items-baseline justify-between gap-2 tabular-nums", hover === null && "invisible")}>
-          <span style={textStyle("footnote", "medium", tv("ink.primary"))}>{readout.left}</span>
-          <span style={textStyle("footnote", readout.tone ? "medium" : "regular", readout.tone ?? tv("ink.secondary"))}>{readout.right}</span>
-        </div>
-      )}
-      <div className="relative">
-        <svg viewBox={`0 0 ${W} ${height}`} preserveAspectRatio="none" className={cn("w-full overflow-visible", scrub && "touch-none")} style={{ height }}
-          onPointerMove={scrub ? pick : undefined} onPointerDown={scrub ? pick : undefined} onPointerLeave={scrub ? () => setHover(null) : undefined}
-          onClick={measure ? () => hover !== null && setPin(hover) : undefined}
-          role="img" aria-label={`${points[0]!.label} ${display(points[0]!.value)} to ${points[points.length - 1]!.label} ${display(points[points.length - 1]!.value)}`}>
-          <defs>
-            <linearGradient id={`fill-${id}`} gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0" y2={height}>
-              {threshold && ref !== undefined ? (
-                <>
-                  <stop offset="0%" stopColor={up} stopOpacity={0.24} /><stop offset={at} stopColor={up} stopOpacity={0.04} />
-                  <stop offset={at} stopColor={down} stopOpacity={0.04} /><stop offset="100%" stopColor={down} stopOpacity={0.24} />
-                </>
-              ) : (
-                <><stop offset="0%" stopColor={stroke} stopOpacity={areaStyle === "solid" ? 0.12 : 0.24} /><stop offset="100%" stopColor={stroke} stopOpacity={areaStyle === "solid" ? 0.12 : 0} /></>
-              )}
-            </linearGradient>
-            <linearGradient id={`line-${id}`} gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="0" y2={height}>
-              <stop offset={at} stopColor={up} /><stop offset={at} stopColor={down} />
-            </linearGradient>
-          </defs>
-          {bands.length > 0 && (
-            <linearGradient id={`band-${id}`} x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor={tv("ink.primary")} stopOpacity={0.07} /><stop offset="100%" stopColor={tv("ink.primary")} stopOpacity={0} />
-            </linearGradient>
-          )}
-          {bands.map((band) => <rect key={band.start} x={x(band.start)} y={0} width={x(band.end) - x(band.start)} height={height} fill={`url(#band-${id})`} />)}
-          {!compact && look.grid && ticks.map((t) => <line key={t} x1={0} x2={W} y1={y(t)} y2={y(t)} stroke={tv("outline.subtle")} strokeWidth={1} vectorEffect="non-scaling-stroke" />)}
-          {areaStyle !== "none" && <path d={area} fill={`url(#fill-${id})`} />}
-          {baseline && <line x1={0} x2={W} y1={y(points[0]!.value)} y2={y(points[0]!.value)} stroke={tv("outline.control")} strokeWidth={1} strokeDasharray="2 4" vectorEffect="non-scaling-stroke" />}
-          {ref !== undefined && <line x1={0} x2={W} y1={y(ref)} y2={y(ref)} stroke={tv("outline.control")} strokeWidth={1} strokeDasharray="4 4" vectorEffect="non-scaling-stroke" />}
-          <path d={line} fill="none" stroke={lineColor} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-          {aligned.length > 0 && <path d={curvePath(aligned.map((pt, k) => [x(k), y(pt.value)]), look.curve)} fill="none" stroke={tv("ink.secondary")} strokeWidth={2} strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />}
-          {scrub && hover !== null && <line x1={x(hover)} x2={x(hover)} y1={0} y2={height} stroke={tv("outline.control")} strokeWidth={1} vectorEffect="non-scaling-stroke" />}
-          {from !== null && <line x1={x(from)} x2={x(from)} y1={0} y2={height} stroke={tv("ink.secondary")} strokeWidth={1} strokeDasharray="2 3" vectorEffect="non-scaling-stroke" />}
-        </svg>
-        {/* Markers and labels sit outside the stretched SVG so they stay round and legible; the SVG's y units are pixels. */}
-        {bands.filter((band) => (band.end - band.start) / (points.length - 1) >= 0.18).map((band) => (
-          <span key={band.start} className="pointer-events-none absolute top-1.5 -translate-x-1/2 whitespace-nowrap"
-            style={{ left: pct((band.start + band.end) / 2), ...textStyle("footnote", "regular", tv("ink.secondary")) }}>
-            {band.session === "pre" ? "Pre-market" : "After hours"}
-          </span>
-        ))}
-        {ref !== undefined && referenceLabel && (
-          <span className="pointer-events-none absolute right-0 -translate-y-full pb-0.5" style={{ top: y(ref), ...textStyle("footnote", "regular", tv("ink.tertiary")) }}>{referenceLabel}</span>
-        )}
-        {annotate && [[iHi, "High", -1], [iLo, "Low", 1]].map(([k, label, dir]) => (
-          <span key={label as string} className="pointer-events-none absolute -translate-x-1/2 whitespace-nowrap tabular-nums"
-            style={{ left: `clamp(48px, ${pct(k as number)}, calc(100% - 48px))`, top: y(points[k as number]!.value) + ((dir as number) < 0 ? -22 : 6), ...textStyle("footnote", "regular", tv("ink.secondary")) }}>
-            {label} {display(points[k as number]!.value)}
-          </span>
-        ))}
-        {dots.map((k) => (
-          <span key={k} className="pointer-events-none absolute size-2 rounded-full" style={{ left: `calc(${pct(k)} - 4px)`, top: y(points[k]!.value) - 4, background: threshold && ref !== undefined && !fixed ? (points[k]!.value >= ref ? up : down) : stroke }} />
-        ))}
-        {yAxis && ticks.map((t) => (
-          <span key={t} className="pointer-events-none absolute right-0 -translate-y-full pb-0.5 tabular-nums" style={{ top: y(t), ...textStyle("footnote", "regular", tv("ink.tertiary")) }}>{display(t)}</span>
-        ))}
-        {scrub && hover !== null && (
-          <span className="pointer-events-none absolute size-2.5 rounded-full" style={{ left: `calc(${pct(hover)} - 5px)`, top: y(points[hover]!.value) - 5, background: threshold && ref !== undefined ? (points[hover]!.value >= ref ? up : down) : stroke, boxShadow: `0 0 0 2px ${tv("surface.screen")}` }} />
-        )}
-      </div>
-      {aligned.length > 0 && <div className="flex items-center gap-2" style={textStyle("footnote", "regular", tv("ink.secondary"))}><span className="w-5 border-t-2 border-dashed" />{comparisonLabel ?? "Comparison"}</div>}
-      {(scrub || xAxis) && (
-        <div className="flex justify-between" style={textStyle("footnote", "regular", tv("ink.tertiary"))}>
-          <span>{points[0]!.label}</span>
-          <span>{measure ? (pin === null ? "Tap to pin a start" : `From ${points[pin]!.label}`) : points[points.length - 1]!.label}</span>
-        </div>
-      )}
-    </div>
-  );
-}
 
 /** SF Symbols name → a Phosphor stand-in (SF glyphs are Apple-platforms only; see lib/primitives/icons.ts). */
 function Icon({ name, size = 24, color }: { name: unknown; size?: number; color?: string }) {
@@ -376,7 +105,7 @@ function Icon({ name, size = 24, color }: { name: unknown; size?: number; color?
 
 /** A node, or while its line is still streaming: the server's frame for this slot, else a generic shimmer. */
 /**
- * Image sources from data: a server path (/media/logos/NVDA) resolves against the backend the
+ * Image sources from data: a server path (/media/logos/ARS) resolves against the backend the
  * tree streamed from; https URLs pass through; anything else (a colour placeholder) is no image.
  */
 function imageUrl(v: unknown): string | null {
@@ -568,9 +297,6 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
       return <Shimmer className={p("size") === "small" ? "w-7" : "w-[72px]"} style={{ height: p("size") === "small" ? 16 : p("size") === "large" ? p("fill") === "none" ? 34 : 42 : 24, borderRadius: p("size") === "large" ? 8 : 4 }} />;
     case "SegmentedControl":
       return <Shimmer className="h-11 w-full rounded-full" />;
-    case "Slider":
-    case "ChoiceTags":
-      return <span className="flex w-full flex-col gap-2"><Bar line={18} width="50%" /><Shimmer className="h-11 w-full rounded-full" /></span>;
     case "Toggle":
       return <span className="flex min-h-11 items-center justify-between gap-3"><Bar line={20} width="50%" /><Shimmer className="h-[31px] w-[51px] rounded-full" /></span>;
     case "Stepper":
@@ -583,8 +309,8 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
       return <Shimmer className="h-3 w-full rounded-full" />;
     case "Rating":
       return <Bar line={16} width="30%" />;
-    case "Sparkline":
-      return <Shimmer className={cn("h-10 rounded-[4px]", axis === "h" ? "w-[72px]" : "w-full")} />;
+    case "YearTimeline":
+      return <span className="flex w-full flex-col gap-4"><Shimmer className="h-10 w-full rounded-full" /><Shimmer className="h-[220px] w-full rounded-[24px]" /></span>;
     case "StepTimeline":
       return (
         <span className="flex w-full flex-col gap-3">
@@ -592,15 +318,6 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
           <Shimmer className="w-full rounded-[12px]" style={{ height: 200 }} />
         </span>
       );
-    case "PriceChart":
-      return (
-        <span className="flex w-full flex-col gap-2">
-          <Shimmer className="w-full rounded-[12px]" style={{ height: p("height") === "compact" ? 120 : 200 }} />
-          <span className="flex justify-between"><Bar line={18} width="20%" /><Bar line={18} width="20%" /></span>
-        </span>
-      );
-    case "Change":
-      return <Shimmer className="h-[22px] rounded-full" style={{ width: p("style") === "percent" ? 64 : 96 }} />;
     case "SplitBar":
       return <Shimmer className={cn("rounded-full", p("size") === "micro" ? "w-10" : "w-full", axis === "h" && p("size") !== "micro" && "flex-1")} style={{ height: p("size") === "micro" ? 4 : p("size") === "thin" ? 6 : 8 }} />;
     case "Note":
@@ -646,9 +363,6 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
   }
 
   switch (n.primitive) {
-    case "Calculation": return <Calculation key={JSON.stringify(p("values"))} node={n} />;
-    case "Slider": return <RangeInput node={n} />;
-    case "ChoiceTags": return <ChoiceTags node={n} />;
     case "Stack": {
       if (p("axis") === "wrap") {
         // Flow layout: children keep their own width and wrap into rows, one gap both ways.
@@ -1008,49 +722,16 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
         </div>
       );
     }
-    case "Sparkline": {
-      const ref = p("reference");
-      const reference = typeof ref === "number" ? ref : undefined;
-      const chart = <LineChart points={pointsOf(p("points"))} height={40} baseline={Boolean(p("baseline"))} scrub={false} fill={Boolean(p("fill"))} reference={reference} threshold={reference !== undefined} look={lookOf(p("style"))} compact />;
-      // In a row a sparkline is a fixed 72 wide, so rows line up whatever the names next to it.
-      return axis === "h" ? <div className="flex w-[72px] shrink-0">{chart}</div> : chart;
-    }
-    case "PriceChart": {
-      const ref = p("reference");
-      return (
-        <LineChart points={pointsOf(p("points"))} height={p("height") === "compact" ? 120 : 200} baseline={false} scrub
-          reference={typeof ref === "number" ? ref : undefined} referenceLabel={p("referenceLabel") == null ? undefined : String(p("referenceLabel"))}
-          threshold={p("tone") === "threshold"} annotate={Boolean(p("annotate"))} measure={Boolean(p("measure"))} comparison={Array.isArray(p("comparison")) ? pointsOf(p("comparison")) : []} comparisonLabel={p("comparisonLabel") == null ? undefined : String(p("comparisonLabel"))} unit={p("unit") === "percent" ? "percent" : p("unit") === "number" ? "number" : "currency"} look={lookOf(p("style"))}
-          sessions={p("sessions") !== "off"} />
-      );
+    case "YearTimeline": {
+      const parsed = YearTimelineItemsSchema.safeParse(p("items"));
+      if (!parsed.success || !parsed.data.length) return null;
+      const clubs = parsed.data.map(item => ({ ...item, loan: item.marker === "currency" }));
+      const value = Number(p("initial") ?? 0);
+      const initial = Number.isFinite(value) ? Math.min(clubs.length - 1, Math.max(0, Math.trunc(value))) : 0;
+      return <ClubTimeline key={JSON.stringify([clubs, initial])} clubs={clubs} initial={initial} />;
     }
     case "StepTimeline":
       return <StepTimeline value={String(p("value") ?? "")} caption={p("caption") ? String(p("caption")) : undefined} segments={Array.isArray(p("segments")) ? p("segments") as unknown as TimelineStretch[] : []} ticks={Array.isArray(p("ticks")) ? p("ticks") as unknown as { value: number; display: string }[] : []} />;
-    case "Change": {
-      const value = Number(p("value"));
-      const pct = Number(p("percent"));
-      const v = Number.isFinite(value) ? value : 1.24;
-      const tone = v >= 0 ? "good" : "bad";
-      const sign = (x: number) => (x > 0 ? "+" : x < 0 ? "−" : "");
-      const label = `${sign(v)}${Math.abs(v).toFixed(2)} · ${sign(Number.isFinite(pct) ? pct : v)}${Math.abs(Number.isFinite(pct) ? pct : 0.6).toFixed(2)}%`;
-      const style = textStyle(p("role") ?? "footnote", "medium", tv(`tone.${tone}.fg`));
-      if (p("style") === "text") return <span className="tabular-nums" style={style}>{label}</span>;
-      if (p("style") === "percent") {
-        const pc = Number.isFinite(pct) ? pct : v;
-        return (
-          <span className="inline-flex w-fit items-center gap-1 tabular-nums" style={style}>
-            <Icon name={v >= 0 ? "arrow.up.right" : "arrow.down.right"} size={p("role") && p("role") !== "footnote" ? 24 : 16} />
-            {Math.abs(pc).toFixed(2)}%
-          </span>
-        );
-      }
-      return (
-        <span className="inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 tabular-nums" style={{ ...style, background: tv(`tone.${tone}.bg`) }}>
-          <Icon name={v >= 0 ? "arrow.up.right" : "arrow.down.right"} size={16} />
-          {label}
-        </span>
-      );
-    }
     case "ShareBar": {
       const raw = p("parts");
       const fallback = [{ label: "Protein", value: 45, ink: "blue" }, { label: "Carbs", value: 30, ink: "orange" }, { label: "Fat", value: 25, ink: "green" }];
@@ -1094,7 +775,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     }
     case "SplitBar": {
       const raw = p("sides");
-      const sides = (Array.isArray(raw) && raw.length ? raw : [{ label: "Buy", count: 9, tone: "good" }, { label: "Sell", count: 3, tone: "bad" }]) as { label?: string; count?: number; tone?: string; color?: string }[];
+      const sides = (Array.isArray(raw) && raw.length ? raw : [{ label: "Home", count: 9, tone: "good" }, { label: "Away", count: 3, tone: "bad" }]) as { label?: string; count?: number; tone?: string; color?: string }[];
       // A team's #hex wins over the tone.
       const sideColor = (x: { tone?: string; color?: string }) => (x.color && /^#[0-9a-f]{3,8}$/i.test(x.color) ? x.color : tv(`tone.${x.tone ?? "neutral"}.fg`));
       const top = Math.max(...sides.map((x) => Number(x.count ?? 0)));
@@ -1197,12 +878,4 @@ export function KinoPrimitive({ name, props, slots }: { name: string; props: Rea
   });
   const node: PNode = { id: name, primitive: name, props, children, line: 0, itemOf: null };
   return <NativeSlotsCtx value={rendered}><Primitive node={node} /></NativeSlotsCtx>;
-}
-
-/** Only Calculation adapts its source subtree, because its local edits need binding paths. */
-export function KinoCalculation({ nodes, data }: { nodes: readonly PNode[]; data: unknown }) {
-  const ctx = useContext(TreeCtx);
-  const root = nodes[0];
-  if (!root) return null;
-  return <NativeSlotsCtx value={null}><TreeCtx value={{ ...ctx, byId: new Map(nodes.map(node => [node.id, node])), data, strictData: true }}><Primitive node={root} /></TreeCtx></NativeSlotsCtx>;
 }

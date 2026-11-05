@@ -7,20 +7,17 @@ public struct OpenUISceneView: View {
     private let theme: DesignTheme?
     private let scrolls: Bool
     private let pending: [SkeletonFrame]
-    private let editAction: OpenUIEditAction
 
     public init(
         root: OpenUIRootHandle,
         theme: DesignTheme? = .bundled(brand: "purple"),
         scrolls: Bool = true,
-        pending: [SkeletonFrame] = [],
-        onEdit: @escaping (OpenUIEditAddress, Double) -> Void = { _, _ in }
+        pending: [SkeletonFrame] = []
     ) {
         self.root = root
         self.theme = theme
         self.scrolls = scrolls
         self.pending = pending
-        editAction = OpenUIEditAction(perform: onEdit)
     }
 
     public var body: some View {
@@ -37,13 +34,12 @@ public struct OpenUISceneView: View {
         // No fill of its own: the host's surface shows through, as in the Ask tray.
         .environment(\.primitivePalette, palette)
         .environment(\.colorScheme, palette.colorScheme)
-        .environment(\.openUIEditAction, editAction)
     }
 
     private var content: some View {
         VStack(alignment: .leading, spacing: PrimitiveMetrics.sectionGap) {
             ForEach(blocks, id: \.id) { handle in
-                OpenUIElementView(handle: handle, onEdit: editAction.perform)
+                OpenUIElementView(handle: handle)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .transition(.opacity)
             }
@@ -68,47 +64,26 @@ public struct OpenUISceneView: View {
 
 struct OpenUIElementView: View {
     let handle: OpenUIElementHandle
-    let onEdit: (OpenUIEditAddress, Double) -> Void
 
     var body: some View {
-        PrimitiveVisual(kind: handle.kind, props: PrimitiveProps(handle: handle, onEdit: onEdit))
+        PrimitiveVisual(kind: handle.kind, props: PrimitiveProps(handle: handle))
     }
 }
 
-/// A child carries its retained handle directly. No registry lookup runs during body evaluation.
-enum PrimitiveChild: Hashable {
-    case legacy(String)
-    case openUI(OpenUIElementHandle)
+/// A child carries its retained handle directly, compared by object identity. No registry lookup
+/// runs during body evaluation.
+struct PrimitiveChild: Hashable {
+    let handle: OpenUIElementHandle
 
     var rawID: String {
-        switch self {
-        case let .legacy(id): id
-        case let .openUI(handle): handle.id.rawValue
-        }
+        handle.id.rawValue
     }
 
     static func == (lhs: Self, rhs: Self) -> Bool {
-        switch (lhs, rhs) {
-        case let (.legacy(left), .legacy(right)): left == right
-        case let (.openUI(left), .openUI(right)): left === right
-        default: false
-        }
+        lhs.handle === rhs.handle
     }
 
     func hash(into hasher: inout Hasher) {
-        switch self {
-        case let .legacy(id): hasher.combine(0); hasher.combine(id)
-        case let .openUI(handle): hasher.combine(1); hasher.combine(ObjectIdentifier(handle))
-        }
+        hasher.combine(ObjectIdentifier(handle))
     }
-}
-
-/// Immutable interaction routing shared through the scene; contains no observable scene state.
-struct OpenUIEditAction {
-    let perform: (OpenUIEditAddress, Double) -> Void
-    static var inert: OpenUIEditAction { .init { _, _ in } }
-}
-
-extension EnvironmentValues {
-    @Entry var openUIEditAction = OpenUIEditAction.inert
 }

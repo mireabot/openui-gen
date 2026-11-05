@@ -1,0 +1,11 @@
+.workspace {
+  --background: var(--color-kino-surface-screen);
+  --foreground: var(--color-kino-ink-primary);
+  --muted: var(--color-kino-surface-filled);
+  --muted-foreground: var(--color-kino-ink-secondary);
+  --border: var(--color-kino-outline-subtle);
+  --destructive: var(--color-kino-tone-bad-fg);
+  color-scheme: dark;
+  background: var(--background);
+  color: var(--foreground);
+}

@@ -1,50 +1,22 @@
 import SwiftUI
 
-/// A node's props resolved through the current data scope.
+/// One retained element's evaluated properties and child slots.
 struct PrimitiveProps {
-    private let node: PNode?
-    let scope: DataScope
-    private let prepared: [String: PValue]?
+    private let properties: [String: PValue]
     private let slots: [String: OpenUISlotHandle]
-    private let bindings: [String: OpenUIEditAddress]
-    private let onEdit: (OpenUIEditAddress, Double) -> Void
 
-    init(node: PNode, scope: DataScope) {
-        self.node = node
-        self.scope = scope
-        prepared = nil
-        slots = [:]
-        bindings = [:]
-        onEdit = { _, _ in }
-    }
-
-    @MainActor init(handle: OpenUIElementHandle, onEdit: @escaping (OpenUIEditAddress, Double) -> Void) {
-        node = nil
-        scope = DataScope(data: .null)
-        prepared = handle.properties
+    @MainActor init(handle: OpenUIElementHandle) {
+        properties = handle.properties
         slots = handle.slots
-        bindings = handle.bindings
-        self.onEdit = onEdit
-    }
-
-    var isPrepared: Bool { prepared != nil }
-    func hasInput(_ key: String) -> Bool { bindings[key] != nil }
-    func edit(_ key: String, value: Double) -> Bool {
-        guard let address = bindings[key] else { return false }
-        onEdit(address, value)
-        return true
     }
 
     @MainActor func childReferences(_ arg: String) -> [PrimitiveChild] {
-        if isPrepared { return slots[arg]?.children.map(PrimitiveChild.openUI) ?? [] }
-        return children(arg).map(PrimitiveChild.legacy)
+        slots[arg]?.children.map(PrimitiveChild.init) ?? []
     }
 
-    /// The resolved value; `nil` when the prop is absent, `null`, or its data is missing.
+    /// The evaluated value; `nil` when the prop is absent or `null`.
     func value(_ key: String) -> PValue? {
-        if let prepared { return prepared[key].flatMap { $0 == .null ? nil : $0 } }
-        guard let raw = node?.props[key], let resolved = scope.resolve(raw), resolved != .null else { return nil }
-        return resolved
+        properties[key].flatMap { $0 == .null ? nil : $0 }
     }
 
     /// Strings as they are; numbers and booleans printed (`24`, not `24.0`).
@@ -84,16 +56,6 @@ struct PrimitiveProps {
 
     func list(_ key: String) -> [PValue] {
         value(key)?.listValue ?? []
-    }
-
-    /// Child ids of a node argument (`children`, `template`, `trailing`).
-    func children(_ arg: String) -> [String] {
-        node?.children[arg] ?? []
-    }
-
-    /// The `@path` a data prop reads, unresolved (Repeat iterates it by path).
-    func dataPath(_ key: String) -> String? {
-        node?.props[key]?.dataPath
     }
 
     static func text(_ value: PValue) -> String? {

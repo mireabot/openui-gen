@@ -165,24 +165,18 @@ private struct SkeletonStack: View {
         default: nil
         }
         return HStack(alignment: alignment, spacing: between ? 0 : gap) {
-            // The same slots as `StackPrimitive`: spacers are siblings, so text can still wrap.
-            ForEach(StackPrimitive.slots(
-                children.indices.map { PrimitiveChild.legacy(String($0)) },
-                between: between
-            )) { slot in
-                switch slot {
-                case let .node(_, index):
-                    SkeletonFrameView(frame: children[index])
-                        .environment(\.skeletonLinesTrail, between && index > 0 && index == children.count - 1)
-                case .gap: Spacer(minLength: gap)
-                }
+            // The same order as `StackPrimitive`: spacers are siblings, so text can still wrap.
+            ForEach(children.indices, id: \.self) { index in
+                if between, index > 0 { Spacer(minLength: gap) }
+                SkeletonFrameView(frame: children[index])
+                    .environment(\.skeletonLinesTrail, between && index > 0 && index == children.count - 1)
             }
         }
         .frame(maxWidth: trailing == nil ? nil : .infinity, alignment: trailing ?? .leading)
     }
 }
 
-/// `count` copies of the item in the Repeat's layout.
+/// `count` copies of the item in its layout.
 private struct SkeletonRepeat: View {
     let layout: SkeletonFrame.RepeatLayout
     let count: Int

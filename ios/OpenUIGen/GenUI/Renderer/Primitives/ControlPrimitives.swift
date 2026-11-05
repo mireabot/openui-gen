@@ -11,15 +11,14 @@ struct PressStyle: ButtonStyle {
     }
 }
 
-/// Calls the host with a node's action, carrying the current Repeat item as payload.
+/// Calls the host with a primitive's action.
 struct ActionTrigger {
     let context: PrimitiveActionDispatcher
-    let scope: DataScope
 
     @MainActor
     func callAsFunction(_ action: String?) {
         guard let action, !action.isEmpty else { return }
-        context.perform(action, scope.item)
+        context.perform(action)
     }
 }
 
@@ -37,13 +36,12 @@ struct ButtonPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveContext) private var context
-    @Environment(\.primitiveScope) private var scope
 
     var body: some View {
         let style = props.string("style") ?? "primary"
         let wide = props.flag("wide")
         Button {
-            ActionTrigger(context: context, scope: scope)(props.string("action"))
+            ActionTrigger(context: context)(props.string("action"))
         } label: {
             let icon = props.string("icon")
             let trailing = props.flag("iconTrailing")
@@ -71,11 +69,10 @@ struct IconButtonPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveContext) private var context
-    @Environment(\.primitiveScope) private var scope
 
     var body: some View {
         Button {
-            ActionTrigger(context: context, scope: scope)(props.string("action"))
+            ActionTrigger(context: context)(props.string("action"))
         } label: {
             SymbolGlyph(name: props.string("icon"), size: 24)
                 .frame(width: PrimitiveMetrics.controlHeight, height: PrimitiveMetrics.controlHeight)
@@ -164,14 +161,13 @@ struct ChipPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveContext) private var context
-    @Environment(\.primitiveScope) private var scope
     @State private var isSelected: Bool?
 
     var body: some View {
         let selected = isSelected ?? props.flag("selected")
         Button {
             isSelected = !selected
-            ActionTrigger(context: context, scope: scope)(props.string("action"))
+            ActionTrigger(context: context)(props.string("action"))
         } label: {
             HStack(spacing: 6) {
                 if let icon = props.string("icon") { SymbolGlyph(name: icon, size: 16) }
@@ -200,7 +196,6 @@ struct ChipPrimitive: View {
 struct SegmentedControlPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
-    @Environment(\.primitiveTree) private var tree
     @State private var selection: Int?
     @Namespace private var thumb
 
@@ -243,17 +238,7 @@ struct SegmentedControlPrimitive: View {
     @ViewBuilder
     private func panel(selected: Int) -> some View {
         let ids = props.childReferences("panels")
-        if !props.isPrepared, ids.count == 1, let repeatNode = tree.node(ids[0].rawID),
-           repeatNode.primitive == "Repeat"
-        {
-            let repeated = PrimitiveProps(node: repeatNode, scope: props.scope)
-            if let path = repeated.dataPath("items"), selected < props.scope.count(of: path) {
-                PrimitiveChildren(ids: repeated.children("template"))
-                    .environment(\.primitiveScope, props.scope.entering(path, at: selected))
-                    .id(selected)
-                    .transaction { $0.animation = nil }
-            }
-        } else if ids.indices.contains(selected) {
+        if ids.indices.contains(selected) {
             PrimitiveNodeView(id: ids[selected]).id(selected)
         }
     }

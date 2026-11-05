@@ -116,8 +116,7 @@ export const LIMITS = { parts: 12, nodesPerPart: 600, nodesPerScreen: 2400, stat
 
 /**
  * Primitives the writer may use, derived from the library: no root or chrome, nothing that needs an
- * action, no input controls that edit bound data or hold their own state, and no Calculation scope
- * (only server templates build one, as its own statement).
+ * action and no input controls that edit bound data or hold their own state.
  */
 export const WRITER_PRIMITIVES: readonly PrimitiveName[] = (PRIMITIVES as readonly PrimitiveDef[]).filter(def => {
   if (def.category === "root" || def.category === "chrome") return false;
@@ -128,8 +127,6 @@ export const WRITER_PRIMITIVES: readonly PrimitiveName[] = (PRIMITIVES as readon
 }).map(def => def.name as PrimitiveName);
 
 const WRITER_SET = new Set<string>(WRITER_PRIMITIVES);
-/** Primitives a template may expand to beyond the writer's own: Calculation and the controls it scopes. */
-const TEMPLATE_ONLY = new Set(["Calculation", "Slider", "ChoiceTags", "Stepper"]);
 const LABEL = /^[a-z][A-Za-z0-9]*$/;
 /** `label_x` and deeper names (`label_rev_title`) all belong to the part `label`. */
 const SUB = /^([a-z][A-Za-z0-9]*)_([A-Za-z0-9]+(?:_[A-Za-z0-9]+)*)$/;
@@ -326,7 +323,7 @@ class Screen {
       this.report({ source: "coverage", code: "question-fallback", message: `${q.id} was not shown by the writer; the server added its default part`, statementId: q.id });
       const expr = this.pack.fallback(q.id, this.source.values);
       const id = `pick${this.nextId++}` as PartId;
-      const statements = hoist(id, new Map([[id, expr]]));
+      const statements = new Map([[id, expr]]);
       this.fallbacks.push({ id, statements, evidence: evidenceOf(statements.values(), this.source.values, this.pack), origin: { kind: "fallback", question: q.id } });
     }
     for (const id of this.stale) if (!this.finished().some(p => p.id === id)) this.report({ source: "coverage", code: "stale-part", message: `${id} read data this turn no longer has and was not rewritten; it was dropped`, statementId: id });
@@ -382,7 +379,7 @@ class Screen {
     return this.order.flatMap(name => {
       const draft = this.drafts.get(name);
       if (draft && this.complete(draft)) {
-        const statements = hoist(draft.id, new Map(this.reachable(draft).map(sub => [sub === null ? draft.id : `${draft.id}_${sub}`, rename(draft.statements.get(sub)!.expr, draft)])));
+        const statements = new Map(this.reachable(draft).map(sub => [sub === null ? draft.id : `${draft.id}_${sub}`, rename(draft.statements.get(sub)!.expr, draft)]));
         return [{ id: draft.id, statements, evidence: evidenceOf(statements.values(), this.source.values, this.pack), origin: { kind: "writer" } as const }];
       }
       return [];
@@ -453,24 +450,6 @@ function rename(expr: Expr, draft: Pick<Draft, "name" | "id">): Expr {
   return mapExpr(expr, e => e.k === "Ref" && e.n.startsWith(`${draft.name}_`) ? { k: "Ref", n: `${draft.id}_${e.n.slice(draft.name.length + 1)}` } : e);
 }
 
-/** A Calculation nested inside a statement moves to its own `pickN_calcK` statement, so it always has a statementId. */
-function hoist(id: PartId, statements: ReadonlyMap<string, Expr>): ReadonlyMap<string, Expr> {
-  const out = new Map<string, Expr>();
-  let next = 0;
-  const lift = (expr: Expr, top: boolean): Expr => {
-    if (expr.k === "Comp" && expr.name === "Calculation" && !top) {
-      const name = `${id}_calc${++next}`;
-      out.set(name, { ...expr, args: expr.args.map(arg => lift(arg, false)) });
-      return { k: "Ref", n: name };
-    }
-    if (expr.k === "Comp") return { ...expr, args: expr.args.map(arg => lift(arg, false)) };
-    if (expr.k === "Arr") return { ...expr, els: expr.els.map(el => lift(el, false)) };
-    return expr;
-  };
-  for (const [name, expr] of statements) out.set(name, lift(expr, true));
-  return new Map([...statements.keys()].map(name => [name, out.get(name)!] as const).concat([...out].filter(([name]) => !statements.has(name))));
-}
-
 function mapExpr(expr: Expr, f: (e: Expr) => Expr): Expr {
   const e = f(expr);
   switch (e.k) {
@@ -517,8 +496,7 @@ function literal(e: Expr): unknown {
 }
 
 /**
- * Template macros as primitives. The writer's own components must be writer primitives; a template's
- * output is trusted to use the template-only ones (Calculation and the controls it scopes).
+ * Template macros as primitives. The writer's own components must be writer primitives.
  */
 function expandTemplates(e: Expr, pack: ScreenPack): Expr {
   switch (e.k) {
@@ -586,7 +564,7 @@ function validate(raw: Expr, owner: string, source: ScreenSource, pack: ScreenPa
       } catch (error) { report("invalid-binding", error instanceof Error ? error.message : String(error)); }
       return;
     }
-    if (e.fn || !WRITER_SET.has(e.name) && !TEMPLATE_ONLY.has(e.name)) { report("unknown-component", `${e.name} is not available`); return; }
+    if (e.fn || !WRITER_SET.has(e.name)) { report("unknown-component", `${e.name} is not available`); return; }
     if (accepts !== "any" && !accepts.includes(e.name)) { report("slot-accepts", `${e.name} is not accepted here`); return; }
     const def = PRIMITIVE_BY_NAME.get(e.name)!;
     const props = Object.entries(def.props);
@@ -628,7 +606,7 @@ function validate(raw: Expr, owner: string, source: ScreenSource, pack: ScreenPa
   // The statement's own value: a component, or a list of components for a list-valued sub-statement.
   const top = expr;
   if (top.k !== "Comp" && top.k !== "Arr") return { issues: [fail("type-mismatch", "A statement must be a component or a list of components", name)] };
-  const parsed = slotLibrary([...WRITER_PRIMITIVES, ...TEMPLATE_ONLY] as PrimitiveName[]).parser.parse(`root = Slot(${printExpr(top.k === "Arr" ? top : { k: "Arr", els: [top] })})`);
+  const parsed = slotLibrary(WRITER_PRIMITIVES).parser.parse(`root = Slot(${printExpr(top.k === "Arr" ? top : { k: "Arr", els: [top] })})`);
   if (parsed.queryStatements.length || parsed.mutationStatements.length || Object.keys(parsed.stateDeclarations).length) report("forbidden-runtime", "Generated content cannot declare queries, mutations, or state");
   visit(top, new Map([["d", { value: source.values, path: [] }]]), "any", null);
   if (issues.length) return { issues };
@@ -691,8 +669,9 @@ function writerMessages(source: ScreenSource, pack: ScreenPack, allowNew: boolea
   const current = source.base.filter(part => source.editable.has(part.id)).map(part => [...part.statements].map(([name, expr]) => printStatement(name, expr)).join("\n")).join("\n\n");
   return [{ role: "system", content: `You compose a mobile screen in OpenUI Lang that answers the user's request from the supplied data.
 Write one statement per line. Each part of the screen is a statement named with a lowerCamel label (\`quarters = Section(...)\`); split a large part into sub-statements named label_name (\`quarters_table = Card(...)\`) and reference them by name from the part. Write the part statement first, then its sub-statements top-down. Parts appear in the order you write them. Never write root, d, Screen, queries, mutations, state or actions; never reference another part.
-Data props must reference the data: d.<path> or an @Each item (\`@Each(d.answers.q1.periods, "p", EarningsCard(p))\`); never type figures as literals in data props. Copy (titles, labels) is plain text; do not invent figures in it.
+Data props must reference the data: d.<path> or an @Each item (\`@Each(d.answers.q1.rows, "r", Row(r.name))\`); never type figures as literals in data props. Copy (titles, labels) is plain text; do not invent figures in it.
 Answer every required question named with the request: each must be shown by reading its answer data (d.answers.<id>). An answer marked partial or unavailable must show its note.
+Wrap descriptive text in full: omit Text.lines for paragraphs and coverage details. Use Stack with Text instead of Row when its two-line limit would hide the description. Do not shorten sourced sentences with ellipses.
 Templates are optional: call one by name with data that fits it, or copy its structure and change it. Use only token values the signatures allow. Arguments are positional: to set a later optional argument, pass null for each one before it (\`Stack("v", 12, [a, b], null, null, null, true)\` sets divided).
 At most ${LIMITS.parts} parts, ${LIMITS.statementsPerPart} statements per part, ${LIMITS.nodesPerPart} nodes per part after @Each expansion.
 

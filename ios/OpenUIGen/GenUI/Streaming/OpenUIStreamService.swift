@@ -11,17 +11,15 @@ public struct OpenUIStreamDone: Decodable, Equatable, Sendable {
     public let run: String
     public let document: OpenUIDocumentVersion?
     public let model: String?
-    public let ticker: String?
     public let issues: [PValue]?
     public init(
         program: String,
         run: String,
         document: OpenUIDocumentVersion? = nil,
         model: String? = nil,
-        ticker: String? = nil,
         issues: [PValue]? = nil
     ) {
-        self.program = program; self.run = run; self.document = document; self.model = model; self.ticker = ticker; self
+        self.program = program; self.run = run; self.document = document; self.model = model; self
             .issues = issues
     }
 }

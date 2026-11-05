@@ -87,9 +87,6 @@ function frame(n: PNode, byId: Map<string, PNode>, depth: number): SkeletonFrame
   const all = (arg = "children") => kids(n, arg, byId).map(sub);
 
   switch (n.primitive) {
-    case "Calculation": return { kind: "stack", axis: "v", gap: 24, children: kids(n, "children", byId).map(child => frame(child, byId, depth + 1)) };
-    case "Slider": return { kind: "stack", axis: "v", gap: 8, children: [line("body", 0.5), { kind: "box", height: 44, radius: "pill" }] };
-    case "ChoiceTags": return { kind: "stack", axis: "v", gap: 8, children: [line("footnote", 0.5), { kind: "stack", axis: "h", gap: 8, children: Array.from({ length: 3 }, () => ({ kind: "box" as const, height: 44, width: 96, radius: "pill" as const })) }] };
     case "Stack": {
       const padding = { ...(p.paddingX != null ? { paddingX: num(p.paddingX) ?? 0 } : {}), ...(p.paddingY != null ? { paddingY: num(p.paddingY) ?? 0 } : {}) };
       // A wrapping stack draws as wrapping items of its first child's shape (tags, chips).
@@ -178,14 +175,10 @@ function frame(n: PNode, byId: Map<string, PNode>, depth: number): SkeletonFrame
       return p.style === "ring" ? { kind: "circle", size: 80 } : { kind: "box", height: 8, radius: "pill" };
     case "Bars":
       return { kind: "box", height: 128, radius: 12 };
-    case "Sparkline":
-      return { kind: "box", height: 40, radius: 4 };
-    case "PriceChart":
-      return { kind: "stack", axis: "v", gap: 8, children: [{ kind: "box", height: p.height === "compact" ? 120 : 200, radius: 12 }, { kind: "stack", axis: "h", gap: 12, justify: "between", children: [line("footnote", 0.5), line("footnote", 0.5)] }] };
+    case "YearTimeline":
+      return { kind: "stack", axis: "v", gap: 16, children: [{ kind: "box", height: 40, radius: "pill" }, { kind: "box", height: 220, radius: 24 }] };
     case "StepTimeline":
       return { kind: "stack", axis: "v", gap: 12, children: [{ kind: "box", height: 68, radius: 12 }, { kind: "box", height: 200, radius: 12 }] };
-    case "Change":
-      return { kind: "box", height: 22, width: p.style === "percent" ? 64 : 96, radius: "pill" };
     case "SplitBar":
       return { kind: "box", height: p.size === "micro" ? 4 : p.size === "thin" ? 6 : 8, ...(p.size === "micro" ? { width: 40 } : {}), radius: "pill" };
     case "ShareBar":
@@ -221,9 +214,6 @@ function estimate(n: PNode, byId: Map<string, PNode>): number {
   };
   const max = (arg: string) => Math.max(0, ...kids(n, arg, byId).map((x) => estimate(x, byId)));
   switch (n.primitive) {
-    case "Calculation": return sum("children", 24);
-    case "Slider": return 90;
-    case "ChoiceTags": return 70;
     case "Stack": return 2 * (num(p.paddingY) ?? 0) + (p.axis === "v" ? sum("children", num(p.gap) ?? 0) : max("children"));
     case "Grid": {
       const children = kids(n, "children", byId);
@@ -250,10 +240,8 @@ function estimate(n: PNode, byId: Map<string, PNode>): number {
     case "ColorCell": return num(p.size) ?? 24;
     case "Row": return 64;
     case "Bars": return 128;
-    case "Sparkline": return 40;
-    case "PriceChart": return (p.height === "compact" ? 120 : 200) + 26;
+    case "YearTimeline": return 40 + 16 + 220;
     case "StepTimeline": return 68 + 12 + 200;
-    case "Change": return 22;
     case "SplitBar": return p.legend === true ? 30 : 8;
     case "Note": return 72;
     case "Progress": return p.style === "ring" ? 80 : 8;

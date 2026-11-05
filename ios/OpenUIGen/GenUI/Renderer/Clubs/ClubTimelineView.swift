@@ -1,5 +1,31 @@
 import SwiftUI
 
+/// The wire representation reuses the same timeline as the native component gallery.
+struct YearTimelinePrimitive: View {
+    let props: PrimitiveProps
+
+    var body: some View {
+        let clubs = props.list("items").map { item in
+            ClubStop(
+                id: item["id"]?.stringValue ?? "",
+                name: item["name"]?.stringValue ?? "",
+                logo: item["logo"]?.stringValue,
+                color: item["color"]?.stringValue ?? "",
+                year: item["year"]?.stringValue ?? "",
+                dates: item["dates"]?.stringValue ?? "",
+                location: item["location"]?.stringValue,
+                loan: item["marker"]?.stringValue == "currency",
+                stats: (item["stats"]?.listValue ?? []).map { stat in
+                    ClubStat(label: stat["label"]?.stringValue ?? "", value: stat["value"]?.stringValue ?? "")
+                }
+            )
+        }
+        let initial = Int(min(Double(max(clubs.count - 1, 0)), max(0, props.number("initial") ?? 0)))
+        ClubTimelineView(clubs: clubs, initial: initial)
+            .id(props.value("items"))
+    }
+}
+
 /// One stop per year over one row of club cards. The years anchor the cards: see `ClubYearAnchor` for the
 /// rules. With a single year there is nothing to move between, so the rail is hidden.
 ///
