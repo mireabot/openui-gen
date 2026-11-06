@@ -1,7 +1,7 @@
 {
  "MetricBars": {
   "full": {
-   "title": "Egor Demin · points per game",
+   "heading": "Egor Demin · points per game",
    "metric": "PPG",
    "columns": [
     {
@@ -27,7 +27,7 @@
    ]
   },
   "sparse": {
-   "title": "Egor Demin · points per game",
+   "heading": "Egor Demin · points per game",
    "metric": "PPG",
    "columns": [
     {
@@ -380,9 +380,9 @@
  },
  "PlayersMetric": {
   "full": {
-   "title": "Interceptions thrown",
+   "heading": "Interceptions thrown",
    "subtitle": "AFC quarterbacks · 2026 season",
-   "kind": "cumulative",
+   "seriesKind": "cumulative",
    "periods": [
     "Week 1",
     "Week 2",
@@ -479,9 +479,9 @@
    ]
   },
   "sparse": {
-   "title": "Interceptions thrown",
+   "heading": "Interceptions thrown",
    "subtitle": "Chiefs quarterbacks · 2026 season",
-   "kind": "cumulative",
+   "seriesKind": "cumulative",
    "periods": [
     "Week 1",
     "Week 2",

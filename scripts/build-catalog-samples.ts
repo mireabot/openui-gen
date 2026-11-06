@@ -59,9 +59,9 @@ function league({ key, match: matchCase, team: teamName, statBars, leaderboards,
 
   // Leaders.
   const boards = leaderboards.map(title => {
-    const board = (leaders.leaderboards as Values[]).find(item => item.title === title);
-    assert.ok(board, `${key} has no leaders "${title}": ${(leaders.leaderboards as Values[]).map(b => b.title).join(", ")}`);
-    return { title: board.title, metric: board.metric, entries: (board.entries as Values[]).slice(0, 5).map(entry => ({ name: entry.name, team: entry.team, color: entry.color, image: entry.logo, value: entry.value })) };
+    const board = (leaders.leaderboards as Values[]).find(item => item.heading === title);
+    assert.ok(board, `${key} has no leaders "${title}": ${(leaders.leaderboards as Values[]).map(b => b.heading).join(", ")}`);
+    return { title: board.heading, metric: board.metric, entries: (board.entries as Values[]).slice(0, 5).map(entry => ({ name: entry.name, team: entry.team, color: entry.color, image: entry.logo, value: entry.value })) };
   });
 
   // A season, oldest first.
@@ -79,7 +79,7 @@ function league({ key, match: matchCase, team: teamName, statBars, leaderboards,
 
   // Players of one game, by the league's main number.
   const sides = (tables: Values[]) => {
-    const table = tables.find(item => topTable.table.test(item.title)) ?? tables[0]!;
+    const table = tables.find(item => topTable.table.test(item.heading)) ?? tables[0]!;
     const column = (table.columns as Values[]).findIndex(c => c.label === topTable.valueColumn);
     return (table.rows as Values[]).map(row => ({ name: row.label, image: row.logo, position: row.position, value: row.cells[column].value }))
       .sort((a, b) => number(b.value) - number(a.value));
@@ -88,8 +88,8 @@ function league({ key, match: matchCase, team: teamName, statBars, leaderboards,
   const [homePlayers, awayPlayers] = [sides(homeTables), sides(awayTables)];
   const topRows = Array.from({ length: Math.min(3, Math.max(homePlayers.length, awayPlayers.length)) }, (_, i) => ({ ...(homePlayers[i] ? { home: homePlayers[i] } : {}), ...(awayPlayers[i] ? { away: awayPlayers[i] } : {}) }));
   // `teamTables` are always the named team's, whichever side it played on.
-  const boxSource = (report.teamTables as Values[]).find(item => boxTable.test(item.title))!;
-  const box = { title: boxSource.title === "Box score" ? `${teamName} · box score` : boxSource.title, columns: boxSource.columns.map((c: Values) => c.label), rows: boxSource.rows.map((row: Values) => ({ label: row.label, cells: row.cells.map((c: Values) => c.value) })) };
+  const boxSource = (report.teamTables as Values[]).find(item => boxTable.test(item.heading))!;
+  const box = { title: boxSource.heading === "Box score" ? `${teamName} · box score` : boxSource.heading, columns: boxSource.columns.map((c: Values) => c.label), rows: boxSource.rows.map((row: Values) => ({ label: row.label, cells: row.cells.map((c: Values) => c.value) })) };
 
   const team = schedule.team as Values;
   const stats = (teamStats.categories as Values[]).flatMap(category => category.stats as Values[]).slice(0, 8).map(stat => ({ label: stat.label, value: stat.display }));

@@ -307,7 +307,7 @@
    ],
    "teamTables": [
     {
-     "title": "Kansas City Passing",
+     "heading": "Kansas City Passing",
      "columnCount": "7",
      "columns": [
       {
@@ -365,7 +365,7 @@
      ]
     },
     {
-     "title": "Kansas City Rushing",
+     "heading": "Kansas City Rushing",
      "columnCount": "5",
      "columns": [
       {
@@ -480,7 +480,7 @@
      ]
     },
     {
-     "title": "Kansas City Receiving",
+     "heading": "Kansas City Receiving",
      "columnCount": "6",
      "columns": [
       {
@@ -636,7 +636,7 @@
      ]
     },
     {
-     "title": "Kansas City Defense",
+     "heading": "Kansas City Defense",
      "columnCount": "7",
      "columns": [
       {
@@ -810,7 +810,7 @@
      ]
     },
     {
-     "title": "Kansas City Interceptions",
+     "heading": "Kansas City Interceptions",
      "columnCount": "3",
      "columns": [
       {
@@ -844,7 +844,7 @@
      ]
     },
     {
-     "title": "Kansas City Kick Returns",
+     "heading": "Kansas City Kick Returns",
      "columnCount": "5",
      "columns": [
       {
@@ -913,7 +913,7 @@
      ]
     },
     {
-     "title": "Kansas City Punt Returns",
+     "heading": "Kansas City Punt Returns",
      "columnCount": "5",
      "columns": [
       {
@@ -959,7 +959,7 @@
      ]
     },
     {
-     "title": "Kansas City Kicking",
+     "heading": "Kansas City Kicking",
      "columnCount": "5",
      "columns": [
       {
@@ -1005,7 +1005,7 @@
      ]
     },
     {
-     "title": "Kansas City Punting",
+     "heading": "Kansas City Punting",
      "columnCount": "6",
      "columns": [
       {
@@ -1059,7 +1059,7 @@
    ],
    "opponentTables": [
     {
-     "title": "Indianapolis Passing",
+     "heading": "Indianapolis Passing",
      "columnCount": "7",
      "columns": [
       {
@@ -1117,7 +1117,7 @@
      ]
     },
     {
-     "title": "Indianapolis Rushing",
+     "heading": "Indianapolis Rushing",
      "columnCount": "5",
      "columns": [
       {
@@ -1255,7 +1255,7 @@
      ]
     },
     {
-     "title": "Indianapolis Receiving",
+     "heading": "Indianapolis Receiving",
      "columnCount": "6",
      "columns": [
       {
@@ -1411,7 +1411,7 @@
      ]
     },
     {
-     "title": "Indianapolis Defense",
+     "heading": "Indianapolis Defense",
      "columnCount": "7",
      "columns": [
       {
@@ -1585,7 +1585,7 @@
      ]
     },
     {
-     "title": "Indianapolis Kick Returns",
+     "heading": "Indianapolis Kick Returns",
      "columnCount": "5",
      "columns": [
       {
@@ -1654,7 +1654,7 @@
      ]
     },
     {
-     "title": "Indianapolis Kicking",
+     "heading": "Indianapolis Kicking",
      "columnCount": "5",
      "columns": [
       {
@@ -1700,7 +1700,7 @@
      ]
     },
     {
-     "title": "Indianapolis Punting",
+     "heading": "Indianapolis Punting",
      "columnCount": "6",
      "columns": [
       {

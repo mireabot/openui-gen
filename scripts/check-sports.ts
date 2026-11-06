@@ -207,13 +207,13 @@ assert.ok(nodes.some(n => n.primitive === "SplitBar" && JSON.stringify(n.props.s
 // An empty list is valid data: the writer's Leaderboard over no entries is admitted. A StatsCard answer
 // defaults to StatsCard, not to TeamDetail, whose contract it extends.
 const emptyValues = { answers: {
-  q1: { status: "complete", question: "Clean sheets", title: "Clean sheets", source: "Source: ESPN", board: { title: "Clean sheets", metric: "", entries: [] } },
+  q1: { status: "complete", question: "Clean sheets", title: "Clean sheets", source: "Source: ESPN", board: { heading: "Clean sheets", metric: "", entries: [] } },
   q2: { status: "complete", question: "Palmer", title: "Palmer", source: "Source: ESPN", player: { kind: "player", name: "Cole Palmer", detail: "Chelsea", logo: "", color: "#034694",
     rating: { value: "7.21", tone: "good", fill: "tone.good.fg", ink: "surface.screen", label: "Season rating", caption: "", show: true }, stats: [{ label: "Goals", value: "5" }], showStats: true } },
 } };
 // A source's gaps never reach the screen: a dash used to render as a "— Season rating" row and a "—" stat, once per card.
 const missingCard = { name: "E Haaland", kind: "player", detail: "City", logo: "", color: "", rating: { value: "—", label: "Season rating" }, stats: [{ label: "Goals", value: "9" }, { label: "Assists", value: "—" }] };
-const settled = settleMissing({ values: { answers: { q1: { player: missingCard, board: { title: "t", metric: "Goals", entries: [{ name: "A", value: "6" }, { name: "B", value: "N/A" }] } } } }, fields: [] }).values.answers as unknown as { q1: { player: { rating: { show: boolean }; stats: unknown[]; showStats: boolean }; board: { entries: unknown[] } } };
+const settled = settleMissing({ values: { answers: { q1: { player: missingCard, board: { heading: "t", metric: "Goals", entries: [{ name: "A", value: "6" }, { name: "B", value: "N/A" }] } } } }, fields: [] }).values.answers as unknown as { q1: { player: { rating: { show: boolean }; stats: unknown[]; showStats: boolean }; board: { entries: unknown[] } } };
 assert.deepEqual([settled.q1.player.rating.show, settled.q1.player.stats, settled.q1.player.showStats, settled.q1.board.entries.length], [false, [{ label: "Goals", value: "9" }], true, 1], "a dash in a rating, a stat or a ranking row is left out");
 assert.equal((settleMissing({ values: { answers: { q1: { player: { ...missingCard, stats: [{ label: "Assists", value: "" }] } } } }, fields: [] }).values.answers.q1.player as unknown as { showStats: boolean }).showStats, false, "a card with no stats has no rail");
 // A player's second card shows only what's new, and goes when nothing is.
@@ -372,8 +372,8 @@ assert.ok(followUpSchema([], ["q1", "q2"]).safeParse({ subject: { kind: "team", 
 // One place answers home and away: TeamPoints when it is on the screen, else LeagueStanding if it has them.
 {
   const venue = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
-  const record = { title: "Home and away", subtitle: "Rank 10 · 38 played", points: "52", home: venue, away: venue };
-  const standing = (detail: string) => ({ place: "10th", summary: "52 points", rows: [], home: { detail }, away: { detail }, showVenues: true });
+  const record = { heading: "Home and away", subtitle: "Rank 10 · 38 played", points: "52", home: venue, away: venue };
+  const standing = (detail: string) => ({ place: "10th", gaps: "52 points", rows: [], home: { detail }, away: { detail }, showVenues: true });
   const shown = (answers: Record<string, unknown>) => (settleVenues({ values: { answers }, fields: [] }).values.answers as { q1: { standing: { showVenues: boolean } } }).q1.standing.showVenues;
   assert.equal(shown({ q1: { standing: standing("26 pts · 7-5-7") }, q2: { record } }), false, "TeamPoints elsewhere on the screen answers them");
   assert.equal(shown({ q1: { standing: standing("26 pts · 7-5-7") } }), true, "alone, the standing shows them");
@@ -383,14 +383,14 @@ assert.ok(followUpSchema([], ["q1", "q2"]).safeParse({ subject: { kind: "team", 
 // The heatmap's grid follows its count: 20 sit 10 to a row, a season's 38 keep two rows with smaller squares.
 assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11", "19", "23", "24"]);
 {
-  const fitted = fitHeatmaps({ values: { answers: { q1: { run: { value: "1.37", caption: "PPG", summary: "x", columns: "10", results: Array.from({ length: 38 }, () => ({ label: "Win", fill: "tone.good.fg" })) } } } }, fields: [] });
+  const fitted = fitHeatmaps({ values: { answers: { q1: { run: { value: "1.37", caption: "PPG", tally: "x", columns: "10", results: Array.from({ length: 38 }, () => ({ label: "Win", fill: "tone.good.fg" })) } } } }, fields: [] });
   assert.equal((fitted.values.answers as { q1: { run: { columns: string } } }).q1.run.columns, "19", "the server sets it, whatever the model wrote");
 }
 
 // A home and away table built by hand where TeamPoints fits is refused, and the repair is told what to call.
 {
   const side = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
-  const answer = { status: "complete", question: "Season", title: "Season", source: "Source: ESPN", record: { title: "Home and away comparison", subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side } };
+  const answer = { status: "complete", question: "Season", title: "Season", source: "Source: ESPN", record: { heading: "Home and away comparison", subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side } };
   const prompts: string[] = [];
   const replies = [`season = Card([Text(d.answers.q1.record.home.points, "body"), Text(d.answers.q1.record.away.points, "body")])\n`, `season = TeamPoints(d.answers.q1.record)\n`];
   const screen = await compileScreen({ run: "r", request: "season", values: { answers: { q1: answer } }, required: [{ id: "q1", text: "Season" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, async (messages, emit) => {
@@ -419,9 +419,9 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
 // Run 341a9f75: the season's points showed in TeamPoints and again in two half-season heatmaps. Each fact is locked to one place.
 {
   const side = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
-  const points = { title: "Home and away", subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side };
-  const heat = (count: number, value: string) => ({ value, caption: "Points", summary: "s", columns: "10", results: Array.from({ length: count }, () => ({ label: "Win", fill: "tone.good.fg" })) });
-  const standing = { place: "10th", summary: "52 points", rows: [], home: { detail: "" }, away: { detail: "" }, showVenues: false };
+  const points = { heading: "Home and away", subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side };
+  const heat = (count: number, value: string) => ({ value, caption: "Points", tally: "s", columns: "10", results: Array.from({ length: count }, () => ({ label: "Win", fill: "tone.good.fg" })) });
+  const standing = { place: "10th", gaps: "52 points", rows: [], home: { detail: "" }, away: { detail: "" }, showVenues: false };
   const match = { name: "x", value: "1" };
   const season = lockFacts({ values: { answers: { q1: { status: "complete", title: "Table", standing }, q2: { status: "complete", title: "Season", points, firstHalf: heat(19, "30 pts"), secondHalf: heat(19, "22 pts") } } }, fields: [{ path: "answers.q2.firstHalf.value", kind: "text", format: "none" }, { path: "answers.q2.points.points", kind: "text", format: "none" }] });
   const q2 = (season.dataset.values.answers as Record<string, Record<string, { subtitle?: string }>>).q2!;
@@ -440,13 +440,13 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
 // Injuries: the server turns the league's wording and a date into the badge and the wait.
 {
   const day = new Date("2026-11-05T23:30:00Z");
-  const raw = (status: string, returnDate: string, returnNote = "", source = "") => ({ name: "P", kind: "player", position: "RB", team: "Cardinals", logo: "", color: "", status, returnDate, returnNote, source });
-  const settled = settleInjuries({ values: { answers: { q1: { list: { title: "", players: [raw("Injured Reserve", "2026-12-06", "", "ESPN"), raw("Day-To-Day", "2026-11-06"), raw("", "", "Out for season"), raw("Questionable", "2026-11-01")] } } } }, fields: [] }, day);
-  const list = (settled.values.answers as unknown as { q1: { list: { showTitle: boolean; players: Record<string, unknown>[] } } }).q1.list;
+  const raw = (status: string, returnDate: string, returnNote = "", source = "") => ({ name: "P", kind: "player", position: "RB", team: "Cardinals", logo: "", color: "", injuryStatus: status, returnDate, returnNote, reportedBy: source });
+  const settled = settleInjuries({ values: { answers: { q1: { list: { heading: "", players: [raw("Injured Reserve", "2026-12-06", "", "ESPN"), raw("Day-To-Day", "2026-11-06"), raw("", "", "Out for season"), raw("Questionable", "2026-11-01")] } } } }, fields: [] }, day);
+  const list = (settled.values.answers as unknown as { q1: { list: { showHeading: boolean; players: Record<string, unknown>[] } } }).q1.list;
   const [ir, dtd, season, stale] = list.players as { badge: { label: string; tone: string; show: boolean }; wait: { label: string; value: string; day: string; dated: boolean }; line: string; sourceLine: string; detail: string }[];
-  assert.equal(list.showTitle, false, "an empty title is not shown");
+  assert.equal(list.showHeading, false, "an empty heading is not shown");
   // A list title that repeats its answer's title is hidden; one that adds something stays.
-  const titled = (title: string) => (settleInjuries({ values: { answers: { q1: { title: "Chiefs injury report", list: { title, players: [] } } } }, fields: [] }, day).values.answers as unknown as { q1: { list: { showTitle: boolean } } }).q1.list.showTitle;
+  const titled = (title: string) => (settleInjuries({ values: { answers: { q1: { title: "Chiefs injury report", list: { heading: title, players: [] } } } }, fields: [] }, day).values.answers as unknown as { q1: { list: { showHeading: boolean } } }).q1.list.showHeading;
   assert.deepEqual([titled("Chiefs injuries"), titled("Chiefs Injury Report"), titled("Out for Sunday")], [false, false, true], "each text on a screen says something new");
   assert.deepEqual([sameTitle("NBA injuries", "NBA injury list"), sameTitle("Chiefs injuries", "Bills injuries"), sameTitle("", "")], [true, false, false]);
   assert.deepEqual([ir!.badge, ir!.wait.value, ir!.wait.day, ir!.line, ir!.sourceLine, ir!.detail], [{ label: "IR", tone: "bad", show: true }, "31 days", "Sun, Dec 6", "Back Dec 6", "· ESPN", "RB · Cardinals"]);

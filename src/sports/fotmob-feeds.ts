@@ -197,7 +197,7 @@ async function recentScorers(request: EspnRequest, send: FotmobFeedTransport, no
     matches: reports.map(report => report.match),
     summary: `${team.name} goalscorers over the last ${count} completed matches (${scope}), ${period.from.slice(0, 10)} to ${period.to.slice(0, 10)}. ${goalsFor} team goals, including ${ownGoals} own goals.`,
     leaderboard: {
-      title: `Top scorers · ${team.name} · Last ${count} games · ${scope}`, metric: "Goals",
+      heading: `Top scorers · ${team.name} · Last ${count} games · ${scope}`, metric: "Goals",
       entries: scorers.map(scorer => ({ name: scorer.name, detail: team.name, value: String(scorer.goals), logo: "", color: colours.get(team.id)?.color ?? "" })),
     },
   } };

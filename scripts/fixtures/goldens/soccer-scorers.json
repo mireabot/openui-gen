@@ -154,7 +154,7 @@
    ],
    "summary": "Chelsea goalscorers over the last 3 completed matches (All competitions), 2026-10-24 to 2026-10-31. 3 team goals, including 0 own goals.",
    "leaderboard": {
-    "title": "Top scorers · Chelsea · Last 3 games · All competitions",
+    "heading": "Top scorers · Chelsea · Last 3 games · All competitions",
     "metric": "Goals",
     "entries": [
      {

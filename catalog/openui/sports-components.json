@@ -229,7 +229,7 @@
       "useWhen": "a plain ranked list of at most 10, where the order is the answer: who are the top scorers, the top assisters, most clean sheets; not when the request asks to compare the subjects, and not for more than 10 (use MetricBars)",
       "contract": [
         {
-          "path": "title",
+          "path": "heading",
           "kind": "text",
           "note": "the list's name, e.g. \"Top scorers · Premier League\""
         },
@@ -307,7 +307,7 @@
           "note": "win \"tone.good.fg\", loss \"tone.bad.fg\", draw or tie \"outline.control\", upcoming \"surface.filled\""
         },
         {
-          "path": "summary",
+          "path": "tally",
           "kind": "text",
           "note": "e.g. \"4 won · 1 drawn · 3 lost\" or \"6-2\""
         },
@@ -413,7 +413,7 @@
       "useWhen": "one soccer club's season points and home/away record in one competition; not its league position (LeagueStanding), a player's scoring points or an NBA/NFL win-loss record",
       "contract": [
         {
-          "path": "title",
+          "path": "heading",
           "kind": "text",
           "note": "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"
         },
@@ -521,7 +521,7 @@
           "note": "the team's place as shown, e.g. \"13th\""
         },
         {
-          "path": "summary",
+          "path": "gaps",
           "kind": "text",
           "note": "points and gaps, e.g. \"9 points · 1 behind 12th, 1 ahead of 14th\"; for first place \"27 points · 5 clear of 2nd\""
         },
@@ -584,7 +584,7 @@
       "useWhen": "best players from both sides of one match; not one named player's own statistics (StatsCard) or a ranking across matches (Leaderboard or MetricBars)",
       "contract": [
         {
-          "path": "title",
+          "path": "heading",
           "kind": "text",
           "note": "the card's name, e.g. \"Top scorers\""
         },
@@ -810,7 +810,7 @@
       "useWhen": "one figure compared across players, clubs or seasons, whenever the request asks to compare them (compare, vs, against each other, side by side), even when it also asks for the top N, and for any one-figure list of more than 10: the top 16 scorers compared, points per game this season vs last, strikes of three players, a club's points per game by season with the coach under each; not values period by period within a season (PlayerMetrics or PlayersMetric), a single subject's key stats (StatsCard), or two clubs compared head to head on a statistic for the same period (StatBar)",
       "contract": [
         {
-          "path": "title",
+          "path": "heading",
           "kind": "text",
           "note": "what is compared, e.g. \"Egor Demin · points per game\", or \"\" when the screen already says it"
         },
@@ -971,7 +971,7 @@
       "useWhen": "two to four players compared on one metric within a season, period by period: quarterbacks' interceptions by week, strikers' goals by matchweek; not several metrics for one player (PlayerMetrics), season totals (MetricBars) or one game's key stats (StatsCard)",
       "contract": [
         {
-          "path": "title",
+          "path": "heading",
           "kind": "text",
           "note": "the metric, e.g. \"Interceptions thrown\""
         },
@@ -981,7 +981,7 @@
           "note": "e.g. \"AFC quarterbacks · 2026 season\""
         },
         {
-          "path": "kind",
+          "path": "seriesKind",
           "kind": "text",
           "note": "\"cumulative\" for running totals, \"period\" for one value per period"
         },
@@ -1127,7 +1127,7 @@
       "useWhen": "requested multi-subject box-score columns, full standings, a game log or an NBA/NFL record split; not one named player's key statistics (StatsCard), soccer home/away points (TeamPoints), a one-figure comparison (MetricBars), or honours and prose facts",
       "contract": [
         {
-          "path": "title",
+          "path": "heading",
           "kind": "text",
           "note": "what the table shows, e.g. \"Passing\" or \"AFC West\""
         },
@@ -1205,7 +1205,7 @@
           "note": "their team's colour \"#rrggbb\" from d.clubs, or \"\""
         },
         {
-          "path": "status",
+          "path": "injuryStatus",
           "kind": "text",
           "note": "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"
         },
@@ -1220,7 +1220,7 @@
           "note": "what stands in for a missing date, e.g. \"Out for season\" or \"Mid-January 2027\"; \"\" otherwise"
         },
         {
-          "path": "source",
+          "path": "reportedBy",
           "kind": "text",
           "note": "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"
         },
@@ -1288,12 +1288,12 @@
       "useWhen": "a team's or a league's injured players, any number, in the order the data gives them",
       "contract": [
         {
-          "path": "title",
+          "path": "heading",
           "kind": "text",
           "note": "what the list is, e.g. \"Cardinals injuries\", or \"\""
         },
         {
-          "path": "showTitle",
+          "path": "showHeading",
           "kind": "boolean",
           "note": "the server sets this"
         },
@@ -1333,7 +1333,7 @@
           "note": "their team's colour \"#rrggbb\" from d.clubs, or \"\""
         },
         {
-          "path": "players[].status",
+          "path": "players[].injuryStatus",
           "kind": "text",
           "note": "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"
         },
@@ -1348,7 +1348,7 @@
           "note": "what stands in for a missing date, e.g. \"Out for season\" or \"Mid-January 2027\"; \"\" otherwise"
         },
         {
-          "path": "players[].source",
+          "path": "players[].reportedBy",
           "kind": "text",
           "note": "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"
         },

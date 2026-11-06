@@ -103,10 +103,10 @@ const injuredPlayer = (prefix: string): ContractField[] => [
   f(`${prefix}team`, "text", "the player's team, e.g. \"Cardinals\" or \"Chelsea\""),
   f(`${prefix}logo`, "text", "photo URL, or \"\""),
   f(`${prefix}color`, "color", "their team's colour \"#rrggbb\" from d.clubs, or \"\""),
-  f(`${prefix}status`, "text", "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"),
+  f(`${prefix}injuryStatus`, "text", "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"),
   f(`${prefix}returnDate`, "text", "the expected return as \"YYYY-MM-DD\", or \"\" when no date is given or the player is out for the season"),
   f(`${prefix}returnNote`, "text", "what stands in for a missing date, e.g. \"Out for season\" or \"Mid-January 2027\"; \"\" otherwise"),
-  f(`${prefix}source`, "text", "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"),
+  f(`${prefix}reportedBy`, "text", "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"),
   f(`${prefix}detail`, "text", "the server sets this"),
   f(`${prefix}badge.label`, "text", "the server sets this"),
   f(`${prefix}badge.tone`, "tone", "the server sets this"),
@@ -280,7 +280,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "A ranked list for one metric: a header naming the list and the metric, then rows of logo or monogram, name, a detail line and the value.",
     useWhen: "a plain ranked list of at most 10, where the order is the answer: who are the top scorers, the top assisters, most clean sheets; not when the request asks to compare the subjects, and not for more than 10 (use MetricBars)",
     contract: [
-      f("title", "text", "the list's name, e.g. \"Top scorers · Premier League\""),
+      f("heading", "text", "the list's name, e.g. \"Top scorers · Premier League\""),
       f("metric", "text", "the one metric every value is, e.g. \"Goals\""),
       f("entries", "list", "in rank order, at most 10"),
       f("entries[].name", "text", "player or club"),
@@ -293,7 +293,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     params: [],
     build: b => ui.Card({ children: [
       ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-        ui.Text({ content: b.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: b.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
         ui.Text({ content: b.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.Stack({ axis: "v", gap: 12, divided: true, children: each(b.entries, "e", (e: AnyRef) => ui.Row({
@@ -312,7 +312,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("results", "list", "one per fixture, oldest first, every fixture of the run however many: a season is one record, never split"),
       f("results[].label", "text", "spoken result, e.g. \"Win\", \"Draw\", \"Tie\", \"Loss\" or \"Upcoming\"; not visible in the square"),
       f("results[].fill", "text", "win \"tone.good.fg\", loss \"tone.bad.fg\", draw or tie \"outline.control\", upcoming \"surface.filled\""),
-      f("summary", "text", "e.g. \"4 won · 1 drawn · 3 lost\" or \"6-2\""),
+      f("tally", "text", "e.g. \"4 won · 1 drawn · 3 lost\" or \"6-2\""),
       f("columns", "text", "\"10\"; the server sets it from the number of results"),
     ],
     params: [],
@@ -322,7 +322,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
         ui.Text({ content: h.caption, role: "body", ink: "secondary", align: "center" }),
       ] }),
       ui.Grid({ columns: h.columns, gap: 4, children: each(h.results, "r", (r: AnyRef) => ui.ColorCell({ label: r.label, fill: r.fill })) }),
-      ui.Text({ content: h.summary, role: "footnote", ink: "secondary", align: "center" }),
+      ui.Text({ content: h.tally, role: "footnote", ink: "secondary", align: "center" }),
     ] }),
   },
   {
@@ -379,7 +379,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "A team's points so far this season: the total and its rank, then a table splitting the record into home and away (played, won, drawn, lost, goals, goal difference, points).",
     useWhen: "one soccer club's season points and home/away record in one competition; not its league position (LeagueStanding), a player's scoring points or an NBA/NFL win-loss record",
     contract: [
-      f("title", "text", "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"),
+      f("heading", "text", "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"),
       f("subtitle", "text", "rank and matches played, e.g. \"Rank 1 · 9 played\""),
       f("points", "text", "total points as shown, e.g. \"27\""),
       ...venueRow("home"), ...venueRow("away"),
@@ -388,7 +388,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     build: t => ui.Card({ children: [
       ui.Stack({ axis: "h", gap: 16, align: "start", justify: "between", children: [
         ui.Stack({ axis: "v", gap: 0, children: [
-          ui.Text({ content: t.title, role: "headline", weight: "semibold", lines: 2, align: "start" }),
+          ui.Text({ content: t.heading, role: "headline", weight: "semibold", lines: 2, align: "start" }),
           ui.Text({ content: t.subtitle, role: "footnote", ink: "secondary", lines: 2, align: "start" }),
         ] }),
         ui.Text({ content: t.points, role: "title1", weight: "semibold", align: "end" }),
@@ -406,7 +406,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     useWhen: "one team's league position and gaps to nearby teams; not a final top-three podium (SeasonPodium) or its complete home/away record (TeamPoints); for the whole table use a list of rows instead",
     contract: [
       f("place", "text", "the team's place as shown, e.g. \"13th\""),
-      f("summary", "text", "points and gaps, e.g. \"9 points · 1 behind 12th, 1 ahead of 14th\"; for first place \"27 points · 5 clear of 2nd\""),
+      f("gaps", "text", "points and gaps, e.g. \"9 points · 1 behind 12th, 1 ahead of 14th\"; for first place \"27 points · 5 clear of 2nd\""),
       f("rows", "list", "exactly three in table order: the team and its nearest two, one either side, or the two below it in first place and the two above it in last"),
       f("rows[].rank", "text", "the place, e.g. \"12\""),
       f("rows[].name", "text", "club name"),
@@ -422,7 +422,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     build: l => ui.Card({ children: [
       ui.Stack({ axis: "v", gap: 8, children: [
         ui.Text({ content: l.place, role: "display", weight: "semibold" }),
-        ui.Text({ content: l.summary, role: "body", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: l.gaps, role: "body", ink: "secondary", lines: 2, align: "start" }),
       ] }),
       ui.Stack({ axis: "v", gap: 0, children: each(l.rows, "r", (r: AnyRef) => ui.Card({ surface: r.surface, radius: "control", padding: 8, children: [
         ui.Stack({ axis: "h", gap: 12, align: "center", children: [
@@ -442,7 +442,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "The top players of one game from both teams, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
     useWhen: "best players from both sides of one match; not one named player's own statistics (StatsCard) or a ranking across matches (Leaderboard or MetricBars)",
     contract: [
-      f("title", "text", "the card's name, e.g. \"Top scorers\""),
+      f("heading", "text", "the card's name, e.g. \"Top scorers\""),
       f("metric", "text", "the one metric every value is, e.g. \"Goals\" or \"Rating\""),
       f("rows", "list", "as many as the request asks for per side, e.g. 1 or 3, otherwise 3; best first on each side, and only players the metric applies to, so a scorer has scored"),
       ...matchPlayer("rows[].home"), ...matchPlayer("rows[].away"),
@@ -450,7 +450,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     params: [],
     build: m => ui.Card({ children: [
       ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-        ui.Text({ content: m.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: m.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
         ui.Text({ content: m.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.Stack({ axis: "v", gap: 12, divided: true, children: each(m.rows, "r", (r: AnyRef) => ui.Grid({ columns: "2", gap: 16, children: [
@@ -487,7 +487,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "One metric across any number of subjects: a club-colour value pill per column at the value's height, with an optional second line, then the subject's photo or crest, name and caption; more than five page sideways. No card.",
     useWhen: "one figure compared across players, clubs or seasons, whenever the request asks to compare them (compare, vs, against each other, side by side), even when it also asks for the top N, and for any one-figure list of more than 10: the top 16 scorers compared, points per game this season vs last, strikes of three players, a club's points per game by season with the coach under each; not values period by period within a season (PlayerMetrics or PlayersMetric), a single subject's key stats (StatsCard), or two clubs compared head to head on a statistic for the same period (StatBar)",
     contract: [
-      f("title", "text", "what is compared, e.g. \"Egor Demin · points per game\", or \"\" when the screen already says it"),
+      f("heading", "text", "what is compared, e.g. \"Egor Demin · points per game\", or \"\" when the screen already says it"),
       f("metric", "text", "the one metric every value is, e.g. \"PPG\""),
       f("columns", "list", "one per subject, in the order to read them (seasons oldest first)"),
       f("columns[].name", "text", "player, club or coach"),
@@ -502,7 +502,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     params: [],
     build: b => ui.Stack({ axis: "v", gap: 12, children: [
       ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-        ui.Text({ content: b.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: b.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
         ui.Text({ content: b.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.ValueColumns({ columns: b.columns, marks: each(b.columns, "c", (c: AnyRef) => ui.Avatar({ name: c.name, size: 40, image: c.logo, color: c.color, kind: c.kind })) }),
@@ -543,9 +543,9 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "Several players on one metric over a season as a race: one row per player starting with the plain photo, sorted by the value at the scrub, over one stepped line each. No card.",
     useWhen: "two to four players compared on one metric within a season, period by period: quarterbacks' interceptions by week, strikers' goals by matchweek; not several metrics for one player (PlayerMetrics), season totals (MetricBars) or one game's key stats (StatsCard)",
     contract: [
-      f("title", "text", "the metric, e.g. \"Interceptions thrown\""),
+      f("heading", "text", "the metric, e.g. \"Interceptions thrown\""),
       f("subtitle", "text", "e.g. \"AFC quarterbacks · 2026 season\""),
-      f("kind", "text", "\"cumulative\" for running totals, \"period\" for one value per period"),
+      f("seriesKind", "text", "\"cumulative\" for running totals, \"period\" for one value per period"),
       f("periods", "list", "one label per period, e.g. \"Week 8\""),
       f("from", "text", "the first period's short label, e.g. \"Wk 1\""),
       f("to", "text", "the last period's short label"),
@@ -562,8 +562,8 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     ],
     params: [],
     build: p => ui.Stack({ axis: "v", gap: 16, children: [
-      ui.Text({ content: p.title, role: "title2", weight: "semibold", lines: 2, align: "start" }),
-      ui.MetricLines({ lines: p.players, periods: p.periods, from: p.from, to: p.to, style: "race", kind: p.kind, caption: p.subtitle, marks: each(p.players, "x", (x: AnyRef) => ui.Avatar({ name: x.name, size: 40, image: x.logo, color: x.color, kind: "player" })) }),
+      ui.Text({ content: p.heading, role: "title2", weight: "semibold", lines: 2, align: "start" }),
+      ui.MetricLines({ lines: p.players, periods: p.periods, from: p.from, to: p.to, style: "race", kind: p.seriesKind, caption: p.subtitle, marks: each(p.players, "x", (x: AnyRef) => ui.Avatar({ name: x.name, size: 40, image: x.logo, color: x.color, kind: "player" })) }),
     ] }),
   },
   {
@@ -587,7 +587,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "A table whose columns come from the data: a title, a row of column labels, then one row per player, team or game with its name in a wider first column (up to two lines) and its figures in the rest.",
     useWhen: "requested multi-subject box-score columns, full standings, a game log or an NBA/NFL record split; not one named player's key statistics (StatsCard), soccer home/away points (TeamPoints), a one-figure comparison (MetricBars), or honours and prose facts",
     contract: [
-      f("title", "text", "what the table shows, e.g. \"Passing\" or \"AFC West\""),
+      f("heading", "text", "what the table shows, e.g. \"Passing\" or \"AFC West\""),
       f("columnCount", "text", "\"5\"; the server sets it from the columns"),
       f("columns", "list", "at most 7, in the order the cells follow"),
       f("columns[].label", "text", "a short column label as the source writes it, e.g. \"YDS\" or \"W-L\""),
@@ -598,7 +598,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     ],
     params: [],
     build: t => ui.Card({ children: [
-      ui.Text({ content: t.title, role: "headline", weight: "semibold" }),
+      ui.Text({ content: t.heading, role: "headline", weight: "semibold" }),
       ui.Stack({ axis: "v", gap: 12, children: [
         // The name takes a lead column three cells wide, so the figures keep their room; the header leaves it blank.
         ui.Grid({ columns: t.columnCount, gap: 4, lead: "3", children: [ui.Spacer({ size: 0 }), each(t.columns, "c", (c: AnyRef) => ui.Text({ content: c.label, role: "footnote", ink: "secondary", lines: 1 }))] }),
@@ -628,7 +628,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
         ] }),
         ui.Stack({ axis: "v", gap: 0, align: "end", children: [
           ui.Text({ content: p.wait.day, role: "footnote", ink: "secondary", align: "end" }),
-          ui.Text({ content: p.source, role: "footnote", ink: "secondary", lines: 1, align: "end" }),
+          ui.Text({ content: p.reportedBy, role: "footnote", ink: "secondary", lines: 1, align: "end" }),
         ] }),
       ] }),
     ] }),
@@ -638,14 +638,14 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "An injury report as a list with no card: one row per player (photo with a band-aid, name, position · team, status badge), then the return and the source under the name.",
     useWhen: "a team's or a league's injured players, any number, in the order the data gives them",
     contract: [
-      f("title", "text", "what the list is, e.g. \"Cardinals injuries\", or \"\""),
-      f("showTitle", "boolean", "the server sets this"),
+      f("heading", "text", "what the list is, e.g. \"Cardinals injuries\", or \"\""),
+      f("showHeading", "boolean", "the server sets this"),
       f("players", "list", "the injured players, at most 30"),
       ...injuredPlayer("players[]."),
     ],
     params: [],
     build: l => ui.Stack({ axis: "v", gap: 12, children: [
-      ui.Show({ when: l.showTitle, child: ui.Text({ content: l.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }) }),
+      ui.Show({ when: l.showHeading, child: ui.Text({ content: l.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }) }),
       ui.Stack({ axis: "v", gap: 12, divided: true, children: each(l.players, "p", (p: AnyRef) => injuryRow(p)) }),
     ] }),
   },
@@ -736,14 +736,14 @@ export function settleInjuries<T extends { readonly values: Record<string, unkno
     // An answer's own title is the heading its parts must not repeat.
     const own = /^answers\.[^.]+$/.test(path) ? text(value.title) : heading;
     const record: Record<string, unknown> = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, walk(child, `${path}.${key}`, own)]));
-    if (Array.isArray(record.players) && "title" in record) {
-      record.showTitle = text(record.title) !== "" && !sameTitle(text(record.title), own);
-      add(`${path}.showTitle`, "boolean");
+    if (Array.isArray(record.players) && "heading" in record) {
+      record.showHeading = text(record.heading) !== "" && !sameTitle(text(record.heading), own);
+      add(`${path}.showHeading`, "boolean");
     }
-    if (typeof record.name !== "string" || !("returnDate" in record) || !("status" in record)) return record;
-    const status = text(record.status);
+    if (typeof record.name !== "string" || !("returnDate" in record) || !("injuryStatus" in record)) return record;
+    const status = text(record.injuryStatus);
     const badge = STATUS_BADGES[status.toLowerCase()] ?? { label: status, tone: "neutral" };
-    const source = text(record.source);
+    const source = text(record.reportedBy);
     const { wait, line } = injuryWait(record, today);
     for (const key of ["detail", "badge.label", "wait.label", "wait.value", "wait.day", "line", "sourceLine"]) add(`${path}.${key}`, "text");
     for (const key of ["badge.show", "wait.dated", "wait.undated"]) add(`${path}.${key}`, "boolean");
@@ -773,7 +773,7 @@ export function fitHeatmaps<T extends { readonly values: Record<string, unknown>
       const rows = value.rows.map(row => (isObject(row) && Array.isArray(row.cells) ? { ...row, cells: row.cells.slice(0, columns.length) } : row));
       return { ...result, columns, rows, columnCount: String(columns.length || 1) };
     }
-    if (!("caption" in value && "summary" in value && Array.isArray(value.results))) return result;
+    if (!("caption" in value && "tally" in value && Array.isArray(value.results))) return result;
     if (!paths.has(`${path}.columns`)) added.push(`${path}.columns`);
     return { ...result, columns: heatmapColumns(value.results.length) };
   };

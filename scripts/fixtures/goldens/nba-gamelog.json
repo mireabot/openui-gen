@@ -26,7 +26,7 @@
    "requestedGames": 3,
    "gamesCounted": 3,
    "log": {
-    "title": "Last 3 games",
+    "heading": "Last 3 games",
     "columnCount": "7",
     "columns": [
      {

@@ -54,6 +54,13 @@ export const RESERVED = {
   assistPlayer: { role: "shared", owner: "player-images.ts populatePlayerImages", meaning: "a goal's assister as a player record", atRoot: false, kind: null },
 } as const satisfies Record<string, ReservedName>;
 
+/**
+ * How many levels deep a component record may sit inside an answer (`answers.q1.a.b.record` is 3).
+ * Raise it to nest deeper; the contract-names check then confirms every contract still fits the data
+ * path limit (MAX_PATH_SEGMENTS) at that depth.
+ */
+export const NEST_DEPTH = 3;
+
 type Names = keyof typeof RESERVED;
 export type FrameName = { [K in Names]: (typeof RESERVED)[K]["role"] extends "frame" ? K : never }[Names];
 
@@ -69,6 +76,24 @@ export const ROOT_NAMES: ReadonlySet<string> = new Set(names.filter(name => {
   const entry: ReservedName = RESERVED[name];
   return entry.role === "frame" || entry.atRoot;
 }));
+
+/**
+ * The rule, for one contract field: a problem for every segment of its path that is a frame name, and
+ * for a last segment that is a shared name used with another kind (or one no contract may use). Value
+ * domains need data, so the check tests those on the fixture samples.
+ */
+export function contractNameProblems(component: string, field: Pick<ContractField, "path" | "kind">): string[] {
+  const segments = field.path.split(".").map(segment => segment.replace(/\[\]$/, ""));
+  const problems = segments.filter(isFrameName).map(name => {
+    const entry = RESERVED[name];
+    return `${component}.${field.path}: \`${name}\` is the server's (${entry.owner}: ${entry.meaning}). Use ${entry.instead}.`;
+  });
+  const leaf = segments.at(-1)!;
+  const entry: ReservedName | undefined = (RESERVED as Record<string, ReservedName>)[leaf];
+  if (entry?.role === "shared" && entry.kind === null) problems.push(`${component}.${field.path}: \`${leaf}\` is the server's (${entry.owner}); contracts never use it.`);
+  else if (entry?.role === "shared" && entry.kind !== field.kind) problems.push(`${component}.${field.path}: \`${leaf}\` means ${entry.meaning}, so its kind is ${entry.kind}, not ${field.kind}.`);
+  return problems;
+}
 
 /** Top-level keys that only label an answer: reading them alone does not show it. */
 export const LABEL_NAMES: ReadonlySet<string> = new Set([...ROOT_NAMES].filter(name => {

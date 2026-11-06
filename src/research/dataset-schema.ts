@@ -30,12 +30,15 @@ export interface DataShape {
 const shape = (): DataShape => ({ children: new Map() });
 const unsafe = new Set(["__proto__", "prototype", "constructor"]);
 
+/** The most segments a data path may have. Sports packs check their nesting budget against it. */
+export const MAX_PATH_SEGMENTS = 10;
+
 /** Flat paths keep the model's response schema small, including nested Repeat item fields. */
 export function dataShape(fields: readonly DataField[]): DataShape {
   const root = shape();
   for (const field of fields) {
     const segments = field.path.split(".");
-    if (segments.length > 6) throw new Error(`Data path is too deep: ${field.path}`);
+    if (segments.length > MAX_PATH_SEGMENTS) throw new Error(`Data path is too deep: ${field.path}`);
     let current = root;
     for (const segment of segments) {
       const key = segment.replace(/\[\]$/, "");

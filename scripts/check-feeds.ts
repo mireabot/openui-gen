@@ -79,10 +79,10 @@ const box = get("nfl-match-overtime");
 assert.equal(box.played, true);
 assert.ok(box.teamTables.length >= 5, "the NFL has a table per stat group");
 for (const table of [...box.teamTables, ...box.opponentTables, ...get("nba-match").teamTables]) {
-  assert.ok(fits(component("RecordTable"), table), `${table.title} fits RecordTable`);
-  assert.ok(table.columns.length <= 7, `${table.title} fits a phone`);
+  assert.ok(fits(component("RecordTable"), table), `${table.heading} fits RecordTable`);
+  assert.ok(table.columns.length <= 7, `${table.heading} fits a phone`);
   assert.equal(String(table.columns.length), table.columnCount);
-  assert.ok(table.rows.every((row: Values) => row.cells.length === table.columns.length), `${table.title} rows match its columns`);
+  assert.ok(table.rows.every((row: Values) => row.cells.length === table.columns.length), `${table.heading} rows match its columns`);
 }
 assert.equal(box.match.home.periods.split(" ").length, 5, "an overtime game has an extra period");
 assert.ok(box.scoring.length > 0 && box.scoring[0].text, "an NFL game has scoring plays");
@@ -111,10 +111,10 @@ assert.ok(get("nba-roster").athletes.length >= 13, "the NBA's flat roster reads"
 assert.ok(get("nfl-roster").athletes.every((a: Values) => a.athleteId && a.position), "every player has an id and position");
 
 // Injuries: a team filter holds, and every row names a player and a status.
-assert.ok(get("nba-injuries-team").injuries.every((row: Values) => row.team === "Atlanta Hawks" && row.name && row.status));
+assert.ok(get("nba-injuries-team").injuries.every((row: Values) => row.team === "Atlanta Hawks" && row.name && row.injuryStatus));
 assert.equal(get("nfl-injuries").count >= get("nfl-injuries").injuries.length, true);
 for (const name of ["nba-injuries-team", "nfl-injuries"]) {
-  assert.ok(get(name).injuries.every((row: Values) => row.status !== "Active" && row.detail), `${name} lists only hurt players, each with a line of text`);
+  assert.ok(get(name).injuries.every((row: Values) => row.injuryStatus !== "Active" && row.detail), `${name} lists only hurt players, each with a line of text`);
 }
 
 // A request ESPN cannot answer fails plainly, which the pipeline reports as unavailable.

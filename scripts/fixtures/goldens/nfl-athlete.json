@@ -72,7 +72,7 @@
    ],
    "tables": [
     {
-     "title": "Passing",
+     "heading": "Passing",
      "columnCount": "7",
      "columns": [
       {
@@ -179,7 +179,7 @@
      ]
     },
     {
-     "title": "Rushing",
+     "heading": "Rushing",
      "columnCount": "7",
      "columns": [
       {
@@ -286,7 +286,7 @@
      ]
     },
     {
-     "title": "Receiving",
+     "heading": "Receiving",
      "columnCount": "7",
      "columns": [
       {
