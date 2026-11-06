@@ -1,7 +1,7 @@
 {
   "version": 1,
   "langCore": "1.0.0",
-  "digest": "cea2753d020868cbbe005d4f29b8cf20276d46ba181654c84a7ab548671f31e8",
+  "digest": "603c89b00d36d52d8fff3fc8652df7f88a9c399ff05862b38a7ea71decaf811f",
   "primitives": [
     {
       "name": "Screen",
@@ -110,6 +110,12 @@
           "role": "token",
           "token": "space",
           "note": "vertical gap; defaults to gap"
+        },
+        {
+          "name": "lead",
+          "optional": true,
+          "role": "copy",
+          "note": "an extra first column this many columns wide, for a row label such as a player's name; children fill it first"
         }
       ]
     },
@@ -1135,6 +1141,74 @@
           "role": "data",
           "kind": "text",
           "note": "under the value"
+        }
+      ]
+    },
+    {
+      "name": "ValueColumns",
+      "args": [
+        {
+          "name": "columns",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        }
+      ]
+    },
+    {
+      "name": "MetricLines",
+      "args": [
+        {
+          "name": "lines",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "periods",
+          "optional": false,
+          "role": "data",
+          "kind": "list"
+        },
+        {
+          "name": "from",
+          "optional": false,
+          "role": "data",
+          "kind": "text",
+          "note": "the first period's short label, under the plot's leading edge"
+        },
+        {
+          "name": "to",
+          "optional": false,
+          "role": "data",
+          "kind": "text",
+          "note": "the last period's short label, under the plot's trailing edge"
+        },
+        {
+          "name": "style",
+          "optional": false,
+          "role": "copy",
+          "note": "player: one person's metrics · race: one line per player, sorted"
+        },
+        {
+          "name": "kind",
+          "optional": false,
+          "role": "copy",
+          "note": "cumulative: a running total held through a gap · period: one value per period"
+        },
+        {
+          "name": "caption",
+          "optional": true,
+          "role": "data",
+          "kind": "text",
+          "note": "player with one line: under the total; race: the left of the period line, e.g. \"Season total\""
+        },
+        {
+          "name": "details",
+          "optional": true,
+          "role": "data",
+          "kind": "list",
+          "note": "player with one line: a line per period for the scrub, e.g. a box score; \"\" for none"
         }
       ]
     },

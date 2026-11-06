@@ -56,6 +56,8 @@ struct PrimitiveVisual: View {
         case "ShareBar": ShareBarPrimitive(props: props)
         case "SplitBar": SplitBarPrimitive(props: props)
         case "StepTimeline": StepTimelinePrimitive(props: props)
+        case "ValueColumns": ValueColumnsPrimitive(props: props)
+        case "MetricLines": MetricLinesPrimitive(props: props)
         case "YearTimeline": YearTimelinePrimitive(props: props)
         case "Rating": RatingPrimitive(props: props)
         case "Note": NotePrimitive(props: props)

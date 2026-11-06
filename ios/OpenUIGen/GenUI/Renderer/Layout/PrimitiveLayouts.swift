@@ -72,49 +72,60 @@ struct ColumnsLayout: Layout {
     var columns: Int
     var spacing: CGFloat
     var rowSpacing: CGFloat? = nil
+    /// An extra first column this many columns wide, for a row label (a player's name); 0 for none.
+    var lead: Int = 0
 
     static func columnWidth(container width: CGFloat, columns: Int, spacing: CGFloat) -> CGFloat {
         let count = CGFloat(max(1, columns))
         return max(0, (width - spacing * (count - 1)) / count)
     }
 
+    /// Cells per row, including the lead column.
+    private var perRow: Int { max(1, columns) + (lead > 0 ? 1 : 0) }
+
+    /// Each column's width: equal units, with the lead column `lead` units wide.
+    private func widths(container width: CGFloat) -> [CGFloat] {
+        guard lead > 0 else {
+            return Array(repeating: Self.columnWidth(container: width, columns: columns, spacing: spacing), count: perRow)
+        }
+        let unit = max(0, (width - spacing * CGFloat(perRow - 1)) / CGFloat(max(1, columns) + lead))
+        return [unit * CGFloat(lead)] + Array(repeating: unit, count: max(1, columns))
+    }
+
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
         let width = proposal.width ?? idealWidth(subviews)
-        let cell = Self.columnWidth(container: width, columns: columns, spacing: spacing)
-        let heights = rowHeights(subviews, cell: cell)
+        let heights = rowHeights(subviews, widths: widths(container: width))
         return CGSize(width: width, height: heights.reduce(0, +) + (rowSpacing ?? spacing) * CGFloat(max(0, heights.count - 1)))
     }
 
     func placeSubviews(in bounds: CGRect, proposal _: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
-        let cell = Self.columnWidth(container: bounds.width, columns: columns, spacing: spacing)
-        let heights = rowHeights(subviews, cell: cell)
+        let widths = widths(container: bounds.width)
+        let heights = rowHeights(subviews, widths: widths)
         var y = bounds.minY
         for (row, height) in heights.enumerated() {
-            for column in 0 ..< max(1, columns) {
-                let index = row * max(1, columns) + column
+            var x = bounds.minX
+            for column in 0 ..< perRow {
+                let index = row * perRow + column
                 guard subviews.indices.contains(index) else { break }
-                subviews[index].place(
-                    at: CGPoint(x: bounds.minX + CGFloat(column) * (cell + spacing), y: y),
-                    proposal: ProposedViewSize(width: cell, height: height)
-                )
+                subviews[index].place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(width: widths[column], height: height))
+                x += widths[column] + spacing
             }
             y += height + (rowSpacing ?? spacing)
         }
     }
 
-    private func rowHeights(_ subviews: Subviews, cell: CGFloat) -> [CGFloat] {
-        let perRow = max(1, columns)
-        return stride(from: 0, to: subviews.count, by: perRow).map { start in
-            subviews[start ..< min(start + perRow, subviews.count)]
-                .map { $0.sizeThatFits(ProposedViewSize(width: cell, height: nil)).height }
+    private func rowHeights(_ subviews: Subviews, widths: [CGFloat]) -> [CGFloat] {
+        stride(from: 0, to: subviews.count, by: perRow).map { start in
+            subviews[start ..< min(start + perRow, subviews.count)].enumerated()
+                .map { offset, subview in subview.sizeThatFits(ProposedViewSize(width: widths[offset], height: nil)).height }
                 .max() ?? 0
         }
     }
 
     private func idealWidth(_ subviews: Subviews) -> CGFloat {
         let widest = subviews.map { $0.sizeThatFits(.unspecified).width }.max() ?? 0
-        let count = CGFloat(max(1, columns))
-        return widest * count + spacing * (count - 1)
+        let count = CGFloat(max(1, columns) + lead)
+        return widest * count + spacing * CGFloat(perRow - 1)
     }
 }
 

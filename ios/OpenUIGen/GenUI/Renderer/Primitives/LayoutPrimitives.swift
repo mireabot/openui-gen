@@ -120,7 +120,8 @@ struct GridPrimitive: View {
         ColumnsLayout(
             columns: props.int("columns") ?? 2,
             spacing: props.cgFloat("gap") ?? 0,
-            rowSpacing: props.cgFloat("rowGap")
+            rowSpacing: props.cgFloat("rowGap"),
+            lead: props.int("lead") ?? 0
         ) {
             ForEach(props.childReferences("children"), id: \.self) { id in
                 PrimitiveNodeView(id: id)

@@ -3,7 +3,7 @@
 import { Collapse } from "./collapse";
 import NumberFlow from "@number-flow/react";
 import * as Icons from "@phosphor-icons/react";
-import { createContext, Fragment, useContext, useId, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { createContext, Fragment, useContext, useEffect, useId, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { dummy, type PNode, type Value } from "@/lib/primitives/data";
 import { phosphorFor } from "@/lib/primitives/icons";
 import { Bar, Frame, Shimmer, type SkeletonFrame } from "./skeleton";
@@ -194,6 +194,266 @@ function StepTimeline({ value, caption, segments, ticks }: { value: string; capt
   );
 }
 
+type ValueColumn = { name: string; caption: string; value: number; display: string; secondary: string; color: string; image: string; kind: "player" | "club" };
+
+/** Columns per page: 5 or fewer on one page; else the largest of 5, 4, 3 that divides the count, else the fewest empty slots on the last page. */
+function chunkSize(total: number) {
+  if (total <= 5) return Math.max(total, 1);
+  const even = [5, 4, 3].find(n => total % n === 0);
+  if (even) return even;
+  const empty = (n: number) => (n - (total % n)) % n;
+  return [5, 4, 3].reduce((best, n) => (empty(n) < empty(best) ? n : best));
+}
+
+/** Light colours take the dark screen ink; the rest the light on-brand ink (WCAG luminance). */
+function inkOnColor(hex: string) {
+  const h = hex.replace("#", "");
+  if (!/^[0-9a-f]{6}$/i.test(h)) return tv("ink.onBrand");
+  const ch = (i: number) => { const c = parseInt(h.slice(i, i + 2), 16) / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  return 0.2126 * ch(0) + 0.7152 * ch(2) + 0.0722 * ch(4) > 0.35 ? tv("surface.screen") : tv("ink.onBrand");
+}
+
+const initialsOf = (name: string) => { const w = name.split(/\s+/).filter(Boolean); return (w.length > 1 ? `${w[0]![0]}${w.at(-1)![0]}` : name.slice(0, 1)).toUpperCase(); };
+
+/** A subject's mark: a photo on its colour disc, a crest on nothing, or initials on the colour. */
+function ColumnMark({ column, size }: { column: { name: string; color: string; image: string; kind?: string }; size: number }) {
+  const [state, setState] = useState<"loading" | "ok" | "fail">("loading");
+  const src = imageUrl(column.image);
+  const crest = column.kind === "club" && state === "ok";
+  return (
+    <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full" style={{ width: size, height: size, background: crest ? "transparent" : tv(column.color) ?? tv("surface.filled") }}>
+      {(!src || state !== "ok") && <span style={textStyle("footnote", "semibold", inkOnColor(column.color))}>{initialsOf(column.name)}</span>}
+      {src && <FadeImage src={src} className={column.kind === "player" ? "object-cover object-top" : undefined} onState={setState} />}
+    </span>
+  );
+}
+
+/** One metric across subjects: a value pill per column at its height, then mark, name, caption. Pages sideways, opening on the last page. */
+function ValueColumns({ columns }: { columns: ValueColumn[] }) {
+  const PLOT = 152, GAP = 8;
+  const perPage = chunkSize(columns.length);
+  const pages = Math.ceil(columns.length / perPage);
+  const [page, setPage] = useState(pages - 1);
+  const scroller = useRef<HTMLDivElement>(null);
+  useEffect(() => { const el = scroller.current; if (el && pages > 1) el.scrollLeft = el.scrollWidth; }, [pages]);
+  if (!columns.length) return null;
+  const top = Math.max(0, ...columns.map(c => c.value)) || 1;
+  const hasSecondary = columns.some(c => c.secondary);
+  const pill = hasSecondary ? 52 : 28;
+  const onScroll = () => {
+    const el = scroller.current;
+    if (!el) return;
+    setPage(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2 ? pages - 1 : Math.round(el.scrollLeft / (el.clientWidth + GAP)));
+  };
+  const goTo = (i: number) => scroller.current?.scrollTo({ left: i * (scroller.current.clientWidth + GAP), behavior: "smooth" });
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-3">
+      <div className="relative">
+        <span className="absolute inset-x-0 top-0 rounded-[12px]" style={{ height: PLOT, background: tv("surface.filled") }} />
+        <div ref={scroller} onScroll={onScroll} className="relative flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ gap: GAP }}>
+          {columns.map((c, i) => {
+            const lift = (Math.max(0, c.value) / top) * (PLOT - pill - 16);
+            const leader = c.value > 0 && c.value === top;
+            return (
+              <div key={`${c.name}-${i}`} className={cn("flex flex-col items-center", i % perPage === 0 && "snap-start snap-always")} style={{ width: `calc((100% - ${(perPage - 1) * GAP}px) / ${perPage})`, flexShrink: 0 }}>
+                <div className="relative w-full" style={{ height: PLOT }}>
+                  <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2" style={{ background: tv("outline.subtle") }} />
+                  <div className="absolute left-1/2 flex w-16 -translate-x-1/2 flex-col overflow-hidden rounded-[8px]" style={{ bottom: 8 + lift }}>
+                    <span className="grid h-7 place-items-center tabular-nums" style={{ ...textStyle("body", "semibold", inkOnColor(c.color)), background: tv(c.color) }}>{c.display}</span>
+                    {hasSecondary && <span className="grid h-6 place-items-center tabular-nums" style={{ ...textStyle("footnote", "medium", tv("surface.screen")), background: tv("ink.primary") }}>{c.secondary || "–"}</span>}
+                  </div>
+                </div>
+                <div className="mt-3 flex w-full flex-col items-center gap-1">
+                  <ColumnMark column={c} size={40} />
+                  <span className="line-clamp-1 w-full text-center" style={textStyle("body", leader ? "semibold" : "regular", tv("ink.primary"))}>{c.name}</span>
+                  {c.caption && <span className="line-clamp-1 w-full text-center tabular-nums" style={textStyle("footnote", "semibold", tv("ink.secondary"))}>{c.caption}</span>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      {pages > 1 && (
+        <div className="flex justify-center">
+          {Array.from({ length: pages }, (_, i) => (
+            <button key={i} type="button" onClick={() => goTo(i)} className="grid h-6 w-4 place-items-center">
+              <span className="size-1.5 rounded-full" style={{ background: i === page ? tv("ink.primary") : tv("outline.control") }} />
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+type MetricLine = { label: string; color: string; opacity: number; values: (number | null)[]; decimals: number; image?: string; photoColor?: string; note?: string };
+
+/** The value a line shows at a period; a cumulative total carries through a gap. */
+function lineValueAt(values: (number | null)[], i: number, cumulative: boolean): { value: number | null; present: boolean } {
+  const own = values[i] ?? null;
+  if (own !== null || !cumulative) return { value: own, present: own !== null };
+  for (let j = i - 1; j >= 0; j--) if (values[j] != null) return { value: values[j]!, present: false };
+  return { value: null, present: false };
+}
+
+const fmt = (v: number | null, decimals: number) => (v === null ? "–" : v.toFixed(decimals));
+
+/** Zero and round steps up to just above the top, at most five labels. */
+function lineTicks(max: number) {
+  const size = 10 ** Math.floor(Math.log10(Math.max(max, 1)));
+  const step = [0.1, 0.2, 0.25, 0.5, 1, 2, 2.5, 5].map(f => f * size).find(c => max / c <= 4) ?? size * 10;
+  const count = Math.max(1, Math.ceil(max / step - 1e-9));
+  return Array.from({ length: count + 1 }, (_, i) => Math.round(i * step * 100) / 100);
+}
+
+/**
+ * The solid steps of a line, and its dotted carry. One value draws flat across the whole plot. Fewer
+ * than 5 values, while another line has more, carry the last value to the end, dotted.
+ */
+function linePaths(line: MetricLine, count: number, x: (i: number) => number, y: (v: number) => number, others: number) {
+  const present = line.values.map((v, i) => [v, i] as const).filter((p): p is readonly [number, number] => p[0] !== null);
+  if (present.length === 1) return { solid: `M${x(0)},${y(present[0]![0])}H${x(count - 1)}`, dotted: "" };
+  let solid = "";
+  line.values.forEach((v, i) => {
+    if (v === null) return;
+    const prev = line.values[i - 1];
+    solid += prev == null ? `M${x(i)},${y(v)}` : `V${y(v)}`;
+    const next = line.values[i + 1];
+    if (next != null) solid += `H${x(i + 1)}`;
+    // A point with gaps on both sides still shows, as a short tick.
+    else if (prev == null) solid += `M${x(i) - 2},${y(v)}H${x(i) + 2}`;
+  });
+  const last = present.at(-1);
+  const dotted = last && present.length < 5 && others >= 5 && last[1] < count - 1 ? `M${x(last[1])},${y(last[0])}H${x(count - 1)}` : "";
+  return { solid, dotted };
+}
+
+/** Stepped lines over the same periods with a scrub: one player's metrics, or several players as a race. */
+function MetricLines({ lines, periods, from, to, style, kind, caption, details }: { lines: MetricLine[]; periods: string[]; from: string; to: string; style: string; kind: string; caption?: string; details?: string[] }) {
+  const [scrub, setScrub] = useState<number | null>(null);
+  const [focus, setFocus] = useState<number | null>(null);
+  const [width, setWidth] = useState(0);
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const observer = new ResizeObserver(([entry]) => setWidth(entry!.contentRect.width));
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+  const shown = lines.slice(0, 4);
+  const count = Math.max(periods.length, ...shown.map(l => l.values.length));
+  if (!shown.length || count < 1) return null;
+  const cumulative = kind !== "period";
+  const race = style === "race";
+  const H = race ? 200 : 220, HEADROOM = 8;
+  const ticks = lineTicks(Math.max(1, ...shown.flatMap(l => l.values.filter((v): v is number => v !== null))));
+  const top = ticks.at(-1)!;
+  const x = (i: number) => (count <= 1 ? 0 : (i / (count - 1)) * width);
+  const y = (v: number) => HEADROOM + (1 - v / top) * (H - HEADROOM - 2);
+  const last = count - 1;
+  const index = scrub ?? last;
+  const at = shown.map(l => lineValueAt(l.values, index, cumulative));
+  const most = (i: number) => Math.max(0, ...shown.filter((_, j) => j !== i).map(l => l.values.filter(v => v !== null).length));
+  const pick = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    setScrub(Math.round(Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * last));
+  };
+  const periodText = (i: number) => (periods[i] ?? "").toLowerCase();
+  const scrubX = scrub === null ? null : x(scrub);
+  const dim = (i: number) => (focus !== null && focus !== i ? 0.2 : 1);
+  const order = shown.map((_, i) => i).sort((a, b) => (at[b]!.value ?? -1) - (at[a]!.value ?? -1));
+  const paths = (clip?: string) => (
+    <svg width={width} height={H} className="absolute inset-0 overflow-visible" style={clip ? { clipPath: clip } : undefined}>
+      {width > 0 && shown.map((l, i) => i).sort((a, b) => (a === focus ? 1 : b === focus ? -1 : 0)).map(i => {
+        const { solid, dotted } = linePaths(shown[i]!, count, x, y, most(i));
+        const stroke = tv(shown[i]!.color) ?? tv("ink.primary");
+        return (
+          <g key={i} opacity={shown[i]!.opacity * dim(i)}>
+            <path d={solid} fill="none" stroke={stroke} strokeWidth={2} strokeLinejoin="round" />
+            {dotted && <path d={dotted} fill="none" stroke={stroke} strokeWidth={2} strokeDasharray="2 3" />}
+          </g>
+        );
+      })}
+    </svg>
+  );
+  return (
+    <div className="flex w-full min-w-0 flex-col gap-4">
+      {race ? (
+        <>
+          <div className="flex items-baseline justify-between gap-3">
+            <span style={textStyle("footnote", "regular", tv("ink.secondary"))}>{caption ?? ""}</span>
+            <span className="shrink-0 tabular-nums" style={textStyle("footnote", "medium", tv(scrub === null ? "ink.secondary" : "ink.primary"))}>After {periodText(index)}</span>
+          </div>
+          <ol className="relative" style={{ height: 48 * shown.length }}>
+            {shown.map((l, i) => (
+              <li key={i} className="absolute inset-x-0 flex items-center gap-3 motion-safe:transition-transform motion-safe:duration-200" style={{ height: 48, transform: `translateY(${order.indexOf(i) * 48}px)`, transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }}>
+<ColumnMark column={{ name: l.label, color: l.photoColor ?? l.color, image: l.image ?? "", kind: "player" }} size={32} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate" style={textStyle("body", "medium", tv("ink.primary"))}>{l.label}</p>
+                  <p className="truncate" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{at[i]!.present || at[i]!.value === null ? l.note ?? "" : `${l.note ?? ""} · did not play`}</p>
+                </div>
+                <span className="shrink-0 tabular-nums" style={textStyle("title3", "semibold", tv("ink.primary"))}>{fmt(at[i]!.value, l.decimals)}</span>
+              </li>
+            ))}
+          </ol>
+        </>
+      ) : shown.length === 1 ? (
+        <div className="flex items-start justify-between gap-3" style={{ minHeight: 72 }}>
+          <div className="flex min-w-0 flex-col gap-1">
+            <span className="tabular-nums" style={textStyle("title1", "semibold", tv("ink.primary"))}>{fmt(lineValueAt(shown[0]!.values, last, cumulative).value, shown[0]!.decimals)}</span>
+            <span style={textStyle("footnote", "regular", tv("ink.secondary"))}>{caption || shown[0]!.label}</span>
+          </div>
+          {scrub !== null && (
+            <div className="flex shrink-0 flex-col items-end gap-1">
+              <span style={textStyle("footnote", "semibold", tv("ink.primary"))}>{periods[index]}</span>
+              {details && details.length > 0 && <span className="tabular-nums" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{details[index] || (shown[0]!.values[index] === null ? "Did not play" : "")}</span>}
+              <span className="inline-flex h-5 items-center rounded-[4px] px-2 tabular-nums" style={{ ...textStyle("footnote", "semibold", tv("ink.secondary")), background: tv("surface.filled") }}>
+                {cumulative ? `${fmt(at[0]!.value, shown[0]!.decimals)} so far` : fmt(at[0]!.value, shown[0]!.decimals)}
+              </span>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <span className="tabular-nums" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{cumulative ? "Running totals" : "Per period"} · {scrub === null ? `after ${periodText(last)}` : periodText(index)}</span>
+          <div className="grid grid-cols-2 gap-2">
+            {shown.map((l, i) => (
+              <button key={i} type="button" onClick={() => setFocus(focus === i ? null : i)} className="flex min-h-14 flex-col items-start justify-center gap-1 rounded-[12px] border px-3 py-2 text-left transition-[opacity,border-color] duration-150 ease-out" style={{ background: tv(focus === i ? "surface.filled" : "surface.card"), borderColor: tv(focus === i ? "outline.control" : "outline.subtle"), opacity: focus !== null && focus !== i ? 0.5 : 1 }}>
+                <span className="flex w-full items-center gap-2">
+                  <span className="block h-[3px] w-3 shrink-0 rounded-full" style={{ background: tv(l.color), opacity: l.opacity }} />
+                  <span className="truncate" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{l.label}</span>
+                </span>
+                <span className="tabular-nums" style={textStyle("title3", "semibold", tv("ink.primary"))}>{fmt(at[i]!.value, l.decimals)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      <div className="flex flex-col gap-2">
+        <div className="flex gap-2">
+          <div ref={box} className="relative min-w-0 flex-1 touch-none select-none" style={{ height: H }} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); pick(e); }} onPointerMove={pick} onPointerUp={e => { if (e.pointerType !== "mouse") setScrub(null); }} onPointerCancel={() => setScrub(null)} onPointerLeave={() => setScrub(null)}>
+            {scrubX !== null && <span className="pointer-events-none absolute inset-y-0 border-l border-dotted" style={{ left: scrubX, borderColor: tv("ink.secondary") }} />}
+            <div className="pointer-events-none absolute inset-0 motion-safe:animate-[metric-draw_600ms_cubic-bezier(0.23,1,0.32,1)]">
+              <div className="absolute inset-0 opacity-30">{paths()}</div>
+              {paths(scrubX === null ? undefined : `inset(-8px ${Math.max(0, width - scrubX)}px -8px -8px)`)}
+              {shown.map((l, i) => {
+                const v = lineValueAt(l.values, index, cumulative);
+                if (v.value === null || width === 0) return null;
+                return <span key={i} className="absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: x(index), top: y(v.value), background: tv(l.color), opacity: l.opacity * dim(i), boxShadow: `0 0 0 2px ${tv("surface.screen")}` }} />;
+              })}
+            </div>
+          </div>
+          <div className="relative w-8 shrink-0 tabular-nums" style={{ height: H }}>
+            {ticks.map(t => <span key={t} className="absolute right-0 -translate-y-1/2 whitespace-nowrap" style={{ top: y(t), ...textStyle("footnote", "regular", tv("ink.tertiary")) }}>{fmt(t, t % 1 ? 1 : 0)}</span>)}
+          </div>
+        </div>
+        <div className="flex justify-between pr-10" style={textStyle("footnote", "regular", tv("ink.tertiary"))}><span>{from}</span><span>{to}</span></div>
+      </div>
+    </div>
+  );
+}
+
 /** The monogram on its disc until the image loads. A photo then sits on the disc colour and a crest on nothing, unclipped; both fit the whole frame, so a head is never cut off. */
 function AvatarFace({ name, size, rounded, disc, photoFill, image, player, mark }: { name: string; size: number; rounded: boolean; disc: CSSProperties; photoFill: string; image: string | null | undefined; player: boolean; mark?: ReactNode }) {
   const [state, setState] = useState<"loading" | "ok" | "fail">("loading");
@@ -314,6 +574,10 @@ function skeletonOf(n: PNode, p: (k: string) => unknown, axis: "v" | "h"): React
       return <Bar line={16} width="30%" />;
     case "YearTimeline":
       return <span className="flex w-full flex-col gap-4"><Shimmer className="h-10 w-full rounded-full" /><Shimmer className="h-[220px] w-full rounded-[24px]" /></span>;
+    case "ValueColumns":
+      return <span className="flex w-full flex-col gap-3"><Shimmer className="h-[152px] w-full rounded-[12px]" /><Shimmer className="h-[72px] w-full rounded-[12px]" /></span>;
+    case "MetricLines":
+      return <span className="flex w-full flex-col gap-4"><Shimmer className="h-[72px] w-full rounded-[12px]" /><Shimmer className="h-[220px] w-full rounded-[12px]" /></span>;
     case "StepTimeline":
       return (
         <span className="flex w-full flex-col gap-3">
@@ -394,7 +658,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       );
     }
     case "Grid":
-      return <div className="grid" style={{ gridTemplateColumns: `repeat(${p("columns")}, minmax(0, 1fr))`, columnGap: Number(p("gap") ?? 0), rowGap: Number(p("rowGap") ?? p("gap") ?? 0) }}>{kids(n, "children")}</div>;
+      return <div className="grid" style={{ gridTemplateColumns: `${Number(p("lead") ?? 0) > 0 ? `minmax(0, ${Number(p("lead"))}fr) ` : ""}repeat(${p("columns")}, minmax(0, 1fr))`, columnGap: Number(p("gap") ?? 0), rowGap: Number(p("rowGap") ?? p("gap") ?? 0) }}>{kids(n, "children")}</div>;
     case "Rail": {
       const width = Number(p("width") ?? 0);
       const minWidth = Number(p("minWidth") ?? 0);
@@ -747,6 +1011,10 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     }
     case "StepTimeline":
       return <StepTimeline value={String(p("value") ?? "")} caption={p("caption") ? String(p("caption")) : undefined} segments={Array.isArray(p("segments")) ? p("segments") as unknown as TimelineStretch[] : []} ticks={Array.isArray(p("ticks")) ? p("ticks") as unknown as { value: number; display: string }[] : []} />;
+    case "ValueColumns":
+      return <ValueColumns columns={Array.isArray(p("columns")) ? p("columns") as unknown as ValueColumn[] : []} />;
+    case "MetricLines":
+      return <MetricLines lines={Array.isArray(p("lines")) ? p("lines") as unknown as MetricLine[] : []} periods={Array.isArray(p("periods")) ? (p("periods") as unknown[]).map(String) : []} from={String(p("from") ?? "")} to={String(p("to") ?? "")} style={String(p("style") ?? "player")} kind={String(p("kind") ?? "cumulative")} caption={p("caption") ? String(p("caption")) : undefined} details={Array.isArray(p("details")) ? (p("details") as unknown[]).map(String) : undefined} />;
     case "ShareBar": {
       const raw = p("parts");
       const fallback = [{ label: "Protein", value: 45, ink: "blue" }, { label: "Carbs", value: 30, ink: "orange" }, { label: "Fat", value: 25, ink: "green" }];
