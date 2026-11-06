@@ -7,6 +7,7 @@ import { IPhoneFrame, SCREEN_HEIGHT, SCREEN_WIDTH } from "@/components/canvas/ip
 import { StateToggle, type PreviewState } from "@/components/primitives/state-toggle";
 import { Frame, pendingFrames, type Skeleton } from "@/components/primitives/skeleton";
 import { BE_URL } from "@/lib/be-url";
+import { DEMO_SCREENS } from "@/lib/demo-screens";
 import { parseImportedScreen, type ImportedScreen } from "@/lib/imported-screen";
 import { OpenUIPreview, type DatasetSeed } from "./openui-render";
 
@@ -120,11 +121,13 @@ export function SportsLive({ theme, specs, appearance }: {
     }
   }
 
-  async function importFile(file: File) {
+  function showDemo(id: string) {
+    const demo = DEMO_SCREENS.find(item => item.id === id);
+    if (!demo) return;
     try {
-      replay(parseImportedScreen(JSON.parse(await file.text())));
+      replay(demo.screen());
     } catch (error) {
-      setActivity([`Could not import ${file.name}: ${error instanceof Error ? error.message : String(error)}`]);
+      setActivity([`Could not build the ${demo.label} demo: ${error instanceof Error ? error.message : String(error)}`]);
     }
   }
 
@@ -248,10 +251,13 @@ export function SportsLive({ theme, specs, appearance }: {
             </select>
             <CaretDownIcon size={12} weight="bold" className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground" />
           </span>
-          <label className="flex h-11 cursor-pointer items-center rounded-lg border px-4 font-medium">
-            Import schema
-            <input type="file" accept="application/json,.json" className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) void importFile(file); e.target.value = ""; }} />
-          </label>
+          <span className="relative min-w-0 max-w-full">
+            <select value="" onChange={(e) => showDemo(e.target.value)} disabled={state === "running"} className="h-11 w-full min-w-0 appearance-none rounded-lg border bg-background pr-9 pl-3 [field-sizing:content] disabled:opacity-50">
+              <option value="">Demo screens</option>
+              {DEMO_SCREENS.map((demo) => <option key={demo.id} value={demo.id}>{demo.label}</option>)}
+            </select>
+            <CaretDownIcon size={12} weight="bold" className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground" />
+          </span>
           {program && seed && state !== "running" && <button type="button" onClick={exportScreen} className="h-11 rounded-lg border px-4 font-medium">Export schema</button>}
         </div>
         {replayed && <p className="text-xs font-medium text-muted-foreground">Replayed from a saved schema · no model calls · Generate runs this prompt for real</p>}
