@@ -1,8 +1,8 @@
-# How an OpenUI program becomes SwiftUI
+# From DSL to SwiftUI
 
-This document explains how the iOS app renders OpenUI lang. The server sends program text. The device compiles that text into elements with finished values. SwiftUI draws those elements from `@Observable` handles that the next compile reuses.
+This guide explains how the iOS app renders OpenUI Lang, the DSL the writer produces. The server sends program text. The device compiles that text into elements with finished values. SwiftUI draws those elements from `@Observable` handles that the next compile reuses.
 
-## How a primitive is established
+## Follow one primitive
 
 1. **Define.** Every primitive is one entry in `PRIMITIVES` in `src/lang/primitives.ts`. The key order of its props is the argument order in the language, so moving a prop changes the language.
 2. **Export.** `npm run openui:export` writes `catalog/openui/primitives.json`. It keeps each primitive name and its arguments. Intent, rules and skeleton notes stay behind. XcodeGen adds the file to the app bundle through `ios/project.yml`. No build step runs the export.
@@ -18,7 +18,7 @@ pick1_title = Text(d.answers.q1.title, "title2", "semibold")
 
 compiles to an element with id `r1:ref:pick1_title`, kind `Text`, the properties `content: "Top scorers"`, `role: "title2"` and `weight: "semibold"`, and no slots.
 
-## The contract between TypeScript and Swift
+## The catalog carries positions
 
 The catalog holds more than Swift uses. Primitive names, argument order and the slot role change behavior on the device. Token values, enums and data shapes are enforced only on the server.
 
@@ -29,7 +29,7 @@ The catalog holds more than Swift uses. Primitive names, argument order and the 
 
 Design tokens take three routes. Token names and validation live in `src/primitives/tokens.ts` and stay on the server. Spacing values travel as plain numbers in the program. Type sizes are copied by hand into `PrimitiveTokens.swift` and `render.tsx`. Colors and component anatomy skip TypeScript, because the app bundles `design_system.json` directly.
 
-## Layout composition
+## Props choose the container
 
 A layout is a tree of primitives that hold slots. Nothing in the program describes a frame or a position. `StackPrimitive` reads `axis`, `gap` and `justify`, then chooses a SwiftUI container:
 
@@ -49,7 +49,37 @@ The render loop for one level of the tree is:
 
 Layout context travels through the SwiftUI environment. `primitiveStackAxis` tells `Spacer` which way to grow. `primitiveBleed` gives full-bleed children their reach, and a `Card` resets it to its own padding. `primitiveRailWidth` sizes items in a rail.
 
-## Streaming
+## A component becomes primitives before it leaves the server
+
+Sports components are server-side calls. The server expands each call into primitives, so the device compiles only primitives. Most components expand to a tree of primitives, usually inside a `Card` or a `Stack`. `PlayerValue` expands to a single data primitive, `StepTimeline`, and its complexity lives in one Swift view.
+
+`PlayerValue` reaches the screen in five stages:
+
+1. **Record.** `playerValueChart` in `src/sports/fotmob.ts` turns FotMob's market values into one record. It starts a new stretch whenever the club changes. It takes `lineColor` from the club's dark-mode colour and `tagColor` from its light-mode colour. The answer stores the record under `chart`.
+2. **Call.** The briefing lists `PlayerValue` as a candidate, because the record fits its contract. The writer passes one data reference: `palmerValue = PlayerValue(d.answers.q1.chart)`.
+3. **Expand.** `expandTemplates` hands the call to `SPORTS_SCREEN.expand`, which runs the component's `build` in `src/sports/components.ts`. The build returns one primitive: `StepTimeline(d.answers.q1.chart.value, d.answers.q1.chart.segments, d.answers.q1.chart.ticks, d.answers.q1.chart.caption)`. `validate` then checks every segment and point against the `StepTimeline` schema.
+4. **Wire.** The compiler renames the part to `pick1` and sends the expanded statement. `PlayerValue` never reaches the device. `OpenUICompiler` loads only `primitives.json`. The app also bundles `sports-components.json`, but only its Components page reads it.
+5. **Draw.** The device compiles one element with kind `StepTimeline`, four properties and no slots. `PrimitiveVisual` returns `StepTimelinePrimitive` in `GenUI/Renderer/Primitives/StepTimelinePrimitive.swift`. That view turns `segments` into stretches, then draws the header, the stepped lines, the crests, the dot and the price axis. The scrub selection is `@State` inside the view, so a commit with new values keeps it.
+
+Each record field lands in one part of the view:
+
+| Field | Read by | Draws |
+| --- | --- | --- |
+| `value` | `header` | The current value at the top left. With fewer than two points, the view draws only this text. |
+| `caption` | `header` | One footnote line under the value. An empty caption draws nothing. |
+| `segments[].name` | `stretches` | The club name at the top right, only while the finger scrubs that stretch. |
+| `segments[].lineColor` | `stretches` | The stretch's line, its dot and its name while scrubbing. A value that does not start with `#` falls back to primary ink. |
+| `segments[].tagColor` | `stretches` | The tag behind the scrubbed value, with white text. |
+| `segments[].logo` | `crest` | A 20-point crest centred on its stretch. A stretch narrower than 20 points gets no crest. |
+| `points[].x` | `stretches` | The horizontal position, in milliseconds. The scrub snaps to the nearest point in time. |
+| `points[].label` | `header` | The date while scrubbing. The chart has no date axis. |
+| `points[].value` | `plot` | The height of the line. The y axis starts at zero, and the highest value sets the top. |
+| `points[].display` | `header` | The scrubbed value, on the tag colour. |
+| `ticks[]` | `axis` | Price labels at the trailing edge, level with their values. |
+
+To add a complex element, decide where its complexity lives. If existing primitives can draw it, write the component as a `build` that returns a tree, and the device needs no change. If it needs new drawing or gestures, add a primitive to `PRIMITIVES`, run `npm run openui:export` and add a Swift case to `PrimitiveVisual`. The component then becomes a thin call over that primitive.
+
+## The wire carries program text
 
 The server never sends a tree. It sends text in chunks of complete statements, and the device parses and evaluates all of its text after each chunk.
 
@@ -68,15 +98,15 @@ The parser keeps the last assignment for each name, so a growing `root` line rep
 
 Each finished part removes one skeleton frame by count. The last frame stays until the stream ends, because the writer may have more parts than the plan had questions. `OpenUISceneView` draws remaining frames in a second `ForEach` under the real blocks.
 
-Here are the commit counts for a two-part example, measured by running the real `OpenUISession`. The opening creates 1 element. Part 1, a `Stack` with two `Text` children, creates 3 elements and writes 2 slots. Part 2, a `Stack` with an `@Each` over three rows, creates 4 elements and writes 2 slots, and part 1 receives no writes. `done` writes nothing when the elements match.
+Running the real `OpenUISession` on a two-part example gives these commit counts. The opening creates 1 element. Part 1, a `Stack` with two `Text` children, creates 3 elements and writes 2 slots. Part 2, a `Stack` with an `@Each` over three rows, creates 4 elements and writes 2 slots, and part 1 receives no writes. `done` writes nothing when the elements match.
 
-Failures behave as follows:
+When something fails:
 
 - If a statement is rejected, the server drops it and sends an `issue` event. Its text never reaches the device. The writer gets one repair round. Questions still uncovered get a fallback part, which appears only in `done.program`.
 - If the connection ends without `done`, the service throws `incompleteStream`. A session with content calls `finish()` and rethrows, so visible parts stay and `AskModel` shows the error.
 - If compile fails during streaming, the session logs the error and keeps the last good commit. A later chunk or `done` can recover the screen.
 
-## Node identity
+## A view lives as long as its handle
 
 Each chunk produces a whole new scene, and SwiftUI must not rebuild the screen for it. An element id is the document key plus a mount path. A statement mounts under its own name the first time it appears, so `pick1` stays at `ref:pick1` when the root grows or reorders.
 
@@ -88,7 +118,7 @@ Each chunk produces a whole new scene, and SwiftUI must not rebuild the screen f
 - A changed kind creates a new handle: `created 1`, `slots 1`, and `@State` resets.
 - Reordered `@Each` rows reuse their handles, because ids come from the row index and not from the data. Two swapped rows give `updated 2`, and local state stays at its old row.
 
-## Data binding at the Swift level
+## Swift views receive values, not paths
 
 A reference like `d.answers.q1.rows` never reaches a SwiftUI view. `OpenUICompiler` resolves it and stores the result in the element:
 
@@ -99,7 +129,7 @@ A reference like `d.answers.q1.rows` never reaches a SwiftUI view. `OpenUICompil
 
 `@Each` copies the evaluation context and adds an alias for each row, so `r.name` is a lookup in that copy. It is a compile-time alias and not a runtime scope.
 
-Missing data behaves as follows:
+When data is missing:
 
 - A missing field draws a dash in `TextPrimitive`. An empty string draws no line.
 - A missing list makes `@Each` produce no nodes. The container exists with an empty slot, and no error is raised.
@@ -107,7 +137,7 @@ Missing data behaves as follows:
 
 New data takes the same path as the first compile. A follow-up holds the new dataset and program until `done` confirms the next revision, then compiles once. The document key stays the same, so element ids match. In a measured run, changing one player's goals from 24 to 25 gave `updated 1` with the other handles untouched. `@Observable` tells SwiftUI which handle changed.
 
-There are two kinds of state:
+A primitive has two kinds of state:
 
 - **Evaluated props** live in `handle.properties`. Only `commit` writes them.
 - **Local UI state** lives in `@State` inside a primitive: `Toggle`, `Stepper`, `Chip`, `SegmentedControl` and an open `Section`. Only that view can read it. Once set, it ignores later prop updates for that handle.
@@ -116,7 +146,7 @@ No SwiftUI binding connects two primitives. The language has no variables, so a 
 
 `registry` and `lastCommit` are marked `@ObservationIgnored`. `update` assigns only when a value differs, and a slot's `set` assigns only when the list differs by object identity. `OpenUIElementView` tracks properties, a container tracks its own slot, and the scene tracks root membership. These rules limit which writes happen. Whether each redraw stops at the changed view has not been measured.
 
-## Known gaps
+## What the bridge does not check
 
 - Swift decodes the catalog digest and never reads it, and the server does not send one. An app and a newer server have no way to agree on a contract.
 - `OpenUIFixtureTests` compares compiled trees and tests no view code. It runs with `make test` and not in CI. A typo in a prop name read by a view passes every check.
@@ -125,4 +155,4 @@ No SwiftUI binding connects two primitives. The language has no variables, so a 
 
 ## Evidence
 
-This document comes from reading the code and from running example programs through the real `OpenUICompiler` and `OpenUISession` in a scratch macOS harness. SwiftUI views were not run for it. The stream order comes from the server code, not from a captured live run.
+This guide comes from reading the code and from running example programs through the real `OpenUICompiler` and `OpenUISession` in a scratch macOS harness. SwiftUI views were not run for it. The stream order comes from the server code, not from a captured live run.
