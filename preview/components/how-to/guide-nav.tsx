@@ -12,6 +12,9 @@ const guides = [
   { href: "/how-to/swiftui-rendering", title: "SwiftUI rendering", chapters: [
     ["bridge", "Follow a primitive"], ["contract", "What crosses the bridge"], ["layout", "Compose a layout"], ["streaming", "Stream a screen"], ["identity", "Keep a view alive"], ["binding", "Bind data"], ["gaps", "Known gaps"],
   ] },
+  { href: "/how-to/creating-boundaries", title: "Creating boundaries", chapters: [
+    ["layers", "Where the rules live"], ["general", "Rules for every screen"], ["sports", "Sports rules"], ["adding", "Add a boundary"],
+  ] },
 ];
 
 export function GuideNav() {

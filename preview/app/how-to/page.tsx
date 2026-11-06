@@ -20,6 +20,10 @@ export default function HowTo() {
       <div className={styles.guideGraphic}><span>Program text</span><span>Catalog</span><span>Handles</span><i>↓</i><strong>One SwiftUI screen</strong></div>
       <div className={styles.guideCopy}><span className={styles.eyebrow}>PROCESS 02 · INTERACTIVE GUIDE</span><h2>SwiftUI rendering</h2><p>How a primitive reaches Swift, how layouts compose, how a screen streams in, and how data binds to a view.</p><span className={styles.textLink}>Explore the bridge <span>↗</span></span></div>
     </Link>
+    <Link href="/how-to/creating-boundaries" className={styles.guideCard}>
+      <div className={styles.guideGraphic}><span>Prompt</span><span>Sports pack</span><span>Gate</span><i>↓</i><strong>One bounded writer</strong></div>
+      <div className={styles.guideCopy}><span className={styles.eyebrow}>PROCESS 03 · INTERACTIVE GUIDE</span><h2>Creating boundaries</h2><p>Where the writer&apos;s rules live, what each one covers, and what a statement looks like with and without it.</p><span className={styles.textLink}>Explore the rules <span>↗</span></span></div>
+    </Link>
     </AgentBody>
   </div></AgentView>;
 }
