@@ -1,3 +1,4 @@
+import { FRAME_NAMES, isFrameName } from "./names.js";
 import { z } from "zod";
 import { config } from "../config.js";
 import { modelSender } from "../llm/generation.js";
@@ -18,8 +19,6 @@ import type { PlayerProfile } from "./fotmob.js";
  * in place, and a design that still fails costs only its own question.
  */
 
-/** Fields every answer carries, set by the server: the writer reads them, the schema stage may not redefine them. */
-export const BASE_FIELDS = ["status", "question", "title", "summary", "note", "source", "asOf"] as const;
 /** Kinds the schema stage may use: colours, icons and images are tokens in this dataset model, and ESPN logos are URLs (text). */
 const KINDS = ["text", "number", "boolean", "date", "status", "object", "list"] as const;
 
@@ -39,7 +38,7 @@ const TEAM_SPORT_NOTES = `Team sports without a points table (NFL, NBA): a team'
 export const schemaSystem = (hasSoccer: boolean, hasTeamSports: boolean) => `You design the dataset a mobile sports screen reads. For each answer, return the fields the screen needs and their values.
 Use only the data given: select, order, trim and derive (a top five, a points gap, a form string such as "WWDLW", a goal difference), but never add a figure, name or date that is not in the data.
 fields: flat paths relative to the answer, lowerCamel segments, "[]" for list items (e.g. "table[].team.name", "table[].points", "leader.name"). A list path names its items' fields, never the list itself. Kinds: text, number (format integer, count, decimal or percent 0–100), boolean, date (format day or month; ISO dates), status (good, warn, bad or neutral), object and list are implied by paths. Every other kind uses format "none". Logos and URLs are text.
-Do not define these fields; the server adds them: ${BASE_FIELDS.join(", ")}.
+Do not define these fields; the server adds them: ${FRAME_NAMES.join(", ")}.
 valuesJson: one JSON object with exactly those fields. A number or date the data does not have is null. Lists hold at most 20 items, except a FixturesHeatmap's results, which hold every fixture.
 title: a short heading for the answer, e.g. "Premier League table", "Chelsea's season".
 Missing data: leave it out. Never write "—", "N/A", "unknown" or an empty value; a part of a card with no data is not shown.
@@ -86,7 +85,7 @@ export function inferFields(value: MockValue, prefix: string): DataField[] {
 
 /** Base fields present on an answer, as text. */
 const baseFields = (answer: Record<string, MockValue>, id: string): DataField[] =>
-  BASE_FIELDS.filter(key => key in answer).map(key => ({ path: `answers.${id}.${key}`, kind: "text", format: "none" }));
+  FRAME_NAMES.filter(key => key in answer).map(key => ({ path: `answers.${id}.${key}`, kind: "text", format: "none" }));
 
 /** A designed list holds at most this many items: an NBA team's season of results fits. */
 const LIST_MAX = 120;
@@ -115,14 +114,14 @@ function rawAnswer(answer: Record<string, MockValue>, id: string): { fields: Dat
   const content: Record<string, MockValue> = {};
   const fields: DataField[] = [];
   for (const [key, value] of Object.entries(answer)) {
-    if ((BASE_FIELDS as readonly string[]).includes(key) || !PATH.test(key)) continue;
+    if (isFrameName(key) || !PATH.test(key)) continue;
     const found = inferFields(value, `answers.${id}.${key}`);
     if (!found.length) continue;
     const kept = keepDeclared(value, `answers.${id}.${key}`, found.map(field => field.path));
     content[key] = Array.isArray(kept) ? [...rawList(key, kept)] : kept;
     fields.push(...found);
   }
-  return { fields, values: { ...content, ...Object.fromEntries(BASE_FIELDS.filter(k => k in answer).map(k => [k, answer[k]!])) } };
+  return { fields, values: { ...content, ...Object.fromEntries(FRAME_NAMES.filter(k => k in answer).map(k => [k, answer[k]!])) } };
 }
 
 function scorerAnswer(answer: Record<string, MockValue>, id: string): ReturnType<typeof rawAnswer> {
@@ -175,14 +174,14 @@ export function repairValues(node: DataShape, value: unknown): MockValue {
 function checked(id: string, answer: Record<string, MockValue>, design: z.infer<typeof Design>["answers"][number]): { fields: DataField[]; values: Record<string, MockValue> } {
   const values = JSON.parse(design.valuesJson) as unknown;
   if (!values || typeof values !== "object" || Array.isArray(values)) throw new Error(`${id}: valuesJson must be an object`);
-  if (design.fields.some(f => (BASE_FIELDS as readonly string[]).includes(f.path.split(".")[0]!.replace("[]", "")))) throw new Error(`${id}: fields may not redefine ${BASE_FIELDS.join(", ")}`);
+  if (design.fields.some(f => isFrameName(f.path.split(".")[0]!.replace("[]", "")))) throw new Error(`${id}: fields may not redefine ${FRAME_NAMES.join(", ")}`);
   const fields = design.fields.map(f => ({ ...f, path: `answers.${id}.${f.path}` })) as DataField[];
-  const merged: Record<string, MockValue> = { ...(values as Record<string, MockValue>), ...Object.fromEntries(BASE_FIELDS.filter(k => k in answer).map(k => [k, answer[k]!])), title: design.title || (answer.title as string) };
+  const merged: Record<string, MockValue> = { ...(values as Record<string, MockValue>), ...Object.fromEntries(FRAME_NAMES.filter(k => k in answer).map(k => [k, answer[k]!])), title: design.title || (answer.title as string) };
   // The shape comes from the design's own fields: base fields are the server's and stay as they are.
   if (!fields.length) throw new Error(`${id}: a design needs fields`);
   const declared = dataShape(fields).children.get("answers")!.children.get(id)!;
   const repaired = repairValues(declared, values) as Record<string, MockValue>;
-  const fitted: Record<string, MockValue> = { ...repaired, ...Object.fromEntries(Object.entries(merged).filter(([key]) => (BASE_FIELDS as readonly string[]).includes(key))) };
+  const fitted: Record<string, MockValue> = { ...repaired, ...Object.fromEntries(Object.entries(merged).filter(([key]) => isFrameName(key))) };
   validate(id, [...baseFields(fitted, id), ...fields], fitted);
   return { fields, values: fitted };
 }
@@ -212,7 +211,7 @@ export async function designDataset(plan: SportsPlan, answers: Record<string, Re
           model, maxTokens: 16_000, schema: z.toJSONSchema(Design) as Record<string, unknown>,
           messages: [{ role: "system", content: schemaSystem(!teamSportsOnly(plan), plan.questions.some(q => q.source === "espn" && !isSoccer(q.league)) || (plan.subject.league !== null && !isSoccer(plan.subject.league))) }, { role: "user", content: JSON.stringify({
             subject: plan.subject, today: now.toISOString().slice(0, 10), clubs, players,
-            answers: complete.map(q => ({ id: q.id, question: q.text, data: Object.fromEntries(Object.entries(answers[q.id]!).filter(([k]) => !(BASE_FIELDS as readonly string[]).includes(k) || k === "summary")) })),
+            answers: complete.map(q => ({ id: q.id, question: q.text, data: Object.fromEntries(Object.entries(answers[q.id]!).filter(([k]) => !isFrameName(k) || k === "summary")) })),
           }) }],
         },
         send: send ?? modelSender({ effort: "high", fallbacks: true }),

@@ -1,4 +1,5 @@
 import { each, ui, type Node } from "../lang/program.js";
+import { ROOT_NAMES } from "./names.js";
 
 /**
  * The Sports component index: the sports components as server templates. Each entry says what it is for, when to use it, and the exact data contract it
@@ -834,7 +835,6 @@ export function settleMissing<T extends { readonly values: Record<string, unknow
   return { ...dataset, values: { ...dataset.values, answers: walk(dataset.values.answers, "answers") }, fields: [...fields.values()] };
 }
 
-const ANSWER_FRAME = new Set(["status", "question", "title", "summary", "note", "source", "asOf", "team"]);
 
 /**
  * Every fact is locked to one place before the writer sees the data, so no card can show it twice:
@@ -861,7 +861,7 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
   for (const [id, answer] of Object.entries(answers)) {
     if (!isObject(answer)) continue;
     for (const [key, value] of Object.entries(answer)) {
-      if (ANSWER_FRAME.has(key) || !value || typeof value !== "object") continue;
+      if (ROOT_NAMES.has(key) || !value || typeof value !== "object") continue;
       const print = JSON.stringify(sorted(value));
       const first = seen.get(print);
       if (first) drop(id, [key], `the same data as ${first}`); else seen.set(print, `answers.${id}.${key}`);
