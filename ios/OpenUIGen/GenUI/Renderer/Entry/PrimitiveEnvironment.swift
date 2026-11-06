@@ -6,8 +6,8 @@ extension EnvironmentValues {
     /// Host actions through a stable immutable reference. Inert until a host wires one in.
     @Entry var primitiveContext = PrimitiveActionDispatcher.inert
     /// How far full-bleed children (rails, bleeding dividers, chrome) reach past their
-    /// container: the 24 screen inset at the top level, a card's padding inside a card.
-    @Entry var primitiveBleed: CGFloat = PrimitiveMetrics.screenInset
+    /// container: the 16 block inset at the top level, a card's padding inside a card.
+    @Entry var primitiveBleed: CGFloat = PrimitiveMetrics.blockInset
     /// The axis of the enclosing Stack, so a Spacer knows which way to take space.
     @Entry var primitiveStackAxis: Axis = .vertical
     /// Inside a scrimmed ZStack layer: text and icons switch to white.

@@ -18,7 +18,7 @@ const MAP: Record<string, string> = {
   "link": "Link", "photo": "Image", "camera": "Camera", "play": "Play", "pause": "Pause", "film": "FilmStrip",
   "bed.double": "Bed", "moon": "Moon", "sun.max": "Sun", "flame": "Flame", "drop": "Drop", "fork.knife": "ForkKnife",
   "figure.run": "PersonSimpleRun", "heart.text.square": "Heartbeat", "bolt": "Lightning", "sparkles": "Sparkle",
-  "bandage": "Bandaids",
+  "bandage": "Bandaids", "soccerball": "SoccerBall", "figure.soccer": "SoccerBall", "basketball": "Basketball", "football": "Football",
   "info.circle": "Info", "exclamationmark.triangle": "Warning", "checkmark.circle": "CheckCircle", "xmark.circle": "XCircle",
   "qrcode": "QrCode", "faceid": "Scan", "slider.horizontal.3": "Sliders", "line.3.horizontal.decrease": "Funnel",
 };

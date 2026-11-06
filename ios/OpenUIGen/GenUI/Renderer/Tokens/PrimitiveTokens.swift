@@ -3,7 +3,10 @@ import SwiftUI
 /// The ground rules as points: sizes, spacing, type and radii. These win over the design
 /// theme (GENUI-PLAN §2): the theme only decides colour, surfaces, outlines and effects.
 enum PrimitiveMetrics {
+    /// The screen's top and bottom padding. It has no horizontal padding: blocks carry `blockInset`.
     static let screenInset: CGFloat = 24
+    /// Each top-level block's horizontal inset, and the bleed full-bleed children reach across.
+    static let blockInset: CGFloat = 16
     static let sectionGap: CGFloat = 28
     static let labelGap: CGFloat = 12
     static let containerPadding: CGFloat = 16

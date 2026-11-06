@@ -1,7 +1,7 @@
 {
   "version": 1,
   "langCore": "1.0.0",
-  "digest": "8541604c2cee13c68b1f53e1984c2bdb9c0162e5d651e16cbdbda5ff02664616",
+  "digest": "463a128cb2f3b38c97f05b555de6e7ee679ed61b6b82f1ae4c0bbdcdd3308a60",
   "primitives": [
     {
       "name": "Screen",
@@ -135,6 +135,12 @@
           "optional": true,
           "role": "copy",
           "note": "each item's width in points; 170 is the rail standard"
+        },
+        {
+          "name": "minWidth",
+          "optional": true,
+          "role": "copy",
+          "note": "with no width: each item keeps its own width but is at least this wide; 124 for stat tiles"
         }
       ]
     },
@@ -244,7 +250,7 @@
           "name": "bleed",
           "optional": true,
           "role": "copy",
-          "note": "edge to edge across the 24 screen inset"
+          "note": "edge to edge across its block's 16 inset (a card's padding inside a card)"
         }
       ]
     },
@@ -559,6 +565,20 @@
           "optional": true,
           "role": "copy",
           "note": "club (default): a crest with nothing behind it · player: a headshot on the disc colour; both fit the whole frame"
+        },
+        {
+          "name": "mark",
+          "optional": true,
+          "role": "copy",
+          "kind": "icon",
+          "note": "an SF Symbol on a small disc at the bottom right, e.g. \"bandage.fill\" for an injured player"
+        },
+        {
+          "name": "markTone",
+          "optional": true,
+          "role": "token",
+          "token": "tone",
+          "note": "the mark's colour; neutral by default"
         }
       ]
     },

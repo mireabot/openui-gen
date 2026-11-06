@@ -70,7 +70,7 @@ const venueRow = (venue: "home" | "away"): ContractField[] => [
 const cell = (content: AnyRef) => ui.Text({ content, role: "footnote", align: "end" });
 
 const venueCells = (label: string, v: AnyRef) => ui.Grid({ columns: "8", gap: 0, children: [
-  ui.Text({ content: label, role: "footnote", weight: "medium", lines: 1 }),
+  ui.Text({ content: label, role: "footnote", weight: "medium", lines: 1, align: "start" }),
   cell(v.played), cell(v.won), cell(v.drawn), cell(v.lost),
   ui.Text({ content: v.goals, role: "footnote", ink: "secondary", align: "end" }),
   ui.Text({ content: v.goalDifference, role: "footnote", tone: v.goalDifferenceTone, align: "end" }),
@@ -123,10 +123,7 @@ const injuredPlayer = (prefix: string): ContractField[] => [
 ];
 
 /** The photo on the team colour, with a band-aid at its bottom right. */
-const injuredAvatar = (p: AnyRef, size: 40 | 56) => ui.ZStack({ alignment: "bottom-trailing", children: [
-  mark(p, size, p.kind),
-  ui.Badge({ label: "", icon: "bandage.fill", tone: "bad", size: "small" }),
-] });
+const injuredAvatar = (p: AnyRef, size: 40 | 56) => ui.Avatar({ name: p.name, size, image: p.logo, color: p.color, kind: p.kind, mark: "bandage.fill", markTone: "bad" });
 
 /** Avatar, name and a detail line, then the league's badge when there is one. */
 const injuryTop = (p: AnyRef, size: 40 | 56, detail: AnyRef) => ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
@@ -338,7 +335,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   },
   {
     name: "StatsCard",
-    intent: "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label. A part with no data is not shown.",
+    intent: "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. A part with no data is not shown.",
     useWhen: "a player's or a club's season or match stats; any set of figures about one subject",
     source: "ui-canvas sports-components/stats-card (from stats-grid/rating-hero)",
     contract: [
@@ -380,7 +377,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
           ] }),
         ] }) }),
       ] }),
-      ui.Show({ when: c.showStats, child: ui.Rail({ gap: 12, width: 124, children: each(c.stats, "s", (s: AnyRef) => ui.Card({ gap: 4, children: [
+      ui.Show({ when: c.showStats, child: ui.Rail({ gap: 12, minWidth: 124, children: each(c.stats, "s", (s: AnyRef) => ui.Card({ gap: 4, children: [
         ui.Text({ content: s.value, role: "headline", weight: "semibold", align: "start" }),
         ui.Text({ content: s.label, role: "footnote", ink: "secondary", align: "start" }),
       ] })) }) }),
@@ -392,6 +389,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     useWhen: "how many points a team has, or its record this season, home and away; one team in one competition",
     source: "ui-canvas sports-components/team-points (from team-points-breakdown/table-reference)",
     contract: [
+      f("title", "text", "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"),
       f("subtitle", "text", "rank and matches played, e.g. \"Rank 1 · 9 played\""),
       f("points", "text", "total points as shown, e.g. \"27\""),
       ...venueRow("home"), ...venueRow("away"),
@@ -400,14 +398,14 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     build: t => ui.Card({ children: [
       ui.Stack({ axis: "h", gap: 16, align: "start", justify: "between", children: [
         ui.Stack({ axis: "v", gap: 0, children: [
-          ui.Text({ content: "Points", role: "headline", weight: "semibold" }),
+          ui.Text({ content: t.title, role: "headline", weight: "semibold", lines: 2, align: "start" }),
           ui.Text({ content: t.subtitle, role: "footnote", ink: "secondary", lines: 2, align: "start" }),
         ] }),
         ui.Text({ content: t.points, role: "title1", weight: "semibold", align: "end" }),
       ] }),
       ui.Stack({ axis: "v", gap: 12, children: [
         // Equal columns, because a Grid cannot size one wider: the venue is its name, with no icon.
-        ui.Grid({ columns: "8", gap: 0, children: ["", "PL", "W", "D", "L", "+/-", "GD", "PTS"].map(content => ui.Text({ content, role: "footnote", ink: "secondary", align: "end" })) }),
+        ui.Grid({ columns: "8", gap: 0, children: [ui.Spacer({ size: 0 }), ...["Pld", "W", "D", "L", "+/-", "GD", "PTS"].map(content => ui.Text({ content, role: "footnote", ink: "secondary", align: "end" }))] }),
         ui.Stack({ axis: "v", gap: 12, divided: true, children: [venueCells("Home", t.home), venueCells("Away", t.away)] }),
       ] }),
     ] }),
@@ -585,6 +583,35 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   },
 ];
 
+/** A soccer match's figures as StatBars, in reading order; for these, fewer is better. */
+const MATCH_STATS: readonly { key: string; label: string; percent?: boolean; fewerIsBetter?: boolean }[] = [
+  { key: "possession", label: "Possession", percent: true }, { key: "shots", label: "Shots" }, { key: "shotsOnTarget", label: "Shots on target" },
+  { key: "corners", label: "Corners" }, { key: "saves", label: "Saves" }, { key: "fouls", label: "Fouls", fewerIsBetter: true },
+  { key: "yellowCards", label: "Yellow cards", fewerIsBetter: true }, { key: "redCards", label: "Red cards", fewerIsBetter: true },
+];
+
+/**
+ * A match's two stat objects (`teamStats`, `opponentStats`) as one StatBar record per stat, home then
+ * away, each side in its club's colour, so every stat gets its bar and nothing shows twice. A stat
+ * either side lacks is left out. Values without a match and both stat objects pass through.
+ */
+export function withStatBars(values: Record<string, unknown>): Record<string, unknown> {
+  const { match, teamStats, opponentStats, ...rest } = values;
+  if (!isObject(match) || !isObject(teamStats) || !isObject(opponentStats) || !isObject(match.home) || !isObject(match.away)) return values;
+  const [homeStats, awayStats] = match.venueSide === "away" ? [opponentStats, teamStats] : [teamStats, opponentStats];
+  const hexOf = (value: unknown) => (typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : "");
+  const side = (club: Record<string, unknown>, count: number, ahead: boolean) => ({ label: String(club.name ?? ""), count, tone: ahead ? "good" : "neutral", color: hexOf(club.color) });
+  const statBars = MATCH_STATS.flatMap(({ key, label, percent, fewerIsBetter }) => {
+    const [home, away] = [homeStats[key], awayStats[key]];
+    if (typeof home !== "number" || typeof away !== "number") return [];
+    const shown = (value: number) => (percent ? `${Math.round(value * 10) / 10}%` : String(value));
+    const homeAhead = home !== away && (home > away) !== Boolean(fewerIsBetter);
+    const awayAhead = home !== away && !homeAhead;
+    return [{ label, homeDisplay: shown(home), awayDisplay: shown(away), sides: [side(match.home as Record<string, unknown>, home, homeAhead), side(match.away as Record<string, unknown>, away, awayAhead)] }];
+  });
+  return { ...rest, match, statBars };
+}
+
 /** A league's wording for a status, as the badge says it, and how bad it is. */
 const STATUS_BADGES: Record<string, { label: string; tone: string }> = {
   "injured reserve": { label: "IR", tone: "bad" }, ir: { label: "IR", tone: "bad" },
@@ -614,19 +641,37 @@ export function injuryWait(record: { returnDate?: unknown; returnNote?: unknown 
   return { wait: { label, value, day: longDate.format(when), dated: true, undated: false }, line: `Back ${shortDate.format(when)}` };
 }
 
+/** A title's words, lower case, without plurals or filler: "Chiefs injury report" and "Chiefs injuries" say the same. */
+const TITLE_FILLER = new Set(["the", "a", "an", "of", "for", "and", "report", "list", "overview", "summary"]);
+const titleWords = (title: string) => new Set(title.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/)
+  .filter(word => word && !TITLE_FILLER.has(word)).map(word => word.replace(/ies$/, "y").replace(/s$/, "")));
+
+/** Whether two titles say the same thing, so a screen shows only one of them. */
+export function sameTitle(a: string, b: string): boolean {
+  const left = titleWords(a);
+  const right = titleWords(b);
+  return left.size > 0 && left.size === right.size && [...left].every(word => right.has(word));
+}
+
 /**
  * Fills what an injured player's templates show and cannot work out: "position · team", the badge
- * from the league's wording, the wait from the date, and the list row's bottom line.
+ * from the league's wording, the wait from the date, and the list row's bottom line. A list title
+ * that repeats its answer's title is hidden: each text on a screen says something new.
  */
 export function settleInjuries<T extends { readonly values: Record<string, unknown>; readonly fields: readonly { readonly path: string; readonly kind: string; readonly format: string }[] }>(dataset: T, today = new Date()): T {
   const fields = new Map(dataset.fields.map(field => [field.path, field]));
   const add = (path: string, kind: string) => { if (!fields.has(path)) fields.set(path, { path, kind, format: "none" }); };
   const text = (value: unknown) => (typeof value === "string" ? value.trim() : "");
-  const walk = (value: unknown, path: string): unknown => {
-    if (Array.isArray(value)) return value.map(item => walk(item, `${path}[]`));
+  const walk = (value: unknown, path: string, heading = ""): unknown => {
+    if (Array.isArray(value)) return value.map(item => walk(item, `${path}[]`, heading));
     if (!isObject(value)) return value;
-    const record: Record<string, unknown> = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, walk(child, `${path}.${key}`)]));
-    if (Array.isArray(record.players) && "title" in record) { record.showTitle = text(record.title) !== ""; add(`${path}.showTitle`, "boolean"); }
+    // An answer's own title is the heading its parts must not repeat.
+    const own = /^answers\.[^.]+$/.test(path) ? text(value.title) : heading;
+    const record: Record<string, unknown> = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, walk(child, `${path}.${key}`, own)]));
+    if (Array.isArray(record.players) && "title" in record) {
+      record.showTitle = text(record.title) !== "" && !sameTitle(text(record.title), own);
+      add(`${path}.showTitle`, "boolean");
+    }
     if (typeof record.name !== "string" || !("returnDate" in record) || !("status" in record)) return record;
     const status = text(record.status);
     const badge = STATUS_BADGES[status.toLowerCase()] ?? { label: status, tone: "neutral" };

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { config } from "../config.js";
-import { claudeSender } from "../llm/claude.js";
+import { modelSender } from "../llm/generation.js";
 import { structuredCompletion, type StructuredCompletionHooks } from "../llm/structured-completion.js";
 import type { PlayerCandidate, PlayerPick, PlayerQuery } from "./fotmob.js";
 
@@ -19,7 +19,7 @@ export async function pickPlayer(query: PlayerQuery, candidates: readonly Player
       model: config().SPORTS_PLAN_MODEL, maxTokens: 300, schema: z.toJSONSchema(Schema) as Record<string, unknown>,
       messages: [{ role: "system", content: SYSTEM }, { role: "user", content: JSON.stringify({ request, player: query.name, ...(query.team ? { team: query.team } : {}), ...(query.context ? { shownAs: query.context } : {}), results: candidates }) }],
     },
-    send: claudeSender({ effort: "low" }),
+    send: modelSender({ effort: "low" }),
     parse: text => Schema.parse(JSON.parse(text)),
     ...(hooks ? { hooks } : {}),
   });

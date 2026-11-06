@@ -12,11 +12,29 @@ import { askSports, editSports, type SportsDeps, type SportsResult } from "../sr
 import { inferFields } from "../src/sports/dataset.js";
 import { DocumentStore, nextRevision } from "../src/sports/documents.js";
 import { createPlayerLookup, type FotmobTransport, type PlayerLookup, type PlayerPicker, marketValueText, matchRatings, playerValueChart, valueTicks } from "../src/sports/fotmob.js";
-import { componentPlayerQueries, createPlayerResolver, fillClubMarks, populatePlayerImages, rawPlayerQueries } from "../src/sports/player-images.js";
+import { componentPlayerQueries, createPlayerResolver, feedPlayerProfiles, fillClubMarks, populatePlayerImages, rawPlayerQueries } from "../src/sports/player-images.js";
 import type { SportsPlan } from "../src/sports/plan.js";
 
 const IMAGE = "https://images.fotmob.com/image_resources/playerimages/1096353.png";
 const PROFILE = { fotmobId: 1096353, name: "Cole Palmer", team: "Chelsea", position: "Attacking Midfielder", imageUrl: IMAGE };
+{
+  const player = { name: "Cole Palmer", team: "Chelsea", fotmobId: 1096353, imageUrl: IMAGE };
+  const enriched = populatePlayerImages({ values: { answers: { q1: { players: [player] } } }, fields: [], source: "espn", asOf: "2026-11-05" }, [], []);
+  const row = (enriched.values.answers as { q1: { players: { logo?: string; kind?: string }[] } }).q1.players[0]!;
+  assert.equal(row.logo, IMAGE, "a squad portrait reaches Avatar's logo even without a separate player lookup");
+  assert.equal(row.kind, "player");
+  let lookups = 0;
+  const resolve = createPlayerResolver(async () => { lookups++; return null; }, [...feedPlayerProfiles({ q1: { players: [player] } }), PROFILE]);
+  const known = await resolve([{ name: "Cole Palmer", team: "Chelsea" }]);
+  const shaped = { name: "Cole Palmer", kind: "player", team: "Chelsea", logo: "" };
+  const restored = populatePlayerImages({ values: { answers: { q1: { players: [shaped] } } }, fields: [], source: "espn", asOf: "2026-11-05" }, known, []);
+  assert.equal((restored.values.answers as { q1: { players: { logo: string }[] } }).q1.players[0]!.logo, IMAGE, "a model-omitted photo is restored from the squad identity");
+  assert.equal(lookups, 0, "verified squad identities need no search or picker call");
+  assert.equal(known.length, 1, "a saved identity and the same fresh squad player do not become ambiguous on follow-up");
+  const goals = populatePlayerImages({ values: { answers: { q1: { goals: [{ scorer: "Cole Palmer", assist: "" }] } } }, fields: [], source: "espn", asOf: "2026-11-05" }, known, []);
+  assert.equal((goals.values.answers as { q1: { goals: { scorerPlayer: { logo: string } }[] } }).q1.goals[0]!.scorerPlayer.logo, IMAGE, "goal identities use the scorer's own verified photo after model shaping");
+  assert.ok(goals.fields.some(field => field.path === "answers.q1.goals[].scorerPlayer.name"), "the goal person's added identity fields are declared");
+}
 const profilePayload = (id = 1096353, name = "Cole Palmer", team = "Chelsea") => ({
   id, name, primaryTeam: { teamId: 8455, teamName: team },
   positionDescription: { primaryPosition: { label: "Attacking Midfielder" } },
@@ -106,7 +124,7 @@ for (const response of [
   // ESPN and FotMob name Inter differently, and a late kickoff can sit under FotMob's earlier day.
   const fotmobMatches = async (url: string) => url.includes("matchDetails") ? { content: { matchFacts: { topPlayers: { homeTopPlayers: [{ playerId: 7, name: { fullName: "Hakan Calhanoglu" }, playerRatingRounded: "8.1", positionLabel: { label: "DM" } }], awayTopPlayers: [] } } } }
     : url.endsWith("20261101") ? { leagues: [{ matches: [{ id: 1, home: { name: "Inter", score: 1 }, away: { name: "Roma", score: 1 } }, { id: 2, home: { name: "Inter", score: 2 }, away: { name: "Lille", score: 0 } }] }] } : { leagues: [] };
-  assert.deepEqual(await matchRatings({ date: "2026-11-02T00:30:00Z", home: "Internazionale", away: "Monaco", homeScore: 2, awayScore: 0 }, fotmobMatches), { home: [{ fotmobId: 7, name: "Hakan Calhanoglu", rating: "8.1", position: "DM", imageUrl: "https://images.fotmob.com/image_resources/playerimages/7.png" }], away: [] }, "the match is found by the day before, its score and one club's name");
+  assert.deepEqual(await matchRatings({ date: "2026-11-02T00:30:00Z", home: "Internazionale", away: "Monaco", homeScore: 2, awayScore: 0 }, fotmobMatches), { home: [{ fotmobId: 7, name: "Hakan Calhanoglu", rating: "8.1", position: "DM", imageUrl: "https://images.fotmob.com/image_resources/playerimages/7.png" }], away: [], lineup: { home: [], away: [] } }, "the match is found by the day before, its score and one club's name");
   assert.equal(await matchRatings({ date: "2026-11-01T18:00:00Z", home: "Internazionale", away: "AS Monaco", homeScore: 3, awayScore: 0 }, fotmobMatches), null, "a different score is a different match");
   // A move back to a club is a new stretch, and the history reads in date order whatever order it arrives in.
   const spell = (date: string, value: number, teamId: number, teamName: string) => ({ date, value, teamId, teamName, teamColor: { lightMode: "#111111", darkMode: "#222222" } });
@@ -123,6 +141,9 @@ for (const response of [
   assert.deepEqual([long[0]!.label, long.at(-1)!.label, Math.max(...long.map(point => point.value))], ["Jul 2022", "Dec 2026", 200_000_000], "it keeps the spell's start, end and peak");
   const cell = (name: string, club: string, present = true) => ({ present, name, detail: "Midfielder", club: { name: club } });
   assert.deepEqual(componentPlayerQueries({ q1: { card: { metric: "Goals", rows: [{ home: cell("Cole Palmer", "Chelsea"), away: cell("", "", false) }] } } }, []), [{ name: "Cole Palmer", team: "Chelsea", context: "Midfielder" }], "a two-team card looks up its players by club and skips an empty side");
+  // People in any list are looked up when the schema stage marks them as players; other named records are not.
+  assert.deepEqual(componentPlayerQueries({ q5: { partners: [{ name: "Ricardo Carvalho", kind: "player", team: "Chelsea", logo: "", color: "" }], honours: [{ name: "Premier League", count: "5x", detail: "" }], mentor: { name: "Marcel Desailly", kind: "player", team: "", logo: "", color: "" } } }, []),
+    [{ name: "Ricardo Carvalho", team: "Chelsea" }, { name: "Marcel Desailly" }], "a list of people is looked up; an honour is not");
 }
 
 const mismatch = createPlayerLookup({ send: async raw => new URL(raw).hostname === "apigw.fotmob.com"
@@ -137,17 +158,18 @@ assert.equal(await recovery({ name: "Cole Palmer" }), null);
 failing = false;
 assert.deepEqual(await recovery({ name: "Cole Palmer" }), PROFILE, "a failed lookup does not stop the next one");
 
-let budgetLookups = 0;
-const noBudget = createPlayerResolver(async () => { budgetLookups++; return PROFILE; }, [], 0);
-assert.deepEqual(await noBudget([{ name: "Cole Palmer" }]), []);
-assert.equal(budgetLookups, 0, "an exhausted enrichment budget queues no requests");
+// No cap on how many: every named player is looked up.
+let everyLookup = 0;
+const everyone = createPlayerResolver(async query => { everyLookup++; return { ...PROFILE, fotmobId: everyLookup, name: query.name }; });
+assert.equal((await everyone(Array.from({ length: 30 }, (_, i) => ({ name: `Player ${i}` })))).length, 30, "thirty players, thirty photos");
+assert.equal(everyLookup, 30);
+// One stalled lookup times out on its own; the others in its batch still answer.
 let releaseLate: (profile: typeof PROFILE) => void = () => {};
 const lateResult = new Promise<typeof PROFILE>(resolve => { releaseLate = resolve; });
-const bounded = createPlayerResolver(async () => lateResult, [], 1);
-const expiredProfiles = await bounded([{ name: "Cole Palmer" }]);
-assert.deepEqual(expiredProfiles, [], "a stalled provider cannot hold enrichment open");
+const bounded = createPlayerResolver(async query => (query.name === "Stalled" ? lateResult : { ...PROFILE, name: query.name }), [], 1);
+assert.deepEqual((await bounded([{ name: "Stalled" }, { name: "Cole Palmer" }])).map(profile => profile.name), ["Cole Palmer"], "a stalled provider cannot hold the screen or the other lookups");
 releaseLate(PROFILE);
-assert.deepEqual(await bounded([{ name: "Cole Palmer" }]), [], "late completion cannot alter a returned directory or start another lookup");
+assert.deepEqual((await bounded([{ name: "Stalled" }])).map(profile => profile.name), ["Cole Palmer"], "a late answer does not change a returned directory or start the lookup again");
 
 const plan: SportsPlan = { subject: { kind: "player", name: "Cole Palmer", league: "eng.1", season: "2026/27" }, questions: [
   { id: "q1", text: "Cole Palmer season stats", source: "web", searchQueries: ["Cole Palmer season stats"] },
@@ -298,4 +320,4 @@ try {
   rmSync(directory, { recursive: true, force: true });
 }
 
-console.log("player images: verified identity, ambiguity, failure recovery, API object, schema omission, Avatar wiring, follow-ups and raw fallback passed");
+console.log("player images: verified identity, ambiguity, failure recovery, API object, schema omission, Avatar wiring, follow-ups, people lists and raw fallback passed");

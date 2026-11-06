@@ -124,8 +124,17 @@ struct GridPrimitive: View {
         ) {
             ForEach(props.childReferences("children"), id: \.self) { id in
                 PrimitiveNodeView(id: id)
-                    .frame(maxWidth: .infinity, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, alignment: cellAlignment(id))
             }
+        }
+    }
+
+    private func cellAlignment(_ child: PrimitiveChild) -> Alignment {
+        guard child.handle.kind == "Text" else { return .topLeading }
+        return switch PrimitiveProps(handle: child.handle).string("align") {
+        case "end": .topTrailing
+        case "center": .top
+        default: .topLeading
         }
     }
 }
@@ -137,13 +146,18 @@ struct RailPrimitive: View {
 
     var body: some View {
         let width = props.cgFloat("width")
+        let minWidth = props.cgFloat("minWidth") ?? 0
         RailContainer(gap: props.cgFloat("gap") ?? 12) {
             ForEach(props.childReferences("children"), id: \.self) { id in
                 if let width, width > 0 {
                     PrimitiveNodeView(id: id).environment(\.primitiveStackAxis, .vertical)
                         .fixedSize(horizontal: false, vertical: true).frame(width: width)
                 } else {
-                    PrimitiveNodeView(id: id).fixedSize(horizontal: true, vertical: false)
+                    // Its own width, at least minWidth: the minimum sits inside fixedSize, so a short
+                    // card stretches to it and a long one keeps its own width.
+                    PrimitiveNodeView(id: id)
+                        .frame(minWidth: minWidth, alignment: .leading)
+                        .fixedSize(horizontal: true, vertical: false)
                 }
             }
         }

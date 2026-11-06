@@ -94,6 +94,7 @@ struct ImagePrimitive: View {
 /// name's initial on a tint.
 struct AvatarPrimitive: View {
     let props: PrimitiveProps
+    @State private var failedImage: URL?
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveMediaBaseURL) private var base
 
@@ -103,6 +104,17 @@ struct AvatarPrimitive: View {
     }
 
     var body: some View {
+        // A player with no photo draws nothing: a monogram for a person is noise. A club keeps its monogram.
+        if props.string("kind") != "club",
+           PrimitiveImages.url(props.string("image"), base: base) == nil || failedImage == PrimitiveImages.url(props.string("image"), base: base) {
+            EmptyView()
+        } else {
+            avatar
+        }
+    }
+
+    @ViewBuilder
+    private var avatar: some View {
         let size = props.cgFloat("size") ?? 40
         let radius = props.string("shape") == "rounded" ? PrimitiveMetrics.smallControlRadius : PrimitiveMetrics.pill
         let name = props.string("name") ?? ""
@@ -127,7 +139,7 @@ struct AvatarPrimitive: View {
                 // no mask. The monogram shows until the image loads, and on failure.
                 LazyImage(url: url, transaction: Transaction(animation: .easeOut(duration: 0.15))) { state in
                     if let image = state.image {
-                        if props.string("kind") == "player" {
+                        if props.string("kind") != "club" {
                             image.resizable().scaledToFit()
                                 .frame(width: size, height: size)
                                 .background(photoDisc(tint))
@@ -141,11 +153,29 @@ struct AvatarPrimitive: View {
                     }
                 }
                 .pipeline(PrimitiveImages.pipeline)
+                .onCompletion { result in
+                    if case .failure = result { failedImage = url }
+                }
             } else {
                 face
             }
         }
         .frame(width: size, height: size)
+        .overlay(alignment: .bottomTrailing) {
+            if let mark = props.string("mark") { markDisc(mark, avatar: size) }
+        }
+    }
+
+    /// A filled disc over the bottom-right corner, its glyph in the tone's colour, ringed in the card
+    /// surface: the band-aid on an injured player.
+    private func markDisc(_ symbol: String, avatar size: CGFloat) -> some View {
+        let disc: CGFloat = size >= 56 ? 20 : 16
+        return SymbolGlyph(name: symbol, size: 12)
+            .foregroundStyle(palette.tone(props.string("markTone")))
+            .frame(width: disc, height: disc)
+            .background(palette.color(token: "surface.filled"), in: .circle)
+            .background(palette.color(token: "surface.card"), in: Circle().inset(by: -2))
+            .offset(x: 2, y: 2)
     }
 }
 

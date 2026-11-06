@@ -45,7 +45,7 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
   /** Commits a revision. In debug mode each one also gets its own file, which a later follow-up can't overwrite. */
   const commit = async (document: SportsDocument, baseRevision: number, signal: AbortSignal) => {
     await documents.put(document, baseRevision, signal);
-    if (cfg.GENERATION_MODE !== "debug") return;
+    if (cfg.GENERATION_MODE === "api") return;
     await saveGeneration(savedDirectory, document).catch(error => log.warn("debug run not saved", { document: document.id, detail: (error as Error).message }));
   };
   const app = new Hono();

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { z } from "zod";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -13,7 +14,8 @@ import { DocumentStore, type SportsDocument } from "../src/sports/documents.js";
 import { espnLookup, withMatchCards, type EspnTransport } from "../src/sports/espn.js";
 import { followUpSchema, rawSchema, toFollowUp, toPlan, type SportsPlan } from "../src/sports/plan.js";
 import { preview, SPORTS_SCREEN } from "../src/sports/screen.js";
-import { fitHeatmaps, heatmapColumns, lockFacts, placements, settleInjuries, settleMissing, settleVenues } from "../src/sports/components.js";
+import { fitHeatmaps, heatmapColumns, lockFacts, placements, sameTitle, settleInjuries, settleMissing, settleVenues, withStatBars } from "../src/sports/components.js";
+import { designDataset } from "../src/sports/dataset.js";
 import { careerOf, reportSource } from "../src/sports/espn-generic.js";
 import { answerSports, findingAnswer } from "../src/sports/research.js";
 
@@ -172,6 +174,18 @@ assert.deepEqual([meeting.teamStats.shots, meeting.teamStats.shotsOnTarget, meet
 assert.deepEqual(meeting.goals[0], { minute: "51'", team: "Manchester City", scorer: "Nico O'Reilly", assist: "Rayan Cherki", kind: "Goal" });
 assert.deepEqual(meeting.upcoming.map((m: { date: string }) => m.date), ["2026-12-12T17:30Z"], "this season's fixture is still named");
 
+{
+  const comparisons = withStatBars(meeting);
+  const answer = { status: "complete", question: "Match statistics", title: "Match statistics", source: "Source: ESPN", ...comparisons };
+  const matchPlan: SportsPlan = { subject: { kind: "match", name: "Chelsea vs Manchester City", league: "eng.1", season: "2025/26" }, questions: [{ id: "q1", text: "Match statistics", source: "espn", league: "eng.1", feed: "match", team: "Chelsea", opponent: "Manchester City", date: null, season: 2025 }] };
+  const dataset = await designDataset(matchPlan, { q1: z.record(z.string(), z.json()).parse(answer) }, "espn", new Date("2026-11-05"), {}, async () => completion({ answers: [{ id: "q1", title: "Match statistics", fields: [{ path: "context", kind: "text", format: "none" }], valuesJson: JSON.stringify({ context: "Last league meeting" }) }] }));
+  const bars = (dataset.values.answers as { q1: { statBars?: unknown[] } }).q1.statBars;
+  assert.deepEqual(bars, comparisons.statBars, "prepared match comparisons survive model shaping without losing any bars");
+  const writer: ProgramWriter = async (_messages, emit) => { const text = 'stats = Stack("v", 16, @Each(d.answers.q1.statBars, "s", StatBar(s)))\n'; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
+  const compiled = await compileScreen({ run: "match-bars", request: "Match statistics", values: dataset.values, required: [{ id: "q1", text: "Match statistics" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, writer);
+  assert.equal(programTree(compiled.program, dataset.values).nodes.filter(n => n.primitive === "SplitBar").length, bars?.length, "every match statistic renders the same split-bar component");
+}
+
 // Sports components: a MatchCard shaped to its contract expands, its club colour reaches the mark, the loser's score is secondary,
 // a StatBar keeps each side's colour, and an unshown answer that fits a component defaults to it.
 const side = (name: string, color: string, score: string, ink: string) => ({ name, logo: "", color, score, ink });
@@ -255,7 +269,7 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
     const lines = (doc: SportsDocument) => Object.fromEntries(doc.parts.map(p => [p.id, p.statements]));
     const answersOf = (doc: SportsDocument) => (doc.snapshot.result as { answers: Record<string, unknown> }).answers;
 
-    scripts.push(`meeting = Card([Text(d.answers.q1.title, "headline"), Row("Shots", null, null, Number(d.answers.q1.teamStats.shots, "integer", "body"))])\nscorers = Card([Text(d.answers.q2.summary, "body")])\n`);
+    scripts.push(`meeting = Card([Text(d.answers.q1.title, "headline"), Row("Shots", null, null, Number(d.answers.q1.statBars[1].sides[0].count, "integer", "body"))])\nscorers = Card([Text(d.answers.q2.summary, "body")])\n`);
     const first = await post("/lang/sports/stream", { prompt: "Chelsea vs Man City last meeting stats" });
     const id = first.done!.document.id as string;
     assert.deepEqual(first.done!.document, { id, revision: 1 }, "the first screen is saved as revision 1 before done");
@@ -358,7 +372,7 @@ assert.ok(followUpSchema([], ["q1", "q2"]).safeParse({ subject: { kind: "team", 
 // One place answers home and away: TeamPoints when it is on the screen, else LeagueStanding if it has them.
 {
   const venue = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
-  const record = { subtitle: "Rank 10 · 38 played", points: "52", home: venue, away: venue };
+  const record = { title: "Home and away", subtitle: "Rank 10 · 38 played", points: "52", home: venue, away: venue };
   const standing = (detail: string) => ({ place: "10th", summary: "52 points", rows: [], home: { detail }, away: { detail }, showVenues: true });
   const shown = (answers: Record<string, unknown>) => (settleVenues({ values: { answers }, fields: [] }).values.answers as { q1: { standing: { showVenues: boolean } } }).q1.standing.showVenues;
   assert.equal(shown({ q1: { standing: standing("26 pts · 7-5-7") }, q2: { record } }), false, "TeamPoints elsewhere on the screen answers them");
@@ -376,7 +390,7 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
 // A home and away table built by hand where TeamPoints fits is refused, and the repair is told what to call.
 {
   const side = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
-  const answer = { status: "complete", question: "Season", title: "Season", source: "Source: ESPN", record: { subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side } };
+  const answer = { status: "complete", question: "Season", title: "Season", source: "Source: ESPN", record: { title: "Home and away comparison", subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side } };
   const prompts: string[] = [];
   const replies = [`season = Card([Text(d.answers.q1.record.home.points, "body"), Text(d.answers.q1.record.away.points, "body")])\n`, `season = TeamPoints(d.answers.q1.record)\n`];
   const screen = await compileScreen({ run: "r", request: "season", values: { answers: { q1: answer } }, required: [{ id: "q1", text: "Season" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, async (messages, emit) => {
@@ -387,13 +401,25 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
   });
   assert.ok(prompts[1]!.includes("Call TeamPoints(d.answers.q1.record)"), "the repair names the card");
   assert.deepEqual(screen.parts.map(p => p.origin.kind), ["writer"]);
-  assert.match(screen.program, /"Points"/, "the card's total header is on screen");
+  const rendered = programTree(screen.program, { answers: { q1: answer } }).nodes;
+  assert.ok(rendered.some(n => n.primitive === "Text" && n.props.content === "Home and away comparison"), "the card uses its supplied title");
+  assert.ok(!rendered.some(n => n.primitive === "Text" && n.props.content === "PL"), "played is not abbreviated as Premier League");
+  assert.ok(rendered.some(n => n.primitive === "Spacer" && n.props.size === 0), "the empty venue header keeps its grid cell instead of shifting the statistics left");
+  const cells = new Map(rendered.map(node => [node.id, node]));
+  const tables = rendered.filter(node => node.primitive === "Grid" && node.props.columns === "8");
+  assert.equal(tables.length, 3, "the record has a header and two venue rows");
+  for (const table of tables) {
+    const row = (table.children.children ?? []).map(id => cells.get(id));
+    assert.equal(row.length, 8);
+    if (row[0]?.primitive === "Text") assert.equal(row[0].props.align, "start", "venue labels lead their column");
+    for (const numeric of row.slice(1)) assert.equal(numeric?.props.align, "end", "every numeric header and value trails its column");
+  }
 }
 
 // Run 341a9f75: the season's points showed in TeamPoints and again in two half-season heatmaps. Each fact is locked to one place.
 {
   const side = { played: "19", won: "7", drawn: "5", lost: "7", goals: "26-25", goalDifference: "+1", goalDifferenceTone: "neutral", points: "26" };
-  const points = { subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side };
+  const points = { title: "Home and away", subtitle: "Rank 10 · 38 played", points: "52", home: side, away: side };
   const heat = (count: number, value: string) => ({ value, caption: "Points", summary: "s", columns: "10", results: Array.from({ length: count }, () => ({ label: "Win", fill: "tone.good.fg" })) });
   const standing = { place: "10th", summary: "52 points", rows: [], home: { detail: "" }, away: { detail: "" }, showVenues: false };
   const match = { name: "x", value: "1" };
@@ -419,6 +445,10 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
   const list = (settled.values.answers as unknown as { q1: { list: { showTitle: boolean; players: Record<string, unknown>[] } } }).q1.list;
   const [ir, dtd, season, stale] = list.players as { badge: { label: string; tone: string; show: boolean }; wait: { label: string; value: string; day: string; dated: boolean }; line: string; sourceLine: string; detail: string }[];
   assert.equal(list.showTitle, false, "an empty title is not shown");
+  // A list title that repeats its answer's title is hidden; one that adds something stays.
+  const titled = (title: string) => (settleInjuries({ values: { answers: { q1: { title: "Chiefs injury report", list: { title, players: [] } } } }, fields: [] }, day).values.answers as unknown as { q1: { list: { showTitle: boolean } } }).q1.list.showTitle;
+  assert.deepEqual([titled("Chiefs injuries"), titled("Chiefs Injury Report"), titled("Out for Sunday")], [false, false, true], "each text on a screen says something new");
+  assert.deepEqual([sameTitle("NBA injuries", "NBA injury list"), sameTitle("Chiefs injuries", "Bills injuries"), sameTitle("", "")], [true, false, false]);
   assert.deepEqual([ir!.badge, ir!.wait.value, ir!.wait.day, ir!.line, ir!.sourceLine, ir!.detail], [{ label: "IR", tone: "bad", show: true }, "31 days", "Sun, Dec 6", "Back Dec 6", "· ESPN", "RB · Cardinals"]);
   assert.deepEqual([dtd!.badge.label, dtd!.wait.label, dtd!.wait.value], ["Day-to-day", "Back", "Tomorrow"], "the wait counts whole days, whatever the hour");
   assert.deepEqual([season!.badge.show, season!.wait.dated, season!.wait.value, season!.line], [false, false, "Out for season", "Out for season"], "no status, no badge; the note stands in for a date");
