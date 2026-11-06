@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { config } from "../config.js";
 import type { QuestionId } from "../lang/compiler.js";
-import { claudeSender } from "../llm/claude.js";
+import { modelSender } from "../llm/generation.js";
 import { structuredCompletion, type StructuredCompletionHooks } from "../llm/structured-completion.js";
 import { CUP_CODES, ESPN_FEEDS, LEAGUE_CODES, LEAGUES, MISSING_FEEDS, type Club, type EspnTransport } from "./espn.js";
 import { isSoccer, leagueOf, TEAM_SPORT_LEAGUE_CODES } from "./leagues.js";
@@ -253,7 +253,7 @@ async function plan<T>(schema: z.ZodType, system: string, user: string, parse: (
       messages: [{ role: "system", content: system }, { role: "user", content: user }],
     },
     // Haiku has no server-side refusal fallback; a short plan needs little thinking.
-    send: claudeSender({ effort: "low" }),
+    send: modelSender({ effort: "low" }),
     parse,
     ...(hooks ? { hooks } : {}),
   });

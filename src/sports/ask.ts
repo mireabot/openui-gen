@@ -4,7 +4,7 @@ import { basePart, compileScreen, type CompiledScreen, type ProgramIssue, type P
 import { printStatement } from "../lang/program.js";
 import type { DatasetSnapshot, SnapshotDataset, SnapshotStore } from "../lang/snapshots.js";
 import { programTree, type programSkeleton } from "../lang/tree.js";
-import { claudeWriter } from "../llm/claude.js";
+import { modelWriter } from "../llm/generation.js";
 import type { CompletionSender } from "../llm/structured-completion.js";
 import type { DataField, MockValue } from "../research/dataset-schema.js";
 import type { ContentReport, RunProgress, UsageReport } from "../run/recorder.js";
@@ -19,7 +19,7 @@ import { pickPlayer } from "./player-pick.js";
 import { answerSports, type ResearchDeps } from "./research.js";
 import { SPORTS_SCREEN } from "./screen.js";
 import { lookupPlayer, type PlayerLookup, type PlayerPicker, type PlayerProfile } from "./fotmob.js";
-import { componentPlayerQueries, createPlayerResolver, fillClubMarks, populatePlayerImages, rawPlayerQueries, savedPlayerProfiles } from "./player-images.js";
+import { componentPlayerQueries, createPlayerResolver, feedPlayerProfiles, fillClubMarks, populatePlayerImages, rawPlayerQueries, savedPlayerProfiles } from "./player-images.js";
 
 /**
  * The sports pipeline: Haiku understands the request and plans the questions; every question is
@@ -179,7 +179,7 @@ async function answer(plan: SportsPlan, questions: SportsPlan["questions"], requ
   hooks.progress?.({ stage: "search", status: "completed", detail: statuses, ...counts, sourceCount: answered.sources.length, ...(answered.sources.length ? { sources: answered.sources.slice(0, 12) } : {}) });
 
   hooks.progress?.({ stage: "data", status: "started", detail: "Designing the dataset" });
-  const resolvePlayers = createPlayerResolver(query => (deps.player ?? lookupPlayer)(query, deps.pickPlayer ?? pick), savedPlayers);
+  const resolvePlayers = createPlayerResolver(query => (deps.player ?? lookupPlayer)(query, deps.pickPlayer ?? pick), [...feedPlayerProfiles(answered.answers), ...savedPlayers]);
   const rawQueries = noFotmob ? [] : rawPlayerQueries(fotmobPlan, answered.answers);
   const initialPlayers = await resolvePlayers(rawQueries);
   const dataset = await designDataset(subset, answered.answers, sourceOf(subset, answered.answers), now, {
@@ -202,7 +202,7 @@ async function answer(plan: SportsPlan, questions: SportsPlan["questions"], requ
 /** The writer composes; the compiler admits, covers and falls back. */
 async function compose(source: ScreenSource, plan: SportsPlan, snapshot: DatasetSnapshot, hooks: SportsHooks, deps: SportsDeps, clock: Clock): Promise<SportsResult> {
   const model = config().SPORTS_MODEL;
-  const writer: ProgramWriter = deps.write ?? ((messages, emit) => claudeWriter(messages, model, emit, 12_000, { effort: "medium", fallbacks: true }));
+  const writer: ProgramWriter = deps.write ?? ((messages, emit) => modelWriter(messages, model, emit, 12_000, { effort: "medium", fallbacks: true }));
   // The writer's own text, before templates expand: the trace shows whether it called components by name.
   const write: ProgramWriter = async (messages, emit) => {
     const result = await writer(messages, emit);

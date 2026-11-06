@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { config } from "../config.js";
-import { claudeSender } from "../llm/claude.js";
+import { modelSender } from "../llm/generation.js";
 import { structuredCompletion, type CompletionSender, type StructuredCompletionHooks } from "../llm/structured-completion.js";
 import { DATA_FORMATS, dataShape, validateValues, type DataField, type DataShape, type MockValue } from "../research/dataset-schema.js";
 import type { SnapshotDataset } from "../lang/snapshots.js";
@@ -45,9 +45,11 @@ title: a short heading for the answer, e.g. "Premier League table", "Chelsea's s
 Missing data: leave it out. Never write "—", "N/A", "unknown" or an empty value; a part of a card with no data is not shown.
 Long data: a stat's value is one figure or a few words ("317", "€51m", "Norway") with its name in label. Split "162 goals, 29 assists" into one stat each. Sentences belong in summary.
 Collections: named things a player or team has won or holds (trophies, awards, honours, records, selections) are a list of items, each { name, count, detail }, never a table. name is the honour as it is called ("All-NBA 2nd Team"); count is how many with an x ("4x"), or "" when it was once; detail is the years, newest first ("2025, 2021, 2007, 2005"), or a few words ("13 First Team, 4 Second Team"). A table is only for figures across several columns.
+Players and clubs: every player or club the answer names, anywhere (a list item, a field, a partner, a rival, a coach, an opponent), is a record with its essential metadata, never a bare name in a text field. A player is { name (full name), kind "player", team (their club, or ""), logo "", color "" }; a club is { name, kind "club", logo "", color "" }. The server fills each photo, crest and colour it can find by name, so leave logo and color "" unless the data already has them. What is said about them goes in short text fields beside these.
+Text once: an answer's title, a nested title (a list's or a card's) and the summary each say something different. Leave a nested title "" when the answer's title already says it, and keep the summary to what the data itself does not show; prefer less text.
 Repeats: a fact goes in one answer. When two answers are about the same player, the second holds only what the first does not.
 
-Sports components. When an answer suits one, shape the answer (a field of it, or a list's items) to its contract exactly, field for field, so the screen can show it with that component: a match → a MatchCard record, a run of results → a FixturesHeatmap record, two clubs compared on a stat → one StatBar record per stat in a list, a ranking → a Leaderboard record, the top players of one match from both sides → a MatchTopPlayers record with the number of rows the request asks for (for top rated, values from teamRated and opponentRated), a player's or a club's figures → a StatsCard record, a club's points or record this season → a TeamPoints record, a club's place in the table → a LeagueStanding record, a league's final top three → a SeasonPodium record, one injured player → an InjuryReport record, a team's or a league's injured players → an InjuryList record with the players in it. Lock every fact to one place, however many questions ask for it: never put the same figure or record in two fields, and when questions overlap, answer the fact once and leave it out of the others. When both a TeamPoints and a LeagueStanding record are on the screen, TeamPoints is the place for home and away, and the LeagueStanding's showVenues is false. TeamPoints also holds the season's points: never split them across other records, and a FixturesHeatmap beside it headlines something else, such as points per game. Every contract field is present: text "" and lists [] when the data has nothing. Colours: take each club's "#rrggbb" and logo from the clubs list in the input, matched by club name; "" for a club not in it, and the server fills those it knows. A club with a logo has color "clear", so its crest has no fill; the server enforces it. Player photos: match the verified players list by full player name and use its imageUrl for a player's logo. Never use the club crest as a player photo or invent an image URL. Keep each player's full name in its record so the server can attach the verified image.
+Sports components. When an answer suits one, shape the answer (a field of it, or a list's items) to its contract exactly, field for field, so the screen can show it with that component: a match → a MatchCard record, a run of results → a FixturesHeatmap record, two clubs compared on a stat → one StatBar record per stat in a list, a ranking → a Leaderboard record, a match's statBars → keep this field and its records unchanged, one StatBar per item in their order, the top players of one match from both sides → a MatchTopPlayers record with the number of rows the request asks for (for top rated, values from teamRated and opponentRated), a player's or a club's figures → a StatsCard record, a club's points or record this season → a TeamPoints record, a club's place in the table → a LeagueStanding record, a league's final top three → a SeasonPodium record, one injured player → an InjuryReport record, a team's or a league's injured players → an InjuryList record with the players in it. Lock every fact to one place, however many questions ask for it: never put the same figure or record in two fields, and when questions overlap, answer the fact once and leave it out of the others. When both a TeamPoints and a LeagueStanding record are on the screen, TeamPoints is the place for home and away, and the LeagueStanding's showVenues is false. Give TeamPoints a short title describing the comparison, such as "Home and away". Pld means matches played, not Premier League. TeamPoints also holds the season's points: never split them across other records, and a FixturesHeatmap beside it headlines something else, such as points per game. Every contract field is present: text "" and lists [] when the data has nothing. Colours: take each club's "#rrggbb" and logo from the clubs list in the input, matched by club name; "" for a club not in it, and the server fills those it knows. A club with a logo has color "clear", so its crest has no fill; the server enforces it. Player photos: match the verified players list by full player name and use its imageUrl for a player's logo. Never use the club crest as a player photo or invent an image URL. Keep each player's full name in its record so the server can attach the verified image.
 ${hasTeamSports ? `${TEAM_SPORT_NOTES}\n` : ""}${contractsFor(hasSoccer, hasTeamSports)}`;
 
 const PATH = /^[a-z][A-Za-z0-9]*(?:\[\])?(?:\.[a-z][A-Za-z0-9]*(?:\[\])?)*$/;
@@ -213,7 +215,7 @@ export async function designDataset(plan: SportsPlan, answers: Record<string, Re
             answers: complete.map(q => ({ id: q.id, question: q.text, data: Object.fromEntries(Object.entries(answers[q.id]!).filter(([k]) => !(BASE_FIELDS as readonly string[]).includes(k) || k === "summary")) })),
           }) }],
         },
-        send: send ?? claudeSender({ effort: "high", fallbacks: true }),
+        send: send ?? modelSender({ effort: "high", fallbacks: true }),
         // One bad design costs only its question: the loop below keeps its raw answer and the others
         // keep theirs. The stage regenerates once only when nothing it designed is usable.
         parse: text => {
@@ -246,6 +248,13 @@ export async function designDataset(plan: SportsPlan, answers: Record<string, Re
     if (design) {
       try { shaped = checked(q.id, answer, design); designed.push(q.id); }
       catch (error) { hooks.rejected?.(q.id, (error as Error).message.slice(0, 300)); }
+    }
+    if (q.source === "espn" && q.feed === "match" && Array.isArray(answer.statBars) && answer.statBars.length) {
+      const prefix = `answers.${q.id}.statBars`;
+      shaped = {
+        values: { ...shaped.values, statBars: answer.statBars },
+        fields: [...shaped.fields.filter(field => field.path !== prefix && !field.path.startsWith(`${prefix}[]`)), ...inferFields(answer.statBars, prefix)],
+      };
     }
     try { validate(q.id, [...baseFields(shaped.values, q.id), ...shaped.fields], shaped.values); }
     catch (error) {

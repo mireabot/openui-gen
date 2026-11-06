@@ -327,7 +327,7 @@
     },
     {
       "name": "StatsCard",
-      "intent": "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label. A part with no data is not shown.",
+      "intent": "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. A part with no data is not shown.",
       "useWhen": "a player's or a club's season or match stats; any set of figures about one subject",
       "source": "ui-canvas sports-components/stats-card (from stats-grid/rating-hero)",
       "contract": [
@@ -420,6 +420,11 @@
       "useWhen": "how many points a team has, or its record this season, home and away; one team in one competition",
       "source": "ui-canvas sports-components/team-points (from team-points-breakdown/table-reference)",
       "contract": [
+        {
+          "path": "title",
+          "kind": "text",
+          "note": "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"
+        },
         {
           "path": "subtitle",
           "kind": "text",

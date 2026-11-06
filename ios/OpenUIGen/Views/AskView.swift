@@ -7,25 +7,24 @@ struct AskView: View {
     let baseURL: URL
 
     private let theme = DesignTheme.bundled(brand: DesignTheme.defaultBrand)
-    private let suggestions = [
-        "Premier League table this season",
-        "How has Chelsea done this season?",
-        "LaLiga top scorers",
-    ]
+
+    /// The run card, opened from the composer's `$` button.
+    @State private var runOpen = false
+    /// The composer's height, so the run card sits 20 above it.
+    @State private var composerHeight: CGFloat = 0
 
     var body: some View {
         NavigationStack {
             content
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .background(screenColor.ignoresSafeArea())
-                .safeAreaInset(edge: .bottom) { promptBar }
-                .safeAreaInset(edge: .top) {
-                    if let session = model.session {
-                        GenerationStatusView(session: session, saveState: model.saveState) {
-                            Task { await model.save() }
-                        }
-                    }
+                .safeAreaInset(edge: .bottom) {
+                    composer
+                        .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { composerHeight = $0 }
                 }
+                .overlay(alignment: .bottom) { runCard }
+                .environment(\.primitivePalette, PrimitivePalette(theme: theme))
+                .animation(.easeOut(duration: 0.2), value: isWaiting)
                 .navigationTitle("OpenUIGen")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -46,7 +45,10 @@ struct AskView: View {
                     }
                     if model.session != nil {
                         ToolbarItem(placement: .topBarTrailing) {
-                            Button("New", systemImage: "square.and.pencil") { model.reset() }
+                            Button("New", systemImage: "square.and.pencil") {
+                                setRunOpen(false)
+                                model.reset()
+                            }
                                 .disabled(model.isBusy)
                         }
                     }
@@ -61,56 +63,72 @@ struct AskView: View {
         if let session = model.session, session.hasContent || !session.pendingBlocks.isEmpty {
             OpenUISceneView(root: session.root, theme: theme, pending: session.pendingBlocks)
             .primitiveMediaBaseURL(baseURL)
-        } else if model.isBusy {
-            Color.clear
+        } else if let session = model.session, model.isBusy {
+            GenerationLoader(label: session.activities.last?.title ?? "Starting", startedAt: session.startedAt)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .transition(.opacity)
         } else {
             emptyState
         }
     }
 
+    /// A greeting in the middle of the screen; the suggestions sit with the composer below it.
     private var emptyState: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Ask about soccer, NFL or NBA")
-                .font(.title2.weight(.semibold))
-            Text(baseURL.absoluteString)
-                .font(.footnote.monospaced())
+        VStack(spacing: 8) {
+            Text("What do you want to know?")
+                .primitiveFont(.title2, weight: .semibold)
+            Text("Tables, players, injuries and stats for soccer, the NFL and the NBA.")
+                .primitiveFont(.body)
                 .foregroundStyle(.secondary)
-            ForEach(suggestions, id: \.self) { suggestion in
-                Button(suggestion) {
-                    model.prompt = suggestion
-                    Task { await model.send() }
-                }
-                .buttonStyle(.bordered)
-            }
             if let error = model.errorMessage {
                 Text(error)
-                    .font(.footnote)
+                    .primitiveFont(.footnote)
                     .foregroundStyle(.red)
+                    .padding(.top, 8)
             }
         }
-        .padding(PrimitiveMetrics.screenInset)
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, PrimitiveMetrics.screenInset)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var promptBar: some View {
-        HStack(spacing: 12) {
-            TextField(model.session == nil ? "Ask about soccer, NFL or NBA" : "Follow up", text: $model.prompt)
-                .textFieldStyle(.plain)
-                .submitLabel(.send)
-                .onSubmit { Task { await model.send() } }
-            Button {
+    private var composer: some View {
+        PromptComposer(
+            text: $model.prompt,
+            placeholder: model.session == nil ? "Ask about soccer, NFL or NBA" : "Follow up",
+            suggestions: model.session == nil ? PromptSuggestion.starters : [],
+            isBusy: model.isBusy,
+            showsRun: model.session != nil,
+            runOpen: runOpen,
+            onSend: { Task { await model.send() } },
+            onSuggestion: { suggestion in
+                model.prompt = suggestion.text
                 Task { await model.send() }
-            } label: {
-                Image(systemName: model.isBusy ? "hourglass" : "arrow.up.circle.fill")
-                    .font(.title2)
+            },
+            onRun: { setRunOpen(!runOpen) }
+        )
+    }
+
+    /// Over the screen, 20 above the composer, fading in and out.
+    @ViewBuilder
+    private var runCard: some View {
+        if runOpen, let session = model.session {
+            GenerationStatusView(session: session, saveState: model.saveState) {
+                Task { await model.save() }
             }
-            .disabled(model.isBusy || model.prompt.trimmingCharacters(in: .whitespaces).isEmpty)
+            .padding(.horizontal, 16)
+            .padding(.bottom, composerHeight + 20)
+            .transition(.opacity)
         }
-        .padding(.horizontal, 16)
-        .frame(minHeight: PrimitiveMetrics.controlHeight)
-        .background(.regularMaterial)
-        .clipShape(.rect(cornerRadius: PrimitiveMetrics.controlRadius))
-        .padding(.horizontal, 16)
-        .padding(.bottom, 8)
+    }
+
+    private func setRunOpen(_ open: Bool) {
+        withAnimation(.smooth(duration: 0.3)) { runOpen = open }
+    }
+
+    /// Sent, and nothing on screen yet.
+    private var isWaiting: Bool {
+        model.isBusy && model.session?.hasContent != true
     }
 
     private var screenColor: Color {

@@ -68,7 +68,7 @@ export function StatsCard({ subject, rating, stats, className }: StatsCardProps)
       {shown.length > 0 && (
         <div data-node-id="stats" className="-mx-6 flex gap-3 overflow-x-auto px-6 py-1">
           {shown.map((stat) => (
-            <div key={stat.label} className="flex w-[124px] shrink-0 flex-col gap-1 rounded-[24px] bg-kino-surface-card p-4">
+            <div key={stat.label} className="flex min-w-[124px] shrink-0 flex-col gap-1 whitespace-nowrap rounded-[24px] bg-kino-surface-card p-4">
               <span className="text-[17px] leading-[22px] font-semibold tabular-nums">{stat.value}</span>
               <span className="text-[13px] leading-[18px] text-kino-ink-secondary">{stat.label}</span>
             </div>

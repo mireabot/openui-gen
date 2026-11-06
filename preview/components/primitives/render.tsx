@@ -81,9 +81,9 @@ const ROLL = { duration: 200, easing: "cubic-bezier(0.77, 0, 0.175, 1)" };
 /**
  * Horizontal scroll: the scroller runs edge to edge with no padding of its own; the items carry the
  * inset (first item's leading margin, last item's trailing margin) and snap to it. `--inset` is the
- * surrounding container's padding: 24 on the screen, a Card's own padding inside a card.
+ * surrounding container's padding: 16 in a top-level block, a Card's own padding inside a card.
  */
-const H_SCROLL = "-mx-[var(--inset,24px)] flex snap-x overflow-x-auto overscroll-x-contain scroll-px-[var(--inset,24px)] py-1 [scrollbar-width:none] [&>*]:shrink-0 [&>*]:snap-start [&>*:first-child]:ml-[var(--inset,24px)] [&>*:last-child]:mr-[var(--inset,24px)]";
+const H_SCROLL = "-mx-[var(--inset,16px)] flex snap-x overflow-x-auto overscroll-x-contain scroll-px-[var(--inset,16px)] py-1 [scrollbar-width:none] [&>*]:shrink-0 [&>*]:snap-start [&>*:first-child]:ml-[var(--inset,16px)] [&>*:last-child]:mr-[var(--inset,16px)]";
 
 const FADE = { duration: 125, easing: "cubic-bezier(0.23, 1, 0.32, 1)" };
 function textStyle(role: unknown, weight: unknown, color: string | undefined): CSSProperties {
@@ -195,17 +195,20 @@ function StepTimeline({ value, caption, segments, ticks }: { value: string; capt
 }
 
 /** The monogram on its disc until the image loads. A photo then sits on the disc colour and a crest on nothing, unclipped; both fit the whole frame, so a head is never cut off. */
-function AvatarFace({ name, size, rounded, disc, photoFill, image, player }: { name: string; size: number; rounded: boolean; disc: CSSProperties; photoFill: string; image: string | null | undefined; player: boolean }) {
-  const [loaded, setLoaded] = useState(false);
-  return (
+function AvatarFace({ name, size, rounded, disc, photoFill, image, player, mark }: { name: string; size: number; rounded: boolean; disc: CSSProperties; photoFill: string; image: string | null | undefined; player: boolean; mark?: ReactNode }) {
+  const [state, setState] = useState<"loading" | "ok" | "fail">("loading");
+  if (player && (!image || state === "fail")) return null;
+  const loaded = state === "ok";
+  const face = (
     <span
       className={cn("relative flex shrink-0 items-center justify-center font-medium", !(loaded && !player) && "overflow-hidden", rounded ? "rounded-[8px]" : "rounded-full")}
       style={{ width: size, height: size, fontSize: size >= 40 ? 16 : 12, ...disc, ...(loaded ? { background: "transparent" } : {}) }}
     >
       {!loaded && name.slice(0, 1)}
-      {image && <FadeImage src={image} style={player ? { background: photoFill } : undefined} onState={state => setLoaded(state === "ok")} />}
+      {image && <FadeImage src={image} style={player ? { background: photoFill } : undefined} onState={setState} />}
     </span>
   );
+  return mark ? <span className="relative inline-flex shrink-0" style={{ width: size, height: size }}>{face}{mark}</span> : face;
 }
 
 function FadeImage({ src, className, style, onState }: { src: string; className?: string; style?: CSSProperties; onState?: (s: "ok" | "fail") => void }) {
@@ -394,9 +397,12 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       return <div className="grid" style={{ gridTemplateColumns: `repeat(${p("columns")}, minmax(0, 1fr))`, columnGap: Number(p("gap") ?? 0), rowGap: Number(p("rowGap") ?? p("gap") ?? 0) }}>{kids(n, "children")}</div>;
     case "Rail": {
       const width = Number(p("width") ?? 0);
+      const minWidth = Number(p("minWidth") ?? 0);
       return (
         <div className={cn(H_SCROLL, "snap-mandatory")} style={{ gap: Number(p("gap") ?? 12) }}>
-          {width ? (n.children.children ?? []).map((id) => <div key={id} className="shrink-0" style={{ width }}><Child id={id} /></div>) : kids(n, "children")}
+          {width ? (n.children.children ?? []).map((id) => <div key={id} className="shrink-0" style={{ width }}><Child id={id} /></div>)
+            : minWidth ? (n.children.children ?? []).map((id) => <div key={id} className="flex shrink-0 [&>*]:flex-1" style={{ minWidth }}><Child id={id} /></div>)
+            : kids(n, "children")}
         </div>
       );
     }
@@ -420,7 +426,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     case "Section":
       return (
         <section className="flex flex-col gap-3">
-          <div className={cn("flex items-center justify-between gap-3", Boolean(p("sticky")) && "sticky top-0 z-10 -mx-6 px-6 py-2")} style={p("sticky") ? { background: tv("surface.screen") } : undefined}>
+          <div className={cn("flex items-center justify-between gap-3", Boolean(p("sticky")) && "sticky top-0 z-10 -mx-(--inset) px-(--inset) py-2")} style={p("sticky") ? { background: tv("surface.screen") } : undefined}>
             <button type="button" className="flex min-w-0 flex-col text-left" onClick={() => p("collapsible") && setOpen(!open)}>
               <span style={textStyle("headline", "semibold", tv("ink.primary"))}>{String(p("title"))}</span>
               {p("subtitle") != null && <span style={textStyle("footnote", "regular", tv("ink.tertiary"))}>{String(p("subtitle"))}</span>}
@@ -446,7 +452,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
         </div>
       );
     case "Divider":
-      return <div className={cn("h-px", Boolean(p("inset")) && "ml-14", Boolean(p("bleed")) && "-mx-6")} style={{ background: tv("outline.subtle") }} />;
+      return <div className={cn("h-px", Boolean(p("inset")) && "ml-14", Boolean(p("bleed")) && "-mx-(--inset)")} style={{ background: tv("outline.subtle") }} />;
     case "Spacer":
       return <div className="shrink-0" style={axis === "h" ? { width: Number(p("size") ?? 0) } : { height: Number(p("size") ?? 0) }} />;
     case "ZStack": {
@@ -478,7 +484,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       const style = textStyle(p("role"), p("weight"), dataColor ?? (typeof p("tone") === "string" ? tv(`tone.${p("tone")}.fg`) : ink(p("ink") ?? "primary")));
       return (
         <span
-          className={cn(lines === 1 && "truncate", p("align") === "center" && "text-center", p("align") === "end" && "text-right")}
+          className={cn(lines === 1 && "truncate", p("align") === "start" && "text-left", p("align") === "center" && "text-center", p("align") === "end" && "text-right")}
           style={{ ...style, ...(lines > 1 ? { display: "-webkit-box", WebkitLineClamp: lines, WebkitBoxOrient: "vertical", overflow: "hidden" } : {}),
             // reserve: always `lines` lines tall, so short and long titles keep cards the same height.
             ...(lines > 0 && p("reserve") === true ? { minHeight: `calc(${style.lineHeight} * ${lines})` } : {}) }}
@@ -527,12 +533,20 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
         </div>
       );
     case "Avatar": {
+      // A player with no photo draws nothing: a monogram for a person is noise. A club keeps its monogram.
+      if (p("kind") !== "club" && !imageUrl(p("image"))) return null;
       const size = Number(p("size") ?? 40);
       const disc: CSSProperties = { ...look(s, "monogram"), ...(typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string) ? { background: p("color") as string } : p("tint") ? { background: color(p("tint")) } : {}) };
       const image = imageUrl(p("image"));
       // A photo sits on its club's colour. With no club known it sits on a neutral fill, not a colour that reads as a club's.
       const photoFill = (typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string)) || p("tint") ? String(disc.background) : String(tv("surface.filled"));
-      return <AvatarFace key={String(image)} name={String(p("name") ?? "?")} size={size} rounded={p("shape") === "rounded"} disc={disc} photoFill={photoFill} image={image} player={p("kind") === "player"} />;
+      const markSize = size >= 56 ? 20 : 16;
+      const mark = p("mark") == null ? null : (
+          <span className="absolute -right-0.5 -bottom-0.5 grid place-items-center rounded-full" style={{ width: markSize, height: markSize, background: tv("surface.filled"), color: tv(`tone.${String(p("markTone") ?? "neutral")}.fg`), boxShadow: `0 0 0 2px ${tv("surface.card")}` }}>
+            <Icon name={p("mark")} size={12} />
+          </span>
+      );
+      return <AvatarFace key={String(image)} name={String(p("name") ?? "?")} size={size} rounded={p("shape") === "rounded"} disc={disc} photoFill={photoFill} image={image} player={p("kind") !== "club"} mark={mark} />;
     }
     case "AvatarStack": {
       // Initials on soft tints, overlapping by 8, then a +N disc (Kino taste-match / consensus voters).
@@ -832,7 +846,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       );
     case "NavBar":
       return (
-        <div className="relative -mx-6 flex h-11 items-center justify-between px-6" style={{ color: tv("ink.primary") }}>
+        <div className="relative -mx-(--inset) flex h-11 items-center justify-between px-(--inset)" style={{ color: tv("ink.primary") }}>
           {p("leading") !== "none" ? (
             <span className="flex size-11 items-center justify-center rounded-full" style={p("style") === "filled" ? look(s, "styles.filled") : undefined}>
               <Icon name={p("leading") === "close" ? "xmark" : "chevron.left"} size={24} />
@@ -844,12 +858,12 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       );
     case "Dock":
       // No shadow: a hairline separates the dock from content scrolling under it. A row wider
-      // than the screen scrolls sideways (full bleed, the 24 inset as inner padding) instead of
+      // than the screen scrolls sideways (full bleed, the 16 inset as inner padding) instead of
       // squeezing its buttons until their labels break.
       return (
-        <div className="sticky bottom-0 -mx-6 flex flex-col gap-3 pt-3 pb-(--safe-bottom) backdrop-blur-xl" style={{ background: tv("surface.screen"), borderTop: `1px solid ${tv("outline.subtle")}`, boxShadow: effect(s("effect")) }}>
+        <div className="sticky bottom-0 -mx-(--inset) flex flex-col gap-3 pt-3 pb-(--safe-bottom) backdrop-blur-xl" style={{ background: tv("surface.screen"), borderTop: `1px solid ${tv("outline.subtle")}`, boxShadow: effect(s("effect")) }}>
           {(n.children.children ?? []).map((id) => (
-            <div key={id} className="overflow-x-auto px-6 [scrollbar-width:none] [&>*]:min-w-full [&>*]:w-max"><Child id={id} /></div>
+            <div key={id} className="overflow-x-auto px-(--inset) [scrollbar-width:none] [&>*]:min-w-full [&>*]:w-max"><Child id={id} /></div>
           ))}
         </div>
       );
@@ -860,7 +874,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
 
 /**
  * Renders a tree: the placement's children (or the fragment's top node) on the theme's screen
- * surface, with the 24 screen inset and 28 between blocks. `theme` is the brand's CSS
+ * surface, with no horizontal padding of its own, a 16 inset on each block and 28 between blocks. `theme` is the brand's CSS
  * variables (lib/primitives/design.ts themeVars); `specs` the primitive specs of design.json.
  */
 /** Resolved OpenUI values use the same Kino presentation and native React child slots. */

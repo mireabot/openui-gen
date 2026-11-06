@@ -15,6 +15,21 @@ export const savedPlayerProfiles = (value: unknown): PlayerProfile[] => {
   return parsed.success ? parsed.data : [];
 };
 
+/** Preserve identities supplied by the feed before the designer chooses its fields. */
+export function feedPlayerProfiles(answers: Record<string, RecordValue>): PlayerProfile[] {
+  const profiles = new Map<string, PlayerProfile>();
+  const walk = (value: MockValue): void => {
+    if (Array.isArray(value)) { value.forEach(walk); return; }
+    const record = object(value);
+    if (!record) return;
+    const parsed = PlayerProfileSchema.safeParse({ ...record, team: record.team ?? "", position: record.position ?? "" });
+    if (parsed.success) profiles.set(`${parsed.data.fotmobId}|${playerNameKey(parsed.data.name)}`, parsed.data);
+    Object.values(record).forEach(walk);
+  };
+  Object.values(answers).forEach(walk);
+  return [...profiles.values()];
+}
+
 const queryOf = (value: RecordValue, team?: string): PlayerQuery | null => typeof value.name === "string" && value.name.trim()
   ? { name: value.name, ...(typeof value.team === "string" && value.team ? { team: value.team } : team ? { team } : {}) } : null;
 
@@ -24,7 +39,8 @@ export function rawPlayerQueries(plan: SportsPlan, answers: Record<string, Recor
     const answer = answers[question.id];
     if (!answer || answer.status !== "complete" || question.source !== "espn") continue;
     const add = (list: MockValue | undefined, team?: string) => {
-      for (const record of records(list)) { const query = queryOf(record, team); if (query) queries.push(query); }
+      // A player whose FotMob id came with the data (a match's squad sheet) needs no search.
+      for (const record of records(list)) { if (typeof record.fotmobId === "number") continue; const query = queryOf(record, team); if (query) queries.push(query); }
     };
     if (question.feed === "leaders") { add(answer.goals); add(answer.assists); }
     if (question.feed === "scorers") add(answer.scorers, question.team ?? undefined);
@@ -45,6 +61,8 @@ export function componentPlayerQueries(answers: unknown, clubs: readonly RecordV
     const record = object(value);
     if (!record) return;
     if (object(record.rating) && Array.isArray(record.stats)) add(record);
+    // A person in any list (a partner, a rival, a coach) is marked as a player by the schema stage.
+    else if (record.kind === "player") add(record);
     if (typeof record.metric === "string" && Array.isArray(record.entries)) records(record.entries).forEach(add);
     if (typeof record.metric === "string" && Array.isArray(record.rows)) for (const row of records(record.rows)) {
       for (const cell of [object(row.home), object(row.away)]) {
@@ -60,32 +78,28 @@ export function componentPlayerQueries(answers: unknown, clubs: readonly RecordV
 /** A profile answers a query by name: the lookup already settled which of any namesakes it is. */
 const matches = (profile: PlayerProfile, query: PlayerQuery) => playerNameKey(profile.name) === playerNameKey(query.name);
 
-export function createPlayerResolver(lookup: PlayerLookup, existing: readonly PlayerProfile[] = [], budgetMs = 12_000): (queries: readonly PlayerQuery[]) => Promise<PlayerProfile[]> {
-  const profiles = [...existing];
+/**
+ * Looks up every player the screen names, 4 at a time, with no cap on how many and no budget for
+ * the whole run. Only a single lookup is bounded (`timeoutMs`), so one stalled request cannot hold
+ * the screen; it counts as not found and the others carry on.
+ */
+export function createPlayerResolver(lookup: PlayerLookup, existing: readonly PlayerProfile[] = [], timeoutMs = 10_000): (queries: readonly PlayerQuery[]) => Promise<PlayerProfile[]> {
+  const profiles = [...new Map(existing.map(profile => [`${profile.fotmobId}|${playerNameKey(profile.name)}|${playerTeamKey(profile.team)}`, profile])).values()];
   const attempted = new Set<string>();
-  let remaining = budgetMs;
-  let timedOut = false;
   const keyOf = (query: PlayerQuery) => `${playerNameKey(query.name)}|${playerTeamKey(query.team ?? "")}`;
-  const withinBudget = (query: PlayerQuery, milliseconds: number): Promise<PlayerProfile | null> => new Promise(resolve => {
-    const timer = setTimeout(() => { timedOut = true; resolve(null); }, milliseconds);
+  const bounded = (query: PlayerQuery): Promise<PlayerProfile | null> => new Promise(resolve => {
+    const timer = setTimeout(() => resolve(null), timeoutMs);
     Promise.resolve().then(() => lookup(query)).then(profile => { clearTimeout(timer); resolve(profile); }, () => { clearTimeout(timer); resolve(null); });
   });
   return async queries => {
-    if (remaining <= 0) return [...profiles];
-    const started = performance.now();
-    const deadline = started + remaining;
     const unique = new Map(queries.map(query => [keyOf(query), query]));
-    const missing = [...unique.values()].filter(query => !attempted.has(keyOf(query)) && !profiles.some(profile => matches(profile, query))).slice(0, Math.max(0, 20 - attempted.size));
+    const missing = [...unique.values()].filter(query => !attempted.has(keyOf(query)) && !profiles.some(profile => matches(profile, query)));
     for (let offset = 0; offset < missing.length; offset += 4) {
-      const available = deadline - performance.now();
-      if (available <= 0) break;
       const batch = missing.slice(offset, offset + 4);
       batch.forEach(query => attempted.add(keyOf(query)));
-      const resolved = await Promise.all(batch.map(query => withinBudget(query, available)));
+      const resolved = await Promise.all(batch.map(bounded));
       for (const profile of resolved) if (profile && !profiles.some(known => known.fotmobId === profile.fotmobId)) profiles.push(profile);
-      if (timedOut) break;
     }
-    remaining = timedOut ? 0 : Math.max(0, remaining - (performance.now() - started));
     return [...profiles];
   };
 }
@@ -140,8 +154,25 @@ export function populatePlayerImages<T extends SnapshotDataset>(dataset: T, play
     const record = object(value);
     if (!record) return value;
     const result: RecordValue = Object.fromEntries(Object.entries(record).map(([key, child]) => [key, walk(child, path ? `${path}.${key}` : key)]));
+    for (const role of ["scorer", "assist"]) {
+      const name = record[role];
+      const nested = `${role}Player`;
+      if (typeof name !== "string" || !name || object(result[nested])) continue;
+      const known = players.filter(player => playerNameKey(player.name) === playerNameKey(name));
+      if (known.length === 1) {
+        const at = `${path}.${nested}`;
+        result[nested] = walk({ name, team: known[0]!.team, kind: "player" }, at);
+        for (const field of inferFields(result[nested], at)) fields.set(field.path, field);
+      }
+    }
     // A feed's athlete has its own headshot, and a namesake in FotMob is someone else.
     if (typeof record.athleteId === "string" && record.athleteId) return result;
+    // A photo that came with the data (a match's squad sheet) is the player's: a search never replaces it.
+    if (typeof record.fotmobId === "number" && typeof record.imageUrl === "string" && record.imageUrl) {
+      addField(`${path}.logo`, "text", "none");
+      addField(`${path}.kind`, "text", "none");
+      return { ...result, logo: record.imageUrl, kind: "player" };
+    }
     if (typeof record.name !== "string" || !candidateNames.has(playerNameKey(record.name))) return result;
     const query = queryOf(record);
     const candidates = query ? players.filter(player => matches(player, query)) : [];

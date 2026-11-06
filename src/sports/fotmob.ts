@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { log } from "../log.js";
 
 export const PlayerProfileSchema = z.object({
   fotmobId: z.number().int().positive(), name: z.string().min(1), team: z.string(), position: z.string(), imageUrl: z.string().url(),
@@ -83,7 +84,10 @@ export function createPlayerLookup({ send = fetchJSON }: { readonly send?: Fotmo
     const key = `${playerNameKey(query.name)}|${playerTeamKey(query.team ?? "")}`;
     const running = pending.get(key);
     if (running) return running;
-    const result = lookup(query, pick).catch(() => null).finally(() => pending.delete(key));
+    const result = lookup(query, pick).catch(error => {
+      log.warn("FotMob player lookup failed", { player: query.name, team: query.team ?? null, detail: (error instanceof Error ? error.message : String(error)).slice(0, 500) });
+      return null;
+    }).finally(() => pending.delete(key));
     pending.set(key, result);
     return result;
   };
@@ -95,7 +99,9 @@ const MatchDay = z.object({ leagues: z.array(z.object({ matches: z.array(z.objec
   id: z.number(), home: z.object({ name: z.string(), score: z.number().nullish() }).loose(), away: z.object({ name: z.string(), score: z.number().nullish() }).loose(),
 }).loose()).default([]) }).loose()).default([]) }).loose();
 const TopPlayer = z.object({ playerId: z.number(), name: z.object({ fullName: z.string() }).loose(), playerRatingRounded: z.string(), positionLabel: z.object({ label: z.string() }).loose().nullish() }).loose();
-const MatchDetails = z.object({ content: z.object({ matchFacts: z.object({ topPlayers: z.object({ homeTopPlayers: z.array(TopPlayer).default([]), awayTopPlayers: z.array(TopPlayer).default([]) }).loose().nullish() }).loose().nullish() }).loose().nullish() }).loose();
+const LineupPlayer = z.object({ id: z.number(), name: z.string() }).loose();
+const LineupSide = z.object({ starters: z.array(LineupPlayer).default([]), subs: z.array(LineupPlayer).default([]) }).loose().nullish();
+const MatchDetails = z.object({ content: z.object({ lineup: z.object({ homeTeam: LineupSide, awayTeam: LineupSide }).loose().nullish(), matchFacts: z.object({ topPlayers: z.object({ homeTopPlayers: z.array(TopPlayer).default([]), awayTopPlayers: z.array(TopPlayer).default([]) }).loose().nullish() }).loose().nullish() }).loose().nullish() }).loose();
 
 const MarketValues = z.object({ marketValues: z.object({ values: z.array(z.object({
   date: z.string(), value: z.number(), teamId: z.number().nullish(), teamName: z.string().nullish(),
@@ -162,6 +168,11 @@ export async function playerValue(query: PlayerQuery, find: (query: PlayerQuery)
 }
 
 export interface RatedPlayer { readonly fotmobId: number; readonly name: string; readonly rating: string; readonly position: string; readonly imageUrl: string }
+/** A player in a match's lineup, starter or substitute, with FotMob's id: their photo needs no search. */
+export interface LineupPlayer { readonly fotmobId: number; readonly name: string; readonly imageUrl: string }
+export interface MatchRatings { readonly home: RatedPlayer[]; readonly away: RatedPlayer[]; readonly lineup: { readonly home: LineupPlayer[]; readonly away: LineupPlayer[] } }
+
+const photoOf = (id: number) => `https://images.fotmob.com/image_resources/playerimages/${id}.png`;
 export interface MatchToRate { readonly date: string; readonly home: string; readonly away: string; readonly homeScore: number; readonly awayScore: number }
 
 const dayOf = (date: Date) => date.toISOString().slice(0, 10).replaceAll("-", "");
@@ -171,7 +182,7 @@ const dayOf = (date: Date) => date.toISOString().slice(0, 10).replaceAll("-", ""
  * clubs differently and files a late kickoff under its own day, so a match is the one on that day or
  * the day before with the same score and at least one club of a matching name. Null when none is found.
  */
-export async function matchRatings(match: MatchToRate, send: FotmobTransport = fetchJSON): Promise<{ home: RatedPlayer[]; away: RatedPlayer[] } | null> {
+export async function matchRatings(match: MatchToRate, send: FotmobTransport = fetchJSON): Promise<MatchRatings | null> {
   const kickoff = new Date(match.date);
   // "Inter" is "Internazionale" and "Milan" is "AC Milan": every word of one starts a word of the other.
   const covers = (short: string[], long: string[]) => short.length > 0 && short.every(word => long.some(part => part.startsWith(word)));
@@ -180,13 +191,14 @@ export async function matchRatings(match: MatchToRate, send: FotmobTransport = f
     const { leagues } = MatchDay.parse(await send(`https://www.fotmob.com/api/data/matches?date=${dayOf(day)}`));
     const found = leagues.flatMap(league => league.matches).find(m => m.home.score === match.homeScore && m.away.score === match.awayScore && (same(m.home.name, match.home) || same(m.away.name, match.away)));
     if (!found) continue;
-    const top = MatchDetails.parse(await send(`https://www.fotmob.com/api/data/matchDetails?matchId=${found.id}`)).content?.matchFacts?.topPlayers;
-    if (!top) return null;
+    const content = MatchDetails.parse(await send(`https://www.fotmob.com/api/data/matchDetails?matchId=${found.id}`)).content;
+    const top = content?.matchFacts?.topPlayers;
     const rated = (players: readonly z.infer<typeof TopPlayer>[]): RatedPlayer[] => players.map(p => ({
-      fotmobId: p.playerId, name: p.name.fullName, rating: p.playerRatingRounded, position: p.positionLabel?.label ?? "",
-      imageUrl: `https://images.fotmob.com/image_resources/playerimages/${p.playerId}.png`,
+      fotmobId: p.playerId, name: p.name.fullName, rating: p.playerRatingRounded, position: p.positionLabel?.label ?? "", imageUrl: photoOf(p.playerId),
     }));
-    return { home: rated(top.homeTopPlayers), away: rated(top.awayTopPlayers) };
+    // Everyone in the squad sheet, so every player of the match gets a photo without a search.
+    const squad = (side: z.infer<typeof LineupSide>): LineupPlayer[] => [...(side?.starters ?? []), ...(side?.subs ?? [])].map(p => ({ fotmobId: p.id, name: p.name, imageUrl: photoOf(p.id) }));
+    return { home: rated(top?.homeTopPlayers ?? []), away: rated(top?.awayTopPlayers ?? []), lineup: { home: squad(content?.lineup?.homeTeam), away: squad(content?.lineup?.awayTeam) } };
   }
   return null;
 }

@@ -37,20 +37,26 @@ public struct OpenUISceneView: View {
     }
 
     private var content: some View {
+        // The screen has no horizontal padding: each block carries its own 16 inset, and that inset is
+        // the bleed, so a rail (or a bleeding divider) reaches the screen edge and keeps the 16 as its
+        // row's content margins.
         VStack(alignment: .leading, spacing: PrimitiveMetrics.sectionGap) {
             ForEach(blocks, id: \.id) { handle in
                 OpenUIElementView(handle: handle)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, PrimitiveMetrics.blockInset)
                     .transition(.opacity)
             }
             ForEach(Array(pending.enumerated()), id: \.offset) { _, frame in
                 SkeletonBlockView(frame: frame)
                     .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, PrimitiveMetrics.blockInset)
                     .transition(.opacity)
             }
         }
+        .environment(\.primitiveBleed, PrimitiveMetrics.blockInset)
         .animation(.smooth(duration: 0.25), value: pending.count)
-        .padding(PrimitiveMetrics.screenInset)
+        .padding(.vertical, PrimitiveMetrics.screenInset)
     }
 
     /// The top-level blocks. `Screen` is the program's root, not a visual: this view is the screen,

@@ -1,8 +1,8 @@
 # Usage
 
 openui-gen turns one sports prompt into an OpenUI Lang program and a dataset snapshot, and streams both
-over SSE. `GENERATION_MODE` decides which transport the Claude stages use. The stages, models, effort
-values, token budgets and schemas are the same in both modes.
+over SSE. `GENERATION_MODE` selects Claude Code, the Anthropic API, or Codex. Feed lookup, dataset
+validation, and compilation use the same pipeline in every mode.
 
 | | `debug` (default) | `api` |
 | --- | --- | --- |
@@ -69,7 +69,7 @@ which "Import schema" can open. A failed run saves nothing.
 a link to the screen, which needs the preview running on port 3000 (`npm run preview`). It only creates
 new screens. The preview and the iOS app use the same backend, so they run in debug mode too.
 
-`src/llm/claude.ts` picks the transport for each call. In debug mode, `src/llm/claude-code.ts` starts
+`src/llm/generation.ts` picks the transport for each call. In debug mode, `src/llm/claude-code.ts` starts
 one `claude -p` process per call with the step's model, effort, prompts, schema and output limit. The
 process has no tools, MCP servers, settings files or saved session, and it runs outside the repo.
 
@@ -135,6 +135,34 @@ curl localhost:8080/health
 ```
 
 The backend logs the mode when it starts, and `npm run ask` prints it first.
+
+## Codex mode
+
+Codex is an alternative local runner when you want to use your signed-in Codex account. It uses
+`gpt-6.1-sol` at High effort for planning, player selection, web reading, dataset design, and composition.
+Claude's stage-specific model settings apply only in `debug` and `api` modes.
+
+```sh
+codex login
+GENERATION_MODE=codex CODEX_MODEL=gpt-6.1-sol CODEX_EFFORT=high npm run dev
+```
+
+You can also put these settings in `.env` and restart the backend. `GET /health` reports `codex`.
+The preview and iOS client then use that runner. Finished local runs remain available for replay.
+
+`src/llm/codex.ts` starts one ephemeral `codex exec` process per model call outside the repository.
+It supplies structured-output schemas for data stages and sends the writer's final text through the
+existing compiler. The CLI emits completed messages, so this path delivers the writer text when its
+message finishes rather than token by token. Each call has a five-minute timeout.
+
+The child ignores user configuration and rules. Shell execution, apps, image viewing, and web search
+are disabled. The backend removes API-key environment variables and requires ChatGPT login. Codex
+uses account limits and records $0 API cost in the trace. Parallel search is still billed separately.
+Provider errors do not switch runners or start paid API calls.
+
+The [Codex non-interactive documentation](https://learn.chatgpt.com/docs/non-interactive-mode) describes
+JSON events and output schemas. The [GPT-6.1 Sol model documentation](https://developers.openai.com/api/docs/models/gpt-6.1-sol)
+lists its reasoning settings. `npm run check:codex` checks event parsing, failures, usage, and API-key removal without a model call.
 
 ## Sports and ESPN fixtures
 

@@ -6,6 +6,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { assertCredentials, config } from "./config.js";
 import { assertClaudeCode } from "./llm/claude-code.js";
+import { assertCodex } from "./llm/codex.js";
 import { log } from "./log.js";
 import { PROJECT_ROOT } from "./paths.js";
 import { health } from "./routes/health.js";
@@ -37,6 +38,7 @@ app.onError((err, c) => {
 const cfg = config();
 assertCredentials();
 if (cfg.GENERATION_MODE === "debug") assertClaudeCode();
+if (cfg.GENERATION_MODE === "codex") assertCodex();
 
 serve({ fetch: app.fetch, port: cfg.PORT }, (info) => {
   log.info("listening", { port: info.port, mode: cfg.GENERATION_MODE, dataSource: cfg.DATA_SOURCE, model: cfg.SPORTS_MODEL, preview: existsSync(previewDir) });

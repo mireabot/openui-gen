@@ -1,4 +1,4 @@
-import { config } from "../config.js";
+import { config, type Config } from "../config.js";
 import { randomUUID } from "node:crypto";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -37,7 +37,8 @@ export interface RunStarted {
   readonly model: string;
   readonly startedAt: string;
   /** Where the Claude stages ran. A debug run's $0 is plan usage, not a free run. */
-  readonly mode: "debug" | "api";
+  readonly mode: Config["GENERATION_MODE"];
+  readonly reasoningEffort?: Config["CODEX_EFFORT"];
   readonly dataSource: "mixed" | "fotmob";
   readonly stages?: readonly Stage[];
   readonly summaryModel?: string;
@@ -135,7 +136,9 @@ export class RunRecorder {
   private readonly events: RunEvent[] = [];
 
   constructor(prompt: string, model: string, metadata: Pick<RunStarted, "stages" | "summaryModel" | "pack" | "generation" | "followUp"> = {}) {
-    this.events.push({ type: "run.started", runId: this.runId, prompt, model, startedAt: new Date().toISOString(), mode: config().GENERATION_MODE, dataSource: config().DATA_SOURCE, ...metadata });
+    const cfg = config();
+    this.events.push({ type: "run.started", runId: this.runId, prompt, model, startedAt: new Date().toISOString(), mode: cfg.GENERATION_MODE, dataSource: cfg.DATA_SOURCE,
+      ...(cfg.GENERATION_MODE === "codex" ? { reasoningEffort: cfg.CODEX_EFFORT } : {}), ...metadata });
   }
 
   recorded(): readonly RunEvent[] {

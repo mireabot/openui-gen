@@ -15,6 +15,7 @@ export type VenueRecord = {
 };
 
 export type TeamPointsProps = {
+  title?: string;
   rank: number;
   home: VenueRecord;
   away: VenueRecord;
@@ -58,12 +59,12 @@ function Venue({ icon, children }: { icon: ReactNode; children: ReactNode }) {
  * A team's points so far this season: the total and rank, then its record split by venue. From
  * team-points-breakdown/table-reference, without the screen around it.
  */
-export function TeamPoints({ rank, home, away, className }: TeamPointsProps) {
+export function TeamPoints({ title = "Home and away", rank, home, away, className }: TeamPointsProps) {
   return (
     <section data-node-id="team-points" className={cn("rounded-[24px] bg-kino-surface-card p-4", className)}>
       <header className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-[17px] leading-[22px] font-semibold">Points</h2>
+          <h2 className="text-[17px] leading-[22px] font-semibold">{title}</h2>
           <p className="text-[13px] leading-[18px] text-kino-ink-secondary">
             Rank {rank} · {home.played + away.played} played
           </p>
@@ -75,7 +76,7 @@ export function TeamPoints({ rank, home, away, className }: TeamPointsProps) {
       <div className="mt-4">
         <div className={cn(COLUMNS, "text-[13px] leading-[16px] text-kino-ink-secondary")}>
           <span />
-          <span>PL</span>
+          <span>Pld</span>
           <span>W</span>
           <span>D</span>
           <span>L</span>

@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { config } from "../config.js";
-import { claudeSender } from "../llm/claude.js";
+import { modelSender } from "../llm/generation.js";
 import { structuredCompletion, type CompletionSender, type StructuredCompletionHooks } from "../llm/structured-completion.js";
 import type { MockValue } from "../research/dataset-schema.js";
 import { researchWithParallel, type ParallelTransport } from "../research/parallel-research.js";
 import { citationKey, type WebResearch, type WebSource } from "../research/web-research.js";
-import { lookupPlayer, matchRatings, playerValue, type FotmobTransport, type PlayerLookup, type PlayerPicker, type RatedPlayer } from "./fotmob.js";
+import { lookupPlayer, matchRatings, playerNameKey, playerValue, type FotmobTransport, type LineupPlayer, type PlayerLookup, type PlayerPicker, type RatedPlayer } from "./fotmob.js";
+import { withStatBars } from "./components.js";
 import { LEAGUES, withMatchCards, type EspnTransport } from "./espn.js";
 import { isSoccer, LEAGUE_CONFIG, leagueOf, sportOf } from "./leagues.js";
 import { sportsLookup, feedSourceName } from "./feeds.js";
@@ -70,9 +71,47 @@ async function withMatchRatings(values: Record<string, MockValue>, send?: Fotmob
   if (typeof match?.date !== "string" || typeof home?.name !== "string" || typeof away?.name !== "string" || typeof home.goals !== "number" || typeof away.goals !== "number") return null;
   const ratings = await matchRatings({ date: match.date, home: home.name, away: away.name, homeScore: home.goals, awayScore: away.goals }, send).catch(() => null);
   if (!ratings) return null;
-  const plain = (players: readonly RatedPlayer[]) => players.map(player => ({ ...player }));
-  const [own, other] = match.venueSide === "home" ? [ratings.home, ratings.away] : [ratings.away, ratings.home];
-  return { teamRated: plain(own), opponentRated: plain(other) };
+  const atHome = match.venueSide === "home";
+  const [own, other] = atHome ? [ratings.home, ratings.away] : [ratings.away, ratings.home];
+  const [ownSquad, otherSquad] = atHome ? [ratings.lineup.home, ratings.lineup.away] : [ratings.lineup.away, ratings.lineup.home];
+  const [ownTeam, otherTeam] = atHome ? [home.name, away.name] : [away.name, home.name];
+  // Every player carries their club, so the server paints their disc in its colour.
+  const plain = (players: readonly RatedPlayer[], team: string) => players.map(player => ({ ...player, team, color: "" }));
+  // The squad sheet has every player's FotMob id, so their photo is known before any search.
+  const withPhotos = (players: MockValue | undefined, squad: readonly LineupPlayer[], team: string) => (Array.isArray(players) ? players : []).map(player => {
+    if (!player || typeof player !== "object" || Array.isArray(player) || typeof player.name !== "string") return player;
+    const found = inSquad(squad, player.name);
+    return { ...player, team, color: "", ...(found ? { fotmobId: found.fotmobId, imageUrl: found.imageUrl, logo: found.imageUrl, kind: "player" } : {}) };
+  });
+  const squad = [...ownSquad.map(player => ({ ...player, team: ownTeam })), ...otherSquad.map(player => ({ ...player, team: otherTeam }))];
+  const person = (name: string) => {
+    const found = inSquad(squad, name);
+    return { name, kind: "player", team: squad.find(player => player.fotmobId === found?.fotmobId)?.team ?? "", color: "",
+      fotmobId: found?.fotmobId ?? null, imageUrl: found?.imageUrl ?? "", logo: found?.imageUrl ?? "" };
+  };
+  const goals = (Array.isArray(values.goals) ? values.goals : []).map(goal => {
+    if (!goal || typeof goal !== "object" || Array.isArray(goal)) return goal;
+    return { ...goal, scorerPlayer: person(typeof goal.scorer === "string" ? goal.scorer : ""), assistPlayer: person(typeof goal.assist === "string" ? goal.assist : "") };
+  });
+  return {
+    goals,
+    teamRated: plain(own, ownTeam), opponentRated: plain(other, otherTeam),
+    teamPlayers: withPhotos(values.teamPlayers, ownSquad, ownTeam), opponentPlayers: withPhotos(values.opponentPlayers, otherSquad, otherTeam),
+  };
+}
+
+/**
+ * The squad member an ESPN name means: the same name, or the one player whose name's words all appear in
+ * the other's ("Gabriel" for ESPN's "Gabriel Magalhães"). Null when none, or more than one, fits.
+ */
+export function inSquad(squad: readonly LineupPlayer[], name: string): LineupPlayer | null {
+  const key = playerNameKey(name);
+  const exact = squad.find(player => playerNameKey(player.name) === key);
+  if (exact) return exact;
+  const words = (value: string) => playerNameKey(value).split(" ").filter(Boolean);
+  const covers = (short: string[], long: string[]) => short.length > 0 && short.every(word => long.includes(word));
+  const fits = squad.filter(player => { const [a, b] = [words(player.name), words(name)]; return covers(a, b) || covers(b, a); });
+  return fits.length === 1 ? fits[0]! : null;
 }
 
 export interface ResearchDeps {
@@ -118,7 +157,8 @@ export async function answerSports(plan: SportsPlan, prompt: string, now: Date, 
         hooks.progress?.(`${feedSourceName(question.league)} ${question.feed}${question.team ? ` · ${question.team}` : ""}${question.opponent ? ` v ${question.opponent}` : ""}: ${question.text.slice(0, 100)}`);
         const espn = await sportsLookup({ league: question.league, feed: question.feed, team: question.team, opponent: question.opponent, dates: question.date, season: question.season, ...(question.player ? { player: question.player } : {}), ...(question.week != null ? { week: question.week } : {}),
           ...(question.lastGames !== undefined ? { lastGames: question.lastGames } : {}), ...(question.allCompetitions !== undefined ? { allCompetitions: question.allCompetitions } : {}) }, deps.espn, now);
-        const values = withMatchCards(espn.values, LEAGUES[question.league], timeZone ?? leagueOf(question.league).defaultTimeZone, sportOf(question.league));
+        // A match's figures come as StatBar records, one per stat in club colours.
+        const values = withStatBars(withMatchCards(espn.values, LEAGUES[question.league], timeZone ?? leagueOf(question.league).defaultTimeZone, sportOf(question.league))) as Record<string, MockValue>;
         // FotMob rates soccer only, so another sport must not spend a request on it.
         const rated = question.feed === "match" && isSoccer(question.league) ? await withMatchRatings(values, deps.fotmob) : null;
         const complete = { ...values, ...rated };
@@ -140,7 +180,7 @@ export async function answerSports(plan: SportsPlan, prompt: string, now: Date, 
           model: cfg.SPORTS_SEARCH_MODEL, maxTokens: 8_000, schema: z.toJSONSchema(FindingSchema) as Record<string, unknown>,
           messages: [{ role: "system", content: `${FINDING_SYSTEM}\nSub-question: ${question.text}` }, { role: "user", content: JSON.stringify({ findings: found.findings, sources: found.sources }) }],
         },
-        send: deps.extract ?? claudeSender({ effort: "medium", fallbacks: true }),
+        send: deps.extract ?? modelSender({ effort: "medium", fallbacks: true }),
         parse: text => FindingSchema.parse(JSON.parse(text)),
         hooks: { usage: ({ model, usage, attempt, ms }) => hooks.usage?.({ stage: "data", model, attempt, inputTokens: usage.promptTokens, outputTokens: usage.completionTokens, costUSD: usage.costUSD ?? 0, ms }) } satisfies StructuredCompletionHooks,
       });

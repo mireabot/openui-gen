@@ -34,16 +34,18 @@ npm run preview               # preview on :3000, calling :8080
 
 ## Generation modes
 
-`GENERATION_MODE` picks where the Claude stages run. Stages, models and effort are the same in both.
+`GENERATION_MODE` picks the model runner. The feed, dataset, and compiler pipeline stays the same.
 
-| Mode | Claude stages | Search |
+| Mode | Model stages | Search |
 | --- | --- | --- |
 | `debug` (default) | Local `claude` CLI, on your plan's limits. Needs `claude auth login`. | Parallel, billed |
 | `api` (always in the Docker image) | Anthropic API, billed to `ANTHROPIC_API_KEY` | Parallel, billed |
+| `codex` | Local Codex CLI using `gpt-6.1-sol` at High effort for every stage. Needs `codex login`. | Parallel, billed |
 
-Debug calls record a cost of $0, and `GET /health` reports the mode. To run one generation from the
+Local CLI calls record a cost of $0, and `GET /health` reports the mode. To run one generation from the
 terminal, start the backend and run `npm run ask -- "Chelsea stats last season"`.
-See `Usage.md` for the pipeline and both modes.
+Set `GENERATION_MODE=codex` to select Codex. `CODEX_MODEL` and `CODEX_EFFORT` override its defaults.
+See `Usage.md` for the pipeline and all modes.
 
 `OPENUI-LANG.md` explains the pipeline (Haiku plans, ESPN feeds and Parallel searches read by Sonnet
 answer every question at once, Opus designs the dataset and writes the screen), the component

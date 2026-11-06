@@ -12,7 +12,8 @@ import { YearTimelineItemSchema } from "../primitives/year-timeline.js";
  * zod key order), so it is API once a primitive is released: required first, optional last.
  *
  * Ground rules are baked into the primitive, not exposed as props: a Button is 44 tall, a Card
- * has radius 24 and padding 16, a Rail is full-bleed with the 24 inset inside. Props only choose
+ * has radius 24 and padding 16, each top-level block has a 16 inset, and a Rail is full-bleed with
+ * that inset inside its row. Props only choose
  * between token values the rules allow.
  *
  * `Repeat` is gone: `@Each(list, "p", Template(p.x))` makes the items and the Stack, Grid or Rail
@@ -65,7 +66,7 @@ export const PRIMITIVES = [
   P({
     name: "Screen", category: "root", intent: "The whole response, top to bottom.",
     props: { children: nodes({ min: 1 }), placement: opt(copy.oneOf(["page", "sheet"])), appearance: opt(copy.oneOf(["light", "dark"])) },
-    behaviors: [], rules: ["24 screen inset", "28 between top-level blocks"],
+    behaviors: [], rules: ["no horizontal padding of its own: each top-level block carries a 16 horizontal inset", "a horizontal scroller (Rail) runs edge to edge; the 16 is its row's inner padding", "24 top and bottom", "28 between top-level blocks"],
     skeleton: "top-level blocks 28 apart, each as its own skeleton",
   }),
 
@@ -90,8 +91,8 @@ export const PRIMITIVES = [
   }),
   P({
     name: "Rail", category: "layout", intent: "A horizontal scroll row of peer items that runs edge to edge.",
-    props: { gap: token("space", "12, the rail standard"), children: nodes({ min: 2 }), width: opt(copy.int("each item's width in points; 170 is the rail standard")) },
-    behaviors: ["scroll", "stagger-in"], rules: ["gap 12 between items (the standard)", "items 170 wide (the standard width)", "full-bleed scroll container with no padding; the items carry the inset and snap to it", "py-1 so rings and shadows are not clipped"],
+    props: { gap: token("space", "12, the rail standard"), children: nodes({ min: 2 }), width: opt(copy.int("each item's width in points; 170 is the rail standard")), minWidth: opt(copy.int("with no width: each item keeps its own width but is at least this wide; 124 for stat tiles")) },
+    behaviors: ["scroll", "stagger-in"], rules: ["gap 12 between items (the standard)", "items 170 wide (the standard width), or their own width, at least minWidth, when the rail has no width", "full-bleed scroll container with no padding; its row carries the inset (16 in a top-level block, a card's padding in a card) and items snap to it", "py-1 so rings and shadows are not clipped"],
     skeleton: "keeps its scroll row; children as skeletons",
   }),
   P({
@@ -116,7 +117,7 @@ export const PRIMITIVES = [
   }),
   P({
     name: "Divider", category: "layout", intent: "A hairline between two parts.",
-    props: { inset: opt(copy.bool()), bleed: opt(copy.bool("edge to edge across the 24 screen inset")) },
+    props: { inset: opt(copy.bool()), bleed: opt(copy.bool("edge to edge across its block's 16 inset (a card's padding inside a card)")) },
     behaviors: [], rules: ["1px separator colour"], skeleton: "unchanged hairline",
   }),
   P({
@@ -192,8 +193,10 @@ export const PRIMITIVES = [
   P({
     name: "Avatar", category: "media", intent: "A person or company mark: image, or monogram on a tint.",
     props: { name: copy.text(), size: token("avatarSize"), image: opt(data.image()), tint: opt(token("ink")), shape: opt(copy.oneOf(["circle", "rounded"])), color: opt(data.discColor("from the data: a player's club colour fills the disc behind the photo; \"clear\" for a club with a logo, whose crest has no fill; a club without a logo uses its colour for the monogram")),
-      kind: opt(copy.oneOf(["club", "player"], "club (default): a crest with nothing behind it · player: a headshot on the disc colour; both fit the whole frame")) },
-    behaviors: [], rules: ["fully round, or radius 8 when rounded", "the image scales proportionally to fit the whole frame with no padding, so a player's head is never cut off; the shape's corners mask a photo", "club: a loaded crest has nothing behind it and no mask", "player: the disc colour behind the image", "image loads async (a URL or a server path resolved against the streaming server): the monogram shows first, the loaded image replaces it (150ms ease-out), and a failed load keeps the monogram"],
+      kind: opt(copy.oneOf(["club", "player"], "club (default): a crest with nothing behind it · player: a headshot on the disc colour; both fit the whole frame")),
+      mark: opt(copy.icon("an SF Symbol on a small disc at the bottom right, e.g. \"bandage.fill\" for an injured player")),
+      markTone: opt(token("tone", "the mark's colour; neutral by default")) },
+    behaviors: [], rules: ["fully round, or radius 8 when rounded", "the image scales proportionally to fit the whole frame with no padding, so a player's head is never cut off; the shape's corners mask a photo", "club: a loaded crest has nothing behind it and no mask", "player: the disc colour behind the image", "no image or failed load: omit the avatar and keep the row content; only kind club keeps a monogram", "image loads async (a URL or a server path resolved against the streaming server): the monogram shows first, the loaded image replaces it (150ms ease-out), and a failed club image keeps the monogram", "mark: a filled disc (20 on a 56 avatar, 16 below) overhanging the bottom-right corner by 2, its glyph 12 in the tone's colour, ringed 2 in the card surface"],
     skeleton: "circle (or radius-8 square) at its size",
   }),
   P({

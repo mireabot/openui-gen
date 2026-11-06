@@ -16,9 +16,10 @@ const Schema = z.object({
   PORT: z.coerce.number().int().positive().default(8080),
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
 
-  // Where the Claude stages run. "debug": the local Claude Code CLI, on the signed-in plan's limits.
-  // "api": the Anthropic API, billed to ANTHROPIC_API_KEY. Models and effort match; search is Parallel in both.
-  GENERATION_MODE: z.enum(["debug", "api"]).default("debug"),
+  // "debug": Claude Code. "api": Anthropic API. "codex": local Codex CLI with its own model and effort.
+  GENERATION_MODE: z.enum(["debug", "api", "codex"]).default("debug"),
+  CODEX_MODEL: z.string().min(1).default("gpt-6.1-sol"),
+  CODEX_EFFORT: z.enum(["low", "medium", "high", "xhigh", "max"]).default("high"),
 
   // Where football data comes from. "mixed": ESPN for tables, matches and clubs, FotMob for players.
   // "fotmob": FotMob for all of it, so clubs outside ESPN's six competitions work. FotMob's terms
@@ -32,8 +33,7 @@ const Schema = z.object({
   // Parallel Search depth: "advanced" (~3 s, most thorough) unless set lower for latency.
   PARALLEL_SEARCH_MODE: z.enum(["turbo", "fast", "basic", "advanced"]).default("advanced"),
 
-  // The sports endpoint: Haiku understands the request, Sonnet reads each
-  // parallel search's pages into cited facts, Opus shapes the dataset and writes the screen.
+  // Claude model stages. Codex mode uses CODEX_MODEL for every stage.
   SPORTS_PLAN_MODEL: z.string().min(1).default("claude-haiku-5-5"),
   SPORTS_SEARCH_MODEL: z.string().min(1).default("claude-sonnet-5-5"),
   SPORTS_MODEL: z.string().min(1).default("claude-opus-5-5"),
@@ -79,7 +79,10 @@ export function config(): Config {
     const lines = parsed.error.issues.map((i) => `  ${i.path.join(".")}: ${i.message}`);
     throw new Error(`Invalid environment:\n${lines.join("\n")}`);
   }
-  cached = parsed.data;
+  const cfg = parsed.data;
+  cached = cfg.GENERATION_MODE === "codex"
+    ? { ...cfg, SPORTS_PLAN_MODEL: cfg.CODEX_MODEL, SPORTS_SEARCH_MODEL: cfg.CODEX_MODEL, SPORTS_MODEL: cfg.CODEX_MODEL }
+    : cfg;
   return cached;
 }
 

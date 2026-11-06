@@ -53,22 +53,25 @@ struct SectionPrimitive: View {
 
     private var header: some View {
         HStack(spacing: PrimitiveMetrics.labelGap) {
-            Button {
-                withAnimation(.snappy) { isOpen.toggle() }
-            } label: {
-                HStack(spacing: 8) {
-                    titles
-                    if props.flag("collapsible") {
+            // Only a collapsible section's title is a button: a disabled button dims its label, which
+            // turned every other section's primary title secondary.
+            if props.flag("collapsible") {
+                Button {
+                    withAnimation(.snappy) { isOpen.toggle() }
+                } label: {
+                    HStack(spacing: 8) {
+                        titles
                         Image(systemName: "chevron.down")
                             .font(.system(size: 14, weight: .semibold))
                             .rotationEffect(.degrees(isOpen ? 0 : -90))
                             .foregroundStyle(palette.color(token: "ink.tertiary"))
                     }
+                    .contentShape(.rect)
                 }
-                .contentShape(.rect)
+                .buttonStyle(.plain)
+            } else {
+                titles
             }
-            .buttonStyle(.plain)
-            .disabled(!props.flag("collapsible"))
             Spacer(minLength: 0)
             PrimitiveChildren(ids: props.childReferences("trailing"))
         }

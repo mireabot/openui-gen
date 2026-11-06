@@ -1,6 +1,6 @@
 "use client";
 
-import { Component, createContext, useContext, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Children, Component, createContext, useContext, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { createLibrary, Renderer, useRendererQuery, type ComponentRenderProps, type OpenUIError } from "@openuidev/react-lang";
 import { LIBRARY } from "../../../src/lang/library";
 import { PRIMITIVES, type PrimitiveDef } from "../../../src/lang/primitives";
@@ -52,12 +52,16 @@ function rendererFor(name: string) {
   };
 }
 
+/** A top-level block: the screen has no horizontal padding, so each block carries the 16 inset. Rails and bleeding dividers reach back to the edge through --inset. */
+const Blocks = ({ children }: { children: ReactNode }) => <>{Children.map(children, child => <div className="min-w-0 px-(--inset)">{child}</div>)}</>;
+const SCREEN_INSET = { "--inset": "16px" } as CSSProperties;
+
 function OpenUIScreen({ children, placement }: { children: ReactNode; placement: Value | undefined }) {
   const query = useRendererQuery();
   const { pending, layout } = useContext(RuntimeCtx);
   if (query.errors.length) return null;
   if (layout === "inline") return <div className="flex min-w-0 flex-col gap-4" style={{ color: "var(--ds-ink-primary)" }}>{query.isLoading ? null : children}{pending}</div>;
-  return placement === "sheet" ? <div className="flex min-h-[874px] flex-col bg-black pt-(--safe-top)"><div className="mx-4 mt-2 h-4 rounded-t-[24px]" style={{ background: "var(--ds-surface-filled)" }} /><div className="relative -mt-2 flex flex-1 flex-col gap-7 rounded-t-[24px] px-6 pb-(--safe-bottom)" style={{ background: "var(--ds-surface-screen)", color: "var(--ds-ink-primary)" }}>{query.isLoading ? null : children}{pending}</div></div> : <div className="flex min-h-[874px] flex-col gap-7 px-6 pt-(--safe-top) pb-(--safe-bottom)" style={{ background: "var(--ds-surface-screen)", color: "var(--ds-ink-primary)" }}>{query.isLoading ? null : children}{pending}</div>;
+  return placement === "sheet" ? <div className="flex min-h-[874px] flex-col bg-black pt-(--safe-top)"><div className="mx-4 mt-2 h-4 rounded-t-[24px]" style={{ background: "var(--ds-surface-filled)" }} /><div className="relative -mt-2 flex flex-1 flex-col gap-7 rounded-t-[24px] pb-(--safe-bottom)" style={{ ...SCREEN_INSET, background: "var(--ds-surface-screen)", color: "var(--ds-ink-primary)" }}>{query.isLoading ? null : <Blocks>{children}</Blocks>}<Blocks>{pending}</Blocks></div></div> : <div className="flex min-h-[874px] flex-col gap-7 pt-(--safe-top) pb-(--safe-bottom)" style={{ ...SCREEN_INSET, background: "var(--ds-surface-screen)", color: "var(--ds-ink-primary)" }}>{query.isLoading ? null : <Blocks>{children}</Blocks>}<Blocks>{pending}</Blocks></div>;
 }
 
 const OPENUI_LIBRARY = createLibrary({ root: "Screen", components: Object.values(LIBRARY.components).map(def => ({ ...def, component: rendererFor(def.name) })) });

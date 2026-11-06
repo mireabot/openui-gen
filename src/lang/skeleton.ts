@@ -100,7 +100,7 @@ function frame(n: PNode, byId: Map<string, PNode>, depth: number): SkeletonFrame
     case "Grid":
       return { kind: "grid", columns: num(p.columns) ?? 2, gap: num(p.gap) ?? 0, ...(p.rowGap != null ? { rowGap: num(p.rowGap) ?? 0 } : {}), children: all() };
     case "Rail":
-      return { kind: "rail", gap: num(p.gap) ?? 12, ...(num(p.width) ? { width: num(p.width)! } : {}), children: all() };
+      return { kind: "rail", gap: num(p.gap) ?? 12, ...(num(p.width) ?? num(p.minWidth) ? { width: (num(p.width) ?? num(p.minWidth))! } : {}), children: all() };
     case "Card": {
       const surface = str(p.surface) ?? "card";
       return { kind: "box", radius: p.radius === "control" ? 12 : 24, surface, padding: num(p.padding) ?? 16, children: [{ kind: "stack", axis: "v", gap: num(p.gap) ?? 16, children: all() }] };

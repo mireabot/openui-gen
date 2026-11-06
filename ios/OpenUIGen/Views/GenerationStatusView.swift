@@ -1,89 +1,115 @@
 import SwiftUI
 
-/// The run at a glance: its timer, the step it is on and what it has cost, with each step's cost one
-/// tap away. Steps stay open until the first part is on screen. A finished screen can be saved.
+/// The run, opened from the composer's `$` button: how many steps and whether it is still going, its
+/// time and cost, then one row per step, a spinner while it works and a check when done, with its
+/// cost. A finished screen ends with a row that saves it.
 struct GenerationStatusView: View {
     let session: OpenUISession
     let saveState: AskModel.SaveState
     let onSave: () -> Void
 
-    @State private var expanded: Bool?
+    @Environment(\.primitivePalette) private var palette
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Button {
-                expanded = !showsSteps
-            } label: {
-                summary
-            }
-            .buttonStyle(.plain)
-            if showsSteps {
-                ForEach(session.activities, id: \.stage) { activity in
-                    StepRow(activity: activity, cost: session.stageCosts[activity.stage])
-                }
+        VStack(alignment: .leading, spacing: 16) {
+            header
+            ForEach(session.activities, id: \.stage) { activity in
+                StepRow(activity: activity, cost: session.stageCosts[activity.stage])
             }
             if session.phase == .ready, session.document != nil {
-                saveButton
+                saveRow
             }
         }
-        .padding(12)
-        .background(.regularMaterial)
-        .clipShape(.rect(cornerRadius: PrimitiveMetrics.controlRadius))
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(palette.color(token: "surface.card"), in: .rect(cornerRadius: PrimitiveMetrics.containerRadius))
+        .overlay {
+            RoundedRectangle(cornerRadius: PrimitiveMetrics.containerRadius)
+                .strokeBorder(palette.color(token: "outline.control"), lineWidth: 0.5)
+        }
+        .shadow(color: .black.opacity(0.35), radius: 24, y: 8)
     }
 
-    private var summary: some View {
-        HStack(spacing: 8) {
-            if isRunning {
-                ProgressView()
-            }
-            Text(currentStep)
-                .font(.subheadline.weight(.medium))
-                .lineLimit(1)
-            Spacer(minLength: 8)
-            Text(session.totalCost, format: .currency(code: "USD").precision(.fractionLength(3)))
-                .font(.footnote)
+    // MARK: Pieces
+
+    /// "4 steps running", then the time and the cost so far.
+    private var header: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 6) {
+            Text("\(session.activities.count) \(session.activities.count == 1 ? "step" : "steps")")
+                .primitiveFont(.headline, weight: .semibold)
+            Text(state)
+                .primitiveFont(.headline)
                 .foregroundStyle(.secondary)
+            Spacer(minLength: 12)
             TimelineView(.periodic(from: session.startedAt, by: 1)) { context in
                 Text(Self.clock((session.finishedAt ?? context.date).timeIntervalSince(session.startedAt)))
             }
-            .font(.footnote.weight(.medium))
-            Image(systemName: showsSteps ? "chevron.up" : "chevron.down")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
+            .primitiveFont(.footnote)
+            .foregroundStyle(.secondary)
+            Text(session.totalCost, format: .currency(code: "USD").precision(.fractionLength(3)))
+                .primitiveFont(.footnote, weight: .medium)
         }
         .monospacedDigit()
-        .contentShape(.rect)
     }
 
-    @ViewBuilder
-    private var saveButton: some View {
-        Button(action: onSave) {
-            switch saveState {
-            case .idle: Label("Save result", systemImage: "square.and.arrow.down")
-            case .saving: ProgressView()
-            case .saved: Label("Saved", systemImage: "checkmark")
-            case .failed: Label("Could not save. Try again", systemImage: "arrow.clockwise")
+    /// The screen itself, done: a check, what can happen to it, and the save pill.
+    private var saveRow: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.body)
+                .foregroundStyle(palette.color(token: "ink.brand"))
+                .frame(width: 20)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Screen")
+                    .primitiveFont(.body, weight: .medium)
+                Text(saveDetail)
+                    .primitiveFont(.footnote)
+                    .foregroundStyle(palette.color(token: saveState == .failed ? "tone.bad" : "ink.brand"))
             }
+            Spacer(minLength: 12)
+            Button(action: onSave) {
+                Group {
+                    if saveState == .saving {
+                        ProgressView().controlSize(.small)
+                    } else {
+                        Text(saveLabel)
+                    }
+                }
+                .primitiveFont(.footnote, weight: .semibold)
+                .foregroundStyle(palette.color(token: "surface.screen"))
+                .padding(.horizontal, 14)
+                .frame(height: 32)
+                .background(palette.color(token: "ink.primary"), in: .capsule)
+            }
+            .buttonStyle(.plain)
+            .disabled(saveState == .saving || saveState == .saved)
+            .opacity(saveState == .saved ? 0.5 : 1)
         }
-        .buttonStyle(.bordered)
-        .disabled(saveState == .saving || saveState == .saved)
     }
 
-    private var isRunning: Bool {
-        session.phase == .loading || session.phase == .updating
-    }
+    // MARK: Derived
 
-    private var showsSteps: Bool {
-        expanded ?? !session.hasContent
-    }
-
-    private var currentStep: String {
+    private var state: String {
         switch session.phase {
-        case .ready: "Done"
-        case .idle: "Stopped"
-        case .loading, .updating: session.activities.last?.title ?? "Starting"
+        case .ready: "done"
+        case .idle: "stopped"
+        case .loading, .updating: "running"
+        }
+    }
+
+    private var saveDetail: String {
+        switch saveState {
+        case .idle, .saving: "Ready to save"
+        case .saved: "Saved"
+        case .failed: "Could not save"
+        }
+    }
+
+    private var saveLabel: String {
+        switch saveState {
+        case .idle, .saving: "Save"
+        case .saved: "Saved"
+        case .failed: "Try again"
         }
     }
 
@@ -93,33 +119,40 @@ struct GenerationStatusView: View {
     }
 }
 
-/// One pipeline step: done or working, its search counts or current detail, and its cost.
+/// One pipeline step: a spinner while it works or a check when done, its name, its search counts or
+/// current detail, and its cost.
 private struct StepRow: View {
     let activity: DSLActivity
     let cost: Double?
 
+    @Environment(\.primitivePalette) private var palette
+
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
-            if activity.status == .completed {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-            } else {
-                ProgressView()
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(activity.title)
-                    .font(.footnote.weight(.medium))
-                if let line = activity.searchSummary ?? (activity.status == .completed ? nil : activity.detail) {
-                    Text(line)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
+        HStack(alignment: .top, spacing: 12) {
+            Group {
+                if activity.status == .completed {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.body)
+                        .foregroundStyle(palette.color(token: "ink.brand"))
+                } else {
+                    ProgressView().controlSize(.small)
                 }
             }
-            Spacer(minLength: 8)
+            .frame(width: 20, height: 20)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(activity.title)
+                    .primitiveFont(.body, weight: .medium)
+                if let line = activity.searchSummary ?? (activity.status == .completed ? nil : activity.detail) {
+                    Text(line)
+                        .primitiveFont(.footnote)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            Spacer(minLength: 12)
             if let cost {
                 Text(cost, format: .currency(code: "USD").precision(.fractionLength(3)))
-                    .font(.caption)
+                    .primitiveFont(.footnote)
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
