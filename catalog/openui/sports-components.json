@@ -314,7 +314,8 @@
         {
           "path": "columns",
           "kind": "text",
-          "note": "\"10\"; the server sets it from the number of results"
+          "note": "\"10\"; the server sets it from the number of results",
+          "by": "server"
         }
       ],
       "params": []
@@ -337,7 +338,8 @@
         {
           "path": "detail",
           "kind": "text",
-          "note": "club · position for a player, league · season for a club"
+          "note": "club · position for a player, league · season for a club",
+          "by": "server"
         },
         {
           "path": "logo",
@@ -352,37 +354,44 @@
         {
           "path": "rating.value",
           "kind": "text",
-          "note": "rating as shown, e.g. \"6.60\"; leave rating out when there is none"
+          "note": "rating as shown, e.g. \"6.60\"; leave rating out when there is none",
+          "by": "server"
         },
         {
           "path": "rating.tone",
           "kind": "tone",
-          "note": "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\""
+          "note": "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\"",
+          "by": "server"
         },
         {
           "path": "rating.fill",
           "kind": "text",
-          "note": "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand"
+          "note": "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand",
+          "by": "server"
         },
         {
           "path": "rating.ink",
           "kind": "text",
-          "note": "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand"
+          "note": "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand",
+          "by": "server"
         },
         {
           "path": "rating.label",
           "kind": "text",
-          "note": "e.g. \"Season rating\""
+          "note": "e.g. \"Season rating\"",
+          "by": "server"
         },
         {
           "path": "rating.caption",
           "kind": "text",
-          "note": "what it averages, e.g. \"Average of 6 matches\", or \"\""
+          "note": "what it averages, e.g. \"Average of 6 matches\", or \"\"",
+          "by": "server"
         },
         {
           "path": "rating.show",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "stats",
@@ -402,7 +411,8 @@
         {
           "path": "showStats",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         }
       ],
       "params": []
@@ -573,7 +583,8 @@
         {
           "path": "showVenues",
           "kind": "boolean",
-          "note": "whether to show home and away here; false when a TeamPoints record answers them, which is their primary place"
+          "note": "whether to show home and away here; false when a TeamPoints record answers them, which is their primary place",
+          "by": "server"
         }
       ],
       "params": []
@@ -1134,7 +1145,8 @@
         {
           "path": "columnCount",
           "kind": "text",
-          "note": "\"5\"; the server sets it from the columns"
+          "note": "\"5\"; the server sets it from the columns",
+          "by": "server"
         },
         {
           "path": "columns",
@@ -1227,57 +1239,68 @@
         {
           "path": "detail",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "badge.label",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "badge.tone",
           "kind": "tone",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "badge.show",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "wait.label",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "wait.value",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "wait.day",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "wait.dated",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "wait.undated",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "line",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "sourceLine",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         }
       ],
       "params": []
@@ -1295,7 +1318,8 @@
         {
           "path": "showHeading",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players",
@@ -1355,57 +1379,68 @@
         {
           "path": "players[].detail",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].badge.label",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].badge.tone",
           "kind": "tone",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].badge.show",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].wait.label",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].wait.value",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].wait.day",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].wait.dated",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].wait.undated",
           "kind": "boolean",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].line",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         },
         {
           "path": "players[].sourceLine",
           "kind": "text",
-          "note": "the server sets this"
+          "note": "the server sets this",
+          "by": "server"
         }
       ],
       "params": []

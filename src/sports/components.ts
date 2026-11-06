@@ -1,5 +1,5 @@
 import { each, ui, type Node } from "../lang/program.js";
-import { ROOT_NAMES } from "./names.js";
+import { NEST_DEPTH, ROOT_NAMES } from "./names.js";
 
 /**
  * The Sports component index: the sports components as server templates. Each entry says what it is for, when to use it, and the exact data contract it
@@ -21,6 +21,8 @@ export interface ContractField {
   readonly path: string;
   readonly kind: "text" | "number" | "boolean" | "tone" | "ink" | "color" | "list";
   readonly note: string;
+  /** The server sets or defaults it after the dataset stage, so a record fits its data without it. */
+  readonly by?: "server";
 }
 
 export interface SportsComponent {
@@ -34,6 +36,8 @@ export interface SportsComponent {
 }
 
 const f = (path: string, kind: ContractField["kind"], note: string): ContractField => ({ path, kind, note });
+/** A field the server sets or defaults; `note` says how when that helps the designer. */
+const s = (path: string, kind: ContractField["kind"], note = "the server sets this"): ContractField => ({ path, kind, note, by: "server" });
 const CLUB_COLOR = "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\"";
 const team = (prefix: string): ContractField[] => [
   f(`${prefix}.name`, "text", "team name"),
@@ -107,17 +111,17 @@ const injuredPlayer = (prefix: string): ContractField[] => [
   f(`${prefix}returnDate`, "text", "the expected return as \"YYYY-MM-DD\", or \"\" when no date is given or the player is out for the season"),
   f(`${prefix}returnNote`, "text", "what stands in for a missing date, e.g. \"Out for season\" or \"Mid-January 2027\"; \"\" otherwise"),
   f(`${prefix}reportedBy`, "text", "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"),
-  f(`${prefix}detail`, "text", "the server sets this"),
-  f(`${prefix}badge.label`, "text", "the server sets this"),
-  f(`${prefix}badge.tone`, "tone", "the server sets this"),
-  f(`${prefix}badge.show`, "boolean", "the server sets this"),
-  f(`${prefix}wait.label`, "text", "the server sets this"),
-  f(`${prefix}wait.value`, "text", "the server sets this"),
-  f(`${prefix}wait.day`, "text", "the server sets this"),
-  f(`${prefix}wait.dated`, "boolean", "the server sets this"),
-  f(`${prefix}wait.undated`, "boolean", "the server sets this"),
-  f(`${prefix}line`, "text", "the server sets this"),
-  f(`${prefix}sourceLine`, "text", "the server sets this"),
+  s(`${prefix}detail`, "text"),
+  s(`${prefix}badge.label`, "text"),
+  s(`${prefix}badge.tone`, "tone"),
+  s(`${prefix}badge.show`, "boolean"),
+  s(`${prefix}wait.label`, "text"),
+  s(`${prefix}wait.value`, "text"),
+  s(`${prefix}wait.day`, "text"),
+  s(`${prefix}wait.dated`, "boolean"),
+  s(`${prefix}wait.undated`, "boolean"),
+  s(`${prefix}line`, "text"),
+  s(`${prefix}sourceLine`, "text"),
 ];
 
 /** The photo on the team colour, with a band-aid at its bottom right. */
@@ -313,7 +317,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("results[].label", "text", "spoken result, e.g. \"Win\", \"Draw\", \"Tie\", \"Loss\" or \"Upcoming\"; not visible in the square"),
       f("results[].fill", "text", "win \"tone.good.fg\", loss \"tone.bad.fg\", draw or tie \"outline.control\", upcoming \"surface.filled\""),
       f("tally", "text", "e.g. \"4 won · 1 drawn · 3 lost\" or \"6-2\""),
-      f("columns", "text", "\"10\"; the server sets it from the number of results"),
+      s("columns", "text", "\"10\"; the server sets it from the number of results"),
     ],
     params: [],
     build: h => ui.Card({ children: [
@@ -332,20 +336,20 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     contract: [
       f("name", "text", "player or club"),
       f("kind", "text", "\"player\" or \"club\": a player's photo sits on the club colour, a crest on white"),
-      f("detail", "text", "club · position for a player, league · season for a club"),
+      s("detail", "text", "club · position for a player, league · season for a club"),
       f("logo", "text", "photo or logo URL, or \"\""),
       f("color", "color", "a player: their club's colour \"#rrggbb\", or \"\"; a club: \"clear\" with a logo, else its colour"),
-      f("rating.value", "text", "rating as shown, e.g. \"6.60\"; leave rating out when there is none"),
-      f("rating.tone", "tone", "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\""),
-      f("rating.fill", "text", "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand"),
-      f("rating.ink", "text", "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand"),
-      f("rating.label", "text", "e.g. \"Season rating\""),
-      f("rating.caption", "text", "what it averages, e.g. \"Average of 6 matches\", or \"\""),
-      f("rating.show", "boolean", "the server sets this"),
+      s("rating.value", "text", "rating as shown, e.g. \"6.60\"; leave rating out when there is none"),
+      s("rating.tone", "tone", "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\""),
+      s("rating.fill", "text", "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand"),
+      s("rating.ink", "text", "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand"),
+      s("rating.label", "text", "e.g. \"Season rating\""),
+      s("rating.caption", "text", "what it averages, e.g. \"Average of 6 matches\", or \"\""),
+      s("rating.show", "boolean"),
       f("stats", "list", "any number, in reading order; leave out a stat with no value"),
       f("stats[].label", "text", "e.g. \"Goals\""),
       f("stats[].value", "text", "one figure or a few words, e.g. \"5\", \"86%\" or \"Norway\""),
-      f("showStats", "boolean", "the server sets this"),
+      s("showStats", "boolean"),
     ],
     params: [],
     build: c => ui.Stack({ axis: "v", gap: 12, children: [
@@ -416,7 +420,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("rows[].weight", "text", "\"medium\" for the team, \"regular\" for the others"),
       f("home.detail", "text", "points and record at home, e.g. \"7 pts · 2-1-1\", from the schedule's venues; \"\" without them"),
       f("away.detail", "text", "the same away"),
-      f("showVenues", "boolean", "whether to show home and away here; false when a TeamPoints record answers them, which is their primary place"),
+      s("showVenues", "boolean", "whether to show home and away here; false when a TeamPoints record answers them, which is their primary place"),
     ],
     params: [],
     build: l => ui.Card({ children: [
@@ -588,7 +592,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     useWhen: "requested multi-subject box-score columns, full standings, a game log or an NBA/NFL record split; not one named player's key statistics (StatsCard), soccer home/away points (TeamPoints), a one-figure comparison (MetricBars), or honours and prose facts",
     contract: [
       f("heading", "text", "what the table shows, e.g. \"Passing\" or \"AFC West\""),
-      f("columnCount", "text", "\"5\"; the server sets it from the columns"),
+      s("columnCount", "text", "\"5\"; the server sets it from the columns"),
       f("columns", "list", "at most 7, in the order the cells follow"),
       f("columns[].label", "text", "a short column label as the source writes it, e.g. \"YDS\" or \"W-L\""),
       f("rows", "list", "one per player, team or game"),
@@ -639,7 +643,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     useWhen: "a team's or a league's injured players, any number, in the order the data gives them",
     contract: [
       f("heading", "text", "what the list is, e.g. \"Cardinals injuries\", or \"\""),
-      f("showHeading", "boolean", "the server sets this"),
+      s("showHeading", "boolean"),
       f("players", "list", "the injured players, at most 30"),
       ...injuredPlayer("players[]."),
     ],
@@ -736,11 +740,11 @@ export function settleInjuries<T extends { readonly values: Record<string, unkno
     // An answer's own title is the heading its parts must not repeat.
     const own = /^answers\.[^.]+$/.test(path) ? text(value.title) : heading;
     const record: Record<string, unknown> = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, walk(child, `${path}.${key}`, own)]));
-    if (Array.isArray(record.players) && "heading" in record) {
+    if (fits(COMPONENT_BY_NAME.get("InjuryList")!, record, "data")) {
       record.showHeading = text(record.heading) !== "" && !sameTitle(text(record.heading), own);
       add(`${path}.showHeading`, "boolean");
     }
-    if (typeof record.name !== "string" || !("returnDate" in record) || !("injuryStatus" in record)) return record;
+    if (!fits(COMPONENT_BY_NAME.get("InjuryReport")!, record, "data")) return record;
     const status = text(record.injuryStatus);
     const badge = STATUS_BADGES[status.toLowerCase()] ?? { label: status, tone: "neutral" };
     const source = text(record.reportedBy);
@@ -768,12 +772,12 @@ export function fitHeatmaps<T extends { readonly values: Record<string, unknown>
     if (!isObject(value)) return value;
     const result = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, fit(child, `${path}.${key}`)]));
     // A RecordTable's columns follow its data the same way, up to what fits a phone.
-    if (Array.isArray(value.columns) && Array.isArray(value.rows) && "columnCount" in value) {
+    if (fits(COMPONENT_BY_NAME.get("RecordTable")!, value, "data") && Array.isArray(value.columns) && Array.isArray(value.rows)) {
       const columns = value.columns.slice(0, RECORD_TABLE_COLUMNS);
       const rows = value.rows.map(row => (isObject(row) && Array.isArray(row.cells) ? { ...row, cells: row.cells.slice(0, columns.length) } : row));
       return { ...result, columns, rows, columnCount: String(columns.length || 1) };
     }
-    if (!("caption" in value && "tally" in value && Array.isArray(value.results))) return result;
+    if (!fits(COMPONENT_BY_NAME.get("FixturesHeatmap")!, value, "data") || !Array.isArray(value.results)) return result;
     if (!paths.has(`${path}.columns`)) added.push(`${path}.columns`);
     return { ...result, columns: heatmapColumns(value.results.length) };
   };
@@ -819,8 +823,8 @@ export function settleMissing<T extends { readonly values: Record<string, unknow
     if (Array.isArray(value)) return value.map(item => walk(item, `${path}[]`));
     if (!isObject(value)) return value;
     const record: Record<string, unknown> = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, walk(child, `${path}.${key}`)]));
-    if (Array.isArray(record.entries) && "metric" in record) record.entries = record.entries.filter(entry => !isObject(entry) || !isMissing(entry.value));
-    if (typeof record.name !== "string" || !Array.isArray(record.stats)) return record;
+    if (fits(COMPONENT_BY_NAME.get("Leaderboard")!, record, "data") && Array.isArray(record.entries)) record.entries = record.entries.filter(entry => !isObject(entry) || !isMissing(entry.value));
+    if (!fits(COMPONENT_BY_NAME.get("StatsCard")!, record, "data") || !Array.isArray(record.stats)) return record;
     const stats = record.stats.filter(stat => isObject(stat) && !isMissing(stat.value));
     const rating = isObject(record.rating) ? record.rating : {};
     for (const key of ["value", "tone", "fill", "ink", "label", "caption"]) add(`${path}.rating.${key}`, "text");
@@ -850,7 +854,15 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
   const answers = structuredClone(dataset.values.answers) as Record<string, Record<string, unknown>>;
   const removed: { path: string; reason: string }[] = [];
   const at = (id: string, keys: readonly string[]) => keys.reduce<unknown>((value, key) => isObject(value) ? value[key] : undefined, answers[id]);
-  const drop = (id: string, keys: readonly string[], reason: string) => {
+  // A record at the answer's top level goes key by key: its fields never share a name with the frame.
+  const drop = (id: string, keys: readonly string[], reason: string, component?: SportsComponent) => {
+    if (!keys.length) {
+      const answer = answers[id];
+      const own = new Set((component?.contract ?? []).map(field => field.path.split(".")[0]!.replace("[]", "")));
+      if (isObject(answer)) for (const key of own) delete answer[key];
+      for (const key of own) removed.push({ path: ["answers", id, key].join("."), reason });
+      return;
+    }
     const parent = at(id, keys.slice(0, -1));
     if (isObject(parent)) delete parent[keys.at(-1)!];
     removed.push({ path: ["answers", id, ...keys].join("."), reason });
@@ -868,7 +880,7 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
     }
   }
 
-  const found = (name: string) => Object.entries(answers).flatMap(([id, answer]) => placements(answer).filter(p => p.component.name === name && !p.list).map(p => ({ id, keys: p.keys })));
+  const found = (name: string) => Object.entries(answers).flatMap(([id, answer]) => placements(answer).filter(p => p.component.name === name && !p.list).map(p => ({ id, keys: p.keys, component: p.component })));
   // A player's second card shows only what the first doesn't; with nothing left, it goes.
   const shown = new Map<string, Set<string>>();
   for (const { id, keys } of found("StatsCard")) {
@@ -885,7 +897,7 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
     card.showStats = kept.length > 0;
     if (card.rating.show) facts.add(fact(card.rating.label, card.rating.value));
     for (const stat of kept) facts.add(fact(stat.label, stat.value));
-    if (!first && !card.rating.show && !kept.length) drop(id, keys, "the first card already shows everything in this one");
+    if (!first && !card.rating.show && !kept.length) drop(id, keys, "the first card already shows everything in this one", COMPONENT_BY_NAME.get("StatsCard"));
   }
   const points = found("TeamPoints");
   if (points.length) {
@@ -895,7 +907,7 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
     const heatmaps = found("FixturesHeatmap");
     const played = (results: unknown) => Array.isArray(results) ? results.filter(r => !(isObject(r) && r.label === "Upcoming")).length : 0;
     const covered = heatmaps.reduce((sum, { id, keys }) => sum + played((at(id, keys) as Record<string, unknown>).results), 0);
-    if (season > 0 && covered >= season) for (const { id, keys } of heatmaps) drop(id, keys, "TeamPoints already shows this season's points and record");
+    if (season > 0 && covered >= season) for (const { id, keys, component } of heatmaps) drop(id, keys, "TeamPoints already shows this season's points and record", component);
   }
   if (found("LeagueStanding").length) {
     for (const { id, keys } of points) {
@@ -917,10 +929,14 @@ export const COMPONENT_BY_NAME: ReadonlyMap<string, SportsComponent> = new Map(S
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 
-/** Whether `value` carries every field of the contract (lists checked on their first item). */
-export function fits(component: SportsComponent, value: unknown): boolean {
+/**
+ * Whether `value` carries every field of the contract (lists checked on their first item). In the
+ * "data" phase, before the server's settle steps, fields the server sets or defaults are not needed.
+ */
+export function fits(component: SportsComponent, value: unknown, phase: "settled" | "data" = "settled"): boolean {
   if (!isObject(value)) return false;
   return component.contract.every(field => {
+    if (phase === "data" && field.by === "server") return true;
     let current: unknown[] = [value];
     for (const segment of field.path.split(".")) {
       const key = segment.replace(/\[\]$/, "");
@@ -941,18 +957,22 @@ export interface Placement {
   readonly list: boolean;
 }
 
-/** Where components fit inside an answer: a record that fits, or a list whose items fit. */
-export function placements(answer: unknown): Placement[] {
+/**
+ * Where components fit inside an answer, from its top level down to NEST_DEPTH: a record that fits,
+ * or a list whose items fit. Contract names never collide with the server's, so the answer itself
+ * can be a record.
+ */
+export function placements(answer: unknown, phase: "settled" | "data" = "settled"): Placement[] {
   const found: Placement[] = [];
   const walk = (value: unknown, keys: string[], depth: number) => {
-    if (depth > 3) return;
+    if (depth > NEST_DEPTH) return;
     if (Array.isArray(value)) {
       const first = value.find(isObject);
-      if (first) for (const component of SPORTS_COMPONENTS) if (fits(component, first)) found.push({ component, keys, list: true });
+      if (first) for (const component of SPORTS_COMPONENTS) if (fits(component, first, phase)) found.push({ component, keys, list: true });
       return;
     }
     if (!isObject(value)) return;
-    if (keys.length) for (const component of SPORTS_COMPONENTS) if (fits(component, value)) found.push({ component, keys, list: false });
+    for (const component of SPORTS_COMPONENTS) if (fits(component, value, phase)) found.push({ component, keys, list: false });
     for (const [key, child] of Object.entries(value)) walk(child, [...keys, key], depth + 1);
   };
   walk(answer, [], 0);

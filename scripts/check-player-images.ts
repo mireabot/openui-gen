@@ -223,7 +223,7 @@ assert.deepEqual(correctedMetadata.fields.find(field => field.path === "answers.
 assert.deepEqual(correctedMetadata.fields.find(field => field.path === "answers.q1.player.logo"), { path: "answers.q1.player.logo", kind: "text", format: "none" });
 assert.ok(correctedMetadata.fields.some(field => field.path === "answers.q1.passAccuracy" && field.format === "percent"));
 assert.equal((correctedMetadata.values as { answers: { q1: { player: { kind: unknown } } } }).answers.q1.player.kind, "player", "a resolved player's Avatar shows the photo on the disc colour");
-const clubAnswers = { q1: { board: { title: "League table", metric: "Points", entries: [{ name: "Arsenal", detail: "Premier League", value: "20", logo: "https://example.test/arsenal.png", color: "#ef0107" }] } } };
+const clubAnswers = { q1: { board: { heading: "League table", metric: "Points", entries: [{ name: "Arsenal", detail: "Premier League", value: "20", logo: "https://example.test/arsenal.png", color: "#ef0107" }] } } };
 assert.deepEqual(componentPlayerQueries(clubAnswers, []), [{ name: "Arsenal", context: "Premier League" }], "an unknown leaderboard entry is only a possible player");
 const clubDataset = { values: { answers: clubAnswers }, fields: inferFields(clubAnswers, "answers"), asOf: "2026-10-27", source: "espn" as const };
 assert.deepEqual(populatePlayerImages(clubDataset, [], []).values, clubDataset.values, "an unresolved component candidate cannot erase a club's crest or add player metadata");
@@ -291,7 +291,7 @@ try {
   const fallback = await askSports({ prompt: "Cole Palmer season stats" }, store, {}, "players-fallback", deps(lookup, async () => completion({ answers: [] })));
   assert.deepEqual(fallback.snapshot.result.players, [PROFILE], "raw fallback still returns the verified player object");
 
-  const board = { title: "Chelsea top scorers", metric: "Goals", entries: [{ name: "Cole Palmer", detail: "Chelsea", value: "2", logo: "", color: "#051495" }] };
+  const board = { heading: "Chelsea top scorers", metric: "Goals", entries: [{ name: "Cole Palmer", detail: "Chelsea", value: "2", logo: "", color: "#051495" }] };
   const boardDeps: SportsDeps = {
     ...deps(),
     plan: async () => ({ ...plan, subject: { ...plan.subject, kind: "team", name: "Chelsea" } }),

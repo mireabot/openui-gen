@@ -52,7 +52,7 @@ const subject = (league: SportsPlan["subject"]["league"] | "other", name = "Lake
 
 // Long lists and data-driven tables.
 {
-  const fitted = fitHeatmaps({ values: { answers: { q1: { table: { title: "T", columnCount: "9", columns: Array.from({ length: 9 }, (_, i) => ({ label: `C${i}` })), rows: [{ label: "A", cells: Array.from({ length: 9 }, (_, i) => ({ value: String(i) })) }] } } } }, fields: [] }).values.answers as { q1: { table: { columnCount: string; columns: unknown[]; rows: { cells: unknown[] }[] } } };
+  const fitted = fitHeatmaps({ values: { answers: { q1: { table: { heading: "T", columnCount: "9", columns: Array.from({ length: 9 }, (_, i) => ({ label: `C${i}` })), rows: [{ label: "A", cells: Array.from({ length: 9 }, (_, i) => ({ value: String(i) })) }] } } } }, fields: [] }).values.answers as { q1: { table: { columnCount: string; columns: unknown[]; rows: { cells: unknown[] }[] } } };
   assert.deepEqual([fitted.q1.table.columnCount, fitted.q1.table.columns.length, fitted.q1.table.rows[0]!.cells.length], ["7", 7, 7], "a designed table is trimmed to what fits a phone");
 }
 

@@ -5,13 +5,13 @@
  * 2. Shared names hold only their allowed values, anywhere in any sample.
  * 3. Every contract fits the data path limit at the deepest nesting allowed (NEST_DEPTH).
  * 4. A correct record survives the dataset stage at the top level, at depth 1 and at NEST_DEPTH:
- *    not rejected, not overwritten, and the frame stays the server's.
+ *    not rejected, not overwritten, the frame stays the server's, and the writer is offered it there.
  * 5. When the design fails and the raw answer is kept, every sample still fits its component.
  */
 import assert from "node:assert/strict";
 import { designDataset, inferFields } from "../src/sports/dataset.js";
 import { MAX_PATH_SEGMENTS, type DataField } from "../src/research/dataset-schema.js";
-import { SPORTS_COMPONENTS, fits } from "../src/sports/components.js";
+import { SPORTS_COMPONENTS, fits, placements } from "../src/sports/components.js";
 import { contractNameProblems, NEST_DEPTH, RESERVED, type ReservedName } from "../src/sports/names.js";
 import type { SportsPlan } from "../src/sports/plan.js";
 import type { MockValue } from "../src/research/dataset-schema.js";
@@ -93,6 +93,7 @@ for (const component of SPORTS_COMPONENTS) {
     const placed = keys.length ? at(answer, keys) : Object.fromEntries(Object.keys(record as Record<string, MockValue>).map(key => [key, answer[key]]));
     try { assert.deepEqual(placed, record); } catch { problems.push(`${where}: the dataset stage changed the record: ${changes(record, placed, "record").slice(0, 3).join("; ")}`); }
     for (const [name, value] of Object.entries(FRAME)) if (name !== "question" && answer[name] !== value) problems.push(`${where}: the frame's ${name} became ${JSON.stringify(answer[name])}`);
+    if (!placements(answer).some(p => p.component === component && !p.list && p.keys.join(".") === keys.join("."))) problems.push(`${where}: the writer is not offered ${component.name} there`);
   }
 }
 
