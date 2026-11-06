@@ -1,6 +1,6 @@
 import Foundation
 
-/// Reads the JSON files bundled with the app (`design.json`, `theme.json`, `primitives.json`).
+/// Reads the JSON files bundled with the app (`design_system.json`, `primitives.json`).
 enum BundledResource {
     static func url(named name: String) -> URL? {
         Bundle.main.url(forResource: name, withExtension: "json")

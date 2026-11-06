@@ -1,24 +1,34 @@
 # openui-gen
 
-OpenUI Lang generation for soccer, NFL and NBA: the sports endpoint, the OpenUI component library and
-its schema index, a preview page that renders generations, and the native iOS client. One service
-serves the API and the preview.
+This repo shows how to use the OpenUI Lang protocol for generative UI in a native iOS app, with
+SwiftUI as the rendering engine. A user asks a question. The server gathers the data, a model
+writes the answer as an OpenUI program, and the iOS app renders that program as SwiftUI views while
+it streams in.
 
-Split from FitnessGin_BE at commit `1844a1c`, keeping only the OpenUI Ask path. Design explorations
-live in their own project, `~/Desktop/ui-canvas`; nothing here imports it.
+Sports (soccer, NFL and NBA) is the demo domain. The repo holds the generation server, the OpenUI
+component library and its schema index, a web preview that renders the same programs, and the native
+iOS client. One service serves the API and the preview.
 
 ## Run it
 
 ```sh
-npm install && npm --prefix preview install
 cp .env.example .env          # fill in the keys
-npm run dev                   # API on :8080
+make backend                  # API on :8080
+```
+
+`make backend` checks that `.env` exists, installs dependencies when `node_modules` is missing,
+checks that the port is free, prints the endpoint URLs, and then starts the server with
+`npm run dev`. Set `PORT` in the environment or in `.env` to use another port:
+`PORT=8099 make backend`.
+
+To run the web preview against the backend:
+
+```sh
+npm --prefix preview install
 npm run preview               # preview on :3000, calling :8080
 ```
 
-`make backend` does the same as `npm run dev`, after checking `.env` and installing dependencies.
-
-`npm run preview:build` writes `preview/out/`; the server then serves it at `/` on the same origin.
+`npm run preview:build` writes `preview/out/`. The server then serves it at `/` on the same origin.
 
 ## Endpoints
 
@@ -43,7 +53,7 @@ npm run preview               # preview on :3000, calling :8080
 | `codex` | Local Codex CLI using `gpt-6.1-sol` at High effort for every stage. Needs `codex login`. | Parallel, billed |
 
 Local CLI calls record a cost of $0, and `GET /health` reports the mode. To run one generation from the
-terminal, start the backend and run `npm run ask -- "Chelsea stats last season"`.
+terminal, start the backend with `make backend` and run `npm run ask -- "Chelsea stats last season"`.
 Set `GENERATION_MODE=codex` to select Codex. `CODEX_MODEL` and `CODEX_EFFORT` override its defaults.
 See `Usage.md` for the pipeline and all modes.
 
@@ -57,7 +67,7 @@ library, follow-ups and the native renderer.
 src/lang/       OpenUI Lang: primitives, library, compiler, printer, snapshots
 src/sports/     plan and follow-up plan (Haiku), documents, ESPN client, parallel research (Parallel + Sonnet), dataset (Opus), screen pack
 src/research/   Parallel search, citations and dataset schema
-src/llm/        Claude by mode (Anthropic API or Claude Code CLI) and structured completion
+src/llm/        model runners by mode (Anthropic API, Claude Code CLI or Codex CLI) and structured completion
 src/routes/     HTTP routes
 preview/        Next.js preview (static export), Kino renderer for OpenUI
 catalog/        component schema index for clients (see catalog/README.md)

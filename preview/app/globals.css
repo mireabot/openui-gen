@@ -199,7 +199,7 @@
 @custom-variant frame-dark (&:where([data-ios-screen].dark, [data-ios-screen].dark *));
 
 /* Skeleton state (primitive catalog SKELETON): theme skeleton colours, a 1.4s linear sweep (constant motion),
-   still under reduced motion. Theme vars come from the brand theme; the fallbacks are Atomize dark. */
+   still under reduced motion. Theme vars come from the brand theme; the fallbacks are the dark theme. */
 @keyframes skeleton-sweep {
   from { background-position: 100% 0; }
   to { background-position: -100% 0; }

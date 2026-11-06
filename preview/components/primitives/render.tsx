@@ -14,7 +14,7 @@ import { YearTimelineItemsSchema } from "../../../src/primitives/year-timeline";
 
 /**
  * Web preview renderer for the primitive format, bound to the design language
- * (design/atomize/design.json): colours, surfaces, outlines and effects come from the brand
+ * (design/design_system.json): colours, surfaces, outlines and effects come from the brand
  * theme's CSS variables (`--ds-*`, set by the page) and from each primitive's spec; sizes,
  * spacing and type are the ground rules, baked in here as they will be in SwiftUI.
  * OpenUI programs render through `KinoPrimitive`; `$data` values resolve
@@ -56,7 +56,7 @@ function at(data: unknown, path: string): unknown {
   return path.split(/\.|\[(\d+)\]/).filter(Boolean).reduce<unknown>((o, k) => (o && typeof o === "object" ? (o as Record<string, unknown>)[k] : undefined), data);
 }
 
-/** A primitive's spec value by path (`styles.primary.fill`), from design.json. */
+/** A primitive's spec value by path (`styles.primary.fill`), from design_system.json. */
 function useSpec(primitive: string) {
   const { specs } = useContext(TreeCtx);
   return (path: string): unknown => path.split(".").reduce<unknown>((o, k) => (o && typeof o === "object" ? (o as Spec)[k] : undefined), specs[primitive]);
@@ -477,8 +477,9 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     case "Show":
       return p("when") ? <>{kids(n, "child")}</> : null;
     case "Text": {
-      // No data, no line: an empty detail or caption takes no space.
-      if (p("content") === "") return null;
+      // No data, no line: an empty detail or caption takes no space. In a row it keeps its
+      // slot, as on iOS, so `justify: between` still puts the next text at the trailing edge.
+      if (p("content") === "") return axis === "h" ? <span /> : null;
       const lines = Number(p("lines") ?? 0);
       const dataColor = typeof p("color") === "string" && /^#[0-9a-f]{6}$/i.test(p("color") as string) ? p("color") as string : null;
       const style = textStyle(p("role"), p("weight"), dataColor ?? (typeof p("tone") === "string" ? tv(`tone.${p("tone")}.fg`) : ink(p("ink") ?? "primary")));
@@ -875,7 +876,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
 /**
  * Renders a tree: the placement's children (or the fragment's top node) on the theme's screen
  * surface, with no horizontal padding of its own, a 16 inset on each block and 28 between blocks. `theme` is the brand's CSS
- * variables (lib/primitives/design.ts themeVars); `specs` the primitive specs of design.json.
+ * variables (lib/primitives/design.ts themeVars); `specs` the primitive specs of design_system.json.
  */
 /** Resolved OpenUI values use the same Kino presentation and native React child slots. */
 export function KinoProvider({ children, specs = {}, skeleton = false }: { children: ReactNode; specs?: Record<string, Spec>; skeleton?: boolean }) {

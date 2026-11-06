@@ -6,7 +6,7 @@ public enum ScreenAppearance: String, Sendable, Codable, CaseIterable {
     case dark
 }
 
-/// One brand of the Atomize design language from the bundled `design.json`: flat colour
+/// One brand of the design system from the bundled `design_system.json`: flat colour
 /// tokens, shadow stacks and the per-primitive anatomy specs.
 ///
 /// Ground rules decide sizes, spacing, type and radii; this decides colour, surfaces,
@@ -28,12 +28,12 @@ public struct DesignTheme: Sendable, Equatable {
     /// Gradient tokens, unflattened (`surface.brandGradient` → two colours).
     private let gradients: [String: [String]]
 
-    /// Brands in design.json, sorted.
+    /// Brands in design_system.json, sorted.
     public static var brands: [String] {
         DesignFile.bundled.themes.keys.sorted()
     }
 
-    /// The brand design.json names as default.
+    /// The brand design_system.json names as default.
     public static var defaultBrand: String {
         DesignFile.bundled.defaultTheme
     }
@@ -58,7 +58,7 @@ public struct DesignTheme: Sendable, Equatable {
         gradients = base.gradients
     }
 
-    /// Decodes `brand` from a design.json payload.
+    /// Decodes `brand` from a design_system.json payload.
     public init(data: Data, brand: String) throws {
         try self.init(file: JSONDecoder().decode(DesignFile.self, from: data), brand: brand)
     }
@@ -155,7 +155,7 @@ public struct ResolvedShadow: Sendable, Equatable, Hashable {
     public let color: DesignColor
 }
 
-/// The design.json payload. Only what the renderer reads is decoded.
+/// The design_system.json payload. Only what the renderer reads is decoded.
 struct DesignFile: Sendable, Decodable {
     enum Error: Swift.Error, Equatable {
         case unknownBrand(String)
@@ -168,26 +168,12 @@ struct DesignFile: Sendable, Decodable {
     let effects: [String: PValue]
     let primitives: [String: PValue]
 
-    /// `design/atomize/design.json` with `design/kino/theme.json`'s themes added and Kino made
-    /// the default, as the preview does in `preview/lib/primitives/design.ts`.
+    /// `design/design_system.json`, bundled with the app. The preview reads the same file.
     static let bundled: DesignFile = {
         do {
-            let design = try JSONDecoder().decode(DesignFile.self, from: BundledResource.data(named: "design"))
-            let kino = try JSONDecoder().decode(ThemeFile.self, from: BundledResource.data(named: "theme"))
-            return DesignFile(
-                version: design.version,
-                defaultTheme: "kino",
-                themes: kino.themes.merging(design.themes) { _, design in design },
-                effects: design.effects,
-                primitives: design.primitives
-            )
+            return try JSONDecoder().decode(DesignFile.self, from: BundledResource.data(named: "design_system"))
         } catch {
-            fatalError("GenUI: bundled design.json or theme.json does not decode: \(error)")
+            fatalError("GenUI: bundled design_system.json does not decode: \(error)")
         }
     }()
-}
-
-/// `design/kino/theme.json`: themes only.
-private struct ThemeFile: Decodable {
-    let themes: [String: [String: PValue]]
 }

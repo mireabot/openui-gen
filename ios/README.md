@@ -46,11 +46,11 @@ OpenUIGenTests/             unit tests (Swift Testing); Support/ holds the share
 The server streams OpenUI Lang (`event: openui`) over SSE. `OpenUISession` appends each chunk,
 compiles it against `primitives.json` and publishes only the elements that changed, which
 `OpenUISceneView` draws with the primitives. No native OpenUI renderer exists upstream (the
-official ones are React, Vue and Svelte), so this is the engine ported from FitnessGin.
+official ones are React, Vue and Svelte), so this repo has its own SwiftUI engine.
 
-The app bundles three files straight from the repo, so client and server never drift:
-`design/atomize/design.json` and `design/kino/theme.json` (tokens; Kino is the default brand,
-merged as the preview does) and `catalog/openui/primitives.json` (the component schema).
+The app bundles two files straight from the repo, so client and server never drift:
+`design/design_system.json` (tokens, effects and primitive specs; Kino is the default theme) and
+`catalog/openui/primitives.json` (the component schema).
 
 `OpenUIFixtureTests` keeps the Swift compiler in step with the server. It compiles every program in
 `catalog/openui/fixtures.json` over that fixture's dataset and compares the result with the tree the

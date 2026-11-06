@@ -15,7 +15,7 @@ interface DocumentVersion { id: string; revision: number }
 const Seed = z.object({ tool: z.literal("sports_dataset"), args: z.object({ run: z.string() }), result: z.record(z.string(), z.unknown()) });
 
 /**
- * Like ui-canvas's Fit: the frame keeps its 402×874 logical size and scales down to the window height,
+ * The frame keeps its 402×874 logical size and scales down to the window height,
  * so the screen lays out exactly as on iOS while the whole of it stays in view.
  */
 function useFitScale(ref: RefObject<HTMLElement | null>): number {

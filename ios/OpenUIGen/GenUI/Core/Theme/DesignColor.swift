@@ -15,7 +15,7 @@ public struct DesignColor: Sendable, Equatable, Hashable {
     }
 
     /// Parses `#rgb`, `#rgba`, `#rrggbb`, `#rrggbbaa` and `rgb(...)` / `rgba(...)` with
-    /// 0-255 channels and a 0-1 alpha. design.json uses only hex today.
+    /// 0-255 channels and a 0-1 alpha. design_system.json uses only hex today.
     public init?(css text: String) {
         let text = text.trimmingCharacters(in: .whitespaces).lowercased()
         if text.hasPrefix("#") {

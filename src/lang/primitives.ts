@@ -200,7 +200,7 @@ export const PRIMITIVES = [
     skeleton: "circle (or radius-8 square) at its size",
   }),
   P({
-    name: "IconTile", category: "media", intent: "A glyph on a tinted tile that marks a feature, a setting or a category (Atomize Feature-icon).",
+    name: "IconTile", category: "media", intent: "A glyph on a tinted tile that marks a feature, a setting or a category.",
     props: { icon: copy.icon(), size: token("avatarSize"), style: opt(copy.oneOf(["brand", "soft", "neutral"])) },
     behaviors: [], rules: ["radius 12", "24 glyph"], skeleton: "radius-12 square at its size",
   }),
@@ -338,7 +338,7 @@ export const PRIMITIVES = [
     skeleton: "one pill track at its height, full width (40 for micro)",
   }),
   P({
-    name: "Note", category: "data", intent: "A short highlighted message: a tip, a status or a warning (Atomize Info-note).",
+    name: "Note", category: "data", intent: "A short highlighted message: a tip, a status or a warning.",
     props: { text: copy.text(), tone: opt(copy.oneOf(["neutral", "brand", "good", "warn", "bad"])), title: opt(copy.text()), icon: opt(copy.icon()) },
     behaviors: [], rules: ["radius 12", "padding 12", "text shown in full, leading aligned", "icon and text centred vertically", "height follows the content, never fixed"], skeleton: "radius-12 box 72 tall",
   }),
