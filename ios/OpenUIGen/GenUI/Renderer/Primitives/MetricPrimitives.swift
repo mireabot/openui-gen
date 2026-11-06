@@ -13,47 +13,6 @@ func metricChunkSize(_ total: Int) -> Int {
     return [5, 4, 3].reduce(5) { empty($1) < empty($0) ? $1 : $0 }
 }
 
-/// A photo on its colour disc, a crest on nothing, or initials on the colour.
-private struct MetricMark: View {
-    let name: String
-    let color: Color
-    let image: String?
-    let kind: String
-    let size: CGFloat
-    @Environment(\.primitiveMediaBaseURL) private var base
-    @Environment(\.primitivePalette) private var palette
-
-    var body: some View {
-        let url = PrimitiveImages.url(image, base: base)
-        LazyImage(url: url) { state in
-            if let image = state.image {
-                // The whole photo fits the frame and the disc fills all of it, so a wide headshot
-                // still sits on a full circle instead of a cut band.
-                image.resizable()
-                    .scaledToFit()
-                    .frame(width: size, height: size)
-                    .background(kind == "club" ? Color.clear : color)
-            } else {
-                Text(Self.initials(name))
-                    .primitiveFont(.footnote, weight: .semibold)
-                    .foregroundStyle(palette.color(token: "ink.onBrand"))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(color)
-            }
-        }
-        .pipeline(PrimitiveImages.pipeline)
-        .frame(width: size, height: size)
-        .clipShape(.circle)
-    }
-
-    static func initials(_ name: String) -> String {
-        let words = name.split(separator: " ")
-        guard let first = words.first?.first else { return "" }
-        guard words.count > 1, let last = words.last?.first else { return String(first).uppercased() }
-        return "\(first)\(last)".uppercased()
-    }
-}
-
 /// Light colours take the dark screen ink; the rest the light on-brand ink (WCAG luminance).
 private func isLight(_ hex: String?) -> Bool {
     guard let hex, hex.hasPrefix("#"), hex.count == 7, let value = Int(hex.dropFirst(), radix: 16) else { return false }
@@ -72,7 +31,6 @@ private func isLight(_ hex: String?) -> Bool {
 struct ValueColumnsPrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette
-    @State private var position: Int?
 
     private static let plot: CGFloat = 152
     private static let gap: CGFloat = 8
@@ -99,7 +57,7 @@ struct ValueColumnsPrimitive: View {
                 display: item["display"]?.stringValue ?? "",
                 secondary: item["secondary"]?.stringValue ?? "",
                 colorHex: item["color"]?.stringValue,
-                image: item["image"]?.stringValue,
+                image: item["logo"]?.stringValue,
                 kind: item["kind"]?.stringValue ?? "club"
             )
         }
@@ -119,30 +77,36 @@ struct ValueColumnsPrimitive: View {
                         .frame(height: Self.plot)
                     ScrollView(.horizontal) {
                         HStack(spacing: Self.gap) {
+                            let marks = props.childReferences("marks")
                             ForEach(columns) { column in
-                                columnView(column, top: top, hasSecondary: hasSecondary, leader: column.value > 0 && column.value == top)
-                                    .containerRelativeFrame(.horizontal, count: perPage, spacing: Self.gap)
-                                    .id(column.id)
+                                columnView(
+                                    column,
+                                    mark: column.id < marks.count ? marks[column.id] : nil,
+                                    top: top,
+                                    hasSecondary: hasSecondary,
+                                    leader: column.value > 0 && column.value == top
+                                )
+                                .containerRelativeFrame(.horizontal, count: perPage, spacing: Self.gap)
+                                .id(column.id)
                             }
                         }
                         .scrollTargetLayout()
                     }
                     .scrollIndicators(.hidden)
-                    // Its own content height: a horizontal scroll view would otherwise cut the marks and names.
-                    .fixedSize(horizontal: false, vertical: true)
                     .scrollTargetBehavior(.viewAligned(limitBehavior: .always))
-                    .scrollPosition(id: $position, anchor: .leading)
                     .scrollDisabled(pages < 2)
                 }
-                if pages > 1 {
-                    dots(pages: pages, perPage: perPage, count: columns.count)
-                }
             }
-            .onAppear { if pages > 1 { position = (pages - 1) * perPage } }
         }
     }
 
-    private func columnView(_ column: Column, top: Double, hasSecondary: Bool, leader: Bool) -> some View {
+    private func columnView(
+        _ column: Column,
+        mark: PrimitiveChild?,
+        top: Double,
+        hasSecondary: Bool,
+        leader: Bool
+    ) -> some View {
         let pill: CGFloat = hasSecondary ? 52 : 28
         let lift = CGFloat(max(column.value, 0) / top) * (Self.plot - pill - 16)
         let fill = palette.value(column.colorHex) ?? palette.color(token: "surface.brand")
@@ -152,20 +116,34 @@ struct ValueColumnsPrimitive: View {
                     .fill(palette.color(token: "outline.subtle"))
                     .frame(width: 1)
                     .frame(maxHeight: .infinity)
-                VStack(spacing: 0) {
-                    Text(column.display)
-                        .primitiveFont(.body, weight: .semibold)
-                        .monospacedDigit()
-                        .foregroundStyle(palette.color(token: isLight(column.colorHex) ? "surface.screen" : "ink.onBrand"))
-                        .frame(width: 64, height: 28)
-                        .background(fill)
-                    if hasSecondary {
-                        Text(column.secondary.isEmpty ? "–" : column.secondary)
-                            .primitiveFont(.footnote, weight: .medium)
+                // Its text's own width, clamped to 64...86 and to the column; a longer value wraps.
+                ClampedWidth(min: 64, max: 86) {
+                    VStack(spacing: 0) {
+                        Text(column.display)
+                            .primitiveFont(.body, weight: .semibold)
                             .monospacedDigit()
-                            .foregroundStyle(palette.color(token: "surface.screen"))
-                            .frame(width: 64, height: 24)
-                            .background(palette.color(token: "ink.primary"))
+                            .foregroundStyle(
+                                palette
+                                    .color(token: isLight(column.colorHex) ? "surface.screen" : "ink.onBrand")
+                            )
+                            .lineLimit(2)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .frame(maxWidth: .infinity)
+                            .background(fill)
+                        if hasSecondary {
+                            Text(column.secondary.isEmpty ? "–" : column.secondary)
+                                .primitiveFont(.footnote, weight: .medium)
+                                .monospacedDigit()
+                                .foregroundStyle(palette.color(token: "surface.screen"))
+                                .lineLimit(2)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .frame(maxWidth: .infinity)
+                                .background(palette.color(token: "ink.primary"))
+                        }
                     }
                 }
                 .clipShape(.rect(cornerRadius: 8))
@@ -173,37 +151,46 @@ struct ValueColumnsPrimitive: View {
             }
             .frame(height: Self.plot)
             VStack(spacing: 4) {
-                MetricMark(name: column.name, color: fill, image: column.image, kind: column.kind, size: 40)
+                if let mark { PrimitiveNodeView(id: mark) }
+                // A long name wraps to a second centred line instead of being cut.
                 Text(column.name)
                     .primitiveFont(.body, weight: leader ? .semibold : .regular)
                     .foregroundStyle(palette.ink("primary"))
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
                 if !column.caption.isEmpty {
                     Text(column.caption)
                         .primitiveFont(.footnote, weight: .semibold)
                         .monospacedDigit()
                         .foregroundStyle(palette.ink("secondary"))
-                        .lineLimit(1)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
                 }
             }
         }
     }
+}
 
-    private func dots(pages: Int, perPage: Int, count: Int) -> some View {
-        let current = min((position ?? (pages - 1) * perPage) / perPage, pages - 1)
-        return HStack(spacing: 0) {
-            ForEach(0 ..< pages, id: \.self) { page in
-                Button {
-                    withAnimation(.easeOut(duration: 0.25)) { position = page * perPage }
-                } label: {
-                    Circle()
-                        .fill(palette.color(token: page == current ? "ink.primary" : "outline.control"))
-                        .frame(width: 6, height: 6)
-                        .frame(width: 16, height: 24)
-                }
-                .buttonStyle(.plain)
-            }
-        }
+/// Proposes its child the child's own one-line width clamped to `min...max`, and never more than the
+/// space offered (the column), so text wraps inside instead of spilling over its neighbours. The height
+/// follows the wrapped text.
+private struct ClampedWidth: Layout {
+    var min: CGFloat
+    var max: CGFloat
+
+    private func width(_ subview: LayoutSubview, offered: CGFloat?) -> CGFloat {
+        let ideal = subview.sizeThatFits(.unspecified).width
+        return Swift.min(Swift.max(ideal, min), max, offered ?? .infinity)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) -> CGSize {
+        guard let child = subviews.first else { return .zero }
+        let width = width(child, offered: proposal.width)
+        return CGSize(width: width, height: child.sizeThatFits(ProposedViewSize(width: width, height: nil)).height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache _: inout ()) {
+        subviews.first?.place(at: bounds.origin, proposal: ProposedViewSize(width: bounds.width, height: bounds.height))
     }
 }
 
@@ -244,17 +231,18 @@ struct MetricLinesPrimitive: View {
 
     private var lines: [Line] {
         props.list("lines").prefix(4).enumerated().map { index, item in
-            let color = palette.value(item["color"]?.stringValue) ?? palette.ink("primary")
+            let color = palette.value(item["lineColor"]?.stringValue) ?? palette.ink("primary")
+            let name = item["name"]?.stringValue ?? ""
             return Line(
                 id: index,
-                label: item["label"]?.stringValue ?? "",
+                label: name.isEmpty ? item["label"]?.stringValue ?? "" : name,
                 color: color,
                 opacity: item["opacity"]?.numberValue ?? 1,
                 values: (item["values"]?.listValue ?? []).map(\.numberValue),
                 decimals: Int(item["decimals"]?.numberValue ?? 0),
-                image: item["image"]?.stringValue,
-                photoColor: palette.value(item["photoColor"]?.stringValue) ?? color,
-                note: item["note"]?.stringValue ?? ""
+                image: item["logo"]?.stringValue,
+                photoColor: palette.value(item["color"]?.stringValue) ?? color,
+                note: item["team"]?.stringValue ?? ""
             )
         }
     }
@@ -323,19 +311,25 @@ struct MetricLinesPrimitive: View {
                         .foregroundStyle(palette.ink("primary"))
                     if !details.isEmpty {
                         let detail = index < details.count ? details[index] : ""
-                        Text(detail.isEmpty && (index >= line.values.count || line.values[index] == nil) ? "Did not play" : detail)
-                            .primitiveFont(.footnote)
-                            .foregroundStyle(palette.ink("secondary"))
-                    }
-                    Text(cumulative ? "\(text(shown, decimals: line.decimals)) so far" : text(shown, decimals: line.decimals))
-                        .primitiveFont(.footnote, weight: .semibold)
-                        .monospacedDigit()
+                        Text(
+                            detail
+                                .isEmpty && (index >= line.values.count || line.values[index] == nil) ? "Did not play" :
+                                detail
+                        )
+                        .primitiveFont(.footnote)
                         .foregroundStyle(palette.ink("secondary"))
-                        .padding(.horizontal, 8)
-                        .frame(height: 20)
-                        .background(palette.color(token: "surface.filled"), in: .rect(cornerRadius: 4))
+                    }
+                    Text(
+                        cumulative ? "\(text(shown, decimals: line.decimals)) so far" :
+                            text(shown, decimals: line.decimals)
+                    )
+                    .primitiveFont(.footnote, weight: .semibold)
+                    .monospacedDigit()
+                    .foregroundStyle(palette.ink("secondary"))
+                    .padding(.horizontal, 8)
+                    .frame(height: 20)
+                    .background(palette.color(token: "surface.filled"), in: .rect(cornerRadius: 4))
                 }
-                .fixedSize()
             }
         }
         .frame(minHeight: 72, alignment: .top)
@@ -343,10 +337,12 @@ struct MetricLinesPrimitive: View {
 
     private func legend(_ lines: [Line], index: Int) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("\(cumulative ? "Running totals" : "Per period") · \(scrub == nil ? "after \(period(index).lowercased())" : period(index).lowercased())")
-                .primitiveFont(.footnote)
-                .monospacedDigit()
-                .foregroundStyle(palette.ink("secondary"))
+            Text(
+                "\(cumulative ? "Running totals" : "Per period") · \(scrub == nil ? "after \(period(index).lowercased())" : period(index).lowercased())"
+            )
+            .primitiveFont(.footnote)
+            .monospacedDigit()
+            .foregroundStyle(palette.ink("secondary"))
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 8), GridItem(.flexible(), spacing: 8)], spacing: 8) {
                 ForEach(lines) { line in
                     let on = focus == line.id
@@ -368,8 +364,14 @@ struct MetricLinesPrimitive: View {
                         }
                         .frame(maxWidth: .infinity, minHeight: 56, alignment: .leading)
                         .padding(.horizontal, 12)
-                        .background(palette.color(token: on ? "surface.filled" : "surface.card"), in: .rect(cornerRadius: 12))
-                        .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(palette.color(token: on ? "outline.control" : "outline.subtle")))
+                        .background(
+                            palette.color(token: on ? "surface.filled" : "surface.card"),
+                            in: .rect(cornerRadius: 12)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .strokeBorder(palette.color(token: on ? "outline.control" : "outline.subtle"))
+                        )
                         .opacity(focus != nil && !on ? 0.5 : 1)
                     }
                     .buttonStyle(.plain)
@@ -393,10 +395,11 @@ struct MetricLinesPrimitive: View {
                     .foregroundStyle(palette.ink(scrub == nil ? "secondary" : "primary"))
             }
             ZStack(alignment: .top) {
+                let marks = props.childReferences("marks")
                 ForEach(lines) { line in
                     let shown = values[line.id]
                     HStack(spacing: 12) {
-                        MetricMark(name: line.label, color: line.photoColor, image: line.image, kind: "player", size: 32)
+                        if line.id < marks.count { PrimitiveNodeView(id: marks[line.id]) }
                         VStack(alignment: .leading, spacing: 0) {
                             Text(line.label)
                                 .primitiveFont(.body, weight: .medium)
@@ -491,7 +494,12 @@ struct MetricLinesPrimitive: View {
         }
     }
 
-    private func lineLayer(_ lines: [Line], count: Int, x: @escaping (Int) -> CGFloat, y: @escaping (Double) -> CGFloat) -> some View {
+    private func lineLayer(
+        _ lines: [Line],
+        count: Int,
+        x: @escaping (Int) -> CGFloat,
+        y: @escaping (Double) -> CGFloat
+    ) -> some View {
         let ordered = lines.sorted { a, _ in a.id != focus }
         return ZStack(alignment: .topLeading) {
             ForEach(ordered) { line in
@@ -508,7 +516,13 @@ struct MetricLinesPrimitive: View {
     }
 
     /// The solid steps and the dotted carry of one line.
-    static func paths(_ line: Line, count: Int, others: Int, x: (Int) -> CGFloat, y: (Double) -> CGFloat) -> (solid: Path, dotted: Path) {
+    static func paths(
+        _ line: Line,
+        count: Int,
+        others: Int,
+        x: (Int) -> CGFloat,
+        y: (Double) -> CGFloat
+    ) -> (solid: Path, dotted: Path) {
         let present = line.values.enumerated().compactMap { index, value in value.map { (index, $0) } }
         var solid = Path()
         var dotted = Path()

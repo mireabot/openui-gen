@@ -11,8 +11,8 @@
      "display": "10.3",
      "secondary": "52 games",
      "color": "#FFFFFF",
-     "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-     "kind": "player"
+     "kind": "player",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
     },
     {
      "name": "Egor Demin",
@@ -21,8 +21,8 @@
      "display": "7.8",
      "secondary": "4 games",
      "color": "#FFFFFF",
-     "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-     "kind": "player"
+     "kind": "player",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
     }
    ]
   },
@@ -37,8 +37,8 @@
      "display": "7.8",
      "secondary": "4 games",
      "color": "#FFFFFF",
-     "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-     "kind": "player"
+     "kind": "player",
+     "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
     }
    ]
   }
@@ -47,11 +47,9 @@
   "full": {
    "showPlayer": true,
    "name": "Cole Palmer",
-   "caption": "Chelsea · Premier League 2025/26",
-   "image": "https://images.fotmob.com/image_resources/playerimages/1096353.png",
    "color": "#034694",
    "subtitle": "",
-   "kind": "cumulative",
+   "kind": "player",
    "periods": [
     "Matchweek 1",
     "Matchweek 2",
@@ -98,7 +96,6 @@
    "metrics": [
     {
      "label": "Goals",
-     "color": "#033cc1",
      "opacity": 1,
      "values": [
       0,
@@ -140,11 +137,11 @@
       9,
       10
      ],
-     "decimals": 0
+     "decimals": 0,
+     "lineColor": "#033cc1"
     },
     {
      "label": "Assists",
-     "color": "#033cc1",
      "opacity": 0.6,
      "values": [
       0,
@@ -186,11 +183,11 @@
       1,
       1
      ],
-     "decimals": 0
+     "decimals": 0,
+     "lineColor": "#033cc1"
     },
     {
      "label": "Chances created",
-     "color": "ink.primary",
      "opacity": 1,
      "values": [
       1,
@@ -232,18 +229,19 @@
       24,
       24
      ],
-     "decimals": 0
+     "decimals": 0,
+     "lineColor": "ink.primary"
     }
-   ]
+   ],
+   "detail": "Chelsea · Premier League 2025/26",
+   "logo": "https://images.fotmob.com/image_resources/playerimages/1096353.png"
   },
   "sparse": {
    "showPlayer": false,
    "name": "Cole Palmer",
-   "caption": "Chelsea · Premier League 2025/26",
-   "image": "https://images.fotmob.com/image_resources/playerimages/1096353.png",
    "color": "#034694",
    "subtitle": "Premier League goals · 2025/26",
-   "kind": "cumulative",
+   "kind": "player",
    "periods": [
     "Matchweek 1",
     "Matchweek 2",
@@ -329,7 +327,6 @@
    "metrics": [
     {
      "label": "Goals",
-     "color": "#033cc1",
      "opacity": 1,
      "values": [
       0,
@@ -371,9 +368,12 @@
       9,
       10
      ],
-     "decimals": 0
+     "decimals": 0,
+     "lineColor": "#033cc1"
     }
-   ]
+   ],
+   "detail": "Chelsea · Premier League 2025/26",
+   "logo": "https://images.fotmob.com/image_resources/playerimages/1096353.png"
   }
  },
  "PlayersMetric": {
@@ -395,11 +395,6 @@
    "to": "Wk 8",
    "players": [
     {
-     "label": "Patrick Mahomes",
-     "note": "Chiefs",
-     "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
-     "photoColor": "#E31837",
-     "color": "#E31837",
      "opacity": 1,
      "values": [
       1,
@@ -411,14 +406,15 @@
       4,
       4
      ],
-     "decimals": 0
+     "decimals": 0,
+     "name": "Patrick Mahomes",
+     "team": "Chiefs",
+     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+     "color": "#E31837",
+     "lineColor": "#E31837",
+     "kind": "player"
     },
     {
-     "label": "Josh Allen",
-     "note": "Bills",
-     "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png",
-     "photoColor": "#00338D",
-     "color": "#00338D",
      "opacity": 1,
      "values": [
       0,
@@ -430,14 +426,15 @@
       null,
       5
      ],
-     "decimals": 0
+     "decimals": 0,
+     "name": "Josh Allen",
+     "team": "Bills",
+     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png",
+     "color": "#00338D",
+     "lineColor": "#00338D",
+     "kind": "player"
     },
     {
-     "label": "Joe Burrow",
-     "note": "Bengals",
-     "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png",
-     "photoColor": "#FB4F14",
-     "color": "#FB4F14",
      "opacity": 1,
      "values": [
       1,
@@ -449,14 +446,15 @@
       3,
       6
      ],
-     "decimals": 0
+     "decimals": 0,
+     "name": "Joe Burrow",
+     "team": "Bengals",
+     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png",
+     "color": "#FB4F14",
+     "lineColor": "#FB4F14",
+     "kind": "player"
     },
     {
-     "label": "Justin Herbert",
-     "note": "Chargers",
-     "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png",
-     "photoColor": "#0080C6",
-     "color": "#0080C6",
      "opacity": 1,
      "values": [
       1,
@@ -468,7 +466,13 @@
       null,
       10
      ],
-     "decimals": 0
+     "decimals": 0,
+     "name": "Justin Herbert",
+     "team": "Chargers",
+     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png",
+     "color": "#0080C6",
+     "lineColor": "#0080C6",
+     "kind": "player"
     }
    ]
   },
@@ -490,11 +494,6 @@
    "to": "Wk 8",
    "players": [
     {
-     "label": "Patrick Mahomes",
-     "note": "Chiefs",
-     "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
-     "photoColor": "#E31837",
-     "color": "#E31837",
      "opacity": 1,
      "values": [
       1,
@@ -506,14 +505,15 @@
       4,
       4
      ],
-     "decimals": 0
+     "decimals": 0,
+     "name": "Patrick Mahomes",
+     "team": "Chiefs",
+     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+     "color": "#E31837",
+     "lineColor": "#E31837",
+     "kind": "player"
     },
     {
-     "label": "Justin Fields",
-     "note": "Chiefs",
-     "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4362887.png",
-     "photoColor": "#E31837",
-     "color": "ink.primary",
      "opacity": 1,
      "values": [
       0,
@@ -525,7 +525,13 @@
       null,
       null
      ],
-     "decimals": 0
+     "decimals": 0,
+     "name": "Justin Fields",
+     "team": "Chiefs",
+     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4362887.png",
+     "color": "#E31837",
+     "lineColor": "ink.primary",
+     "kind": "player"
     }
    ]
   }

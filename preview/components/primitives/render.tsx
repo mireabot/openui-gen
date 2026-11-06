@@ -194,7 +194,7 @@ function StepTimeline({ value, caption, segments, ticks }: { value: string; capt
   );
 }
 
-type ValueColumn = { name: string; caption: string; value: number; display: string; secondary: string; color: string; image: string; kind: "player" | "club" };
+type ValueColumn = { name: string; caption: string; value: number; display: string; secondary: string; color: string; logo: string; kind: "player" | "club" };
 
 /** Columns per page: 5 or fewer on one page; else the largest of 5, 4, 3 that divides the count, else the fewest empty slots on the last page. */
 function chunkSize(total: number) {
@@ -213,44 +213,21 @@ function inkOnColor(hex: string) {
   return 0.2126 * ch(0) + 0.7152 * ch(2) + 0.0722 * ch(4) > 0.35 ? tv("surface.screen") : tv("ink.onBrand");
 }
 
-const initialsOf = (name: string) => { const w = name.split(/\s+/).filter(Boolean); return (w.length > 1 ? `${w[0]![0]}${w.at(-1)![0]}` : name.slice(0, 1)).toUpperCase(); };
-
-/** A subject's mark: a photo on its colour disc, a crest on nothing, or initials on the colour. */
-function ColumnMark({ column, size }: { column: { name: string; color: string; image: string; kind?: string }; size: number }) {
-  const [state, setState] = useState<"loading" | "ok" | "fail">("loading");
-  const src = imageUrl(column.image);
-  const crest = column.kind === "club" && state === "ok";
-  return (
-    <span className="relative flex shrink-0 items-center justify-center overflow-hidden rounded-full" style={{ width: size, height: size, background: crest ? "transparent" : tv(column.color) ?? tv("surface.filled") }}>
-      {(!src || state !== "ok") && <span style={textStyle("footnote", "semibold", inkOnColor(column.color))}>{initialsOf(column.name)}</span>}
-      {src && <FadeImage src={src} className={column.kind === "player" ? "object-cover object-top" : undefined} onState={setState} />}
-    </span>
-  );
-}
-
-/** One metric across subjects: a value pill per column at its height, then mark, name, caption. Pages sideways, opening on the last page. */
-function ValueColumns({ columns }: { columns: ValueColumn[] }) {
+/** One metric across subjects: a value pill per column at its height, then mark, name, caption. Pages sideways from the first page. */
+function ValueColumns({ columns, marks }: { columns: ValueColumn[]; marks: readonly string[] }) {
   const PLOT = 152, GAP = 8;
   const perPage = chunkSize(columns.length);
   const pages = Math.ceil(columns.length / perPage);
-  const [page, setPage] = useState(pages - 1);
   const scroller = useRef<HTMLDivElement>(null);
-  useEffect(() => { const el = scroller.current; if (el && pages > 1) el.scrollLeft = el.scrollWidth; }, [pages]);
   if (!columns.length) return null;
   const top = Math.max(0, ...columns.map(c => c.value)) || 1;
   const hasSecondary = columns.some(c => c.secondary);
   const pill = hasSecondary ? 52 : 28;
-  const onScroll = () => {
-    const el = scroller.current;
-    if (!el) return;
-    setPage(el.scrollLeft + el.clientWidth >= el.scrollWidth - 2 ? pages - 1 : Math.round(el.scrollLeft / (el.clientWidth + GAP)));
-  };
-  const goTo = (i: number) => scroller.current?.scrollTo({ left: i * (scroller.current.clientWidth + GAP), behavior: "smooth" });
-  return (
+   return (
     <div className="flex w-full min-w-0 flex-col gap-3">
       <div className="relative">
         <span className="absolute inset-x-0 top-0 rounded-[12px]" style={{ height: PLOT, background: tv("surface.filled") }} />
-        <div ref={scroller} onScroll={onScroll} className="relative flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ gap: GAP }}>
+        <div ref={scroller} className="relative flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ gap: GAP }}>
           {columns.map((c, i) => {
             const lift = (Math.max(0, c.value) / top) * (PLOT - pill - 16);
             const leader = c.value > 0 && c.value === top;
@@ -258,35 +235,27 @@ function ValueColumns({ columns }: { columns: ValueColumn[] }) {
               <div key={`${c.name}-${i}`} className={cn("flex flex-col items-center", i % perPage === 0 && "snap-start snap-always")} style={{ width: `calc((100% - ${(perPage - 1) * GAP}px) / ${perPage})`, flexShrink: 0 }}>
                 <div className="relative w-full" style={{ height: PLOT }}>
                   <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2" style={{ background: tv("outline.subtle") }} />
-                  <div className="absolute left-1/2 flex w-16 -translate-x-1/2 flex-col overflow-hidden rounded-[8px]" style={{ bottom: 8 + lift }}>
-                    <span className="grid h-7 place-items-center tabular-nums" style={{ ...textStyle("body", "semibold", inkOnColor(c.color)), background: tv(c.color) }}>{c.display}</span>
-                    {hasSecondary && <span className="grid h-6 place-items-center tabular-nums" style={{ ...textStyle("footnote", "medium", tv("surface.screen")), background: tv("ink.primary") }}>{c.secondary || "–"}</span>}
+                  <div className="absolute left-1/2 flex w-max min-w-16 max-w-[min(76px,100%)] -translate-x-1/2 flex-col overflow-hidden rounded-[8px]" style={{ bottom: 8 + lift }}>
+                    <span className="line-clamp-2 px-2 py-0.5 text-center tabular-nums" style={{ ...textStyle("body", "semibold", inkOnColor(c.color)), background: tv(c.color) }}>{c.display}</span>
+                    {hasSecondary && <span className="line-clamp-2 px-2 py-0.5 text-center tabular-nums" style={{ ...textStyle("footnote", "medium", tv("surface.screen")), background: tv("ink.primary") }}>{c.secondary || "–"}</span>}
                   </div>
                 </div>
                 <div className="mt-3 flex w-full flex-col items-center gap-1">
-                  <ColumnMark column={c} size={40} />
-                  <span className="line-clamp-1 w-full text-center" style={textStyle("body", leader ? "semibold" : "regular", tv("ink.primary"))}>{c.name}</span>
-                  {c.caption && <span className="line-clamp-1 w-full text-center tabular-nums" style={textStyle("footnote", "semibold", tv("ink.secondary"))}>{c.caption}</span>}
+                  {marks[i] && <Child id={marks[i]} />}
+                  <span className="line-clamp-2 w-full text-center" style={textStyle("body", leader ? "semibold" : "regular", tv("ink.primary"))}>{c.name}</span>
+                  {c.caption && <span className="line-clamp-2 w-full text-center tabular-nums" style={textStyle("footnote", "semibold", tv("ink.secondary"))}>{c.caption}</span>}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-      {pages > 1 && (
-        <div className="flex justify-center">
-          {Array.from({ length: pages }, (_, i) => (
-            <button key={i} type="button" onClick={() => goTo(i)} className="grid h-6 w-4 place-items-center">
-              <span className="size-1.5 rounded-full" style={{ background: i === page ? tv("ink.primary") : tv("outline.control") }} />
-            </button>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
 
-type MetricLine = { label: string; color: string; opacity: number; values: (number | null)[]; decimals: number; image?: string; photoColor?: string; note?: string };
+type MetricLine = { label?: string; name?: string; lineColor: string; opacity: number; values: (number | null)[]; decimals: number; logo?: string; color?: string; team?: string };
+const lineName = (l: MetricLine) => l.name || l.label || "";
 
 /** The value a line shows at a period; a cumulative total carries through a gap. */
 function lineValueAt(values: (number | null)[], i: number, cumulative: boolean): { value: number | null; present: boolean } {
@@ -329,7 +298,7 @@ function linePaths(line: MetricLine, count: number, x: (i: number) => number, y:
 }
 
 /** Stepped lines over the same periods with a scrub: one player's metrics, or several players as a race. */
-function MetricLines({ lines, periods, from, to, style, kind, caption, details }: { lines: MetricLine[]; periods: string[]; from: string; to: string; style: string; kind: string; caption?: string; details?: string[] }) {
+function MetricLines({ lines, periods, from, to, style, kind, caption, details, marks }: { lines: MetricLine[]; periods: string[]; from: string; to: string; style: string; kind: string; caption?: string; details?: string[]; marks: readonly string[] }) {
   const [scrub, setScrub] = useState<number | null>(null);
   const [focus, setFocus] = useState<number | null>(null);
   const [width, setWidth] = useState(0);
@@ -367,7 +336,7 @@ function MetricLines({ lines, periods, from, to, style, kind, caption, details }
     <svg width={width} height={H} className="absolute inset-0 overflow-visible" style={clip ? { clipPath: clip } : undefined}>
       {width > 0 && shown.map((l, i) => i).sort((a, b) => (a === focus ? 1 : b === focus ? -1 : 0)).map(i => {
         const { solid, dotted } = linePaths(shown[i]!, count, x, y, most(i));
-        const stroke = tv(shown[i]!.color) ?? tv("ink.primary");
+        const stroke = tv(shown[i]!.lineColor) ?? tv("ink.primary");
         return (
           <g key={i} opacity={shown[i]!.opacity * dim(i)}>
             <path d={solid} fill="none" stroke={stroke} strokeWidth={2} strokeLinejoin="round" />
@@ -388,10 +357,10 @@ function MetricLines({ lines, periods, from, to, style, kind, caption, details }
           <ol className="relative" style={{ height: 48 * shown.length }}>
             {shown.map((l, i) => (
               <li key={i} className="absolute inset-x-0 flex items-center gap-3 motion-safe:transition-transform motion-safe:duration-200" style={{ height: 48, transform: `translateY(${order.indexOf(i) * 48}px)`, transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }}>
-<ColumnMark column={{ name: l.label, color: l.photoColor ?? l.color, image: l.image ?? "", kind: "player" }} size={32} />
+{marks[i] && <Child id={marks[i]} />}
                 <div className="min-w-0 flex-1">
-                  <p className="truncate" style={textStyle("body", "medium", tv("ink.primary"))}>{l.label}</p>
-                  <p className="truncate" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{at[i]!.present || at[i]!.value === null ? l.note ?? "" : `${l.note ?? ""} · did not play`}</p>
+                  <p className="truncate" style={textStyle("body", "medium", tv("ink.primary"))}>{lineName(l)}</p>
+                  <p className="truncate" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{at[i]!.present || at[i]!.value === null ? l.team ?? "" : `${l.team ?? ""} · did not play`}</p>
                 </div>
                 <span className="shrink-0 tabular-nums" style={textStyle("title3", "semibold", tv("ink.primary"))}>{fmt(at[i]!.value, l.decimals)}</span>
               </li>
@@ -402,7 +371,7 @@ function MetricLines({ lines, periods, from, to, style, kind, caption, details }
         <div className="flex items-start justify-between gap-3" style={{ minHeight: 72 }}>
           <div className="flex min-w-0 flex-col gap-1">
             <span className="tabular-nums" style={textStyle("title1", "semibold", tv("ink.primary"))}>{fmt(lineValueAt(shown[0]!.values, last, cumulative).value, shown[0]!.decimals)}</span>
-            <span style={textStyle("footnote", "regular", tv("ink.secondary"))}>{caption || shown[0]!.label}</span>
+            <span style={textStyle("footnote", "regular", tv("ink.secondary"))}>{caption || lineName(shown[0]!)}</span>
           </div>
           {scrub !== null && (
             <div className="flex shrink-0 flex-col items-end gap-1">
@@ -421,8 +390,8 @@ function MetricLines({ lines, periods, from, to, style, kind, caption, details }
             {shown.map((l, i) => (
               <button key={i} type="button" onClick={() => setFocus(focus === i ? null : i)} className="flex min-h-14 flex-col items-start justify-center gap-1 rounded-[12px] border px-3 py-2 text-left transition-[opacity,border-color] duration-150 ease-out" style={{ background: tv(focus === i ? "surface.filled" : "surface.card"), borderColor: tv(focus === i ? "outline.control" : "outline.subtle"), opacity: focus !== null && focus !== i ? 0.5 : 1 }}>
                 <span className="flex w-full items-center gap-2">
-                  <span className="block h-[3px] w-3 shrink-0 rounded-full" style={{ background: tv(l.color), opacity: l.opacity }} />
-                  <span className="truncate" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{l.label}</span>
+                  <span className="block h-[3px] w-3 shrink-0 rounded-full" style={{ background: tv(l.lineColor), opacity: l.opacity }} />
+                  <span className="truncate" style={textStyle("footnote", "regular", tv("ink.secondary"))}>{lineName(l)}</span>
                 </span>
                 <span className="tabular-nums" style={textStyle("title3", "semibold", tv("ink.primary"))}>{fmt(at[i]!.value, l.decimals)}</span>
               </button>
@@ -440,7 +409,7 @@ function MetricLines({ lines, periods, from, to, style, kind, caption, details }
               {shown.map((l, i) => {
                 const v = lineValueAt(l.values, index, cumulative);
                 if (v.value === null || width === 0) return null;
-                return <span key={i} className="absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: x(index), top: y(v.value), background: tv(l.color), opacity: l.opacity * dim(i), boxShadow: `0 0 0 2px ${tv("surface.screen")}` }} />;
+                return <span key={i} className="absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: x(index), top: y(v.value), background: tv(l.lineColor), opacity: l.opacity * dim(i), boxShadow: `0 0 0 2px ${tv("surface.screen")}` }} />;
               })}
             </div>
           </div>
@@ -1012,9 +981,9 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
     case "StepTimeline":
       return <StepTimeline value={String(p("value") ?? "")} caption={p("caption") ? String(p("caption")) : undefined} segments={Array.isArray(p("segments")) ? p("segments") as unknown as TimelineStretch[] : []} ticks={Array.isArray(p("ticks")) ? p("ticks") as unknown as { value: number; display: string }[] : []} />;
     case "ValueColumns":
-      return <ValueColumns columns={Array.isArray(p("columns")) ? p("columns") as unknown as ValueColumn[] : []} />;
+      return <ValueColumns columns={Array.isArray(p("columns")) ? p("columns") as unknown as ValueColumn[] : []} marks={n.children.marks ?? []} />;
     case "MetricLines":
-      return <MetricLines lines={Array.isArray(p("lines")) ? p("lines") as unknown as MetricLine[] : []} periods={Array.isArray(p("periods")) ? (p("periods") as unknown[]).map(String) : []} from={String(p("from") ?? "")} to={String(p("to") ?? "")} style={String(p("style") ?? "player")} kind={String(p("kind") ?? "cumulative")} caption={p("caption") ? String(p("caption")) : undefined} details={Array.isArray(p("details")) ? (p("details") as unknown[]).map(String) : undefined} />;
+      return <MetricLines lines={Array.isArray(p("lines")) ? p("lines") as unknown as MetricLine[] : []} periods={Array.isArray(p("periods")) ? (p("periods") as unknown[]).map(String) : []} from={String(p("from") ?? "")} to={String(p("to") ?? "")} style={String(p("style") ?? "player")} kind={String(p("kind") ?? "cumulative")} caption={p("caption") ? String(p("caption")) : undefined} details={Array.isArray(p("details")) ? (p("details") as unknown[]).map(String) : undefined} marks={n.children.marks ?? []} />;
     case "ShareBar": {
       const raw = p("parts");
       const fallback = [{ label: "Protein", value: 45, ink: "blue" }, { label: "Carbs", value: 30, ink: "orange" }, { label: "Fat", value: 25, ink: "green" }];

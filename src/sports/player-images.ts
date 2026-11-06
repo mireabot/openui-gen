@@ -121,7 +121,7 @@ export function fillClubMarks<T extends SnapshotDataset>(dataset: T, directory: 
     const result: RecordValue = Object.fromEntries(Object.entries(record).map(([key, child]) => [key, walk(child)]));
     // A player's disc is their club's colour from the directory, for every club, not only the ones the screen is about.
     if (record.kind === "player") {
-      const named = [record.team, ...(typeof record.detail === "string" ? record.detail.split(" · ") : [])].flatMap(name => typeof name === "string" && name ? [clubOf(name)] : []).find(Boolean);
+      const named = [record.team, ...[record.detail, record.caption].flatMap(text => typeof text === "string" ? text.split(" · ") : [])].flatMap(name => typeof name === "string" && name ? [clubOf(name)] : []).find(Boolean);
       return named?.color ? { ...result, color: named.color } : result;
     }
     if (typeof record.name !== "string" || typeof record.logo !== "string") return result;
