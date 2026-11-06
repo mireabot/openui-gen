@@ -14,10 +14,11 @@ import MatchTopPlayers from "./sports-components/match-top-players";
 import TeamDetail from "./sports-components/team-detail";
 import { InjuryReportShowcase } from "./sports-components/injury-report";
 import ClubTimeline from "./club-timeline/showcase";
+import { MetricBarsShowcase, PlayerMetricsShowcase, PlayersMetricShowcase } from "./sports-components/metrics";
 import { SAMPLES_RECORDED, TEAM_DEMOS, type TeamSport } from "./sports-components/team-sports";
 
 type Demo = (sport: TeamSport) => ReactNode;
-interface SourceComponent { readonly id: string; readonly name: string; readonly summary: string; readonly preview?: ReactNode; readonly team?: Demo }
+interface SourceComponent { readonly id: string; readonly name: string; readonly summary: string; readonly preview?: ReactNode; readonly team?: Demo; /** Shown only on this sport's tab, where its sample data is from. */ readonly only?: "soccer" | TeamSport }
 
 const sourceGroups: readonly { name: string; description: string; components: readonly SourceComponent[] }[] = [
   { name: "Cards", description: "Games, season records and the figures behind a player or team.", components: [
@@ -31,6 +32,9 @@ const sourceGroups: readonly { name: string; description: string; components: re
   { name: "Charts", description: "Values over time, game outcomes and head-to-head comparisons.", components: [
     { id: "PlayerValue", name: "Player value", summary: "A stepped market value chart with club spells and a scrubbable value readout.", preview: <PlayerValue /> },
     { id: "FixturesHeatmap", name: "Fixtures heatmap", summary: "A compact season view with distinct marks for each result and upcoming games.", preview: <FixturesHeatmap />, team: TEAM_DEMOS.FixturesHeatmap },
+    { id: "PlayerMetrics", name: "Player metrics", summary: "One player's metrics over a season as stepped lines: a total for one metric, a legend grid for up to four. The player row is optional.", preview: <PlayerMetricsShowcase />, only: "soccer" },
+    { id: "PlayersMetric", name: "Players metric", summary: "Up to four players on one metric over a season, sorted at the scrub, each line in its club colour.", team: () => <PlayersMetricShowcase />, only: "nfl" },
+    { id: "MetricBars", name: "Metric bars", summary: "One metric across players, seasons or clubs as value pills at their height, paged sideways past five.", team: () => <MetricBarsShowcase />, only: "nba" },
     { id: "StatBar", name: "Stat bar", summary: "Compare one statistic across two teams, with values and proportional bars.", preview: <StatBar />, team: TEAM_DEMOS.StatBar },
   ] },
   { name: "Lists", description: "Rankings, tables, player comparisons and compact team identity.", components: [
@@ -49,7 +53,7 @@ type Sport = (typeof SPORTS)[number]["id"];
 
 /** A sport's components, and the ones it has no data for. */
 function forSport(sport: Sport, custom: readonly CatalogComponent[]) {
-  const visible = (component: SourceComponent) => (sport === "soccer" ? component.preview !== undefined : component.team !== undefined);
+  const visible = (component: SourceComponent) => (!component.only || component.only === sport) && (sport === "soccer" ? component.preview !== undefined : component.team !== undefined);
   const groups = sourceGroups.map(group => ({
     name: group.name, description: group.description,
     components: group.components.filter(visible).map((component): CatalogComponent => ({
@@ -57,7 +61,7 @@ function forSport(sport: Sport, custom: readonly CatalogComponent[]) {
       preview: sport === "soccer" ? component.preview : component.team!(sport),
     })),
   })).filter(group => group.components.length);
-  const hidden = sport === "soccer" ? [] : sourceGroups.flatMap(group => group.components.filter(component => !visible(component)).map(component => component.name));
+  const hidden = sport === "soccer" ? [] : sourceGroups.flatMap(group => group.components.filter(component => !component.only && !visible(component)).map(component => component.name));
   return { groups: sport === "soccer" ? [...groups, { name: "Custom", description: "Components composed on request from OpenUI primitives.", components: custom }] : groups, hidden };
 }
 

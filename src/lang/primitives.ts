@@ -85,8 +85,9 @@ export const PRIMITIVES = [
   }),
   P({
     name: "Grid", category: "layout", intent: "Lays peer children in 1 to 24 equal columns.",
-    props: { columns: copy.oneOf(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"]), gap: token("space"), children: nodes({ min: 1 }), rowGap: opt(token("space", "vertical gap; defaults to gap")) },
-    behaviors: ["stagger-in"], rules: ["equal columns", "gap is a spacing token"],
+    props: { columns: copy.oneOf(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24"]), gap: token("space"), children: nodes({ min: 1 }), rowGap: opt(token("space", "vertical gap; defaults to gap")),
+      lead: opt(copy.oneOf(["1", "2", "3", "4"], "an extra first column this many columns wide, for a row label such as a player's name; children fill it first")) },
+    behaviors: ["stagger-in"], rules: ["equal columns, after the lead column when there is one", "gap is a spacing token"],
     skeleton: "keeps its columns and gap",
   }),
   P({
@@ -326,6 +327,50 @@ export const PRIMITIVES = [
     },
     behaviors: ["scrub"], rules: ["vertical stack, leading, with no card: header, then the plot 200 tall", "the only axis: the ticks' labels at the plot's trailing edge in footnote tertiary, with no grid lines and no dates", "header: value in title1 semibold on the left, 68 tall so nothing jumps; while scrubbing, on the right a stack with spacing 6: the stretch's name in its line colour, the date in secondary ink, the value in a tag with the tag colour and white text", "x is time; the line holds each value until the next, 2 wide, and a stretch runs up to the next one's first point", "y starts at zero, with 28 of headroom for the crests", "crest: 20, with no fill, centred on its stretch, 4 above its highest value, so it never sits on the line; left out when the stretch is narrower than the crest", "a dot marks the last point, or the scrubbed one with a 1px rule"],
     skeleton: "header bar, radius-12 box 200 tall",
+  }),
+  P({
+    name: "ValueColumns", category: "data", intent: "One metric across subjects (players, seasons, clubs), however many: a value pill per column at the value's height, then the subject's mark, name and caption; many subjects page sideways.",
+    props: {
+      columns: data.list(z.object({
+        name: z.string(), caption: z.string(), value: z.number(), display: z.string(), secondary: z.string(),
+        color: z.string(), image: z.string(), kind: z.enum(["player", "club"]),
+      }), { min: 1 }),
+    },
+    behaviors: ["scroll"], rules: [
+      "no card; a plot band 152 tall in surface.filled with radius 12 behind the pills, and a 1px outline.subtle guide line down each column's middle",
+      "pill 64 wide, radius 8, its bottom at 8 + value / top value × (152 − pill height − 16): the display in body semibold on the column's colour, ink on a light colour is surface.screen, else ink.onBrand; when any column has a secondary, a 24-tall second line in footnote medium, surface.screen text on ink.primary, \"–\" when empty",
+      "under the band, 12 below: the mark 40 (photo on the colour disc for a player, the crest for a club, else initials on the colour), the name in body (semibold for the leaders, ties included), one line, and the caption in footnote semibold secondary",
+      "paging: n per page, 8 between columns; 5 or fewer is one page; else the largest of 5, 4, 3 that divides the count, else the one leaving the fewest empty slots on the last page (16 → 4, 15 → 5, 9 → 3, 7 → 4); each page start snaps, opening on the last page; page dots under it when there is more than one page",
+    ],
+    skeleton: "radius-12 box 152 tall, then a row of 40 circles",
+  }),
+  P({
+    name: "MetricLines", category: "data", intent: "Up to four stepped lines over the same periods, with a scrub: one player's metrics (a total header for one line, a legend grid for several) or several players on one metric (rows sorted at the scrub).",
+    props: {
+      lines: data.list(z.object({
+        label: z.string(), color: z.string(), opacity: z.number(), values: z.array(z.number().nullable()), decimals: z.number(),
+        image: z.string().optional(), photoColor: z.string().optional(), note: z.string().optional(),
+      }), { min: 1, max: 4 }),
+      periods: data.list(z.string(), { min: 1 }),
+      from: data.text("the first period's short label, under the plot's leading edge"),
+      to: data.text("the last period's short label, under the plot's trailing edge"),
+      style: copy.oneOf(["player", "race"], "player: one person's metrics · race: one line per player, sorted"),
+      kind: copy.oneOf(["cumulative", "period"], "cumulative: a running total held through a gap · period: one value per period"),
+      caption: opt(data.text("player with one line: under the total; race: the left of the period line, e.g. \"Season total\"")),
+      details: opt(data.list(z.string(), {}, "player with one line: a line per period for the scrub, e.g. a box score; \"\" for none")),
+    },
+    behaviors: ["scrub"], rules: [
+      "no card; the plot is 220 tall (200 for race) with tick labels at the trailing edge in footnote tertiary, from and to under it",
+      "a line holds each value until the next period, 2 wide in its colour at its opacity; null is a gap: no line there, and a cumulative total carries through it; a point with gaps on both sides is a 4-wide tick",
+      "colour: \"#rrggbb\" from the data, or a Kino ink token such as \"ink.primary\"",
+      "sparse lines: a line with one value draws flat across the whole plot, so it is never a lone dot; a line with fewer than 5 values, while another line has more, continues at its last value to the plot's end as a dotted line (2 on 3), which no readout counts",
+      "player, one line: the last total in title1 semibold, the caption under it; while scrubbing, on the right the period in footnote semibold, its detail in secondary (\"Did not play\" for a gap), and a tag with the value (\"N so far\" when cumulative)",
+      "player, two to four lines: a footnote secondary line \"Running totals · after <period>\", then a 2-column grid of chips (radius 12, surface.card, outline.subtle): a swatch in the line's colour and the label, then the value at the scrub in title3 semibold; tapping a chip brings its line forward and dims the rest to 0.2",
+      "race: a footnote line with the caption on the left and \"After <period>\" on the right; then one 48-tall row per line, sorted by its value at the scrub: a plain 32 photo on photoColor, with no ring, the label in body medium, the note in footnote secondary (with \" · did not play\" for a gap), the value in title3 semibold; rows move in 200ms ease-out",
+      "scrub: hold 0.1 s and drag to snap to a period, with a dotted line, a dot on each line and everything right of the finger dimmed; lifting returns to the last period",
+      "lines draw in from the left on appear; with reduced motion they fade in",
+    ],
+    skeleton: "radius-12 box 72 tall, radius-12 box 220 tall",
   }),
   P({
     name: "SplitBar", category: "data", intent: "How a value splits between two or three sides (home · draw · away) in one bar, each side in its tone, in the given order.",
