@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// One entry of a primitive's design.json spec: which tokens fill, ink, outline and lift it.
+/// One entry of a primitive's design_system.json spec: which tokens fill, ink, outline and lift it.
 /// `Button` `styles.primary` → `fill: surface.brand, ink: ink.onBrand, effect: component`.
 struct PrimitiveLook: Equatable {
     var fill: String?

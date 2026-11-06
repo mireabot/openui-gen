@@ -179,7 +179,7 @@ struct AvatarPrimitive: View {
     }
 }
 
-/// `IconTile(icon, size, style?)`: a 24 glyph on a radius-12 tile (Atomize Feature-icon).
+/// `IconTile(icon, size, style?)`: a 24 glyph on a radius-12 tile.
 struct IconTilePrimitive: View {
     let props: PrimitiveProps
     @Environment(\.primitivePalette) private var palette

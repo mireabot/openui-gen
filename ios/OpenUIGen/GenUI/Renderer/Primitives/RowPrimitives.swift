@@ -44,8 +44,9 @@ struct RowPrimitive: View {
             .multilineTextAlignment(.leading)
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
-            // The title keeps its room, so a long trailing value wraps instead of crushing it.
-            .layoutPriority(1)
+            // No layoutPriority here: a raised priority gives the title all the width and leaves a
+            // trailing value 0 points wide. At equal priority the HStack sizes the trailing value
+            // first, because it is the least flexible child, and the title gets the rest.
             PrimitiveChildren(ids: props.childReferences("trailing"))
                 .foregroundStyle(palette.color(token: spec("trailing.ink")?.stringValue ?? "ink.secondary"))
         }

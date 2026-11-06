@@ -5,7 +5,6 @@
       "name": "ClubTimeline",
       "intent": "A player's club history as a swipeable row of club cards under one stop per year. Loans have a currency marker; brief stats are optional.",
       "useWhen": "a player's career, transfer history or clubs over time; use stats only when asked for and supplied by the research",
-      "source": "ui-canvas club-timeline/m04 and club-timeline/m05",
       "contract": [
         {
           "path": "initial",
@@ -79,7 +78,6 @@
       "name": "MatchCard",
       "intent": "One game between two teams: both teams on stacked rows with their scores, a side column (date and start time, or a status such as FT or Final), and one details line.",
       "useWhen": "a fixture or a result; a list of matches (@Each over them); the latest meeting between two clubs",
-      "source": "ui-canvas sports-components/match-card (from match-card/stacked-rows) and match-result",
       "contract": [
         {
           "path": "home.name",
@@ -153,7 +151,6 @@
       "name": "TeamDetail",
       "intent": "A team on one line: logo or monogram, name, and a short secondary line (nickname, code or league).",
       "useWhen": "naming the clubs a screen is about, above stats or a comparison",
-      "source": "ui-canvas sports-components/team-detail",
       "contract": [
         {
           "path": "name",
@@ -182,7 +179,6 @@
       "name": "StatBar",
       "intent": "One stat between two teams: each side's figure at its edge, the stat's name between them, and a bar split in proportion.",
       "useWhen": "comparing two clubs on a stat (possession, shots, shots on target, corners, goals); stack several in a vertical Stack, no card",
-      "source": "ui-canvas sports-components/stat-bar (from component-references/c24)",
       "contract": [
         {
           "path": "label",
@@ -231,7 +227,6 @@
       "name": "Leaderboard",
       "intent": "A ranked list for one metric: a header naming the list and the metric, then rows of logo or monogram, name, a detail line and the value.",
       "useWhen": "top scorers, top assisters, most clean sheets, the teams conceding most: any ranking where every row has one value",
-      "source": "ui-canvas sports-components/leaderboard (from component-references/b06)",
       "contract": [
         {
           "path": "title",
@@ -285,7 +280,6 @@
       "name": "FixturesHeatmap",
       "intent": "A team's run of fixtures: a headline figure, a caption saying what it is, one square per fixture in result colours, and the record.",
       "useWhen": "form, a season so far, a run of results; no title of its own",
-      "source": "ui-canvas sports-components/fixtures-heatmap (layout from component-references/c24)",
       "contract": [
         {
           "path": "value",
@@ -329,7 +323,6 @@
       "name": "StatsCard",
       "intent": "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. A part with no data is not shown.",
       "useWhen": "a player's or a club's season or match stats; any set of figures about one subject",
-      "source": "ui-canvas sports-components/stats-card (from stats-grid/rating-hero)",
       "contract": [
         {
           "path": "name",
@@ -418,7 +411,6 @@
       "name": "TeamPoints",
       "intent": "A team's points so far this season: the total and its rank, then a table splitting the record into home and away (played, won, drawn, lost, goals, goal difference, points).",
       "useWhen": "how many points a team has, or its record this season, home and away; one team in one competition",
-      "source": "ui-canvas sports-components/team-points (from team-points-breakdown/table-reference)",
       "contract": [
         {
           "path": "title",
@@ -522,7 +514,6 @@
       "name": "LeagueStanding",
       "intent": "Where a team stands in the league table: its place as the hero, the points gap to the places around it, its row between its nearest two neighbours, and optionally its home and away record.",
       "useWhen": "a team's position in the table, or how far it is from the teams around it; for the whole table use a list of rows instead",
-      "source": "ui-canvas sports-components/league-standing (from team-points-breakdown/rank-context)",
       "contract": [
         {
           "path": "place",
@@ -591,7 +582,6 @@
       "name": "MatchTopPlayers",
       "intent": "The top players of one game from both teams, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
       "useWhen": "the top scorers, top rated or other best players of one match, from both sides; not a ranking across matches, which is a Leaderboard",
-      "source": "ui-canvas sports-components/match-top-players (from the Fotmob match screen's Top rated card)",
       "contract": [
         {
           "path": "title",
@@ -735,7 +725,6 @@
       "name": "PlayerValue",
       "intent": "A player's market value over time: the current value, then a stepped line coloured by club with each club's crest above its stretch and prices on the y axis, no card; scrubbing shows the club, date and value.",
       "useWhen": "a player's market value, or how it changed over time; the server builds the record",
-      "source": "ui-canvas sports-components/player-value, on FotMob marketValues, in the style of a Kalshi step chart",
       "contract": [
         {
           "path": "value",
@@ -819,7 +808,6 @@
       "name": "SeasonPodium",
       "intent": "How a league's season ended: the winner, 2nd and 3rd in podium order (2, 1, 3), each a place numeral in gold, silver or bronze, a club avatar scaled by place and the club's name.",
       "useWhen": "who won a league and who came 2nd and 3rd in a finished season; not a season still in progress, where a table or LeagueStanding says what is true so far",
-      "source": "ui-canvas sports-components/season-podium (from Figma Kino Screens 225:2579)",
       "contract": [
         {
           "path": "first.name",
@@ -888,7 +876,6 @@
       "name": "RecordTable",
       "intent": "A table whose columns come from the data: a title, a row of column labels, then each row's name above its figures.",
       "useWhen": "a box score, a team's record split, standings or a game log, where the columns depend on the sport",
-      "source": "OpenUI sports pipeline: Card, Grid and Text primitives",
       "contract": [
         {
           "path": "title",
@@ -937,7 +924,6 @@
       "name": "InjuryReport",
       "intent": "One injured player on a card: photo with a band-aid, name and position, the league's status badge when there is one, then how long until they are back, with the date and the source on the right.",
       "useWhen": "one injured player, or a few as separate cards: are they hurt, when are they back, who says so; for a team's or a league's report use InjuryList",
-      "source": "ui-canvas sports-components/injury-report (from injury-report/countdown)",
       "contract": [
         {
           "path": "name",
@@ -1051,7 +1037,6 @@
       "name": "InjuryList",
       "intent": "An injury report as a list with no card: one row per player (photo with a band-aid, name, position · team, status badge), then the return and the source under the name.",
       "useWhen": "a team's or a league's injured players, any number, in the order the data gives them",
-      "source": "ui-canvas sports-components/injury-report (from injury-report/card-or-row)",
       "contract": [
         {
           "path": "title",

@@ -57,12 +57,9 @@ targets:
         excludes:
           - "**/*.xcconfig.example"
       # Shared with the server and the preview, read from where they live in the repo
-      # (bundled flat: design.json, theme.json, primitives.json). The Components page also reads
+      # (bundled flat: design_system.json, primitives.json). The Components page also reads
       # sports-components.json and fixtures.json.
-      - path: ../design/atomize/design.json
-        group: OpenUIGen/Resources
-        buildPhase: resources
-      - path: ../design/kino/theme.json
+      - path: ../design/design_system.json
         group: OpenUIGen/Resources
         buildPhase: resources
       - path: ../catalog/openui/primitives.json

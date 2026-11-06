@@ -1,8 +1,7 @@
 import { each, ui, type Node } from "../lang/program.js";
 
 /**
- * The Sports component index: the components designed in ui-canvas (Sports Components, Kino) as
- * server templates. Each entry says what it is for, when to use it, and the exact data contract it
+ * The Sports component index: the sports components as server templates. Each entry says what it is for, when to use it, and the exact data contract it
  * reads. The schema stage shapes answers to these contracts, the writer calls them by name, and they
  * expand to primitives, so every client renders them without knowing they exist.
  *
@@ -27,8 +26,6 @@ export interface SportsComponent {
   readonly name: string;
   readonly intent: string;
   readonly useWhen: string;
-  /** Where it was designed. */
-  readonly source: string;
   readonly contract: readonly ContractField[];
   /** Optional copy arguments after the data reference. */
   readonly params: readonly { readonly name: string; readonly note: string }[];
@@ -200,7 +197,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "ClubTimeline",
     intent: "A player's club history as a swipeable row of club cards under one stop per year. Loans have a currency marker; brief stats are optional.",
     useWhen: "a player's career, transfer history or clubs over time; use stats only when asked for and supplied by the research",
-    source: "ui-canvas club-timeline/m04 and club-timeline/m05",
     contract: [
       f("initial", "number", "zero-based card to open on; 0 for oldest, last index for current club"),
       f("clubs", "list", "club spells oldest first; multiple clubs can share the same year"),
@@ -222,7 +218,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "MatchCard",
     intent: "One game between two teams: both teams on stacked rows with their scores, a side column (date and start time, or a status such as FT or Final), and one details line.",
     useWhen: "a fixture or a result; a list of matches (@Each over them); the latest meeting between two clubs",
-    source: "ui-canvas sports-components/match-card (from match-card/stacked-rows) and match-result",
     contract: [
       ...team("home"), ...team("away"),
       f("label", "text", "small side line: a date such as \"Sat, Oct 31\", or \"\""),
@@ -248,7 +243,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "TeamDetail",
     intent: "A team on one line: logo or monogram, name, and a short secondary line (nickname, code or league).",
     useWhen: "naming the clubs a screen is about, above stats or a comparison",
-    source: "ui-canvas sports-components/team-detail",
     contract: [f("name", "text", "club name"), f("logo", "text", "logo URL, or \"\""), f("color", "color", CLUB_COLOR), f("detail", "text", "nickname, code or league, or \"\"")],
     params: [],
     build: t => ui.Row({ title: t.name, subtitle: t.detail, leading: mark(t, 40) }),
@@ -257,7 +251,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "StatBar",
     intent: "One stat between two teams: each side's figure at its edge, the stat's name between them, and a bar split in proportion.",
     useWhen: "comparing two clubs on a stat (possession, shots, shots on target, corners, goals); stack several in a vertical Stack, no card",
-    source: "ui-canvas sports-components/stat-bar (from component-references/c24)",
     contract: [
       f("label", "text", "the stat's name, e.g. \"Shots on target\""),
       f("homeDisplay", "text", "home figure as shown, e.g. \"3\" or \"37%\""),
@@ -285,7 +278,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "Leaderboard",
     intent: "A ranked list for one metric: a header naming the list and the metric, then rows of logo or monogram, name, a detail line and the value.",
     useWhen: "top scorers, top assisters, most clean sheets, the teams conceding most: any ranking where every row has one value",
-    source: "ui-canvas sports-components/leaderboard (from component-references/b06)",
     contract: [
       f("title", "text", "the list's name, e.g. \"Top scorers · Premier League\""),
       f("metric", "text", "the one metric every value is, e.g. \"Goals\""),
@@ -313,7 +305,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "FixturesHeatmap",
     intent: "A team's run of fixtures: a headline figure, a caption saying what it is, one square per fixture in result colours, and the record.",
     useWhen: "form, a season so far, a run of results; no title of its own",
-    source: "ui-canvas sports-components/fixtures-heatmap (layout from component-references/c24)",
     contract: [
       f("value", "text", "the headline figure, e.g. points per game \"1.6\", \"13 pts\" or a record \"6-2\""),
       f("caption", "text", "what the figure is, e.g. \"Points per game · Premier League 2026/27\""),
@@ -337,7 +328,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "StatsCard",
     intent: "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. A part with no data is not shown.",
     useWhen: "a player's or a club's season or match stats; any set of figures about one subject",
-    source: "ui-canvas sports-components/stats-card (from stats-grid/rating-hero)",
     contract: [
       f("name", "text", "player or club"),
       f("kind", "text", "\"player\" or \"club\": a player's photo sits on the club colour, a crest on white"),
@@ -387,7 +377,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "TeamPoints",
     intent: "A team's points so far this season: the total and its rank, then a table splitting the record into home and away (played, won, drawn, lost, goals, goal difference, points).",
     useWhen: "how many points a team has, or its record this season, home and away; one team in one competition",
-    source: "ui-canvas sports-components/team-points (from team-points-breakdown/table-reference)",
     contract: [
       f("title", "text", "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"),
       f("subtitle", "text", "rank and matches played, e.g. \"Rank 1 · 9 played\""),
@@ -414,7 +403,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "LeagueStanding",
     intent: "Where a team stands in the league table: its place as the hero, the points gap to the places around it, its row between its nearest two neighbours, and optionally its home and away record.",
     useWhen: "a team's position in the table, or how far it is from the teams around it; for the whole table use a list of rows instead",
-    source: "ui-canvas sports-components/league-standing (from team-points-breakdown/rank-context)",
     contract: [
       f("place", "text", "the team's place as shown, e.g. \"13th\""),
       f("summary", "text", "points and gaps, e.g. \"9 points · 1 behind 12th, 1 ahead of 14th\"; for first place \"27 points · 5 clear of 2nd\""),
@@ -452,7 +440,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "MatchTopPlayers",
     intent: "The top players of one game from both teams, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
     useWhen: "the top scorers, top rated or other best players of one match, from both sides; not a ranking across matches, which is a Leaderboard",
-    source: "ui-canvas sports-components/match-top-players (from the Fotmob match screen's Top rated card)",
     contract: [
       f("title", "text", "the card's name, e.g. \"Top scorers\""),
       f("metric", "text", "the one metric every value is, e.g. \"Goals\" or \"Rating\""),
@@ -474,7 +461,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "PlayerValue",
     intent: "A player's market value over time: the current value, then a stepped line coloured by club with each club's crest above its stretch and prices on the y axis, no card; scrubbing shows the club, date and value.",
     useWhen: "a player's market value, or how it changed over time; the server builds the record",
-    source: "ui-canvas sports-components/player-value, on FotMob marketValues, in the style of a Kalshi step chart",
     contract: [
       f("value", "text", "the current value, e.g. \"€97.7M\""),
       f("caption", "text", "e.g. \"Cole Palmer · Market value\""),
@@ -499,7 +485,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "SeasonPodium",
     intent: "How a league's season ended: the winner, 2nd and 3rd in podium order (2, 1, 3), each a place numeral in gold, silver or bronze, a club avatar scaled by place and the club's name.",
     useWhen: "who won a league and who came 2nd and 3rd in a finished season; not a season still in progress, where a table or LeagueStanding says what is true so far",
-    source: "ui-canvas sports-components/season-podium (from Figma Kino Screens 225:2579)",
     contract: [
       ...podiumPlace("first", "\"#E6B422\" (gold)"),
       ...podiumPlace("second", "\"#C0C4CC\" (silver)"),
@@ -516,7 +501,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "RecordTable",
     intent: "A table whose columns come from the data: a title, a row of column labels, then each row's name above its figures.",
     useWhen: "a box score, a team's record split, standings or a game log, where the columns depend on the sport",
-    source: "OpenUI sports pipeline: Card, Grid and Text primitives",
     contract: [
       f("title", "text", "what the table shows, e.g. \"Passing\" or \"AFC West\""),
       f("columnCount", "text", "\"5\"; the server sets it from the columns"),
@@ -543,7 +527,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "InjuryReport",
     intent: "One injured player on a card: photo with a band-aid, name and position, the league's status badge when there is one, then how long until they are back, with the date and the source on the right.",
     useWhen: "one injured player, or a few as separate cards: are they hurt, when are they back, who says so; for a team's or a league's report use InjuryList",
-    source: "ui-canvas sports-components/injury-report (from injury-report/countdown)",
     contract: injuredPlayer(""),
     params: [],
     build: p => ui.Card({ gap: 12, children: [
@@ -568,7 +551,6 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     name: "InjuryList",
     intent: "An injury report as a list with no card: one row per player (photo with a band-aid, name, position · team, status badge), then the return and the source under the name.",
     useWhen: "a team's or a league's injured players, any number, in the order the data gives them",
-    source: "ui-canvas sports-components/injury-report (from injury-report/card-or-row)",
     contract: [
       f("title", "text", "what the list is, e.g. \"Cardinals injuries\", or \"\""),
       f("showTitle", "boolean", "the server sets this"),

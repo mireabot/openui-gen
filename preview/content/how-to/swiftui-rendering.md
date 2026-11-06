@@ -27,7 +27,7 @@ The catalog holds more than Swift uses. Primitive names, argument order and the 
 - A catalog entry with no Swift case compiles into an element, then draws `UnknownPrimitive`.
 - An argument moved after the app shipped lands in the wrong prop with no error.
 
-Design tokens take three routes. Token names and validation live in `src/primitives/tokens.ts` and stay on the server. Spacing values travel as plain numbers in the program. Type sizes are copied by hand into `PrimitiveTokens.swift` and `render.tsx`. Colors and component anatomy skip TypeScript, because the app bundles `design.json` and `theme.json` directly.
+Design tokens take three routes. Token names and validation live in `src/primitives/tokens.ts` and stay on the server. Spacing values travel as plain numbers in the program. Type sizes are copied by hand into `PrimitiveTokens.swift` and `render.tsx`. Colors and component anatomy skip TypeScript, because the app bundles `design_system.json` directly.
 
 ## Layout composition
 

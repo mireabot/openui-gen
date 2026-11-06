@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync, readdirSync } from "node:fs";
-import path from "node:path";
+import { readFileSync } from "node:fs";
 import { PRIMITIVE_BY_NAME } from "../src/lang/primitives.js";
 import { SPORTS_COMPONENTS } from "../src/sports/components.js";
 import { fixtureSuite, type Fixture } from "./openui-fixtures.js";
@@ -73,18 +72,7 @@ const statsRail = statsNodes.find(node => node.kind === "Rail");
 assert.ok(statsRail);
 assert.equal(statsRail.properties.gap, 12);
 
-const sourceIndex = process.argv.indexOf("--source");
-if (sourceIndex >= 0) {
-  const directory = process.argv[sourceIndex + 1];
-  assert.ok(directory && !directory.startsWith("--"), "--source requires the source sports-components/lib directory");
-  const designs = readdirSync(directory).filter(file => file.endsWith(".tsx") && file !== "rating.tsx").map(file => path.basename(file, ".tsx")).sort();
-  const indexed = SPORTS_COMPONENTS.filter(component => component.source.startsWith("ui-canvas sports-components/"))
-    .map(component => component.name.replace(/[A-Z]/g, (letter, index) => `${index ? "-" : ""}${letter.toLowerCase()}`)).sort();
-  assert.deepEqual(indexed, designs, "Every reusable sports design must have a server template. rating.tsx is a shared helper");
-  console.log(`sports source coverage: ${designs.length}/${designs.length} reusable designs indexed`);
-}
-
 console.log(`sports catalog: ${SPORTS_COMPONENTS.length} components, ${SPORTS_COMPONENTS.length * 2} compiler fixtures, ${used.size} supported primitive kinds`);
 console.log("heatmap: 10 columns, multiple rows, blank accessible cells, four distinct fills");
 console.log("stats card: large solid rating, semibold header, divided sections, independent grid row spacing");
-console.log("Visual equivalence with the source design requires separate renderer inspection.");
+console.log("Visual checks need a separate look at each renderer.");

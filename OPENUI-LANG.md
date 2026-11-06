@@ -127,7 +127,7 @@ document id is the first run's id.
 
 ## The SwiftUI renderer
 
-The app renders the same OpenUI program as the web. It keeps one set of view objects for the whole conversation and changes only the elements a new revision changes. The code lives in `ios/OpenUIGen/GenUI/` in this repository (ported from FitnessGin), in four layers.
+The app renders the same OpenUI program as the web. It keeps one set of view objects for the whole conversation and changes only the elements a new revision changes. The code lives in `ios/OpenUIGen/GenUI/` in this repository, in four layers.
 
 ### The compiler turns text into elements
 

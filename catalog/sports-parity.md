@@ -2,13 +2,11 @@
 
 The nine reusable sports components are indexed. Each expands into generic primitives before reaching either client. Component coverage does not establish visual equivalence with the source designs.
 
-The source library is `ui-canvas/web/components/canvas/variations/sports-components/lib`. Its thirteen components are MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, SeasonPodium, InjuryReport and InjuryList. `rating.tsx` is a shared helper. The MatchResult showcase uses MatchCard with scores.
+The index has thirteen components: MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, SeasonPodium, InjuryReport and InjuryList. The MatchResult showcase uses MatchCard with scores.
 
 ## Coverage checks
 
 Run `npm run check:sports-catalog` to check full and sparse compiler fixtures, primitive registration in both renderers, and the heatmap's grid and fill semantics.
-
-To compare the index with the source library, run the same command with `-- --source <sports-components/lib directory>`. This catches newly added source components that have no template.
 
 `npm run openui:export -- --check` checks catalog freshness. The native `OpenUIFixtureTests` compile the exported programs and compare their trees with the server's trees. These tests do not compare screenshots with the source design.
 
@@ -46,7 +44,7 @@ uses the same StatBar contract, including possession, shots, corners, saves, fou
 | InjuryList | Indexed, from the picked injury-report/card-or-row. Rows at 40 with "position · team", and "Back Nov 8 · source" indented under the name by a 40 Spacer. Same mark and tone notes as InjuryReport. ESPN's `injuries` feed has no source field: `reportSource` reads it from the note's byline, which names one in about 40% of rows. ESPN's return date is often just the next game day, so "Back in 3 days" can promise more than the team does. |
 | StatBar | Indexed. The source has a four-point segment gap and a visible empty track for zero against zero. The shared SplitBar uses a two-point gap and no visible segment for an empty total. |
 
-The web preview originally inherited Geist from its application shell. The shell and OpenUIPreview now use the same SF system font stack as the source canvas. SwiftUI already uses system typography. The preview no longer downloads shell fonts from Google Fonts.
+The web preview originally inherited Geist from its application shell. The shell and OpenUIPreview now use the same SF system font stack as the designs. SwiftUI already uses system typography. The preview no longer downloads shell fonts from Google Fonts.
 
 ## Generic cell contract
 

@@ -1,5 +1,5 @@
 import { SportsLive } from "@/components/primitives/sports-live";
-import { appearanceOf, readDesignWithKino, themeVars } from "@/lib/primitives/design";
+import { appearanceOf, readDesign, themeVars } from "@/lib/primitives/design";
 import styles from "./preview.module.css";
 
 /**
@@ -8,7 +8,7 @@ import styles from "./preview.module.css";
  * design/ at build time.
  */
 export default function Home() {
-  const design = readDesignWithKino();
+  const design = readDesign();
   const brand = design?.defaultTheme ?? "";
   const appearance = design ? appearanceOf(design, brand) : "dark";
   const theme = design ? themeVars(design, brand, appearance) : undefined;

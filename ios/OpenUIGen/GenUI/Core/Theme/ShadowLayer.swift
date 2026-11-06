@@ -1,6 +1,6 @@
 import Foundation
 
-/// One layer of a CSS-style `box-shadow` stack from design.json's `effects`, e.g.
+/// One layer of a CSS-style `box-shadow` stack from design_system.json's `effects`, e.g.
 /// `inset 0 3px 3px 0 {shadow.highlightMed}`. Colours are `{token}` references or literals.
 public struct ShadowLayer: Sendable, Equatable, Hashable {
     public enum Paint: Sendable, Equatable, Hashable {

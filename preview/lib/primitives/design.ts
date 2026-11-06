@@ -3,7 +3,7 @@ import path from "node:path";
 import type { CSSProperties } from "react";
 
 /**
- * The bound design language (design/atomize/design.json), read on the server. A brand theme
+ * The design system (design/design_system.json), read on the server. A brand theme
  * becomes CSS variables (`--ds-ink-primary`, `--ds-effect-component`, …) on the preview root;
  * primitive specs say which token each style uses. Ground-rule sizes stay in the renderer.
  */
@@ -16,7 +16,7 @@ export interface Design {
   primitives: Record<string, Spec>;
 }
 
-const FILE = path.join(process.cwd(), "..", "design", "atomize", "design.json");
+const FILE = path.join(process.cwd(), "..", "design", "design_system.json");
 
 export function readDesign(): Design | null {
   try {
@@ -62,21 +62,3 @@ export function themeVars(design: Design, brand: string, appearance: "light" | "
 
 export const appearanceOf = (design: Design, brand: string) =>
   ((design.themes[brand] ?? design.themes[design.defaultTheme]!).appearance as "light" | "dark") ?? "light";
-
-const KINO = path.join(process.cwd(), "..", "design", "kino", "theme.json");
-
-/**
- * The bound design with the Kino theme added and made the default (dark; design/kino/theme.json,
- * read from Figma). Kino brings its own colours and type sizes per role; specs, radii and
- * spacing stay Atomize + ground rules.
- */
-export function readDesignWithKino(): Design | null {
-  const design = readDesign();
-  if (!design) return null;
-  try {
-    const kino = (JSON.parse(readFileSync(KINO, "utf8")) as { themes: Record<string, Record<string, unknown>> }).themes;
-    return { ...design, defaultTheme: "kino", themes: { ...kino, ...design.themes } };
-  } catch {
-    return design;
-  }
-}
