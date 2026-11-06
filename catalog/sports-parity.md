@@ -1,8 +1,8 @@
 # Sports catalog and rendering audit
 
-The nine reusable sports components are indexed. Each expands into generic primitives before reaching either client. Component coverage does not establish visual equivalence with the source designs.
+The 18 reusable sports components are indexed. Each expands into generic primitives before reaching either client. Component coverage does not establish visual equivalence with the source designs.
 
-The index has thirteen components: MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, SeasonPodium, InjuryReport and InjuryList. The MatchResult showcase uses MatchCard with scores.
+The index includes ClubTimeline, MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, MetricBars, PlayerMetrics, PlayersMetric, SeasonPodium, RecordTable, InjuryReport and InjuryList. The MatchResult showcase uses MatchCard with scores.
 
 ## Coverage checks
 
@@ -11,6 +11,10 @@ Run `npm run check:sports-catalog` to check full and sparse compiler fixtures, p
 `npm run openui:export -- --check` checks catalog freshness. The native `OpenUIFixtureTests` compile the exported programs and compare their trees with the server's trees. These tests do not compare screenshots with the source design.
 
 The preview's `/catalog` page renders the fixtures without a model or external research. It includes empty lists and generic ColorCell examples.
+
+`npm run check:writer-relevance` checks unique contract fields and compiles every component after player enrichment. `npm run probe:writer` separately calls the configured model on 24 request cases, checking component selection, requested data, irrelevant context and compiler diagnostics. See [Writer relevance](../WRITER_RELEVANCE.md) for the goal and audit limits. These probes do not measure upstream planning or feed coverage.
+
+PlayerMetrics keeps player identity in `kind` and time-series mode in `seriesKind`. The latter must be `cumulative` or `period`; player enrichment must not overwrite it.
 
 ## One place for each fact
 
