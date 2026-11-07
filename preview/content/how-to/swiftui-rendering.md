@@ -1,6 +1,6 @@
 # From DSL to SwiftUI
 
-This guide explains how the iOS app renders OpenUI Lang, the DSL the writer produces. The server sends program text. The device compiles that text into elements with finished values. SwiftUI draws those elements from `@Observable` handles that the next compile reuses.
+This guide explains how the iOS app renders OpenUI Lang, the DSL the writer produces. The server sends program text, with the component templates the program calls. The device compiles that text into elements with finished values. SwiftUI draws those elements from `@Observable` handles that the next compile reuses.
 
 ## Follow one primitive
 
@@ -20,10 +20,12 @@ compiles to an element with id `r1:ref:pick1_title`, kind `Text`, the properties
 
 ## The catalog carries positions
 
-The catalog holds more than Swift uses. Primitive names, argument order and the slot role change behavior on the device. Token values, enums and data shapes are enforced only on the server.
+The catalog holds more than Swift uses. Primitive names, argument order and the slot role change behavior on the device. Token values, enums and data shapes are enforced only on the server. Component templates are not in the primitive catalog. They arrive with each run.
+
+- A component call, such as `MatchCard(d.answers.q1.match)`, passes on the server, because `validate` expands it with the pack's templates and checks every primitive. The program keeps the call. On the device, `MatchCard` is not a primitive, so the compiler looks up its template from the run's `templates` event, or from the copy bundled with the app.
 
 - A token that does not exist, such as `Text("Top scorers", "huge")`, fails on the server with `type-mismatch` on `Text/role`. The device receives an `issue` event and never sees the statement. If the text did reach a device, Swift would use the body role with no error.
-- A primitive newer than the app makes compile throw `unknownPrimitive`. The whole commit stops, and the screen stays at its last good state.
+- A primitive newer than the app, or a name that is neither a primitive nor a template, makes compile throw `unknownPrimitive`. The whole commit stops, and the screen stays at its last good state.
 - A catalog entry with no Swift case compiles into an element, then draws `UnknownPrimitive`.
 - An argument moved after the app shipped lands in the wrong prop with no error.
 
@@ -49,17 +51,27 @@ The render loop for one level of the tree is:
 
 Layout context travels through the SwiftUI environment. `primitiveStackAxis` tells `Spacer` which way to grow. `primitiveBleed` gives full-bleed children their reach, and a `Card` resets it to its own padding. `primitiveRailWidth` sizes items in a rail.
 
-## A component becomes primitives before it leaves the server
+## A component travels by name and expands on the device
 
-Sports components are server-side calls. The server expands each call into primitives, so the device compiles only primitives. Most components expand to a tree of primitives, usually inside a `Card` or a `Stack`. `PlayerValue` expands to a single data primitive, `StepTimeline`, and its complexity lives in one Swift view.
+The writer calls Sports components by name, and the program keeps the call on the wire. Each component's template, an OpenUI Lang body over its parameters, travels as data. The device expands the call before it builds elements, so it still draws only primitives. Most templates are a tree of primitives inside a `Card` or a `Stack`. `PlayerValue`'s template is a single data primitive, `StepTimeline`, and its complexity lives in one Swift view.
 
-`PlayerValue` reaches the screen in five stages:
+`PlayerValue` reaches the screen in six stages:
 
 1. **Record.** `playerValueChart` in `src/sports/fotmob.ts` turns FotMob's market values into one record. It starts a new stretch whenever the club changes. It takes `lineColor` from the club's dark-mode colour and `tagColor` from its light-mode colour. The answer stores the record under `chart`.
-2. **Call.** The briefing lists `PlayerValue` as a candidate, because the record fits its contract. The writer passes one data reference: `palmerValue = PlayerValue(d.answers.q1.chart)`.
-3. **Expand.** `expandTemplates` hands the call to `SPORTS_SCREEN.expand`, which runs the component's `build` in `src/sports/components.ts`. The build returns one primitive: `StepTimeline(d.answers.q1.chart.value, d.answers.q1.chart.segments, d.answers.q1.chart.ticks, d.answers.q1.chart.caption)`. `validate` then checks every segment and point against the `StepTimeline` schema.
-4. **Wire.** The compiler renames the part to `pick1` and sends the expanded statement. `PlayerValue` never reaches the device. `OpenUICompiler` loads only `primitives.json`. The app also bundles `sports-components.json`, but only its Components page reads it.
-5. **Draw.** The device compiles one element with kind `StepTimeline`, four properties and no slots. `PrimitiveVisual` returns `StepTimelinePrimitive` in `GenUI/Renderer/Primitives/StepTimelinePrimitive.swift`. That view turns `segments` into stretches, then draws the header, the stepped lines, the crests, the dot and the price axis. The scrub selection is `@State` inside the view, so a commit with new values keeps it.
+2. **Call.** The briefing lists `PlayerValue` as a candidate, because the record fits its contract. The writer passes one data reference: `palmerValue = PlayerValue(d.answers.q1.chart)`. Other components take params after the record. `StatsCard(record, false)` hides the header card.
+3. **Check.** The template is the component's `build` in `src/sports/components.ts`, printed once by `npm run openui:export` into `catalog/openui/sports-components.json`:
+
+	```
+	{ name: "PlayerValue", params: [{ name: "record", role: "data" }],
+	  body: "StepTimeline(record.value, record.segments, record.ticks, record.caption)" }
+	```
+
+	`validate` in `src/lang/compiler.ts` expands the call with `expandCall` and checks every primitive in the expansion against the real data. It admits the statement as the writer wrote it. The expansion is used only for checking and for coverage, and it is never sent.
+4. **Wire.** Before any data or program text, a `templates` event carries every component's template. The compiler renames the part to `pick1` and sends `pick1 = PlayerValue(d.answers.q1.chart)`. `done` and the saved document carry the templates the program uses, so a saved screen replays with the templates it was drawn with.
+5. **Expand.** `OpenUICompiler` finds no primitive named `PlayerValue`, so it looks up the template. It evaluates the argument in the caller's scope, binds the result to `record` in a fresh scope, and evaluates the body there. The body mounts where the call sits, so the id is `r1:ref:pick1`, the same as for the expanded program. The fresh scope holds only the template's parameters, so a caller's `@Each` item never collides with the template's own.
+6. **Draw.** The device has one element with kind `StepTimeline`, four properties and no slots. `PrimitiveVisual` returns `StepTimelinePrimitive` in `GenUI/Renderer/Primitives/StepTimelinePrimitive.swift`. That view turns `segments` into stretches, then draws the header, the stepped lines, the crests, the dot and the price axis. The scrub selection is `@State` inside the view, so a commit with new values keeps it.
+
+The server and the web preview expand calls with `expandProgram` in `src/lang/templates.ts`. It substitutes the arguments as text, so it renames the template's own `@Each` items first (`e` becomes `eLeaderboard`) to keep an outer item from being captured.
 
 Each record field lands in one part of the view:
 
@@ -77,7 +89,7 @@ Each record field lands in one part of the view:
 | `points[].display` | `header` | The scrubbed value, on the tag colour. |
 | `ticks[]` | `axis` | Price labels at the trailing edge, level with their values. |
 
-To add a complex element, decide where its complexity lives. If existing primitives can draw it, write the component as a `build` that returns a tree, and the device needs no change. If it needs new drawing or gestures, add a primitive to `PRIMITIVES`, run `npm run openui:export` and add a Swift case to `PrimitiveVisual`. The component then becomes a thin call over that primitive.
+To add a complex element, decide where its complexity lives. If existing primitives can draw it, write the component as a `build` that returns a tree. `npm run openui:export` prints the build as its template, and the template reaches devices with the next run, with no app release. If it needs new drawing or gestures, add a primitive to `PRIMITIVES`, run `npm run openui:export` and add a Swift case to `PrimitiveVisual`. The component then becomes a thin template over that primitive.
 
 ## The wire carries program text
 
@@ -85,12 +97,15 @@ The server never sends a tree. It sends text in chunks of complete statements, a
 
 Events arrive in this order for a new screen:
 
-1. `activity` and `usage` report progress during research.
-2. `data` carries the whole saved snapshot. The session stores it and adopts the run as its document key.
-3. `skeleton` carries predicted frames, built from fallback parts for each question, just before the writer starts.
-4. `openui` carries the opening text: `d = Query(...)` and `root = Screen([])`.
-5. More `openui` events each carry one finished part with a new root line. `issue` events may appear between them.
-6. `done` carries the canonical program and the document version. A strict compile runs, then `finish()` removes the skeleton.
+1. `templates` carries every component's template. The session compiles with them from now on, in place of the copy bundled with the app.
+2. `activity` and `usage` report progress during research.
+3. `data` carries the whole saved snapshot. The session stores it and adopts the run as its document key.
+4. `skeleton` carries predicted frames, built from fallback parts for each question, just before the writer starts.
+5. `openui` carries the opening text: `d = Query(...)` and `root = Screen([])`.
+6. More `openui` events each carry one finished part with a new root line. `issue` events may appear between them.
+7. `done` carries the canonical program, the templates it uses and the document version. A strict compile runs, then `finish()` removes the skeleton.
+
+A follow-up stages `templates`, `data` and `openui` and commits them together after `done`.
 
 The server holds a part until every statement it references has passed validation (`src/lang/compiler.ts`). A part and all its children land in one event and one synchronous commit, so a card never appears half built. The cost is silence, because a long part shows nothing until its last statement passes.
 
@@ -127,7 +142,7 @@ A reference like `d.answers.q1.rows` never reaches a SwiftUI view. `OpenUICompil
 3. The value lands in `element.properties`.
 4. The view reads it through `PrimitiveProps`, which treats null as nil.
 
-`@Each` copies the evaluation context and adds an alias for each row, so `r.name` is a lookup in that copy. It is a compile-time alias and not a runtime scope.
+`@Each` copies the evaluation context and adds an alias for each row, so `r.name` is a lookup in that copy. It is a compile-time alias and not a runtime scope. A template call works the other way round: it starts from an empty context that holds only the template's parameters.
 
 When data is missing:
 
@@ -144,15 +159,15 @@ A primitive has two kinds of state:
 
 No SwiftUI binding connects two primitives. The language has no variables, so a `Toggle` cannot drive a `Show`. To change what another view shows, the program or the dataset has to change.
 
-`registry` and `lastCommit` are marked `@ObservationIgnored`. `update` assigns only when a value differs, and a slot's `set` assigns only when the list differs by object identity. `OpenUIElementView` tracks properties, a container tracks its own slot, and the scene tracks root membership. These rules limit which writes happen. Whether each redraw stops at the changed view has not been measured.
+`registry` and `lastCommit` are marked `@ObservationIgnored`. `update` assigns only when a value differs, and a slot's `set` assigns only when the list differs by object identity. `OpenUIElementView` tracks properties, a container tracks its own slot, and the scene tracks root membership. These rules limit which writes happen.
 
 ## What the bridge does not check
 
-- Swift decodes the catalog digest and never reads it, and the server does not send one. An app and a newer server have no way to agree on a contract.
-- `OpenUIFixtureTests` compares compiled trees and tests no view code. It runs with `make test` and not in CI. A typo in a prop name read by a view passes every check.
+- Swift decodes the catalog digest and never reads it, and the server does not send one. Templates travel with each run, but a primitive newer than the app still fails the compile.
+- `OpenUIFixtureTests` compares compiled trees, for each expanded sample and for the same sample called by name. It tests no view code. It runs with `make test` and not in CI. A typo in a prop name read by a view passes every check.
 - `check:sports-catalog` looks for a Swift case for each kind in the sports fixtures. A new primitive outside those fixtures gets no renderer check on either side.
 - `Button`, `IconButton` and row actions call `PrimitiveActionDispatcher` through the `primitiveContext` environment value. It does nothing until a host sets one, so these taps are inert today. Actions can be wired when a screen needs them.
 
 ## Evidence
 
-This guide comes from reading the code and from running example programs through the real `OpenUICompiler` and `OpenUISession` in a scratch macOS harness. SwiftUI views were not run for it. The stream order comes from the server code, not from a captured live run.
+This guide comes from reading the code and from running example programs through the real `OpenUICompiler` and `OpenUISession` in a scratch macOS harness. SwiftUI views were not run for it. The stream order comes from the server code, not from a captured live run. The template stages come from `OpenUIFixtureTests` and `check:templates`, which compile every catalog sample both expanded and called by name.

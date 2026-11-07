@@ -57,7 +57,7 @@ To change how the writer picks a component, edit the component's `useWhen` in `s
 
 1. `parseName` (`src/lang/compiler.ts:428`) checks the name. `root` and `d` give `reserved-name`. A `pickN` that is not editable gives `locked-part`.
 2. `parseStatement` parses one complete statement. An unclosed call gives `invalid-statement` with `Incomplete statement`.
-3. `validate` (`src/lang/compiler.ts:526`) asks the pack's `refuses` first. Then it expands component calls to primitives. `SPORTS_SCREEN.expand` (`src/sports/screen.ts:138`) requires a data reference as the only argument.
+3. `validate` (`src/lang/compiler.ts:526`) asks the pack's `refuses` first. Then it expands component calls to primitives with `expandCall` (`src/lang/templates.ts`) to check them, and keeps the call in the program. A call takes its record as a data reference, then only the params the component declares, such as StatsCard's `header` flag.
 4. `validate` walks every node, once per `@Each` item. It checks sibling references, the writer's primitive set, slots, argument counts, required props, data references, prop schemas and SF Symbol names.
 5. `admit` checks the size limits: 12 parts, 16 statements per part, 600 nodes per part and 2,400 nodes per screen.
 
@@ -400,6 +400,6 @@ Write the rule as an instruction with the exact call when there is one. The icon
 
 Validation proves a screen is well formed. It cannot prove it is the right screen. Every gate check has a test a statement can fail: a name, a path, a type or a count. A wrong component with a valid record passes all of them, so relevance lives in the prompt and is measured by contrast probes.
 
-The code comments give other reasons. The compiler never throws for writer behaviour: it rejects statements, drops unfinished parts and fills gaps with default parts. The prompt comment says the system prompt is fixed so it stays one cache entry. The `refuses` comment says a hand-built record table loses the card's total and rank.
+The code comments give other reasons. The prompt comment says the system prompt is fixed so it stays one cache entry. The `refuses` comment says a hand-built record table loses the card's total and rank.
 
-The repository does not say why most sports rules are prompt-only rather than gate checks. A likely reason is that rules about taste, such as less text or icon-led rows, have no clear test a statement can fail. That is an inference from the code. The evidence for this guide is the working tree and git history. Recorded generation runs were not reviewed.
+The evidence for this guide is the working tree and git history. Recorded generation runs were not reviewed.

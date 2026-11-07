@@ -6,7 +6,11 @@ import styles from "@/app/how-to/how-to.module.css";
 import { OpenUIPreview } from "@/components/primitives/openui-render";
 import type { ExampleTheme } from "@/components/catalog/custom/openui-example";
 import { AgentBody, AgentView, ForAgentsButton } from "./agent-view";
-import { GuideSelect, Source } from "./guide-parts";
+import { GuideSelect, Source as GuideSource } from "./guide-parts";
+
+/** The commit this guide was written from: component-wire, with templates on the wire. */
+const AT = "dcb92c3";
+const Source = (props: Omit<Parameters<typeof GuideSource>[0], "at">) => <GuideSource {...props} at={AT} />;
 
 const IOS = "ios/OpenUIGen/GenUI/";
 const COMPILER = `${IOS}Core/OpenUI/OpenUICompiler.swift`;
@@ -56,8 +60,8 @@ type PrimitiveName = "Text" | "Stack";
 const bridgeStages = [
   { name: "Define", title: "TypeScript defines the primitive.", text: "Every primitive starts as one entry in PRIMITIVES. The entry names its props, and the key order of those props becomes the argument order in the language.", note: "Moving a prop changes the language, because Swift reads arguments by position.", file: "src/lang/primitives.ts", line: 62 },
   { name: "Export", title: "A script writes the contract.", text: "npm run openui:export writes primitives.json from that list. It keeps each primitive name and its arguments. Intent, rules and skeleton notes stay behind.", note: "XcodeGen adds the file to the app bundle as a resource. No build step runs the export.", file: "scripts/export-openui.ts", line: 27 },
-  { name: "Compile", title: "The device turns a call into an element.", text: "OpenUICompiler walks the catalog arguments by index. Arguments with the role node or nodes become slots. Every other argument becomes a property.", note: "Data references resolve here, so the element holds finished values.", file: COMPILER, line: 216 },
-  { name: "Retain", title: "The element gets a long-lived handle.", text: "commit stores each element in an @Observable OpenUIElementHandle. The next compile reuses that object when the kind and slot names still match.", note: "Each slot has its own @Observable handle, so a list change and a prop change are separate writes.", file: RUNTIME, line: 340 },
+  { name: "Compile", title: "The device turns a call into an element.", text: "OpenUICompiler walks the catalog arguments by index. Arguments with the role node or nodes become slots. Every other argument becomes a property.", note: "Data references resolve here, so the element holds finished values.", file: COMPILER, line: 265 },
+  { name: "Retain", title: "The element gets a long-lived handle.", text: "commit stores each element in an @Observable OpenUIElementHandle. The next compile reuses that object when the kind and slot names still match.", note: "Each slot has its own @Observable handle, so a list change and a prop change are separate writes.", file: RUNTIME, line: 384 },
   { name: "Draw", title: "A string switch picks the view.", text: "OpenUIElementView passes the kind and props to PrimitiveVisual, which switches on the kind string. Containers read their slot and wrap each child in PrimitiveNodeView, which starts this step again.", note: "A kind with no case draws a red outline in debug builds and nothing in release builds.", file: NODE, line: 58 },
 ] as const;
 
@@ -167,13 +171,17 @@ function BridgeWalkthrough() {
 
 // 02 ---------------------------------------------------------------- the contract
 
-type ContractCase = "valid" | "token" | "unknown" | "noCase" | "reorder";
+type ContractCase = "valid" | "component" | "token" | "unknown" | "noCase" | "reorder";
 
 const contractCases: Record<ContractCase, { label: string; program: string; server: { failed: boolean; title: string; text: string }; device: { failed: boolean; title: string; text: string }; noteTitle: string; note: string }> = {
   valid: { label: "A valid statement", program: `pick1_title = Text("Top scorers", "title2")`,
     server: { failed: false, title: "Admitted", text: "zod checks the arguments against the primitive schema and the real dataset values." },
     device: { failed: false, title: "Drawn", text: "content and role become properties. PrimitiveTypeRole maps title2 to a font size and line height." },
     noteTitle: "Both sides agree.", note: "The server checks meaning. The device builds structure from names and positions." },
+  component: { label: "A component call", program: `pick1 = MatchCard(d.answers.q1.match)`,
+    server: { failed: false, title: "Admitted as written", text: "validate expands the call with the pack's templates and checks every primitive in the expansion. The program keeps the call." },
+    device: { failed: false, title: "Expanded, then drawn", text: "MatchCard is not a primitive, so the compiler looks up its template. The run's templates event carries it, and the app's bundled copy is the fallback." },
+    noteTitle: "A component is data, not code.", note: "A component that only reuses existing primitives ships with no app release. A name that is neither a primitive nor a template throws unknownPrimitive." },
   token: { label: "A token that does not exist", program: `pick1_title = Text("Top scorers", "huge")`,
     server: { failed: true, title: "Rejected", text: "The token schema is a closed list, so this fails with type-mismatch on Text/role." },
     device: { failed: false, title: "Falls back with no error", text: "If this text did reach a device, Swift would store huge as a string and use the body role." },
@@ -197,7 +205,7 @@ function Contract() {
   const current = contractCases[selected];
   return <section id="contract" className={styles.section}>
     <div className={styles.sectionHeading}><div><span className={styles.sectionIndex}>02 / THE CONTRACT</span><h2>The catalog carries positions.</h2></div></div>
-    <p className={styles.sectionIntro}>The catalog holds more than Swift uses. Primitive names, argument order and the slot role change behavior on the device. Token values, enums and data shapes are enforced only on the server.</p>
+    <p className={styles.sectionIntro}>The catalog holds more than Swift uses. Primitive names, argument order and the slot role change behavior on the device. Token values, enums and data shapes are enforced only on the server. Component templates are not in the primitive catalog: they arrive with each run.</p>
     <div className={styles.researchDemo}>
       <div className={styles.demoToolbar}><span className={styles.demoTitle}>Who catches what</span><span className={styles.quiet}>One statement, two compilers</span></div>
       <div className={styles.searchScene}>
@@ -211,7 +219,7 @@ function Contract() {
       <div className={styles.researchAnnotation}><span>↳</span><div><strong>{current.noteTitle}</strong><p>{current.note}</p></div></div>
       <div className={styles.demoFooter}><label className={styles.selectLabel}>Try a statement <GuideSelect value={selected} onChange={event => setSelected(event.target.value as ContractCase)}>{(Object.keys(contractCases) as ContractCase[]).map(key => <option key={key} value={key}>{contractCases[key].label}</option>)}</GuideSelect></label></div>
     </div>
-    <div className={styles.sourceRow}><Source file="scripts/export-openui.ts" line={27}>What the export keeps</Source><Source file="scripts/check-lang.ts" line={93}>Token rejection check</Source><Source file={COMPILER} line={202}>Swift compile errors</Source><Source file={NODE} line={160}>UnknownPrimitive</Source></div>
+    <div className={styles.sourceRow}><Source file="scripts/export-openui.ts" line={27}>What the export keeps</Source><Source file="scripts/check-lang.ts" line={93}>Token rejection check</Source><Source file={COMPILER} line={256}>Swift compile errors</Source><Source file={NODE} line={160}>UnknownPrimitive</Source></div>
     <details className={styles.detail}><summary>How do design tokens cross? <span>+</span></summary><p>They take three routes. Token names and validation live in src/primitives/tokens.ts and stay on the server. Spacing values travel as plain numbers in the program, so Swift reads gap directly. Type sizes are copied by hand into PrimitiveTokens.swift and render.tsx. Colors and component anatomy skip TypeScript, because the app bundles design_system.json directly.</p><Source file="src/primitives/tokens.ts" line={23}>TYPE in TypeScript</Source><Source file={`${IOS}Renderer/Tokens/PrimitiveTokens.swift`} line={28}>TYPE in Swift</Source><Source file={`${IOS}Core/Theme/DesignTheme.swift`} line={163}>Bundled theme</Source></details>
   </section>;
 }
@@ -324,6 +332,8 @@ const palmerChart = {
 };
 const timelineCall = `StepTimeline(${CHART}.value, ${CHART}.segments, ${CHART}.ticks, ${CHART}.caption)`;
 
+const templateBody = `StepTimeline(record.value, record.segments, record.ticks, record.caption)`;
+
 const complexStages = [
   { name: "Record", title: "The server builds the record.", text: "playerValueChart turns FotMob's market values into one record. It starts a new stretch whenever the club changes. It takes the line colour from the club's dark-mode colour and the tag colour from its light-mode colour.", note: "No model writes these figures. The answer stores the record under chart, beside the question's title and source.", file: "src/sports/fotmob.ts", line: 141,
     from: ["FOTMOB · MARKET VALUES", `{ date: "2024-12-31", value: 116235970,
@@ -333,20 +343,27 @@ const complexStages = [
   segments: [ { name, lineColor, tagColor, logo,
                 points: [ { x, label, value, display } ] } ],
   ticks: [ { value, display } ] }`] },
-  { name: "Call", title: "The writer calls the component by name.", text: "The briefing lists PlayerValue as a candidate for this answer, because the record fits its contract. The writer passes one data reference and nothing else.", note: "PlayerValue exists only on the server. It is a component in the sports pack, not a primitive.", file: COMPONENTS, line: 395,
+  { name: "Call", title: "The writer calls the component by name.", text: "The briefing lists PlayerValue as a candidate for this answer, because the record fits its contract. The writer passes one data reference.", note: "PlayerValue takes only the record. Other components take params after it: StatsCard(record, false) hides the header card.", file: COMPONENTS, line: 468,
     from: ["WRITER STATEMENT", `palmerValue = PlayerValue(${CHART})`], link: "admit, then validate", to: ["CONTRACT · SPORTS-COMPONENTS", `value              text
 caption            text
 segments[]         name, lineColor, tagColor, logo
 segments[].points  x, label, value, display
 ticks[]            value, display`] },
-  { name: "Expand", title: "The server expands the call to primitives.", text: "expandTemplates hands the call to SPORTS_SCREEN.expand, which runs the component's build. PlayerValue's build returns one StepTimeline that reads four fields of the same record.", note: "validate then checks the expanded primitive. zod checks every segment and point against the StepTimeline schema, with the real data.", file: "src/sports/screen.ts", line: 137,
-    from: ["BUILD · COMPONENTS.TS", `build: t => ui.StepTimeline({
-  value: t.value, segments: t.segments,
-  ticks: t.ticks, caption: t.caption,
-})`], link: "The data reference stays a path", to: ["ADMITTED STATEMENT", `palmerValue = ${timelineCall}`] },
-  { name: "Wire", title: "The device receives only primitives.", text: "The compiler renames the part to pick1 and sends the expanded statement. PlayerValue never reaches the device.", note: "OpenUICompiler loads primitives.json and nothing else. The app also bundles sports-components.json, but only its Components page reads it.", file: "src/lang/compiler.ts", line: 362,
-    from: ["EVENT: OPENUI", `pick1 = ${timelineCall}
-root = Screen([pick1])`], link: "OpenUICompiler evaluates", to: ["OPENUISEMANTICELEMENT", `id: "r1:ref:pick1"
+  { name: "Check", title: "The server checks the expansion and keeps the call.", text: "The template is PlayerValue's build, printed once by npm run openui:export. validate expands the call with that template, then checks every primitive in the expansion. It admits the statement as the writer wrote it.", note: "zod checks every segment and point against the StepTimeline schema, with the real data. The expansion is used only for checking and for coverage. It is never sent.", file: "src/lang/compiler.ts", line: 519,
+    from: ["TEMPLATE · SPORTS-COMPONENTS.JSON", `{ name: "PlayerValue",
+  params: [{ name: "record", role: "data" }],
+  body: "${templateBody}" }`], link: "expandCall binds record to the call's argument", to: ["CHECKED, NOT SENT", timelineCall] },
+  { name: "Wire", title: "The device receives the call and its template.", text: "Before any data or program text, a templates event carries every component's template. The compiler then renames the part to pick1 and sends the call as written.", note: "done and the saved document carry the templates the program uses, so a saved screen replays with the templates it was drawn with.", file: "src/routes/sports.ts", line: 78,
+    from: ["EVENT: TEMPLATES", `{ templates: [
+  ...,
+  { name: "PlayerValue", params, body },
+  ...
+] }`], link: "then the program text", to: ["EVENT: OPENUI", `pick1 = PlayerValue(${CHART})
+root = Screen([pick1])`] },
+  { name: "Expand", title: "The device runs the template in its own scope.", text: "OpenUICompiler finds no primitive named PlayerValue, so it looks up the template. It evaluates the argument in the caller's scope, binds the result to record in a fresh scope, and evaluates the body there.", note: "The body mounts where the call sits, so the id is r1:ref:pick1, the same as for the expanded program. The fresh scope holds only the template's parameters, so a caller's @Each item never collides with the template's own.", file: COMPILER, line: 225,
+    from: ["OPENUICOMPILER.EXPAND", `var scope = Context()
+scope.aliases["record"] = evaluate(${CHART})
+return evaluate(template.body, mount: mount, context: scope)`], link: "Evaluated like any primitive", to: ["OPENUISEMANTICELEMENT", `id: "r1:ref:pick1"
 kind: "StepTimeline"
 properties: {
   value: "€97.7M",
@@ -374,7 +391,7 @@ const timelineFields: Record<TimelineField, { label: string; path: string; sampl
   label: { label: "points[].label", path: "segments[2].points[2].label", sample: `"Dec 2024"`, reader: "header", swift: `Text(reading.label)\n  .foregroundStyle(palette.ink("secondary"))`, draws: "The date under the club name while scrubbing. The chart has no date axis.", line: 104 },
   point: { label: "points[].value", path: "segments[2].points[2].value", sample: "116235970", reader: "plot", swift: `top: max(readings.map(\\.value).max() ?? 1, 1)\n// y(for:) maps 0...top into the plot`, draws: "The height of the line. The y axis starts at zero, and the highest value sets the top.", line: 146 },
   display: { label: "points[].display", path: "segments[2].points[2].display", sample: `"€116.2M"`, reader: "header", swift: `Text(reading.display)\n  .foregroundStyle(.white)\n  .background(stretch.tag, in: .rect(cornerRadius: 4))`, draws: "The scrubbed value, on the tag colour.", line: 104 },
-  ticks: { label: "ticks[]", path: "ticks", sample: `[{ value: 0, display: "€0" }, ...]`, reader: "axis", swift: `ForEach(ticks) { tick in\n  Text(tick.display).position(x: ..., y: plot.y(for: tick.value))\n}`, draws: "Price labels at the trailing edge, level with their values. This is the only axis.", line: 258 },
+  ticks: { label: "ticks[]", path: "ticks", sample: `[{ value: 0, display: "€0" }, ...]`, reader: "axis", swift: `ForEach(ticks) { tick in\n  Text(tick.display).position(x: ..., y: plot.y(for: tick.value))\n}`, draws: "Price labels at the trailing edge, level with their values. This is the only axis.", line: 259 },
 };
 
 function ComplexElements() {
@@ -383,17 +400,17 @@ function ComplexElements() {
   const stage = complexStages[step]!;
   const mapped = timelineFields[field];
   return <section id="complex" className={styles.section}>
-    <div className={styles.sectionHeading}><div><span className={styles.sectionIndex}>04 / COMPLEX ELEMENTS</span><h2>A component becomes primitives before it leaves the server.</h2></div><span className={styles.quiet}>PlayerValue, end to end</span></div>
-    <p className={styles.sectionIntro}>Sports components such as PlayerValue are server-side calls. The server expands each call into primitives, so the device only ever compiles primitives. Most components expand to a tree of primitives, usually inside a Card or a Stack. PlayerValue expands to a single data primitive, StepTimeline, and its complexity lives in one Swift view.</p>
+    <div className={styles.sectionHeading}><div><span className={styles.sectionIndex}>04 / COMPLEX ELEMENTS</span><h2>A component travels by name and expands on the device.</h2></div><span className={styles.quiet}>PlayerValue, end to end</span></div>
+    <p className={styles.sectionIntro}>The writer calls Sports components such as PlayerValue by name, and the program keeps the call on the wire. Each component's template, an OpenUI Lang body over its parameters, travels as data. The device expands the call before it builds elements, so it still draws only primitives. Most templates are a tree of primitives inside a Card or a Stack. PlayerValue's template is a single data primitive, StepTimeline, and its complexity lives in one Swift view.</p>
     <div className={styles.walkthrough}>
-      <div className={styles.demoToolbar}><span className={styles.demoTitle}><span className={styles.statusDot} /> Component mapper <small>PlayerValue/full catalog fixture</small></span><span className={styles.labelPill}>DSL → primitive → SwiftUI</span></div>
+      <div className={styles.demoToolbar}><span className={styles.demoTitle}><span className={styles.statusDot} /> Component mapper <small>PlayerValue/full catalog fixture</small></span><span className={styles.labelPill}>call → template → SwiftUI</span></div>
       <Stepper names={complexStages.map(item => item.name)} step={step} onStep={setStep} />
       <div className={styles.walkthroughBody}>
         <div className={styles.flowScene}>
           <CodeNode label={stage.from[0]}>{stage.from[1]}</CodeNode>
           <Connector label={stage.link} />
           <CodeNode label={stage.to[0]} brand>{stage.to[1]}</CodeNode>
-          {step === complexStages.length - 1 && <><Connector label="Drawn with Kino" /><div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><Kino program={`root = Screen([pick1])\n${QUERY}\npick1 = ${timelineCall}`} result={{ answers: { q1: { chart: palmerChart } } }} /></div></div></>}
+          {step === complexStages.length - 1 && <><Connector label="Drawn with Kino" /><div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><Kino program={`root = Screen([pick1])\n${QUERY}\npick1 = PlayerValue(${CHART})`} result={{ answers: { q1: { chart: palmerChart } } }} /></div></div></>}
         </div>
         <Annotation step={step} title={stage.title} text={stage.text} note={stage.note}><Source file={stage.file} line={stage.line}>Read this stage in the code</Source></Annotation>
       </div>
@@ -412,8 +429,8 @@ function ComplexElements() {
       </div>
       <div className={styles.demoFooter}><Source file={TIMELINE} line={mapped.line}>Read {mapped.reader}() in Swift</Source></div>
     </div>
-    <div className={styles.callout}><span className={styles.calloutMark}>↳</span><div><strong>To add a complex element, decide where its complexity lives.</strong><p>If existing primitives can draw it, write the component as a build that returns a tree, and the device needs no change. If it needs new drawing or gestures, such as the stepped line and the scrub, add a primitive to PRIMITIVES, export the catalog and add a Swift case. The component then becomes a thin call over that primitive.</p></div></div>
-    <div className={styles.sourceRow}><Source file={COMPONENTS} line={417}>PlayerValue build</Source><Source file="src/lang/primitives.ts" line={359}>StepTimeline props</Source><Source file={NODE} line={111}>StepTimeline case</Source></div>
+    <div className={styles.callout}><span className={styles.calloutMark}>↳</span><div><strong>To add a complex element, decide where its complexity lives.</strong><p>If existing primitives can draw it, write the component as a build that returns a tree. npm run openui:export prints the build as its template, and the template reaches devices with the next run, with no app release. If it needs new drawing or gestures, such as the stepped line and the scrub, add a primitive to PRIMITIVES, export the catalog and add a Swift case. The component then becomes a thin template over that primitive.</p></div></div>
+    <div className={styles.sourceRow}><Source file={COMPONENTS} line={489}>PlayerValue build</Source><Source file="src/lang/templates.ts" line={79}>Server and web expander</Source><Source file={COMPILER} line={225}>Swift template scope</Source><Source file="src/lang/primitives.ts" line={359}>StepTimeline props</Source><Source file={NODE} line={111}>StepTimeline case</Source></div>
   </section>;
 }
 
@@ -433,6 +450,7 @@ const finalProgram = [`root = Screen([pick1, pick2])`, QUERY, ...partOne.slice(0
 const pendingProgram = `root = Screen([p])\n${QUERY}\np = Stack("v", 8, [Text("Loading title", "title2"), Text("Loading detail", "body"), Text("Loading note", "footnote")])`;
 
 const baseSteps: readonly StreamStep[] = [
+  { name: "templates", event: `event: templates\n{ templates: [{ name, params, body }, ...] }`, title: "Component templates arrive first.", text: "The server sends every component's template before any data or program text. The session compiles with them from now on, in place of the copy bundled with the app.", commit: zero, pending: 0, blocks: 0, phase: "loading" },
   { name: "data", event: `event: data\n{ tool, args: { run: "r1" }, result, fields, asOf, source }`, title: "The dataset arrives first.", text: "The server saves the snapshot, then sends all of it. The session stores it and adopts the run as its document key. There is no program yet, so nothing compiles.", commit: zero, pending: 0, blocks: 0, phase: "loading" },
   { name: "skeleton", event: `event: skeleton\n{ gap, inset, blocks: [frame, frame] }`, title: "The skeleton predicts the shape.", text: "The server builds these frames from fallback parts for each question, just before the writer starts. They are a forecast. The writer can return a different number of parts.", commit: zero, pending: 2, blocks: 0, phase: "loading" },
   { name: "opening", event: `event: openui\n{ text: "d = Query(...)\\nroot = Screen([])\\n" }`, title: "An empty screen compiles.", text: "The session appends the text and compiles everything it has. Screen is the one element, and it has no drawing of its own.", add: opening, commit: { ...zero, created: 1, root: true }, pending: 2, blocks: 0, phase: "loading" },
@@ -444,12 +462,12 @@ const baseSteps: readonly StreamStep[] = [
 const streamNotes: Record<StreamOutcome, { label: string; note: string }> = {
   normal: { label: "The stream completes", note: "One frame remains after part 2. The writer may have more parts than the plan had questions, so pendingBlocks keeps the last frame until done." },
   drop: { label: "The connection ends early", note: "The bytes end without a done event, so the service throws incompleteStream. The session has content, so it calls finish() and rethrows. AskModel shows the error." },
-  older: { label: "The app catalog is older", note: "Compile evaluates everything reachable from root and throws on an unknown name. While streaming, the session logs that error and keeps the last good commit." },
+  older: { label: "The app catalog is older", note: "Compile evaluates everything reachable from root and throws on a name that is neither a primitive nor a template. While streaming, the session logs that error and keeps the last good commit." },
 };
 
 function stepsFor(outcome: StreamOutcome): readonly StreamStep[] {
-  if (outcome === "drop") return [...baseSteps.slice(0, 4), { name: "stream ends", event: `// The bytes end. No done event arrived.`, title: "The session keeps what it has.", text: "Phase becomes ready and the skeleton clears. The last commit counts stay as they were, because no new compile ran.", commit: { ...zero, created: 3, slots: 2 }, pending: 0, blocks: 1, phase: "ready", error: "incompleteStream" }];
-  if (outcome === "older") return [...baseSteps.slice(0, 4),
+  if (outcome === "drop") return [...baseSteps.slice(0, 5), { name: "stream ends", event: `// The bytes end. No done event arrived.`, title: "The session keeps what it has.", text: "Phase becomes ready and the skeleton clears. The last commit counts stay as they were, because no new compile ran.", commit: { ...zero, created: 3, slots: 2 }, pending: 0, blocks: 1, phase: "ready", error: "incompleteStream" }];
+  if (outcome === "older") return [...baseSteps.slice(0, 5),
     { name: "bad part", event: `event: openui\n{ text: "pick2 = Scoreboard(\\"x\\")\\nroot = Screen([pick1, pick2])\\n" }`, title: "The compile fails and nothing commits.", text: "The text joins the program, but the catalog has no Scoreboard. The screen and the skeleton stay where they were after part 1.", add: [`pick2 = Scoreboard("x")`, partTwo[1]!], rejected: true, commit: { ...zero, created: 3, slots: 2 }, pending: 1, blocks: 1, phase: "loading", error: "unknownPrimitive (logged)" },
     { name: "done", event: `event: done\n{ program, run, issues, document }`, title: "A valid done recovers the screen.", text: "This example assumes the final program holds a valid pick2. The strict compile succeeds and creates the four missing elements. If it failed, the session would keep the last good screen and report the error.", replace: finalProgram, commit: { ...zero, created: 4, slots: 2 }, pending: 0, blocks: 2, phase: "ready" }];
   return baseSteps;
@@ -501,13 +519,13 @@ function Streaming() {
           <Connector label="SwiftUI redraws from the handles" />
           <div className={styles.previewNode}><span className={styles.nodeOverline}>SCREEN · {current.pending} SKELETON {current.pending === 1 ? "FRAME" : "FRAMES"}</span><ScreenAt blocks={current.blocks} pending={current.pending} /></div>
         </div>
-        <Annotation step={index} title={current.title} text={current.text} note={streamNotes[outcome].note}><Source file={index > 2 ? "src/lang/compiler.ts" : RUNTIME} line={index > 2 ? 363 : 179}>{index > 2 ? "Hold until complete" : "Append and compile"}</Source></Annotation>
+        <Annotation step={index} title={current.title} text={current.text} note={streamNotes[outcome].note}><Source file={index > 3 ? "src/lang/compiler.ts" : RUNTIME} line={index > 3 ? 362 : 195}>{index > 3 ? "Hold until complete" : "Append and compile"}</Source></Annotation>
       </div>
       <div className={styles.demoFooter}><label className={styles.selectLabel}>Try an outcome <GuideSelect value={outcome} onChange={event => { setOutcome(event.target.value as StreamOutcome); setStep(0); }}>{(Object.keys(streamNotes) as StreamOutcome[]).map(key => <option key={key} value={key}>{streamNotes[key].label}</option>)}</GuideSelect></label><StageControls step={index} total={steps.length} onStep={setStep} next="Next event →" /></div>
     </div>
     <div className={styles.callout}><span className={styles.calloutMark}>↳</span><div><strong>A part is the unit of streaming.</strong><p>A writer statement alone never reaches the device. A part and all its children land in one event and one synchronous commit, so a card never appears half built. The cost is silence, because a long part shows nothing until its last statement passes.</p></div></div>
     <div className={styles.sourceRow}><Source file={`${IOS}Core/Model/PrimitiveSkeleton.swift`} line={24}>Pending frames</Source><Source file={SCENE} line={45}>Blocks and frames</Source></div>
-    <details className={styles.detail}><summary>What happens to a rejected statement? <span>+</span></summary><p>The server drops it and sends an issue event. Its text never reaches the device, and issues do not change what the app draws. The writer gets one repair round, with a message that lists its rejected statements and the problems. Questions still uncovered after that get a fallback part, which appears only in done.program.</p><Source file="src/lang/compiler.ts" line={177}>Repair round</Source><Source file="src/lang/compiler.ts" line={548}>Statement validation</Source></details>
+    <details className={styles.detail}><summary>What happens to a rejected statement? <span>+</span></summary><p>The server drops it and sends an issue event. Its text never reaches the device, and issues do not change what the app draws. The writer gets one repair round, with a message that lists its rejected statements and the problems. Questions still uncovered after that get a fallback part, which appears only in done.program.</p><Source file="src/lang/compiler.ts" line={178}>Repair round</Source><Source file="src/lang/compiler.ts" line={534}>Statement validation</Source></details>
   </section>;
 }
 
@@ -544,7 +562,7 @@ function Identity() {
       <div className={styles.researchAnnotation}><span>↳</span><div><strong>{current.label}</strong><p>{current.text}</p></div></div>
       <div className={styles.demoFooter}><label className={styles.selectLabel}>Try a change <GuideSelect value={selected} onChange={event => setSelected(event.target.value as IdentityCase)}>{(Object.keys(identityCases) as IdentityCase[]).map(key => <option key={key} value={key}>{identityCases[key].label}</option>)}</GuideSelect></label></div>
     </div>
-    <div className={styles.sourceRow}><Source file={COMPILER} line={111}>Mount path</Source><Source file={COMPILER} line={190}>Row ids</Source><Source file={RUNTIME} line={344}>Reuse rule</Source><Source file={SCENE} line={90}>Child equality</Source></div>
+    <div className={styles.sourceRow}><Source file={COMPILER} line={146}>Mount path</Source><Source file={COMPILER} line={217}>Row ids</Source><Source file={RUNTIME} line={384}>Reuse rule</Source><Source file={SCENE} line={90}>Child equality</Source></div>
   </section>;
 }
 
@@ -589,7 +607,7 @@ function PathResolver() {
           {current.elements.length === 0 ? <div className={styles.elementRow}><small>No scene. The last good commit stays on screen.</small></div> : current.elements.map(element => <div key={element.id} className={styles.elementRow}><code>{element.id}</code><small>{element.value}</small></div>)}
         </div>
       </div>
-      <Annotation step={reached} title={current.title} text={current.text} note={current.note}><Source file={COMPILER} line={selected === "list" ? 185 : selected === "query" ? 167 : 123}>Read this in the compiler</Source></Annotation>
+      <Annotation step={reached} title={current.title} text={current.text} note={current.note}><Source file={COMPILER} line={selected === "list" ? 203 : selected === "query" ? 189 : 150}>Read this in the compiler</Source></Annotation>
     </div>
     <div className={styles.demoFooter}><label className={styles.selectLabel}>Try the data <GuideSelect value={selected} onChange={event => setSelected(event.target.value as DataCase)}>{(Object.keys(dataCases) as DataCase[]).map(key => <option key={key} value={key}>{dataCases[key].label}</option>)}</GuideSelect></label></div>
   </div>;
@@ -624,25 +642,25 @@ function FollowUp() {
 function Binding() {
   return <section id="binding" className={styles.section}>
     <div className={styles.sectionHeading}><div><span className={styles.sectionIndex}>07 / DATA BINDING</span><h2>Swift views receive values, not paths.</h2></div></div>
-    <p className={styles.sectionIntro}>A reference like d.answers.q1.rows never reaches a SwiftUI view. The compiler resolves it against the dataset and stores the result in the element. Views read that result from their handle, and @Observable tells SwiftUI when it changes.</p>
+    <p className={styles.sectionIntro}>A reference like d.answers.q1.rows never reaches a SwiftUI view. The compiler resolves it against the dataset and stores the result in the element. Views read that result from their handle, and @Observable tells SwiftUI when it changes. A component call resolves its record the same way, then hands the value to the template's fresh scope.</p>
     <PathResolver />
     <h3 className={styles.subHeading}>New data reaches a view through commit</h3>
     <FollowUp />
-    <div className={styles.sourceRow}><Source file={RUNTIME} line={202}>Follow-up</Source><Source file={RUNTIME} line={25}>Conditional writes</Source><Source file={`${IOS}Renderer/Node/PrimitiveProps.swift`} line={45}>Null as nil</Source></div>
+    <div className={styles.sourceRow}><Source file={RUNTIME} line={221}>Follow-up</Source><Source file={RUNTIME} line={23}>Conditional writes</Source><Source file={`${IOS}Renderer/Node/PrimitiveProps.swift`} line={45}>Null as nil</Source></div>
     <h3 className={styles.subHeading}>Two kinds of state</h3>
     <div className={styles.recoveryGrid}>
       <div><span className={styles.recoveryLabel}>HANDLE.PROPERTIES</span><h3>Evaluated props</h3><p>Every data reference and literal. Only commit writes them, and the views that read them update.</p></div>
       <div><span className={styles.recoveryLabel}>@STATE</span><h3>Local UI state</h3><p>Toggle, Stepper, Chip, SegmentedControl and an open Section. Only that view can read it. Once set, it ignores later prop updates for that handle.</p></div>
     </div>
     <div className={styles.callout}><span className={styles.calloutMark}>↳</span><div><strong>No SwiftUI binding connects two primitives.</strong><p>The language has no variables, so a Toggle cannot drive a Show. To change what another view shows, the program or the dataset has to change.</p></div></div>
-    <details className={styles.detail}><summary>How does @Observable limit the work? <span>+</span></summary><p>registry and lastCommit are marked @ObservationIgnored. Update assigns only when a value differs, and slot set assigns only when the list differs by object identity. OpenUIElementView tracks properties, a container tracks its own slot, and the scene tracks root membership. These rules limit which writes happen. Whether each redraw stops at the changed view has not been measured.</p><Source file={SCENE} line={3}>Observation intent</Source></details>
+    <details className={styles.detail}><summary>How does @Observable limit the work? <span>+</span></summary><p>registry and lastCommit are marked @ObservationIgnored. Update assigns only when a value differs, and slot set assigns only when the list differs by object identity. OpenUIElementView tracks properties, a container tracks its own slot, and the scene tracks root membership. These rules limit which writes happen.</p><Source file={SCENE} line={3}>Observation intent</Source></details>
   </section>;
 }
 
 export function SwiftUIRenderingGuide({ markdown, ...theme }: ExampleTheme & { markdown: string }) {
   return <ThemeContext.Provider value={theme}><AgentView><article className={styles.article}>
     <div className={styles.breadcrumb}><Link href="/how-to">How to</Link><span>/</span><span>From DSL to SwiftUI</span></div>
-    <header className={styles.articleHeader}><div className={styles.eyebrow}><span className={styles.accentRule} /> PROCESS 03 / FROM THE DSL TO SWIFTUI</div><div className={styles.titleRow}><h1>From DSL<br />to SwiftUI.</h1><ForAgentsButton /></div><p className={styles.lead}>The server sends OpenUI Lang, the DSL the writer produces, as program text. The device compiles that text into elements with finished values. SwiftUI draws those elements from handles that the next compile reuses.</p><div className={styles.headerMeta}><span>OpenUI Lang</span><span>Components</span><span>Swift compiler</span><span>SwiftUI</span><i /><span>Interactive system guide</span></div></header>
+    <header className={styles.articleHeader}><div className={styles.eyebrow}><span className={styles.accentRule} /> PROCESS 03 / FROM THE DSL TO SWIFTUI</div><div className={styles.titleRow}><h1>From DSL<br />to SwiftUI.</h1><ForAgentsButton /></div><p className={styles.lead}>The server sends OpenUI Lang, the DSL the writer produces, as program text, with the component templates the program calls. The device compiles that text into elements with finished values. SwiftUI draws those elements from handles that the next compile reuses.</p><div className={styles.headerMeta}><span>OpenUI Lang</span><span>Components</span><span>Swift compiler</span><span>SwiftUI</span><i /><span>Interactive system guide</span></div></header>
     <AgentBody markdown={markdown} file="swiftui-rendering.md">
     <BridgeWalkthrough />
     <Contract />
@@ -655,17 +673,17 @@ export function SwiftUIRenderingGuide({ markdown, ...theme }: ExampleTheme & { m
       <div className={styles.sectionHeading}><div><span className={styles.sectionIndex}>08 / KNOWN GAPS</span><h2>What the bridge does not check.</h2></div></div>
       <p className={styles.sectionIntro}>Check these limits before you add a primitive or change an argument.</p>
       <div className={styles.recoveryGrid}>
-        <div><span className={styles.recoveryLabel}>VERSIONS</span><h3>Nothing compares the digest</h3><p>Swift decodes the catalog digest and never reads it. The server does not send one. An app and a newer server have no way to agree on a contract.</p></div>
-        <div><span className={styles.recoveryLabel}>TESTS</span><h3>Parity stops at the tree</h3><p>OpenUIFixtureTests compares compiled trees and tests no view code. It runs with make test and not in CI. A typo in a prop name read by a view passes every check.</p></div>
+        <div><span className={styles.recoveryLabel}>VERSIONS</span><h3>Nothing compares the digest</h3><p>Swift decodes the catalog digest and never reads it. The server does not send one. Templates travel with each run, but a primitive newer than the app still fails the compile.</p></div>
+        <div><span className={styles.recoveryLabel}>TESTS</span><h3>Parity stops at the tree</h3><p>OpenUIFixtureTests compares compiled trees, for each expanded sample and for the same sample called by name. It tests no view code. It runs with make test and not in CI. A typo in a prop name read by a view passes every check.</p></div>
         <div><span className={styles.recoveryLabel}>COVERAGE</span><h3>Fixtures cover part of the catalog</h3><p>check:sports-catalog looks for a Swift case for each kind in the sports fixtures. A new primitive outside those fixtures gets no renderer check on either side.</p></div>
         <div><span className={styles.recoveryLabel}>ACTIONS</span><h3>Actions wire in when a screen needs them</h3><p>Button, IconButton and row actions call a dispatcher in the environment. It does nothing until a host sets primitiveContext, so these taps are inert today.</p></div>
       </div>
       <div className={styles.sourceRow}><Source file={`${IOS}Renderer/Entry/PrimitiveEnvironment.swift`} line={13}>Action dispatcher</Source><Source file="ios/OpenUIGenTests/GenUI/OpenUIFixtureTests.swift" line={33}>Fixture test</Source><Source file="scripts/check-sports-catalog.ts" line={22}>Renderer check</Source></div>
     </section>
     <section className={styles.evidenceSection}>
-      <div><span className={styles.sectionIndex}>WHY THIS SHAPE</span><h2>Compile everything. Write what changed.</h2><p>The compiler comment describes the intent: it evaluates a complete immutable scene, then the runtime publishes only semantic changes. Each chunk therefore parses and evaluates the whole program on the main actor.</p><p>The same split covers components. The server expands every component call before it sends the program, so the device needs only the primitive catalog. A new component that reuses existing primitives ships with no app release.</p><p>A likely reason for keeping validation on the server is a small device compiler. Swift needs names and positions, and the server owns meaning. That is an inference from the code. The repository does not say why the two sides split the work this way.</p><Source file={COMPILER} line={26}>Documented compiler intent</Source></div>
+      <div><span className={styles.sectionIndex}>WHY THIS SHAPE</span><h2>Compile everything. Write what changed.</h2><p>The compiler comment describes the intent: it evaluates a complete immutable scene, then the runtime publishes only semantic changes. Each chunk therefore parses and evaluates the whole program on the main actor.</p><p>Components keep the same split. A template is data made of primitives, and it travels with the run. The device expands each call itself, so it still needs only the primitive catalog, and a new component that reuses existing primitives ships with no app release.</p><Source file={COMPILER} line={26}>Documented compiler intent</Source></div>
     </section>
-    <footer className={styles.articleFooter}><div><strong>Built from the implementation</strong><span>Source links point to main · adf8f9e.</span><span>Evidence: code reading, plus the demo programs run through the real OpenUICompiler and OpenUISession in a scratch macOS harness. Results on this page use the web primitive renderer, and SwiftUI views were not run. The stream order is derived from server code, not captured from a live run.</span><span>The component mapper uses the PlayerValue/full catalog fixture. Its Swift excerpts are shortened from StepTimelinePrimitive.swift.</span></div><Link href="/">Open the Preview ↗</Link></footer>
+    <footer className={styles.articleFooter}><div><strong>Built from the implementation</strong><span>Source links point to component-wire · {AT}.</span><span>Evidence: code reading, plus the demo programs run through the real OpenUICompiler and OpenUISession in a scratch macOS harness. Results on this page use the web primitive renderer, and SwiftUI views were not run. The stream order is derived from server code, not captured from a live run. The template stages come from OpenUIFixtureTests and check:templates, which compile every catalog sample both expanded and called by name.</span><span>The component mapper uses the PlayerValue/full catalog fixture. Its Swift excerpts are shortened from StepTimelinePrimitive.swift.</span></div><Link href="/">Open the Preview ↗</Link></footer>
     </AgentBody>
   </article></AgentView></ThemeContext.Provider>;
 }
