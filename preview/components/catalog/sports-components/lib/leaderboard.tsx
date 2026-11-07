@@ -47,27 +47,27 @@ export type LeaderboardProps = {
  */
 export function Leaderboard({ title, metric, entries, ranked = false, more, className }: LeaderboardProps) {
   return (
-    <section data-node-id="leaderboard" className={cn("flex flex-col rounded-[24px] bg-kino-surface-card px-4 pt-4 pb-1", className)}>
-      <header className="flex items-baseline justify-between gap-3 pb-2 text-[13px] leading-[16px] font-medium text-kino-ink-secondary">
+    <section data-node-id="leaderboard" className={cn("flex flex-col rounded-[24px] bg-ds-surface-card px-4 pt-4 pb-1", className)}>
+      <header className="flex items-baseline justify-between gap-3 pb-2 text-[13px] leading-[16px] font-medium text-ds-ink-secondary">
         <span className="line-clamp-2 min-w-0">{title}</span>
         <span data-node-id="metric" className="shrink-0">{metric}</span>
       </header>
       <ol className="flex flex-col">
         {entries.map((entry, index) => (
-          <li key={`${entry.name}-${index}`} data-node-id="entry" className="flex items-center gap-3 border-t border-kino-outline-subtle py-3">
-            {ranked && <span className="w-5 shrink-0 text-[13px] leading-[18px] text-kino-ink-secondary tabular-nums">{index + 1}</span>}
+          <li key={`${entry.name}-${index}`} data-node-id="entry" className="flex items-center gap-3 border-t border-ds-outline-subtle py-3">
+            {ranked && <span className="w-5 shrink-0 text-[13px] leading-[18px] text-ds-ink-secondary tabular-nums">{index + 1}</span>}
             <Crest team={entry.mark} size={40} />
             <div className="flex min-w-0 flex-1 flex-col">
               <span className="line-clamp-2 text-[15px] leading-[22px] font-medium">{entry.name}</span>
-              {!!entry.detail?.length && <span className="line-clamp-2 text-[13px] leading-[16px] text-kino-ink-secondary">{entry.detail.join(" · ")}</span>}
+              {!!entry.detail?.length && <span className="line-clamp-2 text-[13px] leading-[16px] text-ds-ink-secondary">{entry.detail.join(" · ")}</span>}
             </div>
             <span data-node-id="value" className="shrink-0 text-[15px] leading-[22px] font-semibold tabular-nums">{entry.value}</span>
           </li>
         ))}
         {more && (
-          <li data-node-id="more" className="flex items-center gap-3 border-t border-kino-outline-subtle py-3 text-kino-ink-secondary">
+          <li data-node-id="more" className="flex items-center gap-3 border-t border-ds-outline-subtle py-3 text-ds-ink-secondary">
             {ranked && <span className="w-5 shrink-0" />}
-            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-kino-surface-filled text-[13px] leading-[18px] font-semibold">+{more.count}</span>
+            <span className="grid size-10 shrink-0 place-items-center rounded-full bg-ds-surface-filled text-[13px] leading-[18px] font-semibold">+{more.count}</span>
             <span className="text-[15px] leading-[22px]">{more.label}</span>
           </li>
         )}

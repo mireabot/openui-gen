@@ -49,7 +49,7 @@ compiles it against `primitives.json` and publishes only the elements that chang
 official ones are React, Vue and Svelte), so this repo has its own SwiftUI engine.
 
 The app bundles two files straight from the repo, so client and server never drift:
-`design/design_system.json` (tokens, effects and primitive specs; Kino is the default theme) and
+`design/design_system.json` (tokens, effects and primitive specs; the default theme is dark) and
 `catalog/openui/primitives.json` (the component schema).
 
 `OpenUIFixtureTests` keeps the Swift compiler in step with the server. It compiles every program in

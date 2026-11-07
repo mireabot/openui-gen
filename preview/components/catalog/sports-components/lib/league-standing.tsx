@@ -44,10 +44,10 @@ function VenueDetail({ venue, record }: { venue: "home" | "away"; record: VenueS
   return (
     <div data-node-id="venue-row">
       <span className="inline-flex items-center gap-2 text-[15px] leading-[22px] font-medium">
-        <Icon className="size-4 shrink-0 text-kino-ink-secondary" />
+        <Icon className="size-4 shrink-0 text-ds-ink-secondary" />
         {venue === "home" ? "Home" : "Away"}
       </span>
-      <p className="mt-1 text-[13px] leading-[18px] tabular-nums text-kino-ink-secondary">
+      <p className="mt-1 text-[13px] leading-[18px] tabular-nums text-ds-ink-secondary">
         {place}
         {"record" in record ? record.record : `${record.points} ${record.points === 1 ? "pt" : "pts"} · ${record.won}-${record.drawn}-${record.lost}`}
       </p>
@@ -62,13 +62,13 @@ function VenueDetail({ venue, record }: { venue: "home" | "away"; record: VenueS
 export function LeagueStanding({ rows, home, away, summary, showVenues = true, className }: LeagueStandingProps) {
   const team = rows.find((row) => row.isTeam) ?? rows[0];
   return (
-    <section data-node-id="league-standing" className={cn("rounded-[24px] bg-kino-surface-card p-4", className)}>
+    <section data-node-id="league-standing" className={cn("rounded-[24px] bg-ds-surface-card p-4", className)}>
       {team && (
         <>
           <span data-node-id="rank" className="block text-[56px] leading-[56px] font-semibold tabular-nums">
             {ordinal(team.rank)}
           </span>
-          <p data-node-id="points-total" className="mt-2 text-[15px] leading-[22px] tabular-nums text-kino-ink-secondary">
+          <p data-node-id="points-total" className="mt-2 text-[15px] leading-[22px] tabular-nums text-ds-ink-secondary">
             {summary ?? gapLine(rows, team)}
           </p>
         </>
@@ -79,7 +79,7 @@ export function LeagueStanding({ rows, home, away, summary, showVenues = true, c
             key={row.rank}
             className={cn(
               "-mx-2 flex h-8 items-center gap-3 rounded-[8px] px-2 text-[13px] leading-[18px] tabular-nums",
-              row.isTeam ? "bg-kino-surface-filled font-medium" : "text-kino-ink-secondary",
+              row.isTeam ? "bg-ds-surface-filled font-medium" : "text-ds-ink-secondary",
             )}
           >
             <span className="w-4 text-right">{row.rank}</span>
@@ -89,7 +89,7 @@ export function LeagueStanding({ rows, home, away, summary, showVenues = true, c
         ))}
       </div>
       {showVenues && (
-        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-kino-outline-subtle pt-4">
+        <div className="mt-4 grid grid-cols-2 gap-4 border-t border-ds-outline-subtle pt-4">
           <VenueDetail venue="home" record={home} />
           <VenueDetail venue="away" record={away} />
         </div>

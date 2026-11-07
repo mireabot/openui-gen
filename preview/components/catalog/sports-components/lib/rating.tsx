@@ -8,15 +8,15 @@ export function ratingBracket(rating: number): RatingBracket {
 }
 
 const PILL: Record<RatingBracket, string> = {
-  high: "bg-kino-tone-good-fg text-kino-surface-screen",
-  mid: "bg-kino-ink-brand text-kino-surface-screen",
-  low: "bg-kino-surface-brand text-kino-ink-on-brand",
+  high: "bg-ds-tone-good-fg text-ds-surface-screen",
+  mid: "bg-ds-ink-brand text-ds-surface-screen",
+  low: "bg-ds-surface-brand text-ds-ink-on-brand",
 };
 
 /** A rating in its bracket colour. `large` is the hero size; null (no rating yet) is a dash. */
 export function RatingPill({ value, large = false, className }: { value: number | null; large?: boolean; className?: string }) {
   if (value === null) {
-    return <span className={cn("font-semibold text-kino-ink-secondary", large ? "text-[28px] leading-[34px]" : "text-[17px] leading-[22px]", className)}>—</span>;
+    return <span className={cn("font-semibold text-ds-ink-secondary", large ? "text-[28px] leading-[34px]" : "text-[17px] leading-[22px]", className)}>—</span>;
   }
   return (
     <span

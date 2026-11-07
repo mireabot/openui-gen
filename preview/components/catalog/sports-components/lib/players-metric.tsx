@@ -53,9 +53,9 @@ export function PlayersMetric({ title, subtitle, people, values, periods, ends, 
       <header data-node-id="header" className="flex items-end justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <h2 className={cn(TITLE2, "font-semibold")}>{title}</h2>
-          {subtitle && <p className={cn(FOOTNOTE, "text-kino-ink-secondary")}>{subtitle}</p>}
+          {subtitle && <p className={cn(FOOTNOTE, "text-ds-ink-secondary")}>{subtitle}</p>}
         </div>
-        <span data-node-id="period" className={cn(LABEL, "shrink-0 font-medium tabular-nums", scrub === null ? "text-kino-ink-secondary" : "text-kino-ink-primary")}>
+        <span data-node-id="period" className={cn(LABEL, "shrink-0 font-medium tabular-nums", scrub === null ? "text-ds-ink-secondary" : "text-ds-ink-primary")}>
           {scrub === null ? `After ${periods[last]!.toLowerCase()}` : `After ${periods[index]!.toLowerCase()}`}
         </span>
       </header>
@@ -73,7 +73,7 @@ export function PlayersMetric({ title, subtitle, people, values, periods, ends, 
               <Mark person={line.person!} size={32} />
               <div className="min-w-0 flex-1">
                 <p className={cn(BODY, "truncate font-medium")}>{line.person!.name}</p>
-                <p className={cn(LABEL, "truncate text-kino-ink-secondary")}>{note}</p>
+                <p className={cn(LABEL, "truncate text-ds-ink-secondary")}>{note}</p>
               </div>
               <span className={cn(TITLE3, "shrink-0 font-semibold tabular-nums")}>{at[i]!.value ?? "–"}</span>
             </li>
@@ -82,7 +82,7 @@ export function PlayersMetric({ title, subtitle, people, values, periods, ends, 
       </ol>
 
       <Plot lines={lines} kind={kind} height={200} scrub={scrub} onScrub={setScrub} ends={[ends[0], ends[1]]} />
-      {footnote && <p className={cn(LABEL, "text-kino-ink-tertiary")}>{footnote}</p>}
+      {footnote && <p className={cn(LABEL, "text-ds-ink-tertiary")}>{footnote}</p>}
     </section>
   );
 }

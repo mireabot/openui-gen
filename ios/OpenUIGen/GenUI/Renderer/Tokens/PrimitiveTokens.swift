@@ -55,7 +55,7 @@ struct PrimitiveTypeRole: Equatable {
         self.lineHeight = lineHeight
     }
 
-    /// The role as a theme sets it (Kino's `type.body.size` = `15px`, `type.body.line` = `22px`);
+    /// The role as a theme sets it (the default theme's `type.body.size` = `15px`, `type.body.line` = `22px`);
     /// the ground-rule size is the fallback, as with the web's `--ds-type-<role>-size`.
     func themed(_ theme: DesignTheme?) -> PrimitiveTypeRole {
         let points = { (key: String) in

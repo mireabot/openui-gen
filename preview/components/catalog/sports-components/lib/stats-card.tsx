@@ -1,4 +1,4 @@
-import { dataFill } from "@/components/catalog/kino";
+import { dataFill } from "@/components/catalog/design-system";
 import { cn } from "@/lib/utils";
 import { RatingPill } from "./rating";
 import { Crest, type Team } from "./team-detail";
@@ -28,7 +28,7 @@ function SubjectMark({ subject }: { subject: StatsSubject }) {
   if (subject.image) return <img src={subject.image} alt="" className="size-10 shrink-0 rounded-full object-contain" style={subject.club ? dataFill(subject.club.color) : undefined} />;
   return (
     <span
-      className={cn("grid size-10 shrink-0 place-items-center rounded-full text-[13px] leading-[18px] font-semibold text-kino-ink-on-brand", !subject.club && "bg-kino-surface-filled")}
+      className={cn("grid size-10 shrink-0 place-items-center rounded-full text-[13px] leading-[18px] font-semibold text-ds-ink-on-brand", !subject.club && "bg-ds-surface-filled")}
       style={subject.club ? dataFill(subject.club.color) : undefined}
     >
       {initials(subject.name)}
@@ -47,20 +47,20 @@ export function StatsCard({ subject, rating, stats, className }: StatsCardProps)
   const shown = stats.filter((stat) => stat.value !== null);
   return (
     <section data-node-id="stats-card" className={cn("flex flex-col gap-3", className)}>
-      <div className="rounded-[24px] bg-kino-surface-card">
+      <div className="rounded-[24px] bg-ds-surface-card">
         <header data-node-id="subject" className="flex items-center gap-3 px-4 py-3">
           <SubjectMark subject={subject} />
           <div className="flex min-w-0 flex-col">
             <span className="line-clamp-2 text-[17px] leading-[22px] font-semibold">{name}</span>
-            {detail.length > 0 && <span className="line-clamp-2 text-[13px] leading-[18px] text-kino-ink-secondary">{detail.join(" · ")}</span>}
+            {detail.length > 0 && <span className="line-clamp-2 text-[13px] leading-[18px] text-ds-ink-secondary">{detail.join(" · ")}</span>}
           </div>
         </header>
         {rating?.value != null && (
-          <div data-node-id="rating-hero" className="flex items-center gap-4 border-t border-kino-outline-subtle px-4 py-4">
+          <div data-node-id="rating-hero" className="flex items-center gap-4 border-t border-ds-outline-subtle px-4 py-4">
             <RatingPill value={rating.value} large />
             <div className="flex min-w-0 flex-col">
               <span className="text-[15px] leading-[22px] font-medium">{rating.label ?? "Rating"}</span>
-              {rating.caption && <span className="text-[13px] leading-[18px] text-kino-ink-secondary">{rating.caption}</span>}
+              {rating.caption && <span className="text-[13px] leading-[18px] text-ds-ink-secondary">{rating.caption}</span>}
             </div>
           </div>
         )}
@@ -68,9 +68,9 @@ export function StatsCard({ subject, rating, stats, className }: StatsCardProps)
       {shown.length > 0 && (
         <div data-node-id="stats" className="-mx-6 flex gap-3 overflow-x-auto px-6 py-1">
           {shown.map((stat) => (
-            <div key={stat.label} className="flex min-w-[124px] shrink-0 flex-col gap-1 whitespace-nowrap rounded-[24px] bg-kino-surface-card p-4">
+            <div key={stat.label} className="flex min-w-[124px] shrink-0 flex-col gap-1 whitespace-nowrap rounded-[24px] bg-ds-surface-card p-4">
               <span className="text-[17px] leading-[22px] font-semibold tabular-nums">{stat.value}</span>
-              <span className="text-[13px] leading-[18px] text-kino-ink-secondary">{stat.label}</span>
+              <span className="text-[13px] leading-[18px] text-ds-ink-secondary">{stat.label}</span>
             </div>
           ))}
         </div>

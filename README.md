@@ -69,9 +69,9 @@ src/sports/     plan and follow-up plan (Haiku), documents, ESPN client, paralle
 src/research/   Parallel search, citations and dataset schema
 src/llm/        model runners by mode (Anthropic API, Claude Code CLI or Codex CLI) and structured completion
 src/routes/     HTTP routes
-preview/        Next.js preview (static export), Kino renderer for OpenUI
+preview/        Next.js preview (static export), design system renderer for OpenUI
 catalog/        component schema index for clients (see catalog/README.md)
-design/         Kino theme and primitive specs the preview reads at build time
+design/         Design system themes and primitive specs the preview reads at build time
 ios/            native iOS client (XcodeGen), see ios/README.md
 ```
 

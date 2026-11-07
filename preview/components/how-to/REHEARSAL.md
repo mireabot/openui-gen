@@ -15,7 +15,7 @@ Production build, targeted ESLint, backend typecheck and static-server route che
 Direct production navigation, refresh and hydration were checked with dummy credentials.
 
 Fresh-eye review found ambiguous page limits and small mobile annotation labels.
-Added page units and increased mobile labels to 10px. Final appearance uses Kino's
+Added page units and increased mobile labels to 10px. Final appearance uses the design system's
 dark surfaces, warm text and orange accent. Selector chevrons were checked inside
 their borders at both widths, with selected-value sizing.
 

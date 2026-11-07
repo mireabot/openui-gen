@@ -40,7 +40,7 @@ function useFitScale(ref: RefObject<HTMLElement | null>): number {
 
 /**
  * A live generation against POST /lang/sports/stream: the skeleton first, then the OpenUI program
- * as it streams, rendered with the Kino components. Once a screen is done, the next Generate is a
+ * as it streams, rendered with the design system components. Once a screen is done, the next Generate is a
  * follow-up on its document (POST /lang/sports/:id/follow-up): the screen stays as it is until the
  * new revision is done, then swaps in. "New screen" starts over. Each generation owns its controller
  * so old chunks cannot enter a new preview.
@@ -298,7 +298,7 @@ export function SportsLive({ theme, specs, appearance }: {
         <div ref={device} className="relative w-fit">
           <StateToggle value={view} onChange={setView} className="absolute top-3 right-3 z-30" />
           <div style={{ zoom: scale }}>
-            <IPhoneFrame appearance={appearance} className="border border-kino-outline-control">
+            <IPhoneFrame appearance={appearance} className="border border-ds-outline-control">
               {program ? (
                 <OpenUIPreview key={seed?.args.run ?? "loading"} program={program} templates={templates} seed={seed} theme={theme} specs={specs} isStreaming={state === "running"} skeleton={view === "skeleton"} pending={state === "running" && skeleton ? pendingFrames(skeleton, program).map((f, i) => <Frame key={i} f={f} />) : null} />
               ) : skeleton ? (

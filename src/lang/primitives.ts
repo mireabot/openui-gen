@@ -364,7 +364,7 @@ export const PRIMITIVES = [
     behaviors: ["scrub"], rules: [
       "no card; the plot is 220 tall (200 for race) with tick labels at the trailing edge in footnote tertiary, from and to under it",
       "a line holds each value until the next period, 2 wide in its colour at its opacity; null is a gap: no line there, and a cumulative total carries through it; a point with gaps on both sides is a 4-wide tick",
-      "line colour (lineColor): \"#rrggbb\" from the data, or a Kino ink token such as \"ink.primary\"; a line's name is its name, else its label",
+      "line colour (lineColor): \"#rrggbb\" from the data, or a design system ink token such as \"ink.primary\"; a line's name is its name, else its label",
       "sparse lines: a line with one value draws flat across the whole plot, so it is never a lone dot; a line with fewer than 5 values, while another line has more, continues at its last value to the plot's end as a dotted line (2 on 3), which no readout counts",
       "player, one line: the last total in title1 semibold, the caption under it; while scrubbing, on the right the period in footnote semibold, its detail in secondary (\"Did not play\" for a gap), and a tag with the value (\"N so far\" when cumulative)",
       "player, two to four lines: a footnote secondary line \"Running totals · after <period>\", then a 2-column grid of chips (radius 12, surface.card, outline.subtle): a swatch in the line's colour and the label, then the value at the scrub in title3 semibold; tapping a chip brings its line forward and dims the rest to 0.2",

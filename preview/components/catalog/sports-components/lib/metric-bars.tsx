@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { dataFill } from "@/components/catalog/kino";
+import { dataFill } from "@/components/catalog/design-system";
 import { cn } from "@/lib/utils";
 import { Crest, type CrestSize } from "./team-detail";
 
@@ -63,7 +63,7 @@ function inkOn(color: string) {
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   };
   const luminance = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
-  return luminance > 0.35 ? "text-kino-surface-screen" : "text-kino-ink-on-brand";
+  return luminance > 0.35 ? "text-ds-surface-screen" : "text-ds-ink-on-brand";
 }
 
 /** Photo on the club disc, else the crest, else first and last initials on the club colour. */
@@ -118,12 +118,12 @@ export function MetricBars({ set }: { set: BarSet }) {
 
   return (
     <section data-node-id="metric-bars" className="flex flex-col gap-3">
-      <header className="flex items-baseline justify-between gap-3 text-[13px] leading-[16px] font-medium text-kino-ink-secondary">
+      <header className="flex items-baseline justify-between gap-3 text-[13px] leading-[16px] font-medium text-ds-ink-secondary">
         <span className="line-clamp-2 min-w-0">{set.title}</span>
         <span data-node-id="metric" className="shrink-0">{set.metric}</span>
       </header>
       <div className="relative">
-        <span data-node-id="plot-band" className="absolute inset-x-0 top-0 rounded-[12px] bg-kino-surface-filled" style={{ height: PLOT }} />
+        <span data-node-id="plot-band" className="absolute inset-x-0 top-0 rounded-[12px] bg-ds-surface-filled" style={{ height: PLOT }} />
         <div ref={ref} onScroll={onScroll} className="relative flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ gap: GAP }}>
           {subjects.map((subject, index) => {
             const lift = (subject.value / top) * (PLOT - pill - 16);
@@ -131,13 +131,13 @@ export function MetricBars({ set }: { set: BarSet }) {
             return (
               <div key={subject.id} data-node-id="column" className={cn("flex flex-col items-center", snapClass(index))} style={itemStyle}>
                 <div className="relative w-full" style={{ height: PLOT }}>
-                  <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-kino-outline-subtle" />
+                  <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-ds-outline-subtle" />
                   <div data-node-id="value-pill" className="absolute left-1/2 flex w-max min-w-[64px] max-w-[min(76px,100%)] -translate-x-1/2 flex-col overflow-hidden rounded-[8px]" style={{ bottom: 8 + lift }}>
                     <span className={cn("line-clamp-2 px-2 py-0.5 text-center text-[15px] leading-[22px] font-semibold tabular-nums", inkOn(subject.color))} style={dataFill(subject.color)}>
                       {valueText(subject)}
                     </span>
                     {hasSecondary && (
-                      <span className="line-clamp-2 bg-kino-ink-primary px-2 py-0.5 text-center text-[13px] leading-[16px] font-medium text-kino-surface-screen tabular-nums">
+                      <span className="line-clamp-2 bg-ds-ink-primary px-2 py-0.5 text-center text-[13px] leading-[16px] font-medium text-ds-surface-screen tabular-nums">
                         {subject.secondary ?? "–"}
                       </span>
                     )}
@@ -146,7 +146,7 @@ export function MetricBars({ set }: { set: BarSet }) {
                 <div className="mt-3 flex w-full flex-col items-center gap-1">
                   <Mark subject={subject} size={40} />
                   <span className={cn("line-clamp-2 w-full text-center text-[15px] leading-[22px]", leader ? "font-semibold" : "font-normal")}>{subject.name}</span>
-                  {subject.caption && <span className="line-clamp-2 w-full text-center text-[13px] leading-[16px] font-semibold text-kino-ink-secondary tabular-nums">{subject.caption}</span>}
+                  {subject.caption && <span className="line-clamp-2 w-full text-center text-[13px] leading-[16px] font-semibold text-ds-ink-secondary tabular-nums">{subject.caption}</span>}
                 </div>
               </div>
             );

@@ -4,7 +4,7 @@ import styles from "./preview.module.css";
 
 /**
  * Live OpenUI generation for sports: a prompt, the streamed program rendered in an iPhone frame
- * with the Kino theme, and the program text. Built as a static page; the theme is read from
+ * with the default theme, and the program text. Built as a static page; the theme is read from
  * design/ at build time.
  */
 export default function Home() {

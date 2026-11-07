@@ -1,4 +1,4 @@
-import { dataFill } from "@/components/catalog/kino";
+import { dataFill } from "@/components/catalog/design-system";
 import { cn } from "@/lib/utils";
 import type { Team } from "./team-detail";
 
@@ -25,12 +25,12 @@ export function StatBar({ label, home, away, values, display = {}, className }: 
     <div data-node-id="stat-bar" className={cn("flex flex-col gap-2", className)}>
       <div className="flex items-center gap-3">
         <span className="min-w-12 text-[15px] leading-[22px] font-semibold tabular-nums">{display.home ?? values.home}</span>
-        <span className="line-clamp-2 min-w-0 flex-1 text-center text-[13px] leading-[18px] text-kino-ink-secondary">{label}</span>
+        <span className="line-clamp-2 min-w-0 flex-1 text-center text-[13px] leading-[18px] text-ds-ink-secondary">{label}</span>
         <span className="min-w-12 text-right text-[15px] leading-[22px] font-semibold tabular-nums">{display.away ?? values.away}</span>
       </div>
       <div className="flex h-2 w-full gap-1 overflow-hidden rounded-full">
         {total === 0 ? (
-          <span className="h-full flex-1 bg-kino-surface-filled" />
+          <span className="h-full flex-1 bg-ds-surface-filled" />
         ) : (
           (["home", "away"] as const).filter((side) => values[side] > 0).map((side) => (
             <span

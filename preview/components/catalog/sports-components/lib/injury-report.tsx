@@ -1,5 +1,5 @@
 import { BandaidsIcon } from "@phosphor-icons/react/dist/csr/Bandaids";
-import { dataFill } from "@/components/catalog/kino";
+import { dataFill } from "@/components/catalog/design-system";
 import { cn } from "@/lib/utils";
 
 export type InjuryTone = "bad" | "warn" | "info";
@@ -29,13 +29,13 @@ export const FOOTNOTE = "text-[13px] leading-[18px]";
 const HEADLINE = "text-[17px] leading-[22px]";
 
 const PILL = {
-  bad: "bg-kino-tone-bad-bg text-kino-tone-bad-fg",
-  warn: "bg-kino-tone-warn-bg text-kino-tone-warn-fg",
-  info: "bg-kino-tone-info-bg text-kino-tone-info-fg",
+  bad: "bg-ds-tone-bad-bg text-ds-tone-bad-fg",
+  warn: "bg-ds-tone-warn-bg text-ds-tone-warn-fg",
+  info: "bg-ds-tone-info-bg text-ds-tone-info-fg",
 } satisfies Record<InjuryTone, string>;
 
 /** The surface under the avatar: the band-aid's outline is cut from it. */
-const CUTOUT = { card: "ring-kino-surface-card", screen: "ring-kino-surface-screen" };
+const CUTOUT = { card: "ring-ds-surface-card", screen: "ring-ds-surface-screen" };
 
 const initials = (name: string) => name.split(/\s+/).map(word => word.charAt(0)).join("").slice(0, 2).toUpperCase();
 
@@ -46,11 +46,11 @@ export function InjuredAvatar({ player, size = 56, on = "card" }: { player: Inju
       <span className="flex size-full items-center justify-center overflow-hidden rounded-full" style={dataFill(player.color)}>
         {player.photo
           ? <img src={player.photo} alt="" className="size-full object-cover object-top" />
-          : <span className={cn(LABEL, "font-semibold text-kino-ink-on-brand")}>{initials(player.name)}</span>}
+          : <span className={cn(LABEL, "font-semibold text-ds-ink-on-brand")}>{initials(player.name)}</span>}
       </span>
       <span
         data-node-id="bandaid"
-        className={cn("absolute -right-0.5 -bottom-0.5 flex items-center justify-center rounded-full bg-kino-surface-filled text-kino-tone-bad-fg ring-2", size === 56 ? "size-5" : "size-4", CUTOUT[on])}
+        className={cn("absolute -right-0.5 -bottom-0.5 flex items-center justify-center rounded-full bg-ds-surface-filled text-ds-tone-bad-fg ring-2", size === 56 ? "size-5" : "size-4", CUTOUT[on])}
       >
         <BandaidsIcon className="size-3" weight="fill" />
       </span>
@@ -70,7 +70,7 @@ export function InjuryTop({ player, size, on, team }: { player: InjuredPlayer; s
       <InjuredAvatar player={player} size={size} on={on} />
       <div className="min-w-0 flex-1">
         <p data-node-id="name" className={cn(HEADLINE, "truncate font-semibold")}>{player.name}</p>
-        <p data-node-id="position" className={cn(FOOTNOTE, "truncate text-kino-ink-secondary")}>{detail}</p>
+        <p data-node-id="position" className={cn(FOOTNOTE, "truncate text-ds-ink-secondary")}>{detail}</p>
       </div>
       {player.status && <InjuryStatus status={player.status} />}
     </div>
@@ -85,18 +85,18 @@ export const stand = (player: InjuredPlayer) => player.returnNote || "No return 
  */
 export function InjuryCard({ player, className }: { player: InjuredPlayer; className?: string }) {
   return (
-    <article data-node-id="injury-report" className={cn("rounded-[24px] bg-kino-surface-card p-4", className)}>
+    <article data-node-id="injury-report" className={cn("rounded-[24px] bg-ds-surface-card p-4", className)}>
       <InjuryTop player={player} size={56} on="card" team={false} />
-      <div data-node-id="footer" className="mt-3 flex items-end justify-between gap-3 border-t border-kino-outline-subtle pt-3">
+      <div data-node-id="footer" className="mt-3 flex items-end justify-between gap-3 border-t border-ds-outline-subtle pt-3">
         {player.back ? (
           <div data-node-id="return" className="shrink-0">
-            <p className={cn(LABEL, "text-kino-ink-secondary")}>{player.back.until === "Tomorrow" ? "Back" : "Back in"}</p>
+            <p className={cn(LABEL, "text-ds-ink-secondary")}>{player.back.until === "Tomorrow" ? "Back" : "Back in"}</p>
             <p className={cn(HEADLINE, "font-semibold")}>{player.back.until}</p>
           </div>
         ) : (
-          <p data-node-id="return" className={cn(FOOTNOTE, "shrink-0 text-kino-ink-secondary")}>{stand(player)}</p>
+          <p data-node-id="return" className={cn(FOOTNOTE, "shrink-0 text-ds-ink-secondary")}>{stand(player)}</p>
         )}
-        <div className={cn(FOOTNOTE, "min-w-0 text-right text-kino-ink-secondary")}>
+        <div className={cn(FOOTNOTE, "min-w-0 text-right text-ds-ink-secondary")}>
           {player.back && <p>{player.back.day}</p>}
           {player.source && <p data-node-id="source" className="truncate">{player.source}</p>}
         </div>
