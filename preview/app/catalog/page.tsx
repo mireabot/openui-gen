@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "Components · OpenUI", description: 
 export default function Catalog() {
   const design = readDesign();
   const theme = design ? themeVars(design, design.defaultTheme, "dark") : undefined;
-  return <SportsCatalog custom={[
+  return <SportsCatalog theme={theme} specs={design?.primitives} custom={[
     { id: "StreamingGuide", name: "League streaming guide", summary: "Custom component built from primitives upon request.", preview: <StreamingGuide theme={theme} specs={design?.primitives} /> },
     { id: "ChelseaInjuries", name: "Chelsea injury report", summary: "Custom component built from primitives upon request. Season injury summaries, recovery updates and reported return dates.", preview: <ChelseaInjuries theme={theme} specs={design?.primitives} /> },
   ]} />;
