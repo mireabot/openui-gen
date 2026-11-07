@@ -41,16 +41,26 @@ const valueStretch = (name: string, lineColor: string, tagColor: string, team: n
 });
 
 const side = (name: string, logo: string, color: string, score: string, ink: string) => ({ name, logo, color, score, ink });
-const timelineClubs = [
-  { id: "nassr", name: "Al Nassr", logo: "", color: "#fbd129", year: "2025", dates: "Jan 2025 – Feb 2026", location: "Riyadh, Saudi Arabia", marker: "none", stats: [] },
-  { id: "fenerbahce", name: "Fenerbahçe", logo: "", color: "#ffed00", year: "2025", dates: "Jul 2025 – Feb 2026", location: "İstanbul, Turkey", marker: "currency", stats: [] },
-  { id: "zenit", name: "Zenit St. Petersburg", logo: "", color: "#7fcbf3", year: "2026", dates: "Feb 2026 – Jun 2026", location: "", marker: "currency", stats: [] },
+/** Jhon Durán's career with FotMob crests, as the catalog's club timeline showed it. Loans carry the marker. */
+const fotmobCrest = (id: number) => `https://images.fotmob.com/image_resources/logo/teamlogo/${id}.png`;
+const career = [
+  { id: "envigado", name: "Envigado", logo: fotmobCrest(4402), color: "#ff5406", year: "2019", dates: "Jan 2019 – Dec 2021", location: "Envigado, Colombia", loan: false, apps: 49, goals: 10, assists: 4 },
+  { id: "chicago", name: "Chicago Fire", logo: fotmobCrest(6397), color: "#ff0000", year: "2022", dates: "Jan 2022 – Jan 2023", location: "Chicago, Illinois, USA", loan: false, apps: 28, goals: 8, assists: 3 },
+  { id: "chicago-ii", name: "Chicago Fire II", logo: fotmobCrest(1348118), color: "#7bccef", year: "2022", dates: "Mar 2022 – Dec 2022", location: "Bridgeview, Illinois, USA", loan: false, apps: 2, goals: 0, assists: 0 },
+  { id: "villa", name: "Aston Villa", logo: fotmobCrest(10252), color: "#9d2358", year: "2023", dates: "Jan 2023 – Jan 2025", location: "Birmingham, England", loan: false, apps: 78, goals: 20, assists: 0 },
+  { id: "nassr", name: "Al Nassr", logo: fotmobCrest(101918), color: "#fbd129", year: "2025", dates: "Jan 2025 – Feb 2026", location: "Riyadh, Saudi Arabia", loan: false, apps: 18, goals: 12, assists: 0 },
+  { id: "fenerbahce", name: "Fenerbahçe", logo: fotmobCrest(8695), color: "#ffed00", year: "2025", dates: "Jul 2025 – Feb 2026", location: "İstanbul, Turkey", loan: true, apps: 21, goals: 5, assists: 2 },
+  { id: "zenit", name: "Zenit St. Petersburg", logo: fotmobCrest(8698), color: "#7fcbf3", year: "2026", dates: "Feb 2026 – Jun 2026", location: "St. Petersburg, Russia", loan: true, apps: 9, goals: 2, assists: 0 },
+  { id: "benfica", name: "Benfica", logo: fotmobCrest(9772), color: "#c00001", year: "2026", dates: "Jul 2026 – Jun 2027", location: "Lisboa, Portugal", loan: true, apps: 17, goals: 5, assists: 0 },
 ];
+const timelineClubs = career.map(({ loan, apps: _apps, goals: _goals, assists: _assists, ...club }) => ({ ...club, marker: loan ? "currency" : "none", stats: [] }));
+const timelineStats = career.map(({ loan, apps, goals, assists, ...club }) => ({ ...club, marker: loan ? "currency" : "none", stats: [{ label: "Apps", value: String(apps) }, { label: "Goals", value: String(goals) }, { label: "Assists", value: String(assists) }] }));
+const zenit = career.findIndex(club => club.id === "zenit");
 const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
   ClubTimeline: {
     full: { initial: 0, clubs: timelineClubs },
-    withStats: { initial: 2, clubs: timelineClubs.map(club => ({ ...club, stats: [{ label: "Apps", value: "9" }, { label: "Goals", value: "2" }, { label: "Assists", value: "0" }] })) },
-    oneYear: { initial: 0, clubs: timelineClubs.slice(0, 2) },
+    withStats: { initial: zenit, clubs: timelineStats },
+    oneYear: { initial: 0, clubs: timelineClubs.filter(club => club.year === "2025") },
     sparse: { initial: 0, clubs: [] },
   },
   MatchCard: {

@@ -19,9 +19,53 @@
                 "initial": 0,
                 "clubs": [
                   {
+                    "id": "envigado",
+                    "name": "Envigado",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/4402.png",
+                    "color": "#ff5406",
+                    "year": "2019",
+                    "dates": "Jan 2019 – Dec 2021",
+                    "location": "Envigado, Colombia",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "chicago",
+                    "name": "Chicago Fire",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/6397.png",
+                    "color": "#ff0000",
+                    "year": "2022",
+                    "dates": "Jan 2022 – Jan 2023",
+                    "location": "Chicago, Illinois, USA",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "chicago-ii",
+                    "name": "Chicago Fire II",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/1348118.png",
+                    "color": "#7bccef",
+                    "year": "2022",
+                    "dates": "Mar 2022 – Dec 2022",
+                    "location": "Bridgeview, Illinois, USA",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "villa",
+                    "name": "Aston Villa",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/10252.png",
+                    "color": "#9d2358",
+                    "year": "2023",
+                    "dates": "Jan 2023 – Jan 2025",
+                    "location": "Birmingham, England",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
                     "id": "nassr",
                     "name": "Al Nassr",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/101918.png",
                     "color": "#fbd129",
                     "year": "2025",
                     "dates": "Jan 2025 – Feb 2026",
@@ -32,7 +76,7 @@
                   {
                     "id": "fenerbahce",
                     "name": "Fenerbahçe",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8695.png",
                     "color": "#ffed00",
                     "year": "2025",
                     "dates": "Jul 2025 – Feb 2026",
@@ -43,11 +87,22 @@
                   {
                     "id": "zenit",
                     "name": "Zenit St. Petersburg",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8698.png",
                     "color": "#7fcbf3",
                     "year": "2026",
                     "dates": "Feb 2026 – Jun 2026",
-                    "location": "",
+                    "location": "St. Petersburg, Russia",
+                    "marker": "currency",
+                    "stats": []
+                  },
+                  {
+                    "id": "benfica",
+                    "name": "Benfica",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/9772.png",
+                    "color": "#c00001",
+                    "year": "2026",
+                    "dates": "Jul 2026 – Jun 2027",
+                    "location": "Lisboa, Portugal",
                     "marker": "currency",
                     "stats": []
                   }
@@ -67,9 +122,53 @@
               "properties": {
                 "items": [
                   {
+                    "id": "envigado",
+                    "name": "Envigado",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/4402.png",
+                    "color": "#ff5406",
+                    "year": "2019",
+                    "dates": "Jan 2019 – Dec 2021",
+                    "location": "Envigado, Colombia",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "chicago",
+                    "name": "Chicago Fire",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/6397.png",
+                    "color": "#ff0000",
+                    "year": "2022",
+                    "dates": "Jan 2022 – Jan 2023",
+                    "location": "Chicago, Illinois, USA",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "chicago-ii",
+                    "name": "Chicago Fire II",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/1348118.png",
+                    "color": "#7bccef",
+                    "year": "2022",
+                    "dates": "Mar 2022 – Dec 2022",
+                    "location": "Bridgeview, Illinois, USA",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
+                    "id": "villa",
+                    "name": "Aston Villa",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/10252.png",
+                    "color": "#9d2358",
+                    "year": "2023",
+                    "dates": "Jan 2023 – Jan 2025",
+                    "location": "Birmingham, England",
+                    "marker": "none",
+                    "stats": []
+                  },
+                  {
                     "id": "nassr",
                     "name": "Al Nassr",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/101918.png",
                     "color": "#fbd129",
                     "year": "2025",
                     "dates": "Jan 2025 – Feb 2026",
@@ -80,7 +179,7 @@
                   {
                     "id": "fenerbahce",
                     "name": "Fenerbahçe",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8695.png",
                     "color": "#ffed00",
                     "year": "2025",
                     "dates": "Jul 2025 – Feb 2026",
@@ -91,11 +190,22 @@
                   {
                     "id": "zenit",
                     "name": "Zenit St. Petersburg",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8698.png",
                     "color": "#7fcbf3",
                     "year": "2026",
                     "dates": "Feb 2026 – Jun 2026",
-                    "location": "",
+                    "location": "St. Petersburg, Russia",
+                    "marker": "currency",
+                    "stats": []
+                  },
+                  {
+                    "id": "benfica",
+                    "name": "Benfica",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/9772.png",
+                    "color": "#c00001",
+                    "year": "2026",
+                    "dates": "Jul 2026 – Jun 2027",
+                    "location": "Lisboa, Portugal",
                     "marker": "currency",
                     "stats": []
                   }
@@ -123,12 +233,108 @@
               "question": "ClubTimeline/withStats",
               "title": "ClubTimeline/withStats",
               "record": {
-                "initial": 2,
+                "initial": 6,
                 "clubs": [
+                  {
+                    "id": "envigado",
+                    "name": "Envigado",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/4402.png",
+                    "color": "#ff5406",
+                    "year": "2019",
+                    "dates": "Jan 2019 – Dec 2021",
+                    "location": "Envigado, Colombia",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "49"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "10"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "4"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chicago",
+                    "name": "Chicago Fire",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/6397.png",
+                    "color": "#ff0000",
+                    "year": "2022",
+                    "dates": "Jan 2022 – Jan 2023",
+                    "location": "Chicago, Illinois, USA",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "28"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "8"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "3"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chicago-ii",
+                    "name": "Chicago Fire II",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/1348118.png",
+                    "color": "#7bccef",
+                    "year": "2022",
+                    "dates": "Mar 2022 – Dec 2022",
+                    "location": "Bridgeview, Illinois, USA",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "2"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "0"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "villa",
+                    "name": "Aston Villa",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/10252.png",
+                    "color": "#9d2358",
+                    "year": "2023",
+                    "dates": "Jan 2023 – Jan 2025",
+                    "location": "Birmingham, England",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "78"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "20"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  },
                   {
                     "id": "nassr",
                     "name": "Al Nassr",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/101918.png",
                     "color": "#fbd129",
                     "year": "2025",
                     "dates": "Jan 2025 – Feb 2026",
@@ -137,11 +343,11 @@
                     "stats": [
                       {
                         "label": "Apps",
-                        "value": "9"
+                        "value": "18"
                       },
                       {
                         "label": "Goals",
-                        "value": "2"
+                        "value": "12"
                       },
                       {
                         "label": "Assists",
@@ -152,11 +358,35 @@
                   {
                     "id": "fenerbahce",
                     "name": "Fenerbahçe",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8695.png",
                     "color": "#ffed00",
                     "year": "2025",
                     "dates": "Jul 2025 – Feb 2026",
                     "location": "İstanbul, Turkey",
+                    "marker": "currency",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "21"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "5"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "zenit",
+                    "name": "Zenit St. Petersburg",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8698.png",
+                    "color": "#7fcbf3",
+                    "year": "2026",
+                    "dates": "Feb 2026 – Jun 2026",
+                    "location": "St. Petersburg, Russia",
                     "marker": "currency",
                     "stats": [
                       {
@@ -174,22 +404,22 @@
                     ]
                   },
                   {
-                    "id": "zenit",
-                    "name": "Zenit St. Petersburg",
-                    "logo": "",
-                    "color": "#7fcbf3",
+                    "id": "benfica",
+                    "name": "Benfica",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/9772.png",
+                    "color": "#c00001",
                     "year": "2026",
-                    "dates": "Feb 2026 – Jun 2026",
-                    "location": "",
+                    "dates": "Jul 2026 – Jun 2027",
+                    "location": "Lisboa, Portugal",
                     "marker": "currency",
                     "stats": [
                       {
                         "label": "Apps",
-                        "value": "9"
+                        "value": "17"
                       },
                       {
                         "label": "Goals",
-                        "value": "2"
+                        "value": "5"
                       },
                       {
                         "label": "Assists",
@@ -213,9 +443,105 @@
               "properties": {
                 "items": [
                   {
+                    "id": "envigado",
+                    "name": "Envigado",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/4402.png",
+                    "color": "#ff5406",
+                    "year": "2019",
+                    "dates": "Jan 2019 – Dec 2021",
+                    "location": "Envigado, Colombia",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "49"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "10"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "4"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chicago",
+                    "name": "Chicago Fire",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/6397.png",
+                    "color": "#ff0000",
+                    "year": "2022",
+                    "dates": "Jan 2022 – Jan 2023",
+                    "location": "Chicago, Illinois, USA",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "28"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "8"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "3"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "chicago-ii",
+                    "name": "Chicago Fire II",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/1348118.png",
+                    "color": "#7bccef",
+                    "year": "2022",
+                    "dates": "Mar 2022 – Dec 2022",
+                    "location": "Bridgeview, Illinois, USA",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "2"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "0"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "villa",
+                    "name": "Aston Villa",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/10252.png",
+                    "color": "#9d2358",
+                    "year": "2023",
+                    "dates": "Jan 2023 – Jan 2025",
+                    "location": "Birmingham, England",
+                    "marker": "none",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "78"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "20"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "0"
+                      }
+                    ]
+                  },
+                  {
                     "id": "nassr",
                     "name": "Al Nassr",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/101918.png",
                     "color": "#fbd129",
                     "year": "2025",
                     "dates": "Jan 2025 – Feb 2026",
@@ -224,11 +550,11 @@
                     "stats": [
                       {
                         "label": "Apps",
-                        "value": "9"
+                        "value": "18"
                       },
                       {
                         "label": "Goals",
-                        "value": "2"
+                        "value": "12"
                       },
                       {
                         "label": "Assists",
@@ -239,11 +565,35 @@
                   {
                     "id": "fenerbahce",
                     "name": "Fenerbahçe",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8695.png",
                     "color": "#ffed00",
                     "year": "2025",
                     "dates": "Jul 2025 – Feb 2026",
                     "location": "İstanbul, Turkey",
+                    "marker": "currency",
+                    "stats": [
+                      {
+                        "label": "Apps",
+                        "value": "21"
+                      },
+                      {
+                        "label": "Goals",
+                        "value": "5"
+                      },
+                      {
+                        "label": "Assists",
+                        "value": "2"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "zenit",
+                    "name": "Zenit St. Petersburg",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8698.png",
+                    "color": "#7fcbf3",
+                    "year": "2026",
+                    "dates": "Feb 2026 – Jun 2026",
+                    "location": "St. Petersburg, Russia",
                     "marker": "currency",
                     "stats": [
                       {
@@ -261,22 +611,22 @@
                     ]
                   },
                   {
-                    "id": "zenit",
-                    "name": "Zenit St. Petersburg",
-                    "logo": "",
-                    "color": "#7fcbf3",
+                    "id": "benfica",
+                    "name": "Benfica",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/9772.png",
+                    "color": "#c00001",
                     "year": "2026",
-                    "dates": "Feb 2026 – Jun 2026",
-                    "location": "",
+                    "dates": "Jul 2026 – Jun 2027",
+                    "location": "Lisboa, Portugal",
                     "marker": "currency",
                     "stats": [
                       {
                         "label": "Apps",
-                        "value": "9"
+                        "value": "17"
                       },
                       {
                         "label": "Goals",
-                        "value": "2"
+                        "value": "5"
                       },
                       {
                         "label": "Assists",
@@ -285,7 +635,7 @@
                     ]
                   }
                 ],
-                "initial": 2
+                "initial": 6
               },
               "slots": {}
             }
@@ -313,7 +663,7 @@
                   {
                     "id": "nassr",
                     "name": "Al Nassr",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/101918.png",
                     "color": "#fbd129",
                     "year": "2025",
                     "dates": "Jan 2025 – Feb 2026",
@@ -324,7 +674,7 @@
                   {
                     "id": "fenerbahce",
                     "name": "Fenerbahçe",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8695.png",
                     "color": "#ffed00",
                     "year": "2025",
                     "dates": "Jul 2025 – Feb 2026",
@@ -350,7 +700,7 @@
                   {
                     "id": "nassr",
                     "name": "Al Nassr",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/101918.png",
                     "color": "#fbd129",
                     "year": "2025",
                     "dates": "Jan 2025 – Feb 2026",
@@ -361,7 +711,7 @@
                   {
                     "id": "fenerbahce",
                     "name": "Fenerbahçe",
-                    "logo": "",
+                    "logo": "https://images.fotmob.com/image_resources/logo/teamlogo/8695.png",
                     "color": "#ffed00",
                     "year": "2025",
                     "dates": "Jul 2025 – Feb 2026",
@@ -9613,16 +9963,16 @@
                     "values": [
                       0,
                       0,
-                      null,
+                      0,
                       1,
                       1,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
                       1,
                       1,
                       1,
@@ -9633,7 +9983,7 @@
                       3,
                       3,
                       4,
-                      null,
+                      4,
                       4,
                       7,
                       8,
@@ -9644,7 +9994,7 @@
                       9,
                       9,
                       9,
-                      null,
+                      9,
                       9,
                       9,
                       9,
@@ -9659,16 +10009,6 @@
                     "values": [
                       0,
                       0,
-                      null,
-                      0,
-                      0,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
                       0,
                       0,
                       0,
@@ -9679,7 +10019,17 @@
                       0,
                       0,
                       0,
-                      null,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
                       0,
                       0,
                       1,
@@ -9690,7 +10040,7 @@
                       1,
                       1,
                       1,
-                      null,
+                      1,
                       1,
                       1,
                       1,
@@ -9704,18 +10054,18 @@
                     "opacity": 1,
                     "values": [
                       1,
-                      null,
-                      null,
                       1,
                       1,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
                       1,
                       2,
                       4,
@@ -9725,7 +10075,7 @@
                       7,
                       7,
                       7,
-                      null,
+                      7,
                       7,
                       7,
                       11,
@@ -9736,7 +10086,7 @@
                       19,
                       21,
                       22,
-                      null,
+                      22,
                       23,
                       23,
                       24,
@@ -9808,16 +10158,16 @@
                           "values": [
                             0,
                             0,
-                            null,
+                            0,
                             1,
                             1,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
                             1,
                             1,
                             1,
@@ -9828,7 +10178,7 @@
                             3,
                             3,
                             4,
-                            null,
+                            4,
                             4,
                             7,
                             8,
@@ -9839,7 +10189,7 @@
                             9,
                             9,
                             9,
-                            null,
+                            9,
                             9,
                             9,
                             9,
@@ -9854,16 +10204,6 @@
                           "values": [
                             0,
                             0,
-                            null,
-                            0,
-                            0,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
                             0,
                             0,
                             0,
@@ -9874,7 +10214,17 @@
                             0,
                             0,
                             0,
-                            null,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
+                            0,
                             0,
                             0,
                             1,
@@ -9885,7 +10235,7 @@
                             1,
                             1,
                             1,
-                            null,
+                            1,
                             1,
                             1,
                             1,
@@ -9899,18 +10249,18 @@
                           "opacity": 1,
                           "values": [
                             1,
-                            null,
-                            null,
                             1,
                             1,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
-                            null,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
+                            1,
                             1,
                             2,
                             4,
@@ -9920,7 +10270,7 @@
                             7,
                             7,
                             7,
-                            null,
+                            7,
                             7,
                             7,
                             11,
@@ -9931,7 +10281,7 @@
                             19,
                             21,
                             22,
-                            null,
+                            22,
                             23,
                             23,
                             24,
@@ -10384,7 +10734,7 @@
                       1,
                       2,
                       2,
-                      null,
+                      2,
                       3,
                       4,
                       4
@@ -10406,7 +10756,7 @@
                       3,
                       4,
                       4,
-                      null,
+                      4,
                       5
                     ],
                     "decimals": 0,
@@ -10425,7 +10775,7 @@
                       1,
                       3,
                       3,
-                      null,
+                      3,
                       3,
                       6
                     ],
@@ -10446,7 +10796,7 @@
                       6,
                       7,
                       8,
-                      null,
+                      8,
                       10
                     ],
                     "decimals": 0,
@@ -10498,7 +10848,7 @@
                             1,
                             2,
                             2,
-                            null,
+                            2,
                             3,
                             4,
                             4
@@ -10520,7 +10870,7 @@
                             3,
                             4,
                             4,
-                            null,
+                            4,
                             5
                           ],
                           "decimals": 0,
@@ -10539,7 +10889,7 @@
                             1,
                             3,
                             3,
-                            null,
+                            3,
                             3,
                             6
                           ],
@@ -10560,7 +10910,7 @@
                             6,
                             7,
                             8,
-                            null,
+                            8,
                             10
                           ],
                           "decimals": 0,
