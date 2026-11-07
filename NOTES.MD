@@ -54,10 +54,12 @@ When no component fits, the writer still writes primitives, and the two kinds mi
 - The nested-game demo draws the same 47 nodes from the call form as it did from the expanded form.
 - Live debug run of the Demin request (`e57dee37-4e4a-49eb-98e3-84517216d512`): 3 parts, no fallbacks, every question shown. The saved program reads `MatchCard(d.answers.q1.match)`, `MetricBars(d.answers.q2.bars, null)` and `StatsCard(d.answers.q3.card)`, and the document stores those three templates. The only issues were the two fence lines, fixed above.
 
+- Second live run (`2eb4bbd8-583b-4f4d-9bd1-bc018dc11e49`), after the header flag: the latest game drew as `MatchCard(d.answers.q3.match)` then `StatsCard(d.answers.q3.playerStats, false)`. The run also showed q1 twice. The writer's `TeamDetail(d.answers.q1.team)` was not counted as showing q1, because `team` is a label name, and the server added a default part with the same team. `shows` in `src/sports/screen.ts` now counts a record or a list under a label name as content. A club's name under `team` still only labels. Recompiling that run's writer output gives 3 parts and no default part.
+
 ## Still open
 
 - Copy params exist only on MetricBars. Other components get them one at a time, when a request needs one.
-- The Demin gamelog answer has no record of the game itself, so the writer keeps StatsCard's header there. Adding that record in the ESPN gamelog adapter is the remaining part of the game-card stash.
+- The game's record comes from the dataset designer, not the ESPN gamelog adapter. When an answer has no game record, the writer keeps StatsCard's header. The adapter half of the game-card stash would make the record reliable.
 
 # Writer relevance changes
 

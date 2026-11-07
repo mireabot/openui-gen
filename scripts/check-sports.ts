@@ -436,6 +436,11 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
   assert.deepEqual(twice.removed.map(r => r.path), ["answers.q2.best"], "the same record stays in the first place, whatever its key order");
   // A question whose facts all moved elsewhere needs nothing from the writer and no default part.
   assert.equal(SPORTS_SCREEN.shows("q2", [], twice.dataset.values as Parameters<typeof SPORTS_SCREEN.shows>[2]), true);
+  // `team` labels an answer as a club's name; a TeamDetail record under `team` is the answer.
+  const club = { answers: { q1: { status: "complete", title: "Playing today", team: { name: "Brooklyn Nets", logo: "", color: "", detail: "NBA" } } } };
+  assert.equal(SPORTS_SCREEN.shows("q1", [["team", "name"]], club), true, "reading a record under team shows the answer");
+  assert.equal(SPORTS_SCREEN.shows("q1", [["title"]], club), false);
+  assert.equal(SPORTS_SCREEN.shows("q1", [["team"]], { answers: { q1: { status: "complete", team: "Chelsea", summary: "Top of the table." } } }), false, "a club's name still only labels");
 }
 
 // Injuries: the server turns the league's wording and a date into the badge and the wait.

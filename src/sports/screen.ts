@@ -21,9 +21,11 @@ function shows(q: QuestionId, reads: readonly DataPath[], values: DatasetValues)
   const answer = answerOf(values, q);
   if (!answer) return true;
   if (answer.status === "unavailable") return reads.some(path => path[0] === "note");
+  // A label name only labels when it holds a name: a record or a list under `team` is content.
+  const labels = (key: string) => LABEL_NAMES.has(key) && (typeof answer[key] !== "object" || answer[key] === null);
   // Its facts were locked to another answer: nothing is left here to show.
-  if (Object.keys(answer).every(key => LABEL_NAMES.has(key))) return true;
-  return reads.some(path => typeof path[0] === "string" && !LABEL_NAMES.has(path[0]));
+  if (Object.keys(answer).every(labels)) return true;
+  return reads.some(path => typeof path[0] === "string" && !labels(path[0]));
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
