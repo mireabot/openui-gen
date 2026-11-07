@@ -4,6 +4,7 @@ import { SoccerBallIcon } from "@phosphor-icons/react/dist/ssr/SoccerBall";
 import { BasketballIcon } from "@phosphor-icons/react/dist/ssr/Basketball";
 import { FootballIcon } from "@phosphor-icons/react/dist/ssr/Football";
 import { GithubLogoIcon } from "@phosphor-icons/react/dist/ssr/GithubLogo";
+import { LaunchVideo } from "@/components/launch-video";
 import { DesignSystemPrimitive, DesignSystemProvider } from "@/components/primitives/render";
 import type { Design } from "@/lib/primitives/design";
 
@@ -36,7 +37,8 @@ export function Landing({ theme, specs }: { theme?: CSSProperties; specs?: Desig
         <p className="mt-3 max-w-[520px] text-[15px] leading-[22px] text-ds-ink-secondary">
           Ask about a soccer, NBA or NFL team, league or player. The server gathers the data, a model writes the answer as an OpenUI Lang program, and the iOS app renders that program as SwiftUI views while it streams in.
         </p>
-        <div className="mt-12 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-2">
+        <LaunchVideo src="https://media.naivesolution.dev/media/openui-launch-v2.mp4" className="mt-12 h-[240px]" />
+        <div className="mt-4 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-2">
           {LINKS.map(link => <Link key={link.href} href={link.href} className={`block rounded-[24px] transition-transform active:scale-[0.98] [&>div]:h-full ${link.href === REPO ? "sm:col-span-2" : ""}`}>
             <DesignSystemPrimitive name="Card" props={{ surface: "card", padding: 20, gap: 16 }} slots={{ children: [
               <DesignSystemPrimitive key="icon" name="IconTile" props={{ icon: link.icon, style: "soft", size: 40 }} slots={{}} />,
