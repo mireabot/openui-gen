@@ -56,6 +56,8 @@ When no component fits, the writer still writes primitives, and the two kinds mi
 
 - Second live run (`2eb4bbd8-583b-4f4d-9bd1-bc018dc11e49`), after the header flag: the latest game drew as `MatchCard(d.answers.q3.match)` then `StatsCard(d.answers.q3.playerStats, false)`. The run also showed q1 twice. The writer's `TeamDetail(d.answers.q1.team)` was not counted as showing q1, because `team` is a label name, and the server added a default part with the same team. `shows` in `src/sports/screen.ts` now counts a record or a list under a label name as content. A club's name under `team` still only labels. Recompiling that run's writer output gives 3 parts and no default part.
 
+- The Boston crest was missing in that run. The ESPN gamelog names the opponent `"BOS"`, and `fillClubMarks` in `src/sports/player-images.ts` matched clubs only by full or short name. It now also matches an abbreviation when that names one club. Abbreviations repeat across leagues (Celtics, Bruins, Red Sox), so the league comes from the club beside it, here the Nets (NBA). The name then reads in full, `"Boston Celtics"`, like the side beside it. Applied to that run's saved data with the live ESPN directory, the home side gets `bos.png`.
+
 ## Still open
 
 - Copy params exist only on MetricBars. Other components get them one at a time, when a request needs one.

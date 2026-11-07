@@ -113,24 +113,42 @@ export function createPlayerResolver(lookup: PlayerLookup, existing: readonly Pl
 export function fillClubMarks<T extends SnapshotDataset>(dataset: T, directory: readonly Club[]): T {
   // Local names a page may use for a club ESPN lists in English.
   const clubKey = (name: string) => playerTeamKey(name).replace("munchen", "munich").replace("koln", "cologne");
-  const clubOf = (name: string) => directory.find(club => clubKey(club.name) === clubKey(name) || clubKey(club.short) === clubKey(name));
-  const walk = (value: MockValue): MockValue => {
-    if (Array.isArray(value)) return value.map(walk);
+  const byName = (name: string) => directory.find(club => clubKey(club.name) === clubKey(name) || clubKey(club.short) === clubKey(name));
+  /**
+   * A club by name, or by its abbreviation ("BOS") when that names one club. Abbreviations repeat
+   * across leagues (Celtics, Bruins, Red Sox), so `leagues`, from the clubs beside it, narrows them.
+   */
+  const clubOf = (name: string, leagues: ReadonlySet<string>): { club: Club; byAbbreviation: boolean } | undefined => {
+    const named = byName(name);
+    if (named) return { club: named, byAbbreviation: false };
+    if (!/^[A-Z]{2,4}$/.test(name)) return undefined;
+    const coded = directory.filter(club => club.abbreviation.toUpperCase() === name && (!leagues.size || leagues.has(club.league)));
+    return coded.length === 1 ? { club: coded[0]!, byAbbreviation: true } : undefined;
+  };
+  const walk = (value: MockValue, leagues: ReadonlySet<string>): MockValue => {
+    if (Array.isArray(value)) return value.map(item => walk(item, leagues));
     const record = object(value);
     if (!record) return value;
-    const result: RecordValue = Object.fromEntries(Object.entries(record).map(([key, child]) => [key, walk(child)]));
+    // The leagues of the clubs named in full beside each other, such as a match's two sides.
+    const beside = new Set(Object.values(record).flatMap(child => {
+      const club = object(child);
+      return club && typeof club.name === "string" ? [byName(club.name)?.league].filter((league): league is Club["league"] => !!league) : [];
+    }));
+    const inner = beside.size ? beside : leagues;
+    const result: RecordValue = Object.fromEntries(Object.entries(record).map(([key, child]) => [key, walk(child, inner)]));
     // A player's disc is their club's colour from the directory, for every club, not only the ones the screen is about.
     if (record.kind === "player") {
-      const named = [record.team, ...[record.detail, record.caption].flatMap(text => typeof text === "string" ? text.split(" · ") : [])].flatMap(name => typeof name === "string" && name ? [clubOf(name)] : []).find(Boolean);
+      const named = [record.team, ...[record.detail, record.caption].flatMap(text => typeof text === "string" ? text.split(" · ") : [])].flatMap(name => typeof name === "string" && name ? [clubOf(name, leagues)?.club] : []).find(Boolean);
       return named?.color ? { ...result, color: named.color } : result;
     }
     if (typeof record.name !== "string" || typeof record.logo !== "string") return result;
-    const club = record.logo === "" ? clubOf(record.name) : undefined;
-    const logo = club?.logo || record.logo;
-    return { ...result, logo, ...("color" in record ? { color: logo ? "clear" : record.color || club?.color || "" } : {}) };
+    const found = record.logo === "" ? clubOf(record.name, leagues) : undefined;
+    const logo = found?.club.logo || record.logo;
+    // A club the data names only by its abbreviation reads in full, like the club beside it.
+    return { ...result, ...(found?.byAbbreviation ? { name: found.club.name } : {}), logo, ...("color" in record ? { color: logo ? "clear" : record.color || found?.club.color || "" } : {}) };
   };
   const source = z.record(z.string(), z.json()).parse(dataset.values);
-  return { ...dataset, values: { ...source, ...(source.answers !== undefined ? { answers: walk(source.answers) } : {}) } };
+  return { ...dataset, values: { ...source, ...(source.answers !== undefined ? { answers: walk(source.answers, new Set()) } : {}) } };
 }
 
 export function populatePlayerImages<T extends SnapshotDataset>(dataset: T, players: readonly PlayerProfile[], knownPlayerQueries: readonly PlayerQuery[]): Omit<T, "values" | "fields"> & SnapshotDataset {
