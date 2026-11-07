@@ -6,11 +6,7 @@ import styles from "@/app/how-to/how-to.module.css";
 import { OpenUIPreview } from "@/components/primitives/openui-render";
 import type { ExampleTheme } from "@/components/catalog/custom/openui-example";
 import { AgentBody, AgentView, ForAgentsButton } from "./agent-view";
-import { GuideSelect, Source as GuideSource } from "./guide-parts";
-
-/** The commit this guide was written from: component-wire, with templates on the wire. */
-const AT = "dcb92c3";
-const Source = (props: Omit<Parameters<typeof GuideSource>[0], "at">) => <GuideSource {...props} at={AT} />;
+import { GuideSelect, Source } from "./guide-parts";
 
 const IOS = "ios/OpenUIGen/GenUI/";
 const COMPILER = `${IOS}Core/OpenUI/OpenUICompiler.swift`;
@@ -58,11 +54,11 @@ function StageControls({ step, total, onStep, next }: { step: number; total: num
 type PrimitiveName = "Text" | "Stack";
 
 const bridgeStages = [
-  { name: "Define", title: "TypeScript defines the primitive.", text: "Every primitive starts as one entry in PRIMITIVES. The entry names its props, and the key order of those props becomes the argument order in the language.", note: "Moving a prop changes the language, because Swift reads arguments by position.", file: "src/lang/primitives.ts", line: 62 },
+  { name: "Define", title: "TypeScript defines the primitive.", text: "Every primitive starts as one entry in PRIMITIVES. The entry names its props, and the key order of those props becomes the argument order in the language.", note: "Moving a prop changes the language, because Swift reads arguments by position.", file: "src/lang/primitives.ts", line: 64 },
   { name: "Export", title: "A script writes the contract.", text: "npm run openui:export writes primitives.json from that list. It keeps each primitive name and its arguments. Intent, rules and skeleton notes stay behind.", note: "XcodeGen adds the file to the app bundle as a resource. No build step runs the export.", file: "scripts/export-openui.ts", line: 27 },
   { name: "Compile", title: "The device turns a call into an element.", text: "OpenUICompiler walks the catalog arguments by index. Arguments with the role node or nodes become slots. Every other argument becomes a property.", note: "Data references resolve here, so the element holds finished values.", file: COMPILER, line: 265 },
   { name: "Retain", title: "The element gets a long-lived handle.", text: "commit stores each element in an @Observable OpenUIElementHandle. The next compile reuses that object when the kind and slot names still match.", note: "Each slot has its own @Observable handle, so a list change and a prop change are separate writes.", file: RUNTIME, line: 384 },
-  { name: "Draw", title: "A string switch picks the view.", text: "OpenUIElementView passes the kind and props to PrimitiveVisual, which switches on the kind string. Containers read their slot and wrap each child in PrimitiveNodeView, which starts this step again.", note: "A kind with no case draws a red outline in debug builds and nothing in release builds.", file: NODE, line: 58 },
+  { name: "Draw", title: "A string switch picks the view.", text: "OpenUIElementView passes the kind and props to PrimitiveVisual, which switches on the kind string. Containers read their slot and wrap each child in PrimitiveNodeView, which starts this step again.", note: "A kind with no case draws a red outline in debug builds and nothing in release builds.", file: NODE, line: 22 },
 ] as const;
 
 const bridgeCode: Record<PrimitiveName, readonly { from: [string, string]; link: string; to: [string, string] }[]> = {
@@ -219,7 +215,7 @@ function Contract() {
       <div className={styles.researchAnnotation}><span>↳</span><div><strong>{current.noteTitle}</strong><p>{current.note}</p></div></div>
       <div className={styles.demoFooter}><label className={styles.selectLabel}>Try a statement <GuideSelect value={selected} onChange={event => setSelected(event.target.value as ContractCase)}>{(Object.keys(contractCases) as ContractCase[]).map(key => <option key={key} value={key}>{contractCases[key].label}</option>)}</GuideSelect></label></div>
     </div>
-    <div className={styles.sourceRow}><Source file="scripts/export-openui.ts" line={27}>What the export keeps</Source><Source file="scripts/check-lang.ts" line={93}>Token rejection check</Source><Source file={COMPILER} line={256}>Swift compile errors</Source><Source file={NODE} line={160}>UnknownPrimitive</Source></div>
+    <div className={styles.sourceRow}><Source file="scripts/export-openui.ts" line={27}>What the export keeps</Source><Source file="scripts/check-lang.ts" line={93}>Token rejection check</Source><Source file={COMPILER} line={256}>Swift compile errors</Source><Source file={NODE} line={85}>UnknownPrimitive</Source></div>
     <details className={styles.detail}><summary>How do design tokens cross? <span>+</span></summary><p>They take three routes. Token names and validation live in src/primitives/tokens.ts and stay on the server. Spacing values travel as plain numbers in the program, so Swift reads gap directly. Type sizes are copied by hand into PrimitiveTokens.swift and render.tsx. Colors and component anatomy skip TypeScript, because the app bundles design_system.json directly.</p><Source file="src/primitives/tokens.ts" line={23}>TYPE in TypeScript</Source><Source file={`${IOS}Renderer/Tokens/PrimitiveTokens.swift`} line={28}>TYPE in Swift</Source><Source file={`${IOS}Core/Theme/DesignTheme.swift`} line={163}>Bundled theme</Source></details>
   </section>;
 }
@@ -285,7 +281,7 @@ function Layout() {
         {axis === "h" && <div>justify <Segmented options={["default", "between"] as const} value={justify} onChange={setJustify} /></div>}
       </div></div>
     </div>
-    <div className={styles.sourceRow}><Source file={LAYOUT} line={15}>Stack axis choice</Source><Source file={`${IOS}Renderer/Layout/PrimitiveLayouts.swift`} line={1}>Custom layouts</Source></div>
+    <div className={styles.sourceRow}><Source file={LAYOUT} line={14}>Stack axis choice</Source><Source file={`${IOS}Renderer/Layout/PrimitiveLayouts.swift`} line={1}>Custom layouts</Source></div>
     <div className={styles.handoffGrid} style={{ marginTop: 34 }}>
       <div className={styles.preparationList}>
         <div><span>01</span><section><h3>OpenUISceneView</h3><p>Removes Screen and lays its children out with the screen inset. Screen has no case in the switch.</p></section></div>
@@ -335,7 +331,7 @@ const timelineCall = `StepTimeline(${CHART}.value, ${CHART}.segments, ${CHART}.t
 const templateBody = `StepTimeline(record.value, record.segments, record.ticks, record.caption)`;
 
 const complexStages = [
-  { name: "Record", title: "The server builds the record.", text: "playerValueChart turns FotMob's market values into one record. It starts a new stretch whenever the club changes. It takes the line colour from the club's dark-mode colour and the tag colour from its light-mode colour.", note: "No model writes these figures. The answer stores the record under chart, beside the question's title and source.", file: "src/sports/fotmob.ts", line: 141,
+  { name: "Record", title: "The server builds the record.", text: "playerValueChart turns FotMob's market values into one record. It starts a new stretch whenever the club changes. It takes the line colour from the club's dark-mode colour and the tag colour from its light-mode colour.", note: "No model writes these figures. The answer stores the record under chart, beside the question's title and source.", file: "src/sports/fotmob.ts", line: 147,
     from: ["FOTMOB · MARKET VALUES", `{ date: "2024-12-31", value: 116235970,
   teamName: "Chelsea", teamId: 8455,
   teamColor: { darkMode, lightMode } }`], link: "playerValueChart", to: ["D.ANSWERS.Q1.CHART", `{ value: "€97.7M",
@@ -430,7 +426,7 @@ function ComplexElements() {
       <div className={styles.demoFooter}><Source file={TIMELINE} line={mapped.line}>Read {mapped.reader}() in Swift</Source></div>
     </div>
     <div className={styles.callout}><span className={styles.calloutMark}>↳</span><div><strong>To add a complex element, decide where its complexity lives.</strong><p>If existing primitives can draw it, write the component as a build that returns a tree. npm run openui:export prints the build as its template, and the template reaches devices with the next run, with no app release. If it needs new drawing or gestures, such as the stepped line and the scrub, add a primitive to PRIMITIVES, export the catalog and add a Swift case. The component then becomes a thin template over that primitive.</p></div></div>
-    <div className={styles.sourceRow}><Source file={COMPONENTS} line={489}>PlayerValue build</Source><Source file="src/lang/templates.ts" line={79}>Server and web expander</Source><Source file={COMPILER} line={225}>Swift template scope</Source><Source file="src/lang/primitives.ts" line={359}>StepTimeline props</Source><Source file={NODE} line={111}>StepTimeline case</Source></div>
+    <div className={styles.sourceRow}><Source file={COMPONENTS} line={489}>PlayerValue build</Source><Source file="src/lang/templates.ts" line={79}>Server and web expander</Source><Source file={COMPILER} line={225}>Swift template scope</Source><Source file="src/lang/primitives.ts" line={319}>StepTimeline props</Source><Source file={NODE} line={58}>StepTimeline case</Source></div>
   </section>;
 }
 
@@ -562,7 +558,7 @@ function Identity() {
       <div className={styles.researchAnnotation}><span>↳</span><div><strong>{current.label}</strong><p>{current.text}</p></div></div>
       <div className={styles.demoFooter}><label className={styles.selectLabel}>Try a change <GuideSelect value={selected} onChange={event => setSelected(event.target.value as IdentityCase)}>{(Object.keys(identityCases) as IdentityCase[]).map(key => <option key={key} value={key}>{identityCases[key].label}</option>)}</GuideSelect></label></div>
     </div>
-    <div className={styles.sourceRow}><Source file={COMPILER} line={146}>Mount path</Source><Source file={COMPILER} line={217}>Row ids</Source><Source file={RUNTIME} line={384}>Reuse rule</Source><Source file={SCENE} line={90}>Child equality</Source></div>
+    <div className={styles.sourceRow}><Source file={COMPILER} line={146}>Mount path</Source><Source file={COMPILER} line={217}>Row ids</Source><Source file={RUNTIME} line={384}>Reuse rule</Source><Source file={SCENE} line={88}>Child equality</Source></div>
   </section>;
 }
 
@@ -683,7 +679,7 @@ export function SwiftUIRenderingGuide({ markdown, ...theme }: ExampleTheme & { m
     <section className={styles.evidenceSection}>
       <div><span className={styles.sectionIndex}>WHY THIS SHAPE</span><h2>Compile everything. Write what changed.</h2><p>The compiler comment describes the intent: it evaluates a complete immutable scene, then the runtime publishes only semantic changes. Each chunk therefore parses and evaluates the whole program on the main actor.</p><p>Components keep the same split. A template is data made of primitives, and it travels with the run. The device expands each call itself, so it still needs only the primitive catalog, and a new component that reuses existing primitives ships with no app release.</p><Source file={COMPILER} line={26}>Documented compiler intent</Source></div>
     </section>
-    <footer className={styles.articleFooter}><div><strong>Built from the implementation</strong><span>Source links point to component-wire · {AT}.</span><span>Evidence: code reading, plus the demo programs run through the real OpenUICompiler and OpenUISession in a scratch macOS harness. Results on this page use the web primitive renderer, and SwiftUI views were not run. The stream order is derived from server code, not captured from a live run. The template stages come from OpenUIFixtureTests and check:templates, which compile every catalog sample both expanded and called by name.</span><span>The component mapper uses the PlayerValue/full catalog fixture. Its Swift excerpts are shortened from StepTimelinePrimitive.swift.</span></div><Link href="/">Open the Preview ↗</Link></footer>
+    <footer className={styles.articleFooter}><div><strong>Built from the implementation</strong><span>Source links point to main.</span><span>Evidence: code reading, plus the demo programs run through the real OpenUICompiler and OpenUISession in a scratch macOS harness. Results on this page use the web primitive renderer, and SwiftUI views were not run. The stream order is derived from server code, not captured from a live run. The template stages come from OpenUIFixtureTests and check:templates, which compile every catalog sample both expanded and called by name.</span><span>The component mapper uses the PlayerValue/full catalog fixture. Its Swift excerpts are shortened from StepTimelinePrimitive.swift.</span></div><Link href="/">Open the Preview ↗</Link></footer>
     </AgentBody>
   </article></AgentView></ThemeContext.Provider>;
 }

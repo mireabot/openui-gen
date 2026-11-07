@@ -6,37 +6,37 @@ The compiler validates the contract. It does not validate relevance. A statement
 
 ## Follow one statement
 
-1. `compose` in `src/sports/ask.ts:203` calls `compileScreen` (`src/lang/compiler.ts:142`) with the dataset values, the required questions and the writer.
-2. `writerMessages` (`src/lang/compiler.ts:663`) builds two turns. The system turn holds the rules, the primitive signatures, the token values and `SPORTS_SCREEN.templates`. The user turn holds the required question ids, the request and the briefing (`src/sports/screen.ts:99`).
-3. The writer streams text. `StatementStream` (`src/lang/compiler.ts:695`) splits it into statements at newlines outside brackets and strings.
-4. `admit` (`src/lang/compiler.ts:251`) checks each statement as soon as it arrives. A rejected statement is recorded under the writer's own name.
+1. `compose` in `src/sports/ask.ts:207` calls `compileScreen` (`src/lang/compiler.ts:144`) with the dataset values, the required questions and the writer.
+2. `writerMessages` (`src/lang/compiler.ts:671`) builds two turns. The system turn holds the rules, the primitive signatures, the token values and `SPORTS_SCREEN.templates`. The user turn holds the required question ids, the request and the briefing (`src/sports/screen.ts:101`).
+3. The writer streams text. `StatementStream` (`src/lang/compiler.ts:703`) splits it into statements at newlines outside brackets and strings.
+4. `admit` (`src/lang/compiler.ts:254`) checks each statement as soon as it arrives. A rejected statement is recorded under the writer's own name.
 5. A part is emitted once its part statement and every sub-statement it references are admitted. The compiler renames it to `pickN` and writes `root` itself.
 6. After the first pass, the compiler looks for unfinished parts, required questions no part shows, and rejected statements. If it finds any, it sends one repair request.
-7. `finish` (`src/lang/compiler.ts:319`) adds a default part for each required question that is still not shown.
+7. `finish` (`src/lang/compiler.ts:322`) adds a default part for each required question that is still not shown.
 
 ## Know where the rules live
 
 The writer's rules come from four places. Each one answers a different question.
 
-1. **The system prompt** in `writerMessages` (`src/lang/compiler.ts:663`). These rules apply to every screen in any domain: how to name statements, where data comes from, coverage, text wrapping, tokens and size limits. The primitive signatures and token values are generated from the library. The prompt is the same for every screen and follow-up, so it stays one cache entry.
-2. **The pack templates** in `SPORTS_SCREEN.templates` (`src/sports/screen.ts:152`). These are the sports rules: which component fits which data, how players and clubs show, and how much text to write. The sports component signatures follow them.
-3. **The briefing** in the user turn (`src/sports/screen.ts:99`). It changes per request. For each answer it says whether the answer must be shown, its status, its note, whether it needs a source footnote, and which components fit its data.
-4. **The compiler gate** in `validate` and `parseName` (`src/lang/compiler.ts:526`). It checks each statement as it streams in. A statement that breaks a gate rule never reaches the screen.
+1. **The system prompt** in `writerMessages` (`src/lang/compiler.ts:671`). These rules apply to every screen in any domain: how to name statements, where data comes from, coverage, text wrapping, tokens and size limits. The primitive signatures and token values are generated from the library. The prompt is the same for every screen and follow-up, so it stays one cache entry.
+2. **The pack templates** in `SPORTS_SCREEN.templates` (`src/sports/screen.ts:147`). These are the sports rules: which component fits which data, how players and clubs show, and how much text to write. The sports component signatures follow them.
+3. **The briefing** in the user turn (`src/sports/screen.ts:101`). It changes per request. For each answer it says whether the answer must be shown, its status, its note, whether it needs a source footnote, and which components fit its data.
+4. **The compiler gate** in `validate` and `parseName` (`src/lang/compiler.ts:534`). It checks each statement as it streams in. A statement that breaks a gate rule never reaches the screen.
 
 A prompt rule asks. A gate rule enforces. Several rules sit in both places: the prompt tells the writer the rule, and the gate rejects the statements that break it anyway.
 
 ## Write the reasoning into the prompt
 
-The writer picks a component for each requested fact group. The system prompt tells it how (`src/lang/compiler.ts:677`):
+The writer picks a component for each requested fact group. The system prompt tells it how (`src/lang/compiler.ts:685`):
 
 - Choose by the requested subject, facts, time period and comparison, using each component's `useWhen`.
 - A data-shape match only identifies a candidate.
 - When a record fits a component that directly answers the request, call that component and move to the next fact group.
 - Compose from primitives only for requested content that no component can express.
 
-The briefing lists each answer's data-shape candidates with their `useWhen` text, under the heading `data-shape candidates (choose by relevance to the request, not by order)`. `placements` (`src/sports/components.ts:945`) finds the candidates. It matches records against component contracts, so it finds shape only.
+The briefing lists each answer's data-shape candidates with their `useWhen` text, under the heading `data-shape candidates (choose by relevance to the request, not by order)`. `placements` (`src/sports/components.ts:967`) finds the candidates. It matches records against component contracts, so it finds shape only.
 
-Before it answers, the writer runs a silent check (`src/lang/compiler.ts:678`): the selected components answer the original request, every requested available fact is visible, unrelated context is omitted, and every referenced sub-statement is defined and reachable. The check is prompt only. Nothing in the compiler enforces it.
+Before it answers, the writer runs a silent check (`src/lang/compiler.ts:686`): the selected components answer the original request, every requested available fact is visible, unrelated context is omitted, and every referenced sub-statement is defined and reachable. The check is prompt only. Nothing in the compiler enforces it.
 
 To change how the writer picks a component, edit the component's `useWhen` in `src/sports/components.ts`. Name the boundary against its neighbour in the same sentence, as StatsCard does: "not the game's team result (MatchCard)".
 
@@ -55,9 +55,9 @@ To change how the writer picks a component, edit the component's `useWhen` in `s
 
 `admit` runs the checks in this order. The first check that fails stops the statement.
 
-1. `parseName` (`src/lang/compiler.ts:428`) checks the name. `root` and `d` give `reserved-name`. A `pickN` that is not editable gives `locked-part`.
+1. `parseName` (`src/lang/compiler.ts:431`) checks the name. `root` and `d` give `reserved-name`. A `pickN` that is not editable gives `locked-part`.
 2. `parseStatement` parses one complete statement. An unclosed call gives `invalid-statement` with `Incomplete statement`.
-3. `validate` (`src/lang/compiler.ts:526`) asks the pack's `refuses` first. Then it expands component calls to primitives with `expandCall` (`src/lang/templates.ts`) to check them, and keeps the call in the program. A call takes its record as a data reference, then only the params the component declares, such as StatsCard's `header` flag.
+3. `validate` (`src/lang/compiler.ts:534`) asks the pack's `refuses` first. Then it expands component calls to primitives with `expandCall` (`src/lang/templates.ts`) to check them, and keeps the call in the program. A call takes its record as a data reference, then only the params the component declares, such as StatsCard's `header` flag.
 4. `validate` walks every node, once per `@Each` item. It checks sibling references, the writer's primitive set, slots, argument counts, required props, data references, prop schemas and SF Symbol names.
 5. `admit` checks the size limits: 12 parts, 16 statements per part, 600 nodes per part and 2,400 nodes per screen.
 
@@ -331,7 +331,7 @@ outlook_source = Text(d.answers.q3.source, "footnote", null, "tertiary")
 
 ## Check coverage
 
-A part shows a question when it reads that answer's content. `shows` (`src/sports/screen.ts:22`) decides:
+A part shows a question when it reads that answer's content. `shows` (`src/sports/screen.ts:20`) decides:
 
 - Reads of `status`, `question`, `title`, `source`, `asOf` and `team` do not count.
 - An unavailable answer counts only when a part reads its `note`.
@@ -355,7 +355,7 @@ Problem: MetricBars takes a data reference first (d.<path> or an @Each item)
 
 Each section appears only when it has entries. For a rejected statement, the message adds the argument order of each primitive its problems name.
 
-After repair, `finish` drops unfinished parts with `part-incomplete`. Each required question that is still not shown gets a default part from `fallback` (`src/sports/screen.ts:48`) and a `question-fallback` issue: `q1 was not shown by the writer; the server added its default part`. The default part uses the first fitting component it finds. It does not apply the writer's relevance rules.
+After repair, `finish` drops unfinished parts with `part-incomplete`. Each required question that is still not shown gets a default part from `fallback` (`src/sports/screen.ts:50`) and a `question-fallback` issue: `q1 was not shown by the writer; the server added its default part`. The default part uses the first fitting component it finds. It does not apply the writer's relevance rules.
 
 ## Verify the writer
 

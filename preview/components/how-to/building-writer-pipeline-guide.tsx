@@ -1,20 +1,16 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import styles from "@/app/how-to/how-to.module.css";
 import { AgentBody, AgentView, ForAgentsButton } from "./agent-view";
-import { GuideSelect } from "./guide-parts";
+import { GuideSelect, Source } from "./guide-parts";
 
 const ASK = "src/sports/ask.ts";
 const COMPILER = "src/lang/compiler.ts";
 const SCREEN = "src/sports/screen.ts";
 const COMPONENTS = "src/sports/components.ts";
 const PROBE = "scripts/check-writer-relevance.ts";
-
-function Source({ file, line, children }: { file: string; line: number; children: ReactNode }) {
-  return <span className={styles.workingSource}>{children}<code>{file}:{line}</code></span>;
-}
 
 function Connector({ label }: { label: string }) {
   return <div className={styles.verticalConnector}><span>{label}</span><i>↓</i></div>;
@@ -25,13 +21,13 @@ const pad = (n: number) => String(n).padStart(2, "0");
 // 01 ---------------------------------------------------------------- follow one statement
 
 const stages = [
-  { name: "Messages", overline: "PROMPT", node: "System turn + user turn", detail: "Rules · signatures · tokens · templates · request · briefing", title: "writerMessages builds two turns.", text: "The system turn holds the rules, the primitive signatures, the token values and the sports templates. The user turn holds the required question ids, the request and the briefing.", note: "The system turn is the same for every screen, so it stays one cache entry. Everything that varies goes in the user turn.", file: COMPILER, line: 663 },
-  { name: "Reasoning", overline: "WRITER", node: "One component per fact group", detail: "Subject · facts · time scope · comparison", title: "The writer picks a component, then checks itself.", text: "The prompt tells the writer to choose by meaning, using each component's useWhen. A data-shape match only identifies a candidate. Before it answers, the writer runs a silent check against the original request.", note: "Reasoning is prompt only. The compiler cannot tell a valid call to the wrong component from a valid call to the right one.", file: COMPILER, line: 677 },
-  { name: "Stream", overline: "COMPILER", node: "StatementStream", detail: "Split at newlines outside brackets and strings", title: "The stream is split into statements.", text: "Each statement is admitted as soon as its line closes. The writer does not have to finish before the first part reaches the client.", note: "A statement that never closes reaches admit at the end of the stream and fails as an incomplete statement.", file: COMPILER, line: 695 },
-  { name: "Gate", overline: "COMPILER", node: "admit → validate", detail: "Name · parse · refuses · expand · nodes · limits", title: "Each statement passes the gate or is rejected.", text: "admit checks the name, parses the statement and validates every node against the primitive library. A rejected statement is recorded under the writer's own name, so repair can quote it back.", note: "The first check that fails stops the statement. Admitted statements are never revised.", file: COMPILER, line: 251 },
-  { name: "Coverage", overline: "COMPILER", node: "Reads → questions", detail: "A part shows q1 when it reads q1's content", title: "Coverage comes from reads, not claims.", text: "The compiler collects the dataset paths each finished part reads and groups them by question. shows decides whether those reads count as showing the answer.", note: "Reading only title, status or source names an answer. It does not show it.", file: SCREEN, line: 22 },
-  { name: "Repair", overline: "SECOND REQUEST", node: "One repair round", detail: "Unfinished parts · questions not shown · rejected statements", title: "The writer gets one chance to fix it.", text: "If anything is open, the compiler appends one user turn to the same messages. It lists exactly what is missing and quotes each rejected statement with its problems.", note: "Repair asks only for missing statements. It runs once.", file: COMPILER, line: 174 },
-  { name: "Fallback", overline: "SERVER", node: "Default parts", detail: "Built from the answer's shape, no model call", title: "The server fills what is still missing.", text: "finish drops unfinished parts and adds a default part for each required question that is still not shown. The screen always shows every question.", note: "The default part uses the first fitting component. It does not apply the writer's relevance rules.", file: COMPILER, line: 319 },
+  { name: "Messages", overline: "PROMPT", node: "System turn + user turn", detail: "Rules · signatures · tokens · templates · request · briefing", title: "writerMessages builds two turns.", text: "The system turn holds the rules, the primitive signatures, the token values and the sports templates. The user turn holds the required question ids, the request and the briefing.", note: "The system turn is the same for every screen, so it stays one cache entry. Everything that varies goes in the user turn.", file: COMPILER, line: 671 },
+  { name: "Reasoning", overline: "WRITER", node: "One component per fact group", detail: "Subject · facts · time scope · comparison", title: "The writer picks a component, then checks itself.", text: "The prompt tells the writer to choose by meaning, using each component's useWhen. A data-shape match only identifies a candidate. Before it answers, the writer runs a silent check against the original request.", note: "Reasoning is prompt only. The compiler cannot tell a valid call to the wrong component from a valid call to the right one.", file: COMPILER, line: 685 },
+  { name: "Stream", overline: "COMPILER", node: "StatementStream", detail: "Split at newlines outside brackets and strings", title: "The stream is split into statements.", text: "Each statement is admitted as soon as its line closes. The writer does not have to finish before the first part reaches the client.", note: "A statement that never closes reaches admit at the end of the stream and fails as an incomplete statement.", file: COMPILER, line: 703 },
+  { name: "Gate", overline: "COMPILER", node: "admit → validate", detail: "Name · parse · refuses · expand · nodes · limits", title: "Each statement passes the gate or is rejected.", text: "admit checks the name, parses the statement and validates every node against the primitive library. A rejected statement is recorded under the writer's own name, so repair can quote it back.", note: "The first check that fails stops the statement. Admitted statements are never revised.", file: COMPILER, line: 254 },
+  { name: "Coverage", overline: "COMPILER", node: "Reads → questions", detail: "A part shows q1 when it reads q1's content", title: "Coverage comes from reads, not claims.", text: "The compiler collects the dataset paths each finished part reads and groups them by question. shows decides whether those reads count as showing the answer.", note: "Reading only title, status or source names an answer. It does not show it.", file: SCREEN, line: 20 },
+  { name: "Repair", overline: "SECOND REQUEST", node: "One repair round", detail: "Unfinished parts · questions not shown · rejected statements", title: "The writer gets one chance to fix it.", text: "If anything is open, the compiler appends one user turn to the same messages. It lists exactly what is missing and quotes each rejected statement with its problems.", note: "Repair asks only for missing statements. It runs once.", file: COMPILER, line: 177 },
+  { name: "Fallback", overline: "SERVER", node: "Default parts", detail: "Built from the answer's shape, no model call", title: "The server fills what is still missing.", text: "finish drops unfinished parts and adds a default part for each required question that is still not shown. The screen always shows every question.", note: "The default part uses the first fitting component. It does not apply the writer's relevance rules.", file: COMPILER, line: 322 },
 ] as const;
 
 function Walkthrough() {
@@ -139,7 +135,7 @@ function Reasoning() {
         : <button type="button" className={styles.primaryButton} onClick={() => setRevealed(true)}>Judge the candidates →</button>}</div></div>
     </div>
     <div className={styles.callout}><span className={styles.calloutMark}>↳</span><div><strong>The silent check runs before the writer answers.</strong><p>The selected components answer the original request. Every requested available fact is visible. Unrelated context is omitted. Every referenced sub-statement is defined and reachable. To change a decision, edit the useWhen in components.ts and name the neighbour it is not.</p></div></div>
-    <Source file={COMPILER} line={678}>Silent check</Source><Source file={COMPONENTS} line={945}>placements</Source><Source file={SCREEN} line={107}>Briefing candidates</Source>
+    <Source file={COMPILER} line={686}>Silent check</Source><Source file={COMPONENTS} line={967}>placements</Source><Source file={SCREEN} line={109}>Briefing candidates</Source>
   </section>;
 }
 
@@ -178,7 +174,7 @@ function Validation() {
       </div>
       <div className={styles.demoFooter}><span className={styles.quiet}>Rejected statements return in repair, word for word.</span><div className={styles.stageControls}><button type="button" onClick={() => setSelected(Math.max(0, selected - 1))} disabled={selected === 0}>← Previous</button><button type="button" className={styles.primaryButton} onClick={() => setSelected((selected + 1) % statements.length)}>{selected === statements.length - 1 ? "Start again ↺" : "Next statement →"}</button></div></div>
     </div>
-    <Source file={COMPILER} line={428}>parseName</Source><Source file={COMPILER} line={526}>validate</Source><Source file="src/lang/templates.ts" line={79}>expandCall</Source>
+    <Source file={COMPILER} line={431}>parseName</Source><Source file={COMPILER} line={534}>validate</Source><Source file="src/lang/templates.ts" line={79}>expandCall</Source>
   </section>;
 }
 
@@ -303,7 +299,7 @@ function Coverage() {
       </div>
       <div className={styles.demoFooter}><span className={styles.quiet}>The default part picks the first fitting component, with no relevance check.</span><div className={styles.stageControls}><button type="button" className={styles.primaryButton} onClick={() => setPass((pass + 1) % firstPasses.length)}>Next first pass →</button></div></div>
     </div>
-    <Source file={SCREEN} line={22}>shows</Source><Source file={COMPILER} line={179}>Repair message</Source><Source file={COMPILER} line={322}>Fallback parts</Source>
+    <Source file={SCREEN} line={20}>shows</Source><Source file={COMPILER} line={182}>Repair message</Source><Source file={COMPILER} line={325}>Fallback parts</Source>
   </section>;
 }
 
@@ -357,16 +353,16 @@ export function BuildingWriterPipelineGuide({ markdown }: { markdown: string }) 
       <div className={styles.sectionHeading}><div><span className={styles.sectionIndex}>08 / ADD A BOUNDARY</span><h2>Put the rule where its scope is.</h2></div></div>
       <p className={styles.sectionIntro}>A prompt rule asks. A gate rule enforces. Write a rule as an instruction, with the exact call when there is one. The icon-led row rule includes the full statement to copy.</p>
       <div className={styles.recoveryGrid}>
-        <div><span className={styles.recoveryLabel}>ANY DOMAIN</span><h3>System prompt</h3><p>Add it to writerMessages. Keep anything that varies per request out of it, so the cache entry stays shared.</p><Source file={COMPILER} line={672}>System prompt</Source></div>
-        <div><span className={styles.recoveryLabel}>SPORTS</span><h3>Pack templates</h3><p>Add it to SPORTS_SCREEN.templates, next to the component it is about. A rule about which component fits goes in that component&apos;s useWhen.</p><Source file={SCREEN} line={152}>Sports rules</Source></div>
-        <div><span className={styles.recoveryLabel}>ONE ANSWER</span><h3>Briefing</h3><p>A rule that depends on one answer&apos;s data, such as its note or source, goes in briefing.</p><Source file={SCREEN} line={99}>Briefing</Source></div>
-        <div><span className={styles.recoveryLabel}>MUST NEVER BREAK</span><h3>Gate</h3><p>Add a check to validate for any domain, or to the pack&apos;s refuses for one. The writer reads its message in repair, so name the fix, as the TeamPoints message does.</p><Source file={SCREEN} line={116}>refuses</Source></div>
+        <div><span className={styles.recoveryLabel}>ANY DOMAIN</span><h3>System prompt</h3><p>Add it to writerMessages. Keep anything that varies per request out of it, so the cache entry stays shared.</p><Source file={COMPILER} line={680}>System prompt</Source></div>
+        <div><span className={styles.recoveryLabel}>SPORTS</span><h3>Pack templates</h3><p>Add it to SPORTS_SCREEN.templates, next to the component it is about. A rule about which component fits goes in that component&apos;s useWhen.</p><Source file={SCREEN} line={147}>Sports rules</Source></div>
+        <div><span className={styles.recoveryLabel}>ONE ANSWER</span><h3>Briefing</h3><p>A rule that depends on one answer&apos;s data, such as its note or source, goes in briefing.</p><Source file={SCREEN} line={101}>Briefing</Source></div>
+        <div><span className={styles.recoveryLabel}>MUST NEVER BREAK</span><h3>Gate</h3><p>Add a check to validate for any domain, or to the pack&apos;s refuses for one. The writer reads its message in repair, so name the fix, as the TeamPoints message does.</p><Source file={SCREEN} line={118}>refuses</Source></div>
       </div>
     </section>
     <section className={styles.evidenceSection}>
-      <div><span className={styles.sectionIndex}>WHY THIS SHAPE</span><h2>Validation proves the screen is well formed. It cannot prove it is the right screen.</h2><p>Every gate check has a test a statement can fail: a name, a path, a type, a count. Relevance has no such test inside one compile, because a wrong component with a valid record is still a valid statement. That is why the reasoning lives in the prompt and is measured by contrast probes, where the same records meet different requests.</p><Source file={ASK} line={203}>compose</Source><Source file={COMPILER} line={662}>Fixed system prompt</Source><Source file={SCREEN} line={112}>TeamPoints refusal</Source></div>
+      <div><span className={styles.sectionIndex}>WHY THIS SHAPE</span><h2>Validation proves the screen is well formed. It cannot prove it is the right screen.</h2><p>Every gate check has a test a statement can fail: a name, a path, a type, a count. Relevance has no such test inside one compile, because a wrong component with a valid record is still a valid statement. That is why the reasoning lives in the prompt and is measured by contrast probes, where the same records meet different requests.</p><Source file={ASK} line={207}>compose</Source><Source file={COMPILER} line={670}>Fixed system prompt</Source><Source file={SCREEN} line={115}>TeamPoints refusal</Source></div>
     </section>
-    <footer className={styles.articleFooter}><div><strong>Built from the local implementation</strong><span>metrics-comparison-fixes · Working tree references name the current files and lines.</span><span>Probe cases come from check-writer-relevance.ts. Compiler messages are quoted from the code.</span><span>Live probe results are recorded in WRITER_RELEVANCE.md and were not rerun for this guide.</span></div><Link href="/">Open the Preview ↗</Link></footer>
+    <footer className={styles.articleFooter}><div><strong>Built from the local implementation</strong><span>metrics-comparison-fixes · Source links point to main.</span><span>Probe cases come from check-writer-relevance.ts. Compiler messages are quoted from the code.</span><span>Live probe results are recorded in WRITER_RELEVANCE.md and were not rerun for this guide.</span></div><Link href="/">Open the Preview ↗</Link></footer>
     </AgentBody>
   </article></AgentView>;
 }
