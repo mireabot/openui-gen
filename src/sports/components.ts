@@ -31,8 +31,8 @@ export interface SportsComponent {
   readonly intent: string;
   readonly useWhen: string;
   readonly contract: readonly ContractField[];
-  /** Optional copy arguments after the record: text the writer passes, or null for `default` (an expression over `record`). */
-  readonly params: readonly { readonly name: string; readonly note: string; readonly default: string }[];
+  /** Optional arguments after the record: text or a flag the writer passes, or null for `default` (an expression over `record`, or a literal). */
+  readonly params: readonly { readonly name: string; readonly note: string; readonly default: string; readonly kind?: "text" | "boolean" }[];
   /** The primitives, over a reference to the record and one to each param. */
   readonly build: (data: AnyRef, args: readonly AnyRef[]) => Node;
 }
@@ -224,7 +224,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "MatchCard",
     intent: "One game between two teams: both teams on stacked rows with their scores, a side column (date and start time, or a status such as FT or Final), and one details line.",
-    useWhen: "a requested fixture, game result, score or latest meeting between two clubs; a list of requested matches (@Each over them); not a specific player's performance (StatsCard), current club or career, even when match data is also supplied",
+    useWhen: "a requested fixture, game result, score or latest meeting between two clubs; a list of requested matches (@Each over them); the game a player's one-game performance comes from, shown first, then the player's StatsCard without its header; not a player's season statistics (StatsCard), current club or career, even when match data is also supplied",
     contract: [
       ...team("home"), ...team("away"),
       f("label", "text", "small side line: a date such as \"Sat, Oct 31\", or \"\""),
@@ -333,8 +333,8 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   },
   {
     name: "StatsCard",
-    intent: "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. A part with no data is not shown.",
-    useWhen: "one identified player's or club's statistics for one game or season, including a specific player's latest-game performance; not the game's team result (MatchCard), comparisons across subjects or seasons (MetricBars), period-by-period progression (PlayerMetrics), career (ClubTimeline) or market value (PlayerValue)",
+    intent: "A player's or a club's stats: a header card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. Without its header only the rail shows. A part with no data is not shown.",
+    useWhen: "one identified player's or club's statistics for one game or season, including a specific player's latest-game performance, after that game's MatchCard when the data has one; not a game's result on its own (MatchCard), comparisons across subjects or seasons (MetricBars), period-by-period progression (PlayerMetrics), career (ClubTimeline) or market value (PlayerValue)",
     contract: [
       f("name", "text", "player or club"),
       f("kind", "text", "\"player\" or \"club\": a player's photo sits on the club colour, a crest on white"),
@@ -353,9 +353,9 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("stats[].value", "text", "one figure or a few words, e.g. \"5\", \"86%\" or \"Norway\""),
       s("showStats", "boolean"),
     ],
-    params: [],
-    build: c => ui.Stack({ axis: "v", gap: 12, children: [
-      ui.Card({ padding: 0, gap: 0, children: [
+    params: [{ name: "header", kind: "boolean", default: "true", note: "false hides the header card (photo, name, detail and rating) so only the stat rail shows, as under the game's MatchCard; keep it when the rating is one of the requested stats; null keeps it" }],
+    build: (c, [header]) => ui.Stack({ axis: "v", gap: 12, children: [
+      ui.Show({ when: header, child: ui.Card({ padding: 0, gap: 0, children: [
         ui.Stack({ axis: "h", gap: 12, align: "center", paddingX: 16, paddingY: 12, children: [
           mark(c, 40, c.kind),
           ui.Stack({ axis: "v", gap: 0, children: [
@@ -373,7 +373,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
             ] }),
           ] }),
         ] }) }),
-      ] }),
+      ] }) }),
       ui.Show({ when: c.showStats, child: ui.Rail({ gap: 12, minWidth: 124, children: each(c.stats, "s", (s: AnyRef) => ui.Card({ gap: 4, children: [
         ui.Text({ content: s.value, role: "headline", weight: "semibold", align: "start" }),
         ui.Text({ content: s.label, role: "footnote", ink: "secondary", align: "start" }),
@@ -997,7 +997,7 @@ const TEAM_SPORT_ONLY = new Set(["RecordTable"]);
 
 /** The writer's view: one signature line per component. */
 export const COMPONENT_SIGNATURES = SPORTS_COMPONENTS.map(c =>
-  `${c.name}(record${c.params.map(p => `, ${p.name}?`).join("")}) · ${c.intent} Use for ${c.useWhen}. Reads: ${c.contract.map(x => x.path).join(", ")}.${c.params.map(p => ` ${p.name}: ${p.note}.`).join("")}`).join("\n");
+  `${c.name}(record${c.params.map(p => `, ${p.name}?`).join("")}) · ${c.intent} Use for ${c.useWhen}. Reads: ${c.contract.map(x => x.path).join(", ")}.${c.params.map(p => ` ${p.name} (${p.kind ?? "text"}): ${p.note}.`).join("")}`).join("\n");
 
 /** The schema stage's view: each contract with its notes. */
 export const contractsFor = (hasSoccer: boolean, hasTeamSports: boolean) => SPORTS_COMPONENTS
@@ -1010,7 +1010,7 @@ export const contractsFor = (hasSoccer: boolean, hasTeamSports: boolean) => SPOR
  */
 export const SPORTS_TEMPLATE_DEFS: readonly TemplateDef[] = SPORTS_COMPONENTS.map(c => ({
   name: c.name,
-  params: [{ name: "record", role: "data" as const }, ...c.params.map(p => ({ name: p.name, role: "copy" as const, default: p.default, note: p.note }))],
+  params: [{ name: "record", role: "data" as const }, ...c.params.map(p => ({ name: p.name, role: "copy" as const, ...(p.kind ? { kind: p.kind } : {}), default: p.default, note: p.note }))],
   body: printExpr(c.build(refAt({ k: "Ref", n: "record" }), c.params.map(p => refAt({ k: "Ref", n: p.name }))).expr),
 }));
 

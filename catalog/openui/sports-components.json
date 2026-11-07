@@ -77,7 +77,7 @@
     {
       "name": "MatchCard",
       "intent": "One game between two teams: both teams on stacked rows with their scores, a side column (date and start time, or a status such as FT or Final), and one details line.",
-      "useWhen": "a requested fixture, game result, score or latest meeting between two clubs; a list of requested matches (@Each over them); not a specific player's performance (StatsCard), current club or career, even when match data is also supplied",
+      "useWhen": "a requested fixture, game result, score or latest meeting between two clubs; a list of requested matches (@Each over them); the game a player's one-game performance comes from, shown first, then the player's StatsCard without its header; not a player's season statistics (StatsCard), current club or career, even when match data is also supplied",
       "contract": [
         {
           "path": "home.name",
@@ -322,8 +322,8 @@
     },
     {
       "name": "StatsCard",
-      "intent": "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. A part with no data is not shown.",
-      "useWhen": "one identified player's or club's statistics for one game or season, including a specific player's latest-game performance; not the game's team result (MatchCard), comparisons across subjects or seasons (MetricBars), period-by-period progression (PlayerMetrics), career (ClubTimeline) or market value (PlayerValue)",
+      "intent": "A player's or a club's stats: a header card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. Without its header only the rail shows. A part with no data is not shown.",
+      "useWhen": "one identified player's or club's statistics for one game or season, including a specific player's latest-game performance, after that game's MatchCard when the data has one; not a game's result on its own (MatchCard), comparisons across subjects or seasons (MetricBars), period-by-period progression (PlayerMetrics), career (ClubTimeline) or market value (PlayerValue)",
       "contract": [
         {
           "path": "name",
@@ -415,7 +415,14 @@
           "by": "server"
         }
       ],
-      "params": []
+      "params": [
+        {
+          "name": "header",
+          "kind": "boolean",
+          "default": "true",
+          "note": "false hides the header card (photo, name, detail and rating) so only the stat rail shows, as under the game's MatchCard; keep it when the rating is one of the requested stats; null keeps it"
+        }
+      ]
     },
     {
       "name": "TeamPoints",
@@ -1519,9 +1526,16 @@
         {
           "name": "record",
           "role": "data"
+        },
+        {
+          "name": "header",
+          "role": "copy",
+          "kind": "boolean",
+          "default": "true",
+          "note": "false hides the header card (photo, name, detail and rating) so only the stat rail shows, as under the game's MatchCard; keep it when the rating is one of the requested stats; null keeps it"
         }
       ],
-      "body": "Stack(\"v\", 12, [Card([Stack(\"h\", 12, [Avatar(record.name, 40, record.logo, null, null, record.color, record.kind), Stack(\"v\", 0, [Text(record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(record.rating.value, record.rating.tone, null, \"large\", record.rating.fill, record.rating.ink), Stack(\"v\", 0, [Text(record.rating.label, \"body\", \"medium\"), Text(record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0), Show(record.showStats, Rail(12, @Each(record.stats, \"s\", Card([Text(s.value, \"headline\", \"semibold\", null, null, \"start\"), Text(s.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])"
+      "body": "Stack(\"v\", 12, [Show(header, Card([Stack(\"h\", 12, [Avatar(record.name, 40, record.logo, null, null, record.color, record.kind), Stack(\"v\", 0, [Text(record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(record.rating.value, record.rating.tone, null, \"large\", record.rating.fill, record.rating.ink), Stack(\"v\", 0, [Text(record.rating.label, \"body\", \"medium\"), Text(record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0)), Show(record.showStats, Rail(12, @Each(record.stats, \"s\", Card([Text(s.value, \"headline\", \"semibold\", null, null, \"start\"), Text(s.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])"
     },
     {
       "name": "TeamPoints",

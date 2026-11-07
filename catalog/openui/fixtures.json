@@ -2434,7 +2434,7 @@
     },
     {
       "key": "StatsCard/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/full\"}, {})\npick1 = Stack(\"v\", 12, [Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/full\"}, {})\npick1 = Stack(\"v\", 12, [Show(true, Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0)), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -2499,138 +2499,148 @@
               "slots": {
                 "children": [
                   {
-                    "kind": "Card",
+                    "kind": "Show",
                     "properties": {
-                      "padding": 0,
-                      "gap": 0
+                      "when": true
                     },
                     "slots": {
-                      "children": [
+                      "child": [
                         {
-                          "kind": "Stack",
+                          "kind": "Card",
                           "properties": {
-                            "axis": "h",
-                            "gap": 12,
-                            "align": "center",
-                            "paddingX": 16,
-                            "paddingY": 12
+                            "padding": 0,
+                            "gap": 0
                           },
                           "slots": {
                             "children": [
                               {
-                                "kind": "Avatar",
-                                "properties": {
-                                  "name": "Cole Palmer",
-                                  "size": 40,
-                                  "image": "https://images.fotmob.com/image_resources/playerimages/1096353.png",
-                                  "color": "#034694",
-                                  "kind": "player"
-                                },
-                                "slots": {}
-                              },
-                              {
                                 "kind": "Stack",
                                 "properties": {
-                                  "axis": "v",
-                                  "gap": 0
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "paddingX": 16,
+                                  "paddingY": 12
                                 },
                                 "slots": {
                                   "children": [
                                     {
-                                      "kind": "Text",
+                                      "kind": "Avatar",
                                       "properties": {
-                                        "content": "Cole Palmer",
-                                        "role": "headline",
-                                        "weight": "semibold",
-                                        "lines": 2,
-                                        "align": "start"
+                                        "name": "Cole Palmer",
+                                        "size": 40,
+                                        "image": "https://images.fotmob.com/image_resources/playerimages/1096353.png",
+                                        "color": "#034694",
+                                        "kind": "player"
                                       },
-                                      "slots": {}
-                                    },
-                                    {
-                                      "kind": "Text",
-                                      "properties": {
-                                        "content": "Chelsea · Attacking Midfielder",
-                                        "role": "footnote",
-                                        "ink": "secondary",
-                                        "lines": 2,
-                                        "align": "start"
-                                      },
-                                      "slots": {}
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "Show",
-                          "properties": {
-                            "when": true
-                          },
-                          "slots": {
-                            "child": [
-                              {
-                                "kind": "Stack",
-                                "properties": {
-                                  "axis": "v",
-                                  "gap": 0
-                                },
-                                "slots": {
-                                  "children": [
-                                    {
-                                      "kind": "Divider",
-                                      "properties": {},
                                       "slots": {}
                                     },
                                     {
                                       "kind": "Stack",
                                       "properties": {
-                                        "axis": "h",
-                                        "gap": 16,
-                                        "align": "center",
-                                        "paddingX": 16,
-                                        "paddingY": 16
+                                        "axis": "v",
+                                        "gap": 0
                                       },
                                       "slots": {
                                         "children": [
                                           {
-                                            "kind": "Badge",
+                                            "kind": "Text",
                                             "properties": {
-                                              "label": "7.21",
-                                              "tone": "good",
-                                              "size": "large",
-                                              "fill": "tone.good.fg",
-                                              "ink": "surface.screen"
+                                              "content": "Cole Palmer",
+                                              "role": "headline",
+                                              "weight": "semibold",
+                                              "lines": 2,
+                                              "align": "start"
                                             },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Chelsea · Attacking Midfielder",
+                                              "role": "footnote",
+                                              "ink": "secondary",
+                                              "lines": 2,
+                                              "align": "start"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": true
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Divider",
+                                            "properties": {},
                                             "slots": {}
                                           },
                                           {
                                             "kind": "Stack",
                                             "properties": {
-                                              "axis": "v",
-                                              "gap": 0
+                                              "axis": "h",
+                                              "gap": 16,
+                                              "align": "center",
+                                              "paddingX": 16,
+                                              "paddingY": 16
                                             },
                                             "slots": {
                                               "children": [
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Badge",
                                                   "properties": {
-                                                    "content": "Season rating",
-                                                    "role": "body",
-                                                    "weight": "medium"
+                                                    "label": "7.21",
+                                                    "tone": "good",
+                                                    "size": "large",
+                                                    "fill": "tone.good.fg",
+                                                    "ink": "surface.screen"
                                                   },
                                                   "slots": {}
                                                 },
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Stack",
                                                   "properties": {
-                                                    "content": "Average of 6 matches",
-                                                    "role": "footnote",
-                                                    "ink": "secondary"
+                                                    "axis": "v",
+                                                    "gap": 0
                                                   },
-                                                  "slots": {}
+                                                  "slots": {
+                                                    "children": [
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "Season rating",
+                                                          "role": "body",
+                                                          "weight": "medium"
+                                                        },
+                                                        "slots": {}
+                                                      },
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "Average of 6 matches",
+                                                          "role": "footnote",
+                                                          "ink": "secondary"
+                                                        },
+                                                        "slots": {}
+                                                      }
+                                                    ]
+                                                  }
                                                 }
                                               ]
                                             }
@@ -2797,7 +2807,7 @@
     },
     {
       "key": "StatsCard/mid",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/mid\"}, {})\npick1 = Stack(\"v\", 12, [Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/mid\"}, {})\npick1 = Stack(\"v\", 12, [Show(true, Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0)), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -2882,138 +2892,148 @@
               "slots": {
                 "children": [
                   {
-                    "kind": "Card",
+                    "kind": "Show",
                     "properties": {
-                      "padding": 0,
-                      "gap": 0
+                      "when": true
                     },
                     "slots": {
-                      "children": [
+                      "child": [
                         {
-                          "kind": "Stack",
+                          "kind": "Card",
                           "properties": {
-                            "axis": "h",
-                            "gap": 12,
-                            "align": "center",
-                            "paddingX": 16,
-                            "paddingY": 12
+                            "padding": 0,
+                            "gap": 0
                           },
                           "slots": {
                             "children": [
                               {
-                                "kind": "Avatar",
-                                "properties": {
-                                  "name": "Declan Rice",
-                                  "size": 40,
-                                  "image": "https://images.fotmob.com/image_resources/playerimages/654096.png",
-                                  "color": "#e20520",
-                                  "kind": "player"
-                                },
-                                "slots": {}
-                              },
-                              {
                                 "kind": "Stack",
                                 "properties": {
-                                  "axis": "v",
-                                  "gap": 0
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "paddingX": 16,
+                                  "paddingY": 12
                                 },
                                 "slots": {
                                   "children": [
                                     {
-                                      "kind": "Text",
+                                      "kind": "Avatar",
                                       "properties": {
-                                        "content": "Declan Rice",
-                                        "role": "headline",
-                                        "weight": "semibold",
-                                        "lines": 2,
-                                        "align": "start"
+                                        "name": "Declan Rice",
+                                        "size": 40,
+                                        "image": "https://images.fotmob.com/image_resources/playerimages/654096.png",
+                                        "color": "#e20520",
+                                        "kind": "player"
                                       },
-                                      "slots": {}
-                                    },
-                                    {
-                                      "kind": "Text",
-                                      "properties": {
-                                        "content": "Arsenal · Midfielder",
-                                        "role": "footnote",
-                                        "ink": "secondary",
-                                        "lines": 2,
-                                        "align": "start"
-                                      },
-                                      "slots": {}
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "Show",
-                          "properties": {
-                            "when": true
-                          },
-                          "slots": {
-                            "child": [
-                              {
-                                "kind": "Stack",
-                                "properties": {
-                                  "axis": "v",
-                                  "gap": 0
-                                },
-                                "slots": {
-                                  "children": [
-                                    {
-                                      "kind": "Divider",
-                                      "properties": {},
                                       "slots": {}
                                     },
                                     {
                                       "kind": "Stack",
                                       "properties": {
-                                        "axis": "h",
-                                        "gap": 16,
-                                        "align": "center",
-                                        "paddingX": 16,
-                                        "paddingY": 16
+                                        "axis": "v",
+                                        "gap": 0
                                       },
                                       "slots": {
                                         "children": [
                                           {
-                                            "kind": "Badge",
+                                            "kind": "Text",
                                             "properties": {
-                                              "label": "6.60",
-                                              "tone": "warn",
-                                              "size": "large",
-                                              "fill": "ink.brand",
-                                              "ink": "surface.screen"
+                                              "content": "Declan Rice",
+                                              "role": "headline",
+                                              "weight": "semibold",
+                                              "lines": 2,
+                                              "align": "start"
                                             },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Arsenal · Midfielder",
+                                              "role": "footnote",
+                                              "ink": "secondary",
+                                              "lines": 2,
+                                              "align": "start"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": true
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Divider",
+                                            "properties": {},
                                             "slots": {}
                                           },
                                           {
                                             "kind": "Stack",
                                             "properties": {
-                                              "axis": "v",
-                                              "gap": 0
+                                              "axis": "h",
+                                              "gap": 16,
+                                              "align": "center",
+                                              "paddingX": 16,
+                                              "paddingY": 16
                                             },
                                             "slots": {
                                               "children": [
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Badge",
                                                   "properties": {
-                                                    "content": "Season rating",
-                                                    "role": "body",
-                                                    "weight": "medium"
+                                                    "label": "6.60",
+                                                    "tone": "warn",
+                                                    "size": "large",
+                                                    "fill": "ink.brand",
+                                                    "ink": "surface.screen"
                                                   },
                                                   "slots": {}
                                                 },
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Stack",
                                                   "properties": {
-                                                    "content": "Average of 6 matches",
-                                                    "role": "footnote",
-                                                    "ink": "secondary"
+                                                    "axis": "v",
+                                                    "gap": 0
                                                   },
-                                                  "slots": {}
+                                                  "slots": {
+                                                    "children": [
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "Season rating",
+                                                          "role": "body",
+                                                          "weight": "medium"
+                                                        },
+                                                        "slots": {}
+                                                      },
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "Average of 6 matches",
+                                                          "role": "footnote",
+                                                          "ink": "secondary"
+                                                        },
+                                                        "slots": {}
+                                                      }
+                                                    ]
+                                                  }
                                                 }
                                               ]
                                             }
@@ -3330,7 +3350,7 @@
     },
     {
       "key": "StatsCard/low",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/low\"}, {})\npick1 = Stack(\"v\", 12, [Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/low\"}, {})\npick1 = Stack(\"v\", 12, [Show(true, Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0)), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -3383,138 +3403,148 @@
               "slots": {
                 "children": [
                   {
-                    "kind": "Card",
+                    "kind": "Show",
                     "properties": {
-                      "padding": 0,
-                      "gap": 0
+                      "when": true
                     },
                     "slots": {
-                      "children": [
+                      "child": [
                         {
-                          "kind": "Stack",
+                          "kind": "Card",
                           "properties": {
-                            "axis": "h",
-                            "gap": 12,
-                            "align": "center",
-                            "paddingX": 16,
-                            "paddingY": 12
+                            "padding": 0,
+                            "gap": 0
                           },
                           "slots": {
                             "children": [
                               {
-                                "kind": "Avatar",
-                                "properties": {
-                                  "name": "Everton",
-                                  "size": 40,
-                                  "image": "https://a.espncdn.com/i/teamlogos/soccer/500/368.png",
-                                  "color": "clear",
-                                  "kind": "club"
-                                },
-                                "slots": {}
-                              },
-                              {
                                 "kind": "Stack",
                                 "properties": {
-                                  "axis": "v",
-                                  "gap": 0
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "paddingX": 16,
+                                  "paddingY": 12
                                 },
                                 "slots": {
                                   "children": [
                                     {
-                                      "kind": "Text",
+                                      "kind": "Avatar",
                                       "properties": {
-                                        "content": "Everton",
-                                        "role": "headline",
-                                        "weight": "semibold",
-                                        "lines": 2,
-                                        "align": "start"
+                                        "name": "Everton",
+                                        "size": 40,
+                                        "image": "https://a.espncdn.com/i/teamlogos/soccer/500/368.png",
+                                        "color": "clear",
+                                        "kind": "club"
                                       },
-                                      "slots": {}
-                                    },
-                                    {
-                                      "kind": "Text",
-                                      "properties": {
-                                        "content": "Premier League · 2026/27",
-                                        "role": "footnote",
-                                        "ink": "secondary",
-                                        "lines": 2,
-                                        "align": "start"
-                                      },
-                                      "slots": {}
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "Show",
-                          "properties": {
-                            "when": true
-                          },
-                          "slots": {
-                            "child": [
-                              {
-                                "kind": "Stack",
-                                "properties": {
-                                  "axis": "v",
-                                  "gap": 0
-                                },
-                                "slots": {
-                                  "children": [
-                                    {
-                                      "kind": "Divider",
-                                      "properties": {},
                                       "slots": {}
                                     },
                                     {
                                       "kind": "Stack",
                                       "properties": {
-                                        "axis": "h",
-                                        "gap": 16,
-                                        "align": "center",
-                                        "paddingX": 16,
-                                        "paddingY": 16
+                                        "axis": "v",
+                                        "gap": 0
                                       },
                                       "slots": {
                                         "children": [
                                           {
-                                            "kind": "Badge",
+                                            "kind": "Text",
                                             "properties": {
-                                              "label": "5.80",
-                                              "tone": "bad",
-                                              "size": "large",
-                                              "fill": "surface.brand",
-                                              "ink": "ink.onBrand"
+                                              "content": "Everton",
+                                              "role": "headline",
+                                              "weight": "semibold",
+                                              "lines": 2,
+                                              "align": "start"
                                             },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Premier League · 2026/27",
+                                              "role": "footnote",
+                                              "ink": "secondary",
+                                              "lines": 2,
+                                              "align": "start"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": true
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Divider",
+                                            "properties": {},
                                             "slots": {}
                                           },
                                           {
                                             "kind": "Stack",
                                             "properties": {
-                                              "axis": "v",
-                                              "gap": 0
+                                              "axis": "h",
+                                              "gap": 16,
+                                              "align": "center",
+                                              "paddingX": 16,
+                                              "paddingY": 16
                                             },
                                             "slots": {
                                               "children": [
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Badge",
                                                   "properties": {
-                                                    "content": "Match rating",
-                                                    "role": "body",
-                                                    "weight": "medium"
+                                                    "label": "5.80",
+                                                    "tone": "bad",
+                                                    "size": "large",
+                                                    "fill": "surface.brand",
+                                                    "ink": "ink.onBrand"
                                                   },
                                                   "slots": {}
                                                 },
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Stack",
                                                   "properties": {
-                                                    "content": "",
-                                                    "role": "footnote",
-                                                    "ink": "secondary"
+                                                    "axis": "v",
+                                                    "gap": 0
                                                   },
-                                                  "slots": {}
+                                                  "slots": {
+                                                    "children": [
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "Match rating",
+                                                          "role": "body",
+                                                          "weight": "medium"
+                                                        },
+                                                        "slots": {}
+                                                      },
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "",
+                                                          "role": "footnote",
+                                                          "ink": "secondary"
+                                                        },
+                                                        "slots": {}
+                                                      }
+                                                    ]
+                                                  }
                                                 }
                                               ]
                                             }
@@ -3591,7 +3621,7 @@
     },
     {
       "key": "StatsCard/unavailable",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/unavailable\"}, {})\npick1 = Stack(\"v\", 12, [Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/unavailable\"}, {})\npick1 = Stack(\"v\", 12, [Show(true, Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0)), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -3648,138 +3678,148 @@
               "slots": {
                 "children": [
                   {
-                    "kind": "Card",
+                    "kind": "Show",
                     "properties": {
-                      "padding": 0,
-                      "gap": 0
+                      "when": true
                     },
                     "slots": {
-                      "children": [
+                      "child": [
                         {
-                          "kind": "Stack",
+                          "kind": "Card",
                           "properties": {
-                            "axis": "h",
-                            "gap": 12,
-                            "align": "center",
-                            "paddingX": 16,
-                            "paddingY": 12
+                            "padding": 0,
+                            "gap": 0
                           },
                           "slots": {
                             "children": [
                               {
-                                "kind": "Avatar",
-                                "properties": {
-                                  "name": "João Pedro",
-                                  "size": 40,
-                                  "image": "https://images.fotmob.com/image_resources/playerimages/1021382.png",
-                                  "color": "#034694",
-                                  "kind": "player"
-                                },
-                                "slots": {}
-                              },
-                              {
                                 "kind": "Stack",
                                 "properties": {
-                                  "axis": "v",
-                                  "gap": 0
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "paddingX": 16,
+                                  "paddingY": 12
                                 },
                                 "slots": {
                                   "children": [
                                     {
-                                      "kind": "Text",
+                                      "kind": "Avatar",
                                       "properties": {
-                                        "content": "João Pedro",
-                                        "role": "headline",
-                                        "weight": "semibold",
-                                        "lines": 2,
-                                        "align": "start"
+                                        "name": "João Pedro",
+                                        "size": 40,
+                                        "image": "https://images.fotmob.com/image_resources/playerimages/1021382.png",
+                                        "color": "#034694",
+                                        "kind": "player"
                                       },
-                                      "slots": {}
-                                    },
-                                    {
-                                      "kind": "Text",
-                                      "properties": {
-                                        "content": "Chelsea · Forward",
-                                        "role": "footnote",
-                                        "ink": "secondary",
-                                        "lines": 2,
-                                        "align": "start"
-                                      },
-                                      "slots": {}
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "Show",
-                          "properties": {
-                            "when": false
-                          },
-                          "slots": {
-                            "child": [
-                              {
-                                "kind": "Stack",
-                                "properties": {
-                                  "axis": "v",
-                                  "gap": 0
-                                },
-                                "slots": {
-                                  "children": [
-                                    {
-                                      "kind": "Divider",
-                                      "properties": {},
                                       "slots": {}
                                     },
                                     {
                                       "kind": "Stack",
                                       "properties": {
-                                        "axis": "h",
-                                        "gap": 16,
-                                        "align": "center",
-                                        "paddingX": 16,
-                                        "paddingY": 16
+                                        "axis": "v",
+                                        "gap": 0
                                       },
                                       "slots": {
                                         "children": [
                                           {
-                                            "kind": "Badge",
+                                            "kind": "Text",
                                             "properties": {
-                                              "label": "",
-                                              "tone": "neutral",
-                                              "size": "large",
-                                              "fill": "none",
-                                              "ink": "ink.secondary"
+                                              "content": "João Pedro",
+                                              "role": "headline",
+                                              "weight": "semibold",
+                                              "lines": 2,
+                                              "align": "start"
                                             },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "Chelsea · Forward",
+                                              "role": "footnote",
+                                              "ink": "secondary",
+                                              "lines": 2,
+                                              "align": "start"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": false
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Divider",
+                                            "properties": {},
                                             "slots": {}
                                           },
                                           {
                                             "kind": "Stack",
                                             "properties": {
-                                              "axis": "v",
-                                              "gap": 0
+                                              "axis": "h",
+                                              "gap": 16,
+                                              "align": "center",
+                                              "paddingX": 16,
+                                              "paddingY": 16
                                             },
                                             "slots": {
                                               "children": [
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Badge",
                                                   "properties": {
-                                                    "content": "",
-                                                    "role": "body",
-                                                    "weight": "medium"
+                                                    "label": "",
+                                                    "tone": "neutral",
+                                                    "size": "large",
+                                                    "fill": "none",
+                                                    "ink": "ink.secondary"
                                                   },
                                                   "slots": {}
                                                 },
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Stack",
                                                   "properties": {
-                                                    "content": "",
-                                                    "role": "footnote",
-                                                    "ink": "secondary"
+                                                    "axis": "v",
+                                                    "gap": 0
                                                   },
-                                                  "slots": {}
+                                                  "slots": {
+                                                    "children": [
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "",
+                                                          "role": "body",
+                                                          "weight": "medium"
+                                                        },
+                                                        "slots": {}
+                                                      },
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "",
+                                                          "role": "footnote",
+                                                          "ink": "secondary"
+                                                        },
+                                                        "slots": {}
+                                                      }
+                                                    ]
+                                                  }
                                                 }
                                               ]
                                             }
@@ -3886,7 +3926,7 @@
     },
     {
       "key": "StatsCard/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"StatsCard/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Show(true, Card([Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(d.answers.q1.record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(d.answers.q1.record.rating.value, d.answers.q1.record.rating.tone, null, \"large\", d.answers.q1.record.rating.fill, d.answers.q1.record.rating.ink), Stack(\"v\", 0, [Text(d.answers.q1.record.rating.label, \"body\", \"medium\"), Text(d.answers.q1.record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0)), Show(d.answers.q1.record.showStats, Rail(12, @Each(d.answers.q1.record.stats, \"sStatsCard\", Card([Text(sStatsCard.value, \"headline\", \"semibold\", null, null, \"start\"), Text(sStatsCard.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -3934,138 +3974,148 @@
               "slots": {
                 "children": [
                   {
-                    "kind": "Card",
+                    "kind": "Show",
                     "properties": {
-                      "padding": 0,
-                      "gap": 0
+                      "when": true
                     },
                     "slots": {
-                      "children": [
+                      "child": [
                         {
-                          "kind": "Stack",
+                          "kind": "Card",
                           "properties": {
-                            "axis": "h",
-                            "gap": 12,
-                            "align": "center",
-                            "paddingX": 16,
-                            "paddingY": 12
+                            "padding": 0,
+                            "gap": 0
                           },
                           "slots": {
                             "children": [
                               {
-                                "kind": "Avatar",
-                                "properties": {
-                                  "name": "Unknown player",
-                                  "size": 40,
-                                  "image": "",
-                                  "color": "",
-                                  "kind": "player"
-                                },
-                                "slots": {}
-                              },
-                              {
                                 "kind": "Stack",
                                 "properties": {
-                                  "axis": "v",
-                                  "gap": 0
+                                  "axis": "h",
+                                  "gap": 12,
+                                  "align": "center",
+                                  "paddingX": 16,
+                                  "paddingY": 12
                                 },
                                 "slots": {
                                   "children": [
                                     {
-                                      "kind": "Text",
+                                      "kind": "Avatar",
                                       "properties": {
-                                        "content": "Unknown player",
-                                        "role": "headline",
-                                        "weight": "semibold",
-                                        "lines": 2,
-                                        "align": "start"
+                                        "name": "Unknown player",
+                                        "size": 40,
+                                        "image": "",
+                                        "color": "",
+                                        "kind": "player"
                                       },
-                                      "slots": {}
-                                    },
-                                    {
-                                      "kind": "Text",
-                                      "properties": {
-                                        "content": "",
-                                        "role": "footnote",
-                                        "ink": "secondary",
-                                        "lines": 2,
-                                        "align": "start"
-                                      },
-                                      "slots": {}
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          "kind": "Show",
-                          "properties": {
-                            "when": false
-                          },
-                          "slots": {
-                            "child": [
-                              {
-                                "kind": "Stack",
-                                "properties": {
-                                  "axis": "v",
-                                  "gap": 0
-                                },
-                                "slots": {
-                                  "children": [
-                                    {
-                                      "kind": "Divider",
-                                      "properties": {},
                                       "slots": {}
                                     },
                                     {
                                       "kind": "Stack",
                                       "properties": {
-                                        "axis": "h",
-                                        "gap": 16,
-                                        "align": "center",
-                                        "paddingX": 16,
-                                        "paddingY": 16
+                                        "axis": "v",
+                                        "gap": 0
                                       },
                                       "slots": {
                                         "children": [
                                           {
-                                            "kind": "Badge",
+                                            "kind": "Text",
                                             "properties": {
-                                              "label": "",
-                                              "tone": "neutral",
-                                              "size": "large",
-                                              "fill": "none",
-                                              "ink": "ink.secondary"
+                                              "content": "Unknown player",
+                                              "role": "headline",
+                                              "weight": "semibold",
+                                              "lines": 2,
+                                              "align": "start"
                                             },
+                                            "slots": {}
+                                          },
+                                          {
+                                            "kind": "Text",
+                                            "properties": {
+                                              "content": "",
+                                              "role": "footnote",
+                                              "ink": "secondary",
+                                              "lines": 2,
+                                              "align": "start"
+                                            },
+                                            "slots": {}
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              },
+                              {
+                                "kind": "Show",
+                                "properties": {
+                                  "when": false
+                                },
+                                "slots": {
+                                  "child": [
+                                    {
+                                      "kind": "Stack",
+                                      "properties": {
+                                        "axis": "v",
+                                        "gap": 0
+                                      },
+                                      "slots": {
+                                        "children": [
+                                          {
+                                            "kind": "Divider",
+                                            "properties": {},
                                             "slots": {}
                                           },
                                           {
                                             "kind": "Stack",
                                             "properties": {
-                                              "axis": "v",
-                                              "gap": 0
+                                              "axis": "h",
+                                              "gap": 16,
+                                              "align": "center",
+                                              "paddingX": 16,
+                                              "paddingY": 16
                                             },
                                             "slots": {
                                               "children": [
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Badge",
                                                   "properties": {
-                                                    "content": "",
-                                                    "role": "body",
-                                                    "weight": "medium"
+                                                    "label": "",
+                                                    "tone": "neutral",
+                                                    "size": "large",
+                                                    "fill": "none",
+                                                    "ink": "ink.secondary"
                                                   },
                                                   "slots": {}
                                                 },
                                                 {
-                                                  "kind": "Text",
+                                                  "kind": "Stack",
                                                   "properties": {
-                                                    "content": "",
-                                                    "role": "footnote",
-                                                    "ink": "secondary"
+                                                    "axis": "v",
+                                                    "gap": 0
                                                   },
-                                                  "slots": {}
+                                                  "slots": {
+                                                    "children": [
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "",
+                                                          "role": "body",
+                                                          "weight": "medium"
+                                                        },
+                                                        "slots": {}
+                                                      },
+                                                      {
+                                                        "kind": "Text",
+                                                        "properties": {
+                                                          "content": "",
+                                                          "role": "footnote",
+                                                          "ink": "secondary"
+                                                        },
+                                                        "slots": {}
+                                                      }
+                                                    ]
+                                                  }
                                                 }
                                               ]
                                             }

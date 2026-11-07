@@ -110,6 +110,34 @@ struct OpenUIFixtureTests {
         #expect(try !texts(", \"Points per game\"").contains(heading))
     }
 
+    /// `StatsCard(record, false)` draws only the stat rail; null keeps the header.
+    @Test func statsCardHeaderFlag() throws {
+        let fixture = try #require(Self.fixtures.first { $0.key == "StatsCard/full" })
+        let head = fixture.program.split(separator: "\n").prefix(2).joined(separator: "\n")
+        let name = try #require(fixture.dataset.result["answers"]?["q1"]?["record"]?["name"])
+        let scene = { (args: String) throws -> OpenUIScene in
+            try OpenUICompiler().compile(
+                program: head + "\npick1 = StatsCard(d.answers.q1.record\(args))\n",
+                documentID: "flag",
+                datasets: [fixture.dataset]
+            )
+        }
+        /// Texts under a Show that is open, as the renderer draws them.
+        func shown(_ scene: OpenUIScene) -> [PValue] {
+            var texts: [PValue] = []
+            func walk(_ id: OpenUIElementID) {
+                guard let element = scene.elements[id] else { return }
+                if element.kind == "Show", element.properties["when"] != .bool(true) { return }
+                if element.kind == "Text", let content = element.properties["content"] { texts.append(content) }
+                element.slots.values.flatMap(\.self).forEach(walk)
+            }
+            scene.roots.forEach(walk)
+            return texts
+        }
+        #expect(try shown(scene(", null")).contains(name))
+        #expect(try !shown(scene(", false")).contains(name))
+    }
+
     /// `{kind, properties, slots}` without null properties or empty slots, as the export writes it.
     private static func tree(_ id: OpenUIElementID, in scene: OpenUIScene) -> PValue {
         guard let element = scene.elements[id] else { return .null }

@@ -31,11 +31,11 @@ function nestedGame(): ImportedScreen {
       `d = Query("sports_dataset", {run: "${run}"}, {})`,
       `pick1 = Section(d.answers.q1.title, [pick1_match, pick1_player], null, null, d.answers.q1.source)`,
       `pick1_match = MatchCard(d.answers.q1.latestGame.match)`,
-      `pick1_player = StatsCard(d.answers.q1.latestGame.player)`,
+      `pick1_player = StatsCard(d.answers.q1.latestGame.player, false)`,
     ].join("\n") + "\n",
   };
 }
 
 export const DEMO_SCREENS: readonly { readonly id: string; readonly label: string; readonly screen: () => ImportedScreen }[] = [
-  { id: "nested-game", label: "Nested response · game card + player stats", screen: nestedGame },
+  { id: "nested-game", label: "Nested response · game card + player stat rail", screen: nestedGame },
 ];

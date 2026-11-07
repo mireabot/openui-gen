@@ -33,10 +33,12 @@ public struct OpenUITemplate: Codable, Equatable, Sendable {
         public let name: String
         /// "data": a data reference. "copy": text, or null for `default`.
         public let role: String
+        /// What a copy param holds: "text" (nil) or "boolean".
+        public let kind: String?
         /// The body expression used when a copy argument is absent or null.
         public let `default`: String?
-        public init(name: String, role: String, default: String? = nil) {
-            self.name = name; self.role = role; self.default = `default`
+        public init(name: String, role: String, kind: String? = nil, default: String? = nil) {
+            self.name = name; self.role = role; self.kind = kind; self.default = `default`
         }
     }
 

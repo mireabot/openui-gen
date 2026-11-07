@@ -2,7 +2,7 @@
  * Sports components travel as templates, called by name on the wire:
  * 1. Parity: every catalog sample called by name draws exactly what its expanded program draws.
  * 2. Hygiene: a call inside an @Each whose item name the template also uses is not captured.
- * 3. Params: a copy param replaces its default; absent or null keeps the record's.
+ * 3. Params: a copy param replaces its default; absent or null keeps the record's. A flag hides StatsCard's header.
  * 4. Bad calls are refused with a message: a literal record, too many arguments, a number as copy.
  * 5. The compiler keeps the writer's calls, and a result names the definitions it uses.
  */
@@ -51,10 +51,35 @@ for (const def of SPORTS_TEMPLATE_DEFS) for (const fixture of fixtures.filter(f 
   assert.ok(own.includes("Points per game · this vs last season") && !own.includes(record.heading), "a heading replaces the record's");
 }
 
+// 3b. A flag param: StatsCard's header.
+{
+  const record = recordOf("StatsCard/full") as { name: string; stats: unknown[] };
+  const values = { answers: { q1: { record } } };
+  const call = (args: string) => `${head("flag")}pick1 = StatsCard(d.answers.q1.record${args})\n`;
+  // Texts the renderer draws: a Show whose `when` is false hides its child.
+  const shown = (program: string) => {
+    const tree = programTree(program, values, SPORTS_TEMPLATES);
+    const byId = new Map(tree.nodes.map(n => [n.id, n]));
+    const out: unknown[] = [];
+    const walk = (id: string): void => {
+      const node = byId.get(id)!;
+      if (node.primitive === "Show" && node.props.when !== true) return;
+      if (node.primitive === "Text") out.push(node.props.content);
+      Object.values(node.children).flat().forEach(walk);
+    };
+    tree.placement.children.forEach(walk);
+    return out;
+  };
+  for (const args of ["", ", null", ", true"]) assert.ok(shown(call(args)).includes(record.name), `StatsCard(record${args}) shows its header`);
+  const rail = shown(call(", false"));
+  assert.ok(!rail.includes(record.name), "false hides the header");
+  assert.equal(programTree(call(", false"), values, SPORTS_TEMPLATES).nodes.filter(n => n.primitive === "Rail").length, 1, "the rail stays");
+}
+
 // 4. Bad calls: refused with the reason; the line expander leaves such a line as written.
 {
   const exprOf = (text: string) => parseExpression(split(tokenize(`x = ${text}`))[0]!.tokens) as Extract<Expr, { k: "Comp" }>;
-  for (const [text, problem] of [[`MatchCard("Chelsea")`, /data reference/], [`MatchCard(d.a, d.b)`, /takes record/], [`MetricBars(d.a, 7)`, /is text/]] as const) {
+  for (const [text, problem] of [[`MatchCard("Chelsea")`, /data reference/], [`MatchCard(d.a, d.b)`, /takes record/], [`MetricBars(d.a, 7)`, /is text/], [`StatsCard(d.a, "no")`, /true or false/]] as const) {
     assert.throws(() => expandCall(exprOf(text), SPORTS_TEMPLATES), problem, text);
     assert.equal(expandProgram(`x = ${text}`, SPORTS_TEMPLATES), `x = ${text}`);
   }

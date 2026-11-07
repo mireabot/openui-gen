@@ -15,8 +15,10 @@ import { printStatement, type Expr } from "./program.js";
 
 export interface TemplateParam {
   readonly name: string;
-  /** "data": a data reference (d.<path> or an @Each item). "copy": text the writer may pass, or null. */
+  /** "data": a data reference (d.<path> or an @Each item). "copy": a value the writer may pass, or null. */
   readonly role: "data" | "copy";
+  /** What a copy param holds: text (the default) or a boolean flag. */
+  readonly kind?: "text" | "boolean";
   /** The body expression used when a copy argument is absent or null, over the other parameters. */
   readonly default?: string;
   readonly note?: string;
@@ -31,7 +33,7 @@ export interface TemplateDef {
 
 export const TemplateDefSchema = z.object({
   name: z.string().regex(/^[A-Z][A-Za-z0-9]*$/),
-  params: z.array(z.object({ name: z.string().regex(/^[a-z][A-Za-z0-9]*$/), role: z.enum(["data", "copy"]), default: z.string().optional(), note: z.string().optional() }).strict()).min(1),
+  params: z.array(z.object({ name: z.string().regex(/^[a-z][A-Za-z0-9]*$/), role: z.enum(["data", "copy"]), kind: z.enum(["text", "boolean"]).optional(), default: z.string().optional(), note: z.string().optional() }).strict()).min(1),
   body: z.string(),
 }).strict();
 
@@ -90,7 +92,8 @@ export function expandCall(call: Extract<Expr, { k: "Comp" }>, templates: Templa
       const fallback = defaults[index];
       bindings.set(param.name, fallback ? substitute(fallback, bindings, def.name) : { k: "Null" });
     } else {
-      if (arg.k !== "Str" && !isReference(arg)) throw new Error(`${def.name}.${param.name} is text: a string or a data reference`);
+      if (param.kind === "boolean" ? arg.k !== "Bool" && !isReference(arg) : arg.k !== "Str" && !isReference(arg))
+        throw new Error(`${def.name}.${param.name} is ${param.kind === "boolean" ? "true or false" : "text: a string"} or a data reference`);
       bindings.set(param.name, arg);
     }
   });
