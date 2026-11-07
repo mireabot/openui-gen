@@ -14,6 +14,12 @@ import { TemplateDefSchema, type TemplateDef } from "../../../src/lang/templates
 
 interface Issue { code: string; statementId?: string; message: string }
 interface DocumentVersion { id: string; revision: number }
+/** A run another client started, as GET /lang/sports/live announces it (src/run/live.ts). */
+interface LiveRun { run: string; prompt: string; from: "app" | "web" | "cli"; client?: string; startedAt: string; followUp?: { document: string; baseRevision: number } }
+type LiveMessage = { kind: "start"; run: LiveRun } | { kind: "event"; run: string; event: string; data: Record<string, unknown> } | { kind: "end"; run: string };
+const LIVE_FROM: Record<LiveRun["from"], string> = { app: "the iOS app", cli: "npm run ask", web: "another preview tab" };
+/** This tab, so the live feed's copy of its own runs is skipped. */
+const CLIENT = Math.random().toString(36).slice(2);
 const Seed = z.object({ tool: z.literal("sports_dataset"), args: z.object({ run: z.string() }), result: z.record(z.string(), z.unknown()) });
 
 /**
@@ -43,7 +49,8 @@ function useFitScale(ref: RefObject<HTMLElement | null>): number {
  * as it streams, rendered with the design system components. Once a screen is done, the next Generate is a
  * follow-up on its document (POST /lang/sports/:id/follow-up): the screen stays as it is until the
  * new revision is done, then swaps in. "New screen" starts over. Each generation owns its controller
- * so old chunks cannot enter a new preview.
+ * so old chunks cannot enter a new preview. Runs started elsewhere (the iOS app, `npm run ask`) arrive
+ * on GET /lang/sports/live and play here the same way, unless this tab is generating its own.
  */
 interface Step { stage: string; done: boolean; cost: number; summary: string }
 
@@ -94,7 +101,12 @@ export function SportsLive({ theme, specs, appearance }: {
   const [saved, setSaved] = useState<"idle" | "saving" | "saved" | "failed">("idle");
   const [replayed, setReplayed] = useState(false);
   const [runs, setRuns] = useState<{ id: string; prompt: string; model: string; updatedAt: string }[]>([]);
+  const [watching, setWatching] = useState<LiveRun | null>(null);
   const abort = useRef<AbortController | null>(null);
+  // The live feed's handler outlives renders, so it reads these instead of state.
+  const ownRun = useRef(false);
+  const current = useRef<DocumentVersion | null>(null);
+  current.current = document;
   const device = useRef<HTMLDivElement>(null);
   const scale = useFitScale(device);
 
@@ -108,8 +120,8 @@ export function SportsLive({ theme, specs, appearance }: {
 
   /** Shows a schema as it is, with no model call. The prompt stays in the box, so Generate runs it for real once it looks right. */
   function replay(screen: ImportedScreen) {
-    abort.current?.abort(); abort.current = null;
-    reset(); setDocument(null); setSteps([]); setSaved("idle");
+    abort.current?.abort(); abort.current = null; ownRun.current = false;
+    reset(); setDocument(null); setSteps([]); setSaved("idle"); setWatching(null);
     setPrompt(screen.prompt || prompt); setSeed(screen.seed); setProgram(screen.program); setTemplates(screen.templates ?? null);
     setReplayed(true); setState("done");
   }
@@ -167,20 +179,20 @@ export function SportsLive({ theme, specs, appearance }: {
   }
 
   function newScreen() {
-    abort.current?.abort(); abort.current = null;
-    reset(); setDocument(null); setReplayed(false); setState("idle");
+    abort.current?.abort(); abort.current = null; ownRun.current = false;
+    reset(); setDocument(null); setReplayed(false); setState("idle"); setWatching(null);
   }
 
-  async function run() {
+  /** Starts showing a generation: this tab's own, or one mirrored from the live feed. A follow-up on `base` keeps the screen until `done`. */
+  function begin(base: DocumentVersion | null, startedAt: number) {
     abort.current?.abort();
     const controller = new AbortController();
     abort.current = controller;
     // A follow-up keeps the screen until `done` commits the next revision; its content is staged.
-    const base = state === "done" ? document : null;
     const staged: { seed: DatasetSeed | null; program: string | null } = { seed: null, program: null };
     if (base) { setIssues([]); setActivity([]); } else { reset(); setDocument(null); }
     setState("running");
-    setSteps([]); setSaved("idle"); setReplayed(false); setStartedAt(Date.now()); setNow(Date.now());
+    setSteps([]); setSaved("idle"); setReplayed(false); setStartedAt(startedAt); setNow(Date.now());
     const on = (event: string, body: Record<string, unknown>) => {
       if (abort.current !== controller || controller.signal.aborted) return;
       if (event === "activity") { setActivity((a) => [...a, String(body.detail ?? body.stage)]); setSteps(list => stepWith(list, body)); }
@@ -204,10 +216,17 @@ export function SportsLive({ theme, specs, appearance }: {
         setState("failed");
       }
     };
+    return { controller, on };
+  }
+
+  async function run() {
+    const base = state === "done" ? document : null;
+    const { controller, on } = begin(base, Date.now());
+    ownRun.current = true; setWatching(null);
     try {
       const res = await fetch(base ? `${BE_URL}/lang/sports/${base.id}/follow-up` : `${BE_URL}/lang/sports/stream`, {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, ...(base ? { baseRevision: base.revision } : {}) }), signal: controller.signal,
+        body: JSON.stringify({ prompt, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone, client: CLIENT, ...(base ? { baseRevision: base.revision } : {}) }), signal: controller.signal,
       });
       if (!res.ok || !res.body) throw new Error(`${res.status} ${await res.text()}`);
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
@@ -230,8 +249,35 @@ export function SportsLive({ theme, specs, appearance }: {
       if (controller.signal.aborted || abort.current !== controller) return;
       setActivity((a) => [...a, error instanceof Error ? error.message : String(error)]);
       setState("failed");
+    } finally {
+      if (abort.current === controller) ownRun.current = false;
     }
   }
+
+  // Runs from other clients, as they happen. EventSource reconnects by itself if the server restarts.
+  useEffect(() => {
+    const source = new EventSource(`${BE_URL}/lang/sports/live`);
+    const mirrored = new Map<string, ReturnType<typeof begin>>();
+    source.onmessage = message => {
+      const live = JSON.parse(message.data) as LiveMessage;
+      if (live.kind === "start") {
+        // This tab's own run is already on screen, and a run of its own is never interrupted.
+        if (live.run.client === CLIENT || ownRun.current) return;
+        const base = live.run.followUp && current.current?.id === live.run.followUp.document ? current.current : null;
+        mirrored.set(live.run.run, begin(base, Date.parse(live.run.startedAt)));
+        setPrompt(live.run.prompt); setWatching(live.run);
+      } else if (live.kind === "event") {
+        mirrored.get(live.run)?.on(live.event, live.data);
+      } else {
+        const ended = mirrored.get(live.run);
+        mirrored.delete(live.run);
+        // A run that ends with neither `done` nor `failure` lost its client before it finished.
+        if (ended && abort.current === ended.controller) setState(s => (s === "running" ? "failed" : s));
+      }
+    };
+    return () => source.close();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="grid min-w-0 grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,440px)] xl:gap-12">
@@ -264,6 +310,7 @@ export function SportsLive({ theme, specs, appearance }: {
           </span>
           {program && seed && state !== "running" && <button type="button" onClick={exportScreen} className="h-11 rounded-lg border px-4 font-medium">Export schema</button>}
         </div>
+        {watching && <p className="text-xs font-medium text-muted-foreground">Live from {LIVE_FROM[watching.from]}{watching.followUp ? ` · follow-up on revision ${watching.followUp.baseRevision}` : ""}</p>}
         {replayed && <p className="text-xs font-medium text-muted-foreground">Replayed from a saved schema · no model calls · Generate runs this prompt for real</p>}
         {document && <p className="text-xs text-muted-foreground">Revision {document.revision}{state === "done" ? " · the next Generate is a follow-up on this screen" : ""}</p>}
         <section data-preview-pipeline className="mt-4 flex min-w-0 flex-col gap-3 text-[14px] leading-[18px]">

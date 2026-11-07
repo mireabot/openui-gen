@@ -1,10 +1,39 @@
 import SwiftUI
 
-/// The run, opened from the composer's `$` button: how many steps and whether it is still going, its
-/// time and cost, then one row per step, a spinner while it works and a check when done, with its
-/// cost. A finished screen ends with a row that saves it.
+/// What the run card shows: a live session's state, or fixed demo values (`DemoRun`).
+struct RunSummary {
+    /// The prompt, when the run edits a screen; nil for a new screen.
+    var followUp: String?
+    var phase: OpenUISession.Phase
+    var activities: [DSLActivity]
+    var stageCosts: [String: Double]
+    var startedAt: Date
+    var finishedAt: Date?
+    /// A finished run with a document can be saved.
+    var hasDocument: Bool
+
+    var totalCost: Double { stageCosts.values.reduce(0, +) }
+}
+
+extension RunSummary {
+    @MainActor init(session: OpenUISession, followUp: String?) {
+        self.init(
+            followUp: followUp,
+            phase: session.phase,
+            activities: session.activities,
+            stageCosts: session.stageCosts,
+            startedAt: session.startedAt,
+            finishedAt: session.finishedAt,
+            hasDocument: session.document != nil
+        )
+    }
+}
+
+/// The run, opened from the composer's `$` button: a follow-up's prompt first, then how many steps and
+/// whether it is still going, its time and cost, then one row per step, a spinner while it works and a
+/// check when done, with its cost. A finished screen ends with a row that saves it.
 struct GenerationStatusView: View {
-    let session: OpenUISession
+    let run: RunSummary
     let saveState: AskModel.SaveState
     let onSave: () -> Void
 
@@ -12,11 +41,21 @@ struct GenerationStatusView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            header
-            ForEach(session.activities, id: \.stage) { activity in
-                StepRow(activity: activity, cost: session.stageCosts[activity.stage])
+            if let followUp = run.followUp {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Follow up")
+                        .primitiveFont(.footnote)
+                        .foregroundStyle(.secondary)
+                    Text(followUp)
+                        .primitiveFont(.body, weight: .medium)
+                        .multilineTextAlignment(.leading)
+                }
             }
-            if session.phase == .ready, session.document != nil {
+            header
+            ForEach(run.activities, id: \.stage) { activity in
+                StepRow(activity: activity, cost: run.stageCosts[activity.stage])
+            }
+            if run.phase == .ready, run.hasDocument {
                 saveRow
             }
         }
@@ -35,18 +74,18 @@ struct GenerationStatusView: View {
     /// "4 steps running", then the time and the cost so far.
     private var header: some View {
         HStack(alignment: .firstTextBaseline, spacing: 6) {
-            Text("\(session.activities.count) \(session.activities.count == 1 ? "step" : "steps")")
+            Text("\(run.activities.count) \(run.activities.count == 1 ? "step" : "steps")")
                 .primitiveFont(.headline, weight: .semibold)
             Text(state)
                 .primitiveFont(.headline)
                 .foregroundStyle(.secondary)
             Spacer(minLength: 12)
-            TimelineView(.periodic(from: session.startedAt, by: 1)) { context in
-                Text(Self.clock((session.finishedAt ?? context.date).timeIntervalSince(session.startedAt)))
+            TimelineView(.periodic(from: run.startedAt, by: 1)) { context in
+                Text(Self.clock((run.finishedAt ?? context.date).timeIntervalSince(run.startedAt)))
             }
             .primitiveFont(.footnote)
             .foregroundStyle(.secondary)
-            Text(session.totalCost, format: .currency(code: "USD").precision(.fractionLength(3)))
+            Text(run.totalCost, format: .currency(code: "USD").precision(.fractionLength(3)))
                 .primitiveFont(.footnote, weight: .medium)
         }
         .monospacedDigit()
@@ -90,7 +129,7 @@ struct GenerationStatusView: View {
     // MARK: Derived
 
     private var state: String {
-        switch session.phase {
+        switch run.phase {
         case .ready: "done"
         case .idle: "stopped"
         case .loading, .updating: "running"
