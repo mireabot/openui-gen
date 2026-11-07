@@ -1,13 +1,21 @@
-# openui-gen
+# OpenUI Sports
 
-This repo shows how to use the OpenUI Lang protocol for generative UI in a native iOS app, with
-SwiftUI as the rendering engine. A user asks a question. The server gathers the data, a model
-writes the answer as an OpenUI program, and the iOS app renders that program as SwiftUI views while
-it streams in.
+An interactive registry of sports components for soccer, NFL and NBA. It's powered by
+[OpenUI Lang](https://www.openui.com) and a custom SwiftUI rendering engine. A user asks a question.
+The server gathers the data, a model writes the answer as an OpenUI Lang program, and the iOS app
+renders that program as native SwiftUI views while it streams in.
 
-Sports (soccer, NFL and NBA) is the demo domain. The repo holds the generation server, the OpenUI
-component library and its schema index, a web preview that renders the same programs, and the native
-iOS client. One service serves the API and the preview.
+The repo has three web parts:
+
+- **Preview studio**: ask a question and watch the pipeline build the screen live, with the program
+  text beside it.
+- **Components registry**: every sports component drawn from its OpenUI program, with soccer, NBA and
+  NFL samples.
+- **Documentation**: how each node of the flow was built, from gathering data and writing the screen
+  to rendering it in SwiftUI.
+
+It also holds the generation server, the component library and its schema index, and the native iOS
+client. One service serves the API and the web pages.
 
 ## Run it
 

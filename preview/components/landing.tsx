@@ -10,7 +10,7 @@ import type { Design } from "@/lib/primitives/design";
 /** The sports, white on a translucent secondary-ink circle. */
 const SPORTS = [SoccerBallIcon, BasketballIcon, FootballIcon];
 
-const REPO = "https://github.com/mireabot/openui-gen";
+const REPO = "https://github.com/mireabot/openui-sports";
 
 /** The link cards; the repo card is full width and opens GitHub. */
 const LINKS = [

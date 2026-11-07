@@ -1,6 +1,6 @@
 # Usage
 
-openui-gen turns one sports prompt into an OpenUI Lang program and a dataset snapshot, and streams both
+OpenUI Sports turns one sports prompt into an OpenUI Lang program and a dataset snapshot, and streams both
 over SSE. `GENERATION_MODE` selects Claude Code, the Anthropic API, or Codex. Feed lookup, dataset
 validation, and compilation use the same pipeline in every mode.
 

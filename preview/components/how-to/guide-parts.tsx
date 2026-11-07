@@ -2,7 +2,7 @@ import type { ReactNode, SelectHTMLAttributes } from "react";
 import { CaretDownIcon } from "@phosphor-icons/react/dist/csr/CaretDown";
 import styles from "@/app/how-to/how-to.module.css";
 
-const SOURCE_ROOT = "https://github.com/mireabot/openui-gen/blob/main/";
+const SOURCE_ROOT = "https://github.com/mireabot/openui-sports/blob/main/";
 
 export function GuideSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
   return <span className={styles.selectControl}><select {...props} /><CaretDownIcon size={12} weight="bold" /></span>;
