@@ -10,6 +10,7 @@ import { SnapshotStore } from "../src/lang/snapshots.js";
 import type { Completion, CompletionSender } from "../src/llm/structured-completion.js";
 import type { ParallelTransport } from "../src/research/parallel-research.js";
 import { sportsRoutes } from "../src/routes/sports.js";
+import { LiveHub, liveFrom, type LiveMessage } from "../src/run/live.js";
 import { askSports, editSports, type SportsDeps } from "../src/sports/ask.js";
 import { DocumentStore, type SportsDocument } from "../src/sports/documents.js";
 import { espnLookup, withMatchCards, type EspnTransport } from "../src/sports/espn.js";
@@ -259,7 +260,10 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
       },
     };
     const savedDirectory = mkdtempSync(path.join(tmpdir(), "saved-generations-"));
-    const app = sportsRoutes({ store, documents, savedDirectory, ask: (request, s, hooks, run) => askSports(request, s, hooks, run, deps), edit: (saved, request, s, hooks, run) => editSports(saved, request, s, hooks, run, deps) });
+    const live = new LiveHub();
+    const watched: LiveMessage[] = [];
+    live.subscribe(message => watched.push(message));
+    const app = sportsRoutes({ store, documents, savedDirectory, live, ask: (request, s, hooks, run) => askSports(request, s, hooks, run, deps), edit: (saved, request, s, hooks, run) => editSports(saved, request, s, hooks, run, deps) });
     const post = async (url: string, body: object) => {
       const response = await app.request(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
       const events = response.headers.get("content-type")?.includes("text/event-stream")
@@ -273,6 +277,15 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
     scripts.push(`meeting = Card([Text(d.answers.q1.title, "headline"), Row("Shots", null, null, Number(d.answers.q1.statBars[1].sides[0].count, "integer", "body"))])\nscorers = Card([Text(d.answers.q2.summary, "body")])\n`);
     const first = await post("/lang/sports/stream", { prompt: "Chelsea vs Man City last meeting stats" });
     const id = first.done!.document.id as string;
+    // A watcher on the live feed sees the run start, every event the client got in the same order, and its end.
+    assert.deepEqual(watched[0], { kind: "start", run: { run: id, prompt: "Chelsea vs Man City last meeting stats", from: "cli", client: undefined, startedAt: (watched[0] as { run: { startedAt: string } }).run.startedAt } });
+    assert.deepEqual(watched.slice(1, -1).map(m => m.kind === "event" ? { event: m.event, data: JSON.parse(JSON.stringify(m.data)) } : m), first.events, "the live feed mirrors the stream");
+    assert.deepEqual(watched.at(-1), { kind: "end", run: id });
+    const late: LiveMessage[] = [];
+    live.subscribe(message => late.push(message))();
+    assert.deepEqual(late, [], "a finished run is not replayed to a late watcher");
+    assert.deepEqual([liveFrom("OpenUIGen/1 CFNetwork/3826.400.120 Darwin/25.0.0"), liveFrom("Mozilla/5.0 (Macintosh) Safari/605.1.15"), liveFrom("node")], ["app", "web", "cli"]);
+    watched.length = 0;
     assert.deepEqual(first.done!.document, { id, revision: 1 }, "the first screen is saved as revision 1 before done");
     assert.equal((await post(`/lang/sports/${id}/save`, { revision: 2 })).status, 409, "only the revision on screen can be saved");
     assert.equal((await post(`/lang/sports/${id}/save`, { revision: 1 })).status, 200);
@@ -295,6 +308,7 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
     researched.length = 0;
     const added = await post(`/lang/sports/${id}/follow-up`, { prompt: "add the Premier League table and Spurs' results", baseRevision: 1, model: "ignored", timeZone: "Europe/London" });
     assert.deepEqual(added.done!.document, { id, revision: 2 });
+    assert.deepEqual((watched[0] as Extract<LiveMessage, { kind: "start" }>).run.followUp, { document: id, baseRevision: 1 }, "a follow-up names the screen it edits");
     assert.deepEqual(added.events.map(e => e.event).filter(event => event !== "usage").filter(e => e !== "activity"), ["templates", "data", "openui", "done"], "content arrives only after the commit");
     assert.equal(added.events.find(e => e.event === "openui")!.data.replace, true);
     const r2 = (await documents.get(id))!;
