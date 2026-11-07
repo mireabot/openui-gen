@@ -9,11 +9,11 @@ const guides = [
   { href: "/how-to/data-aggregation", title: "Data aggregation", chapters: [
     ["walkthrough", "Follow a request"], ["routing", "Choose the route"], ["web-research", "Inside web research"], ["writer", "The writer handoff"], ["recovery", "When something fails"],
   ] },
-  { href: "/how-to/swiftui-rendering", title: "SwiftUI rendering", chapters: [
-    ["bridge", "Follow a primitive"], ["contract", "What crosses the bridge"], ["layout", "Compose a layout"], ["streaming", "Stream a screen"], ["identity", "Keep a view alive"], ["binding", "Bind data"], ["gaps", "Known gaps"],
+  { href: "/how-to/building-writer-pipeline", title: "Building the writer pipeline", chapters: [
+    ["walkthrough", "Follow one statement"], ["reasoning", "Write the reasoning"], ["validation", "Validate each statement"], ["general", "Rules for every screen"], ["sports", "Sports rules"], ["repair", "Repair once"], ["verify", "Verify the writer"], ["adding", "Add a boundary"],
   ] },
-  { href: "/how-to/creating-boundaries", title: "Creating boundaries", chapters: [
-    ["layers", "Where the rules live"], ["general", "Rules for every screen"], ["sports", "Sports rules"], ["adding", "Add a boundary"],
+  { href: "/how-to/swiftui-rendering", title: "From DSL to SwiftUI", chapters: [
+    ["bridge", "Follow a primitive"], ["contract", "What crosses the bridge"], ["layout", "Compose a layout"], ["complex", "Build a complex element"], ["streaming", "Stream a screen"], ["identity", "Keep a view alive"], ["binding", "Bind data"], ["gaps", "Known gaps"],
   ] },
 ];
 

@@ -102,7 +102,7 @@
 .walkthrough > .demoToolbar { flex-wrap: wrap; }
 .demoFooter { display: flex; justify-content: space-between; align-items: center; gap: 14px; border-top: 1px solid var(--line); padding: 12px 16px; background: var(--color-kino-surface-screen); }
 .stageControls { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
-.stageControls > button:first-child { font-size: 11px; color: var(--subtle); }
+.stageControls > button:first-child:not(.primaryButton) {font-size: 11px; color: var(--subtle); }
 .primaryButton { font-size: 11px !important; font-weight: 500; background: var(--color-kino-surface-brand); color: var(--color-kino-ink-on-brand); border-radius: 5px; padding: 7px 12px; min-height: 32px; white-space: nowrap; }
 .primaryButton:not(:disabled):hover { background: var(--color-kino-ink-brand-strong); }
 .routeSettings { display: flex; justify-content: space-between; align-items: center; gap: 14px; background: var(--color-kino-surface-card); padding: 12px 15px; border-radius: 7px; font-size: 12px; margin-bottom: 18px; }
