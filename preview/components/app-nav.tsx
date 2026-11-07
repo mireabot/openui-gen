@@ -17,7 +17,7 @@ export function AppNav() {
       </span>
       <span className="text-[15px]">OpenUI <strong className="font-bold">Sports</strong></span>
     </Link>
-    {[{ href: "/", label: "Preview" }, { href: "/catalog", label: "Components" }, { href: "/how-to", label: "How to" }].map(item => {
+    {[{ href: "/", label: process.env.NEXT_PUBLIC_PREVIEW_HOME === "landing" ? "Home" : "Preview" }, { href: "/catalog", label: "Components" }, { href: "/how-to", label: "How to" }].map(item => {
       const current = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
       return <Link key={item.href} href={item.href} aria-current={current ? "page" : undefined} className={`flex h-11 items-center border-b-2 pt-0.5 sm:h-14 ${current ? "border-ds-ink-brand font-medium" : "border-transparent text-ds-ink-secondary hover:text-ds-ink-primary"}`}>{item.label}</Link>;
     })}

@@ -30,6 +30,9 @@ npm run preview               # preview on :3000, calling :8080
 
 `npm run preview:build` writes `preview/out/`. The server then serves it at `/` on the same origin.
 
+For a site with no generation backend, `npm run preview:build:landing` builds the same pages with a
+landing page at `/` in place of the live preview. It links to the components and the docs.
+
 ## Endpoints
 
 | Route | Purpose |
