@@ -27,6 +27,8 @@ public struct OpenUIStreamDone: Decodable, Equatable, Sendable {
 public enum OpenUIStreamEvent: Sendable, Equatable {
     case activity(PValue)
     case usage(PValue)
+    /// Every component template the program may call.
+    case templates([OpenUITemplate])
     case data(OpenUIDataset)
     case skeleton(PrimitiveSkeleton)
     case openui(text: String, replace: Bool)
@@ -131,6 +133,9 @@ public struct OpenUIStreamService: OpenUIStreaming {
         switch name {
         case "activity": return try .activity(decoder.decode(PValue.self, from: data))
         case "usage": return try .usage(decoder.decode(PValue.self, from: data))
+        case "templates":
+            struct Body: Decodable { let templates: [OpenUITemplate] }
+            return try .templates(decoder.decode(Body.self, from: data).templates)
         case "data": return try .data(decoder.decode(OpenUIDataset.self, from: data))
         case "skeleton": return try .skeleton(decoder.decode(PrimitiveSkeleton.self, from: data))
         case "openui":

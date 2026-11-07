@@ -31,7 +31,8 @@ final class PasteScreenModel {
                 revision: 1,
                 origin: baseURL,
                 program: screen.program,
-                datasets: [screen.dataset]
+                datasets: [screen.dataset],
+                templates: screen.templates
             ))
             state = session.hasContent ? .rendered(session) : .editing(failure: "This screen is empty.")
         } catch {

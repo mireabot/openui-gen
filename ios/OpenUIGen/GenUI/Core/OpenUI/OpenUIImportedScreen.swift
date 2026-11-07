@@ -7,6 +7,8 @@ struct OpenUIImportedScreen: Equatable {
     let program: String
     /// Answers the program's own `Query`, so the compiler finds its data here.
     let dataset: OpenUIDataset
+    /// The component templates a saved generation carries; nil draws with the bundled set.
+    let templates: [OpenUITemplate]?
 
     enum Failure: LocalizedError, Equatable {
         case invalidJSON, missingProgram, missingSnapshot, missingQuery
@@ -40,6 +42,9 @@ struct OpenUIImportedScreen: Equatable {
 
         self.program = program
         dataset = OpenUIDataset(args: .object(["run": .string(run)]), result: result)
+        let saved = (try? JSONEncoder().encode(root["templates"]))
+            .flatMap { try? JSONDecoder().decode([OpenUITemplate].self, from: $0) }
+        templates = saved?.isEmpty == false ? saved : nil
     }
 
     private static func run(in program: String) -> String? {

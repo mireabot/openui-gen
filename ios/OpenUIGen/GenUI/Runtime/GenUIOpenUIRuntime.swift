@@ -87,7 +87,10 @@ public final class OpenUISession {
     public private(set) var stageCosts: [String: Double] = [:]
 
     @ObservationIgnored private let service: any OpenUIStreaming
-    @ObservationIgnored private let compiler: OpenUICompiler
+    /// Draws with the bundled templates until a run or an archive brings its own.
+    @ObservationIgnored private let baseCompiler: OpenUICompiler
+    @ObservationIgnored private var compiler: OpenUICompiler
+    @ObservationIgnored private var templates: [OpenUITemplate]?
     @ObservationIgnored private var registry: [OpenUIElementID: OpenUIElementHandle] = [:]
     @ObservationIgnored private var program = ""
     @ObservationIgnored private var datasets: [OpenUIDataset] = []
@@ -101,7 +104,9 @@ public final class OpenUISession {
 
     public init(service: any OpenUIStreaming, compiler: OpenUICompiler? = nil) throws {
         self.service = service
-        self.compiler = try compiler ?? OpenUICompiler()
+        let compiler = try compiler ?? OpenUICompiler()
+        baseCompiler = compiler
+        self.compiler = compiler
     }
 
     /// Whether a finished part is on screen: the opening program's empty `Screen` has none.
@@ -133,13 +138,15 @@ public final class OpenUISession {
             revision: document.revision,
             origin: origin,
             program: program,
-            datasets: datasets
+            datasets: datasets,
+            templates: templates
         )
     }
 
     public func restore(_ archive: OpenUIArchive) throws {
         program = archive.program
         datasets = archive.datasets
+        try use(archive.templates)
         documentKey = archive.documentID
         document = .init(id: archive.documentID, revision: archive.revision)
         try recompile(allowIncomplete: false)
@@ -152,15 +159,16 @@ public final class OpenUISession {
         begin(.loading)
         program = ""
         datasets = []
+        try use(nil)
         let request = request(prompt)
         trace("ask", request)
         do {
             for try await event in service.stream(request) {
                 try Task.checkCancellation()
                 trace(event)
+                if observe(event) { continue }
                 switch event {
-                case let .activity(value): record(value)
-                case let .usage(value): recordCost(value)
+                case let .templates(value): try use(value)
                 case let .data(dataset):
                     datasets.append(dataset)
                     if case let .string(run)? = dataset.args["run"], documentKey == "draft" { documentKey = run }
@@ -169,13 +177,13 @@ public final class OpenUISession {
                     program = replace ? text : program + text
                     // A prefix can reference a seed that has not arrived; the next statement retries.
                     do { try recompile(allowIncomplete: true) } catch { trace("compile (partial)", error) }
-                case let .issue(value): issues.append(value)
                 case let .done(done):
                     program = done.program
                     if let version = done.document { documentKey = version.id; document = version }
                     try recompile(allowIncomplete: false)
                     finish()
                     return
+                case .activity, .usage, .issue: continue
                 }
             }
             throw OpenUIError.incompleteStream
@@ -186,29 +194,45 @@ public final class OpenUISession {
         }
     }
 
+    /// Activity, cost and issues, handled alike in a new run and a follow-up. False for content.
+    private func observe(_ event: OpenUIStreamEvent) -> Bool {
+        switch event {
+        case let .activity(value): record(value)
+        case let .usage(value): recordCost(value)
+        case let .issue(value): issues.append(value)
+        default: return false
+        }
+        return true
+    }
+
     /// Activity streams while the visible document stays put. Content commits once, after `done`
     /// confirms the document and its next revision.
     private func followUp(_ prompt: String, on base: OpenUIDocumentVersion, targets: [String]?) async throws {
         begin(.updating)
         var stagedProgram: String?
         var stagedSeeds: [OpenUIDataset] = []
+        var stagedTemplates: [OpenUITemplate]?
         let request = request(prompt, document: base, targets: targets)
         trace("follow-up", request)
         do {
             for try await event in service.stream(request) {
                 try Task.checkCancellation()
                 trace(event)
+                if observe(event) { continue }
                 switch event {
-                case let .activity(value): record(value)
-                case let .usage(value): recordCost(value)
+                case let .templates(value): stagedTemplates = value
                 case let .data(dataset): stagedSeeds.append(dataset)
                 case let .openui(text, _): stagedProgram = text
-                case let .issue(value): issues.append(value)
-                case .skeleton: continue
+                case .skeleton, .activity, .usage, .issue: continue
                 case let .done(done):
                     guard let version = done.document, version.id == base.id, version.revision == base.revision + 1
                     else { throw OpenUIError.staleRevision }
-                    try commitFollowUp(program: stagedProgram ?? done.program, seeds: stagedSeeds, version: version)
+                    try commitFollowUp(
+                        program: stagedProgram ?? done.program,
+                        seeds: stagedSeeds,
+                        templates: stagedTemplates,
+                        version: version
+                    )
                     finish()
                     return
                 }
@@ -221,17 +245,33 @@ public final class OpenUISession {
         }
     }
 
-    private func commitFollowUp(program next: String, seeds: [OpenUIDataset], version: OpenUIDocumentVersion) throws {
+    private func commitFollowUp(
+        program next: String,
+        seeds: [OpenUIDataset],
+        templates nextTemplates: [OpenUITemplate]?,
+        version: OpenUIDocumentVersion
+    ) throws {
         let previousProgram = program
         let previousDatasets = datasets
+        let previousTemplates = templates
         program = next
         datasets += seeds
-        do { try recompile(allowIncomplete: false) } catch {
+        do {
+            if let nextTemplates { try use(nextTemplates) }
+            try recompile(allowIncomplete: false)
+        } catch {
             program = previousProgram
             datasets = previousDatasets
+            try? use(previousTemplates)
             throw error
         }
         document = version
+    }
+
+    /// Draw with these templates from now on; nil goes back to the bundled set.
+    private func use(_ next: [OpenUITemplate]?) throws {
+        compiler = try next.map(baseCompiler.using) ?? baseCompiler
+        templates = next
     }
 
     private func request(
@@ -295,6 +335,7 @@ public final class OpenUISession {
         switch event {
         case let .activity(value): trace("activity", value)
         case let .usage(value): trace("usage", value)
+        case let .templates(value): append("templates", value.map(\.name).joined(separator: ", "))
         case let .data(dataset): trace("data", dataset)
         case let .skeleton(value): trace("skeleton", value)
         case let .openui(text, replace): append(replace ? "openui (replace)" : "openui", text)
