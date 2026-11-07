@@ -14,6 +14,7 @@
     "typecheck": "tsc --noEmit",
     "preview": "npm --prefix preview run dev",
     "preview:build": "npm --prefix preview run build",
+    "preview:build:landing": "NEXT_PUBLIC_PREVIEW_HOME=landing npm --prefix preview run build",
     "openui:export": "node --import tsx scripts/export-openui.ts",
     "check:templates": "node --import tsx scripts/check-templates.ts",
     "sf-symbols": "tsx scripts/sf-symbols.ts",

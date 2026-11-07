@@ -1,3 +1,4 @@
+import { Landing } from "@/components/landing";
 import { SportsLive } from "@/components/primitives/sports-live";
 import { appearanceOf, readDesign, themeVars } from "@/lib/primitives/design";
 import styles from "./preview.module.css";
@@ -5,13 +6,15 @@ import styles from "./preview.module.css";
 /**
  * Live OpenUI generation for sports: a prompt, the streamed program rendered in an iPhone frame
  * with the default theme, and the program text. Built as a static page; the theme is read from
- * design/ at build time.
+ * design/ at build time. With NEXT_PUBLIC_PREVIEW_HOME=landing (a site with no generation backend),
+ * the home page is the landing page instead: the project and links to the components and docs.
  */
 export default function Home() {
   const design = readDesign();
   const brand = design?.defaultTheme ?? "";
   const appearance = design ? appearanceOf(design, brand) : "dark";
   const theme = design ? themeVars(design, brand, appearance) : undefined;
+  if (process.env.NEXT_PUBLIC_PREVIEW_HOME === "landing") return <Landing theme={design ? themeVars(design, brand, "dark") : undefined} specs={design?.primitives} />;
 
   return (
     <main className={`${styles.workspace} flex h-full flex-col gap-6 overflow-y-auto p-5 md:p-8`}>
