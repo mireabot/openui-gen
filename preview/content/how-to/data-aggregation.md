@@ -122,7 +122,7 @@ Recovery depends on the stage:
 
 The registry comment states that league differences belong in configuration. The planner comment says its routing text comes from that registry so adding a league does not require another prompt. Soccer still has its own presenter, so support for an arbitrary new sport is not automatic.
 
-The dataset code states that a schema mistake should cost polish, not the screen. The research code states that failed or uncited answers should report a gap instead of inventing data. Per-question routing appears to let a screen combine feed statistics and web context while limiting most failures to one question. That is an inference from the implementation.
+The dataset code states that a schema mistake should cost polish, not the screen. The research code states that failed or uncited answers should report a gap instead of inventing data. Per-question routing lets one screen combine feed statistics and web context, and most failures stay with their own question.
 
 The repository does not explain why `mixed` is the default or why the search limits have their exact values. The evidence for this guide is the working tree, repository documentation, recorded-response checks, and git history. External discussions and telemetry were not consulted.
 

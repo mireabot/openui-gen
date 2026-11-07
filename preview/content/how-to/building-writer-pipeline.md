@@ -402,4 +402,4 @@ Validation proves a screen is well formed. It cannot prove it is the right scree
 
 The code comments give other reasons. The compiler never throws for writer behaviour: it rejects statements, drops unfinished parts and fills gaps with default parts. The prompt comment says the system prompt is fixed so it stays one cache entry. The `refuses` comment says a hand-built record table loses the card's total and rank.
 
-The repository does not say why most sports rules are prompt-only rather than gate checks. A likely reason is that rules about taste, such as less text or icon-led rows, have no clear test a statement can fail. That is an inference from the code. The evidence for this guide is the working tree and git history. Recorded generation runs were not reviewed.
+The evidence for this guide is the working tree and git history. Recorded generation runs were not reviewed.

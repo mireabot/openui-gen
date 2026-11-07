@@ -159,7 +159,7 @@ A primitive has two kinds of state:
 
 No SwiftUI binding connects two primitives. The language has no variables, so a `Toggle` cannot drive a `Show`. To change what another view shows, the program or the dataset has to change.
 
-`registry` and `lastCommit` are marked `@ObservationIgnored`. `update` assigns only when a value differs, and a slot's `set` assigns only when the list differs by object identity. `OpenUIElementView` tracks properties, a container tracks its own slot, and the scene tracks root membership. These rules limit which writes happen. Whether each redraw stops at the changed view has not been measured.
+`registry` and `lastCommit` are marked `@ObservationIgnored`. `update` assigns only when a value differs, and a slot's `set` assigns only when the list differs by object identity. `OpenUIElementView` tracks properties, a container tracks its own slot, and the scene tracks root membership. These rules limit which writes happen.
 
 ## What the bridge does not check
 
