@@ -8,6 +8,7 @@ export function GuideSelect(props: SelectHTMLAttributes<HTMLSelectElement>) {
   return <span className={styles.selectControl}><select {...props} /><CaretDownIcon size={12} weight="bold" /></span>;
 }
 
-export function Source({ file, line, children }: { file: string; line: number; children: ReactNode }) {
-  return <a className={styles.sourceLink} href={`${SOURCE_ROOT}${file}#L${line}`} target="_blank" rel="noreferrer">{children} ↗</a>;
+/** A link to a line of the repo at `at`, a commit; guides default to the one they were written from. */
+export function Source({ file, line, at, children }: { file: string; line: number; at?: string; children: ReactNode }) {
+  return <a className={styles.sourceLink} href={`${at ? SOURCE_ROOT.replace(/blob\/[^/]+\/$/, `blob/${at}/`) : SOURCE_ROOT}${file}#L${line}`} target="_blank" rel="noreferrer">{children} ↗</a>;
 }

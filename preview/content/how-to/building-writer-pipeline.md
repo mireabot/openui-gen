@@ -57,7 +57,7 @@ To change how the writer picks a component, edit the component's `useWhen` in `s
 
 1. `parseName` (`src/lang/compiler.ts:428`) checks the name. `root` and `d` give `reserved-name`. A `pickN` that is not editable gives `locked-part`.
 2. `parseStatement` parses one complete statement. An unclosed call gives `invalid-statement` with `Incomplete statement`.
-3. `validate` (`src/lang/compiler.ts:526`) asks the pack's `refuses` first. Then it expands component calls to primitives. `SPORTS_SCREEN.expand` (`src/sports/screen.ts:138`) requires a data reference as the only argument.
+3. `validate` (`src/lang/compiler.ts:526`) asks the pack's `refuses` first. Then it expands component calls to primitives with `expandCall` (`src/lang/templates.ts`) to check them, and keeps the call in the program. A call takes its record as a data reference, then only the params the component declares, such as StatsCard's `header` flag.
 4. `validate` walks every node, once per `@Each` item. It checks sibling references, the writer's primitive set, slots, argument counts, required props, data references, prop schemas and SF Symbol names.
 5. `admit` checks the size limits: 12 parts, 16 statements per part, 600 nodes per part and 2,400 nodes per screen.
 

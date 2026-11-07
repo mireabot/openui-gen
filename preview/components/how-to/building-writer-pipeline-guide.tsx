@@ -148,9 +148,9 @@ function Reasoning() {
 const checkOrder = ["parseName", "parseStatement", "refuses", "expand", "nodes", "limits"] as const;
 
 const statements: readonly { readonly title: string; readonly text: string; readonly stops: (typeof checkOrder)[number]; readonly code: string; readonly message: string; readonly fix: string; readonly note: string }[] = [
-  { title: "A record built inside a call", text: "stats = MetricBars({ columns: [] })", stops: "expand", code: "template", message: "MetricBars takes a data reference first (d.<path> or an @Each item)", fix: "stats = MetricBars(d.answers.q1.comparison)", note: "The failure from the full Demin rerun. Dataset shaping timed out and the writer built records itself. Component calls take only data references." },
+  { title: "A record built inside a call", text: "stats = MetricBars({ columns: [] })", stops: "expand", code: "template", message: "MetricBars takes a data reference for record (d.<path> or an @Each item)", fix: "stats = MetricBars(d.answers.q1.comparison)", note: "The failure from the full Demin rerun. Dataset shaping timed out and the writer built records itself. A component's record is always a data reference." },
   { title: "A component that does not exist", text: "stats = Chart(d.answers.q1.comparison)", stops: "expand", code: "template", message: "Chart is neither a primitive nor a template", fix: "stats = MetricBars(d.answers.q1.comparison)", note: "Only writer primitives and the sports components are callable." },
-  { title: "An extra argument", text: "stats = StatsCard(d.answers.q1.player, \"compact\")", stops: "expand", code: "template", message: "StatsCard takes only its data record", fix: "stats = StatsCard(d.answers.q1.player)", note: "A sports component takes one data reference and nothing else. Its layout comes from the record." },
+  { title: "Text where a flag goes", text: "stats = StatsCard(d.answers.q1.player, \"compact\")", stops: "expand", code: "template", message: "StatsCard.header is true or false or a data reference", fix: "stats = StatsCard(d.answers.q1.player, false)", note: "A component takes its record, then only the params it declares. StatsCard's header is a flag: false hides the header card, and null keeps it." },
   { title: "A path the data does not have", text: "stats = Text(d.answers.q1.player.points, \"body\")", stops: "nodes", code: "type-mismatch", message: "Missing data path d.answers.q1.player.points", fix: "stats = StatsCard(d.answers.q1.player)", note: "Every reference resolves against the saved dataset while the statement is checked." },
   { title: "A statement that never closes", text: "stats = StatsCard(d.answers.q1.player", stops: "parseStatement", code: "invalid-statement", message: "Incomplete statement", fix: "stats = StatsCard(d.answers.q1.player)", note: "The stream flushes the open text at the end. The parser rejects it." },
 ];
@@ -178,7 +178,7 @@ function Validation() {
       </div>
       <div className={styles.demoFooter}><span className={styles.quiet}>Rejected statements return in repair, word for word.</span><div className={styles.stageControls}><button type="button" onClick={() => setSelected(Math.max(0, selected - 1))} disabled={selected === 0}>← Previous</button><button type="button" className={styles.primaryButton} onClick={() => setSelected((selected + 1) % statements.length)}>{selected === statements.length - 1 ? "Start again ↺" : "Next statement →"}</button></div></div>
     </div>
-    <Source file={COMPILER} line={428}>parseName</Source><Source file={COMPILER} line={526}>validate</Source><Source file={SCREEN} line={138}>expand</Source>
+    <Source file={COMPILER} line={428}>parseName</Source><Source file={COMPILER} line={526}>validate</Source><Source file="src/lang/templates.ts" line={79}>expandCall</Source>
   </section>;
 }
 
@@ -210,7 +210,7 @@ const generalRules: readonly Rule[] = [
     with: `honours = Icon("trophy.fill", 24, "yellow")`, withResult: "Admitted. yellow is one of the accent inks." },
   { title: "Size limits", source: "System prompt", enforced: "Prompt + gate", covers: "At most 12 parts per screen, 16 statements per part, 600 nodes per part after @Each expansion, and 2,400 nodes per screen.",
     without: `stats = Stack("v", 8, [stats_r1, stats_r2, ...])\nstats_r1 = Row(...)\n... stats_r17 = Row(...)`, withoutResult: "At most 16 statements per part. Later rows are rejected and the part never finishes.",
-    with: `stats = RecordTable(d.answers.q2.table)`, withResult: "One component call. The template expands to primitives inside the compiler." },
+    with: `stats = RecordTable(d.answers.q2.table)`, withResult: "One component call. The compiler checks the template's primitives and keeps the call." },
   { title: "Follow-ups leave the saved screen alone", source: "System prompt (follow-ups)", enforced: "Prompt + gate", covers: "Saved parts stay as they are. The writer rewrites only the parts named as editable, by their own pickN names. New parts use new labels. A new part that only repeats saved answers is dropped.",
     without: `pick1 = Card([...])`, withoutResult: "pick1 is not editable in this turn; name new parts with a lowercase label.",
     with: `palmerGoals = Stack("v", 12, [@Each(d.answers.q4.rows, "g", ...)])`, withResult: "A new part for the new question goes after the saved parts." },

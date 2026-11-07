@@ -22,7 +22,7 @@ export default function HowTo() {
     </Link>
     <Link href="/how-to/swiftui-rendering" className={styles.guideCard}>
       <div className={styles.guideGraphic}><span>Program text</span><span>Catalog</span><span>Handles</span><i>↓</i><strong>One SwiftUI screen</strong></div>
-      <div className={styles.guideCopy}><span className={styles.eyebrow}>PROCESS 03 · INTERACTIVE GUIDE</span><h2>From DSL to SwiftUI</h2><p>How a primitive reaches Swift, how layouts compose, how a component becomes primitives, how a screen streams in, and how data binds to a view.</p><span className={styles.textLink}>Explore the bridge <span>↗</span></span></div>
+      <div className={styles.guideCopy}><span className={styles.eyebrow}>PROCESS 03 · INTERACTIVE GUIDE</span><h2>From DSL to SwiftUI</h2><p>How a primitive reaches Swift, how layouts compose, how a component call expands on the device, how a screen streams in, and how data binds to a view.</p><span className={styles.textLink}>Explore the bridge <span>↗</span></span></div>
     </Link>
     </AgentBody>
   </div></AgentView>;
