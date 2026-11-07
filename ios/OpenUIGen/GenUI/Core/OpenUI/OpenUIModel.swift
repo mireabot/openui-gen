@@ -26,6 +26,40 @@ public struct OpenUIDataset: Codable, Equatable, Sendable {
     }
 }
 
+/// A component defined as an OpenUI Lang body over its parameters, as the server sends it
+/// (`templates` event) and `sports-components.json` bundles it. A program calls it by name.
+public struct OpenUITemplate: Codable, Equatable, Sendable {
+    public struct Param: Codable, Equatable, Sendable {
+        public let name: String
+        /// "data": a data reference. "copy": text, or null for `default`.
+        public let role: String
+        /// What a copy param holds: "text" (nil) or "boolean".
+        public let kind: String?
+        /// The body expression used when a copy argument is absent or null.
+        public let `default`: String?
+        public init(name: String, role: String, kind: String? = nil, default: String? = nil) {
+            self.name = name; self.role = role; self.kind = kind; self.default = `default`
+        }
+    }
+
+    public let name: String
+    public let params: [Param]
+    public let body: String
+    public init(name: String, params: [Param], body: String) {
+        self.name = name; self.params = params; self.body = body
+    }
+
+    /// The templates bundled with the app, for programs that arrive without their own.
+    public static func bundled() -> [Self] {
+        struct Index: Decodable { let templates: [OpenUITemplate]? }
+        guard let url = Bundle.main.url(forResource: "sports-components", withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let index = try? JSONDecoder().decode(Index.self, from: data)
+        else { return [] }
+        return index.templates ?? []
+    }
+}
+
 public struct OpenUIArchive: Codable, Sendable {
     public let version: Int
     public let documentID: String
@@ -33,6 +67,8 @@ public struct OpenUIArchive: Codable, Sendable {
     public let origin: URL
     public let program: String
     public let datasets: [OpenUIDataset]
+    /// The templates the program was drawn with; nil uses the bundled set.
+    public let templates: [OpenUITemplate]?
     public let theme: String
     public init(
         documentID: String,
@@ -40,11 +76,12 @@ public struct OpenUIArchive: Codable, Sendable {
         origin: URL,
         program: String,
         datasets: [OpenUIDataset],
+        templates: [OpenUITemplate]? = nil,
         theme: String = "kino",
         version: Int = 1
     ) {
         self.version = version; self.documentID = documentID; self.revision = revision; self.origin = origin
-        self.program = program; self.datasets = datasets; self.theme = theme
+        self.program = program; self.datasets = datasets; self.templates = templates; self.theme = theme
     }
 }
 

@@ -43,45 +43,64 @@ public struct OpenUIParser {
 
     private func peek(_ value: String) -> Bool { offset < tokens.count && tokens[offset] == value }
     private mutating func expression() throws -> OpenUIExpression {
-        let token = try take(); var value: OpenUIExpression
-        if token == "[" {
-            var values: [OpenUIExpression] = []
-            if !peek("]") {
-                repeat {
-                    try values.append(expression()); if !peek(",") { break }; offset += 1
-                } while !peek("]")
-            }
-            try expect("]"); value = .array(values)
-        } else if token == "{" {
-            var values: [String: OpenUIExpression] = [:]
-            if !peek("}") { repeat {
+        try postfix(primary(take()))
+    }
+
+    private mutating func primary(_ token: String) throws -> OpenUIExpression {
+        switch token {
+        case "[": return try .array(list(until: "]"))
+        case "{": return try object()
+        case "null": return .literal(.null)
+        case "true", "false": return .literal(.bool(token == "true"))
+        default: break
+        }
+        if token.hasPrefix("\"") { return try .literal(.string(Self.string(token)!)) }
+        if let number = Double(token) { return .literal(.number(number)) }
+        guard peek("(") else { return .reference(token) }
+        offset += 1
+        return try .call(token.hasPrefix("@") ? String(token.dropFirst()) : token, list(until: ")"))
+    }
+
+    /// Comma-separated expressions up to `close`, which it consumes.
+    private mutating func list(until close: String) throws -> [OpenUIExpression] {
+        var values: [OpenUIExpression] = []
+        if !peek(close) {
+            repeat {
+                try values.append(expression()); if !peek(",") { break }; offset += 1
+            } while !peek(close)
+        }
+        try expect(close)
+        return values
+    }
+
+    private mutating func object() throws -> OpenUIExpression {
+        var values: [String: OpenUIExpression] = [:]
+        if !peek("}") {
+            repeat {
                 let key = try take(); try expect(":")
                 try values[Self.string(key) ?? key] = try expression()
                 if !peek(",") { break }; offset += 1
-            } while !peek("}") }
-            try expect("}"); value = .object(values)
-        } else if token.hasPrefix("\"") { value = try .literal(.string(Self.string(token)!))
-        } else if token == "null" { value = .literal(.null)
-        } else if token == "true" || token == "false" { value = .literal(.bool(token == "true"))
-        } else if let number = Double(token) { value = .literal(.number(number))
-        } else if peek("(") {
-            offset += 1; var args: [OpenUIExpression] = []
-            if !peek(")") {
-                repeat {
-                    try args.append(expression()); if !peek(",") { break }; offset += 1
-                } while !peek(")")
-            }
-            try expect(")"); value = .call(token.hasPrefix("@") ? String(token.dropFirst()) : token, args)
-        } else { value = .reference(token) }
-        while offset < tokens.count {
-            if peek(".") { offset += 1; value = try .member(value, take()) }
-            else if peek("[") {
-                offset += 1; guard let index = try Int(take()),
-                                   index >= 0 else { throw OpenUIError.syntax("Index must be a nonnegative integer") }
-                try expect("]"); value = .index(value, index)
-            } else { break }
+            } while !peek("}")
         }
-        return value
+        try expect("}")
+        return .object(values)
+    }
+
+    /// `.field` and `[index]` after an expression.
+    private mutating func postfix(_ base: OpenUIExpression) throws -> OpenUIExpression {
+        var value = base
+        while true {
+            if peek(".") {
+                offset += 1; value = try .member(value, take())
+            } else if peek("[") {
+                offset += 1
+                guard let index = try Int(take()),
+                      index >= 0 else { throw OpenUIError.syntax("Index must be a nonnegative integer") }
+                try expect("]"); value = .index(value, index)
+            } else {
+                return value
+            }
+        }
     }
 
     private static func string(_ token: String) throws -> String? {
@@ -90,29 +109,41 @@ public struct OpenUIParser {
     }
 
     private static func lex(_ source: String, allowIncomplete: Bool) throws -> [String] {
-        let chars = Array(source); var i = 0; var result: [String] = []
-        while i < chars.count {
-            let c = chars[i]
-            if c.isWhitespace { i += 1; continue }
-            if c == "/", i + 1 < chars.count,
-               chars[i + 1] == "/" { while i < chars.count, chars[i] != "\n" { i += 1 }; continue }
-            if "=;(),[]{}:.".contains(c) { result.append(String(c)); i += 1; continue }
-            let start = i
-            if c == "\"" {
-                i += 1; var escaped = false, closed = false
-                while i < chars.count {
-                    let next = chars[i]; i += 1
-                    if next == "\"", !escaped { closed = true; break }
-                    if next == "\\", !escaped { escaped = true } else { escaped = false }
-                }
-                if !closed { if allowIncomplete { break }; throw OpenUIError.syntax("Unterminated string") }
-            } else if c.isNumber || c == "-" {
-                i += 1; while i < chars.count, chars[i].isNumber || ".eE+-".contains(chars[i]) { i += 1 }
-            } else {
-                i += 1; while i < chars.count, chars[i].isLetter || chars[i].isNumber || chars[i] == "_" { i += 1 }
+        let chars = Array(source); var index = 0; var result: [String] = []
+        while index < chars.count {
+            let char = chars[index]
+            if char.isWhitespace { index += 1; continue }
+            if char == "/", index + 1 < chars.count, chars[index + 1] == "/" {
+                while index < chars.count, chars[index] != "\n" { index += 1 }
+                continue
             }
-            result.append(String(chars[start ..< i]))
+            if "=;(),[]{}:.".contains(char) { result.append(String(char)); index += 1; continue }
+            let start = index
+            guard try scan(chars, from: &index, allowIncomplete: allowIncomplete) else { break }
+            result.append(String(chars[start ..< index]))
         }
         return result
+    }
+
+    /// Moves past one string, number or word. False for a string the stream has not finished yet.
+    private static func scan(_ chars: [Character], from index: inout Int, allowIncomplete: Bool) throws -> Bool {
+        let first = chars[index]; index += 1
+        if first == "\"" {
+            var escaped = false
+            while index < chars.count {
+                let next = chars[index]; index += 1
+                if next == "\"", !escaped { return true }
+                escaped = next == "\\" && !escaped
+            }
+            if allowIncomplete { return false }
+            throw OpenUIError.syntax("Unterminated string")
+        }
+        let continues: (Character) -> Bool = first.isNumber || first == "-"
+            ? { $0.isNumber || ".eE+-".contains($0) }
+            : { $0.isLetter || $0.isNumber || $0 == "_" }
+        while index < chars.count, continues(chars[index]) {
+            index += 1
+        }
+        return true
     }
 }

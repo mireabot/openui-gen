@@ -40,7 +40,7 @@ struct APIClientTests {
             Issue.record("Expected \(expected)")
         } catch {
             let actual: Failure? = switch error {
-            case let .status(code, body): .status(code, body: String(decoding: body, as: UTF8.self))
+            case let .status(code, body): .status(code, body: String(bytes: body, encoding: .utf8) ?? "")
             case .decoding: .decoding
             case .transport, .cancelled: nil
             }

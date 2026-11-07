@@ -24,12 +24,41 @@ public struct OpenUICatalog: Decodable, Sendable {
 }
 
 /// One evaluation owner. It evaluates a complete immutable scene, then the runtime publishes only
-/// semantic changes.
+/// semantic changes. A call to a template (a Sports component such as `MatchCard`) evaluates the
+/// template's body in its own scope, with each parameter bound to the call's argument.
 public struct OpenUICompiler {
     private let definitions: [String: OpenUIPrimitiveDefinition]
-    public init(catalog: OpenUICatalog? = nil) throws {
+    private let templates: [String: CompiledTemplate]
+    public init(catalog: OpenUICatalog? = nil, templates: [OpenUITemplate]? = nil) throws {
         let catalog = try catalog ?? .bundled()
         definitions = Dictionary(uniqueKeysWithValues: catalog.primitives.map { ($0.name, $0) })
+        self.templates = try Self.compiled(templates ?? OpenUITemplate.bundled())
+    }
+
+    private init(definitions: [String: OpenUIPrimitiveDefinition], templates: [String: CompiledTemplate]) {
+        self.definitions = definitions; self.templates = templates
+    }
+
+    /// The same compiler drawing with `templates`, such as the ones a run or a saved screen carries.
+    public func using(_ templates: [OpenUITemplate]) throws -> Self {
+        try .init(definitions: definitions, templates: Self.compiled(templates))
+    }
+
+    private static func compiled(_ templates: [OpenUITemplate]) throws -> [String: CompiledTemplate] {
+        func parse(_ text: String) throws -> OpenUIExpression {
+            var parser = OpenUIParser()
+            guard let expression = try parser.parse("t = " + text).statements["t"]
+            else { throw OpenUIError.syntax("Empty template body") }
+            return expression
+        }
+        return try Dictionary(templates.map { template in
+            try (template.name, CompiledTemplate(
+                name: template.name,
+                params: template.params,
+                defaults: template.params.map { try $0.default.map(parse) },
+                body: parse(template.body)
+            ))
+        }, uniquingKeysWith: { _, last in last })
     }
 
     public func compile(
@@ -41,6 +70,7 @@ public struct OpenUICompiler {
         var parser = OpenUIParser(); let program = try parser.parse(source, allowIncomplete: allowIncomplete)
         var evaluator = Evaluator(
             definitions: definitions,
+            templates: templates,
             program: program,
             documentID: documentID,
             datasets: datasets
@@ -56,12 +86,20 @@ private struct Evaluated {
     var nodes: [OpenUIElementID] = []
 }
 
+private struct CompiledTemplate {
+    let name: String
+    let params: [OpenUITemplate.Param]
+    let defaults: [OpenUIExpression?]
+    let body: OpenUIExpression
+}
+
 private struct Context {
     var aliases: [String: Evaluated] = [:]
 }
 
 private struct Evaluator {
     let definitions: [String: OpenUIPrimitiveDefinition]
+    let templates: [String: CompiledTemplate]
     let program: OpenUIProgram
     let documentID: String
     let datasets: [OpenUIDataset]
@@ -87,7 +125,12 @@ private struct Evaluator {
         case let .object(expressions): try object(expressions, mount: mount, context: context, stack: stack)
         case let .call("Query", args): try query(args: args, mount: mount, context: context, stack: stack)
         case let .call("Each", args): try each(args, mount: mount, context: context, stack: stack)
-        case let .call(name, args): try element(name, args: args, mount: mount, context: context, stack: stack)
+        case let .call(name, args):
+            if definitions[name] == nil, let template = templates[name] {
+                try expand(template, args: args, mount: mount, context: context, stack: stack)
+            } else {
+                try element(name, args: args, mount: mount, context: context, stack: stack)
+            }
         }
     }
 
@@ -174,6 +217,33 @@ private struct Evaluator {
             nodes += try evaluate(args[2], mount: mount + "/item:\(index)", context: child, stack: stack).nodes
         }
         return .init(nodes: nodes)
+    }
+
+    /// The template's body in a fresh scope: only its parameters are bound, so the caller's @Each
+    /// items can't capture its own. It mounts where the call sits, so element ids match the
+    /// expanded program's.
+    private mutating func expand(
+        _ template: CompiledTemplate,
+        args: [OpenUIExpression],
+        mount: String,
+        context: Context,
+        stack: Set<String>
+    ) throws -> Evaluated {
+        guard args.count <= template.params.count
+        else { throw OpenUIError.syntax("Too many \(template.name) arguments") }
+        var scope = Context()
+        for (index, param) in template.params.enumerated() {
+            let given = index < args
+                .count ? try evaluate(args[index], mount: mount, context: context, stack: stack) : nil
+            if let given, param.role == "data" || given.value != .null {
+                scope.aliases[param.name] = given
+            } else if let fallback = template.defaults[index] {
+                scope.aliases[param.name] = try evaluate(fallback, mount: mount, context: scope, stack: stack)
+            } else {
+                scope.aliases[param.name] = .init()
+            }
+        }
+        return try evaluate(template.body, mount: mount, context: scope, stack: stack)
     }
 
     private mutating func element(

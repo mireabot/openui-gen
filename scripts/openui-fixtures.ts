@@ -3,9 +3,9 @@ import { LIBRARY, PARSER } from "../src/lang/library.js";
 import { PRIMITIVE_BY_NAME } from "../src/lang/primitives.js";
 import { exprOfRef, printExpr, queryPath } from "../src/lang/program.js";
 import { isElement } from "../src/lang/tree.js";
-import { SPORTS_COMPONENTS, fits, settleInjuries } from "../src/sports/components.js";
+import { SPORTS_COMPONENTS, SPORTS_TEMPLATES, fits, settleInjuries } from "../src/sports/components.js";
 import { valueTicks } from "../src/sports/fotmob.js";
-import { SPORTS_SCREEN } from "../src/sports/screen.js";
+import { expandCall } from "../src/lang/templates.js";
 import METRIC_SAMPLES from "../preview/components/catalog/sports-components/metrics-data.json" with { type: "json" };
 
 /**
@@ -292,7 +292,7 @@ export function fixtureSuite(): { version: number; fixtures: Fixture[] } {
     return Object.entries(samples).map(([variant, record]) => {
       const key = `${component.name}/${variant}`;
       if (!fits(component, record)) throw new Error(`${key} does not satisfy its contract`);
-      const expanded = SPORTS_SCREEN.expand({ k: "Comp", name: component.name, args: [exprOfRef(queryPath("answers.q1.record"))] });
+      const expanded = expandCall({ k: "Comp", name: component.name, args: [exprOfRef(queryPath("answers.q1.record"))] }, SPORTS_TEMPLATES);
       if (!expanded) throw new Error(`${component.name} did not expand`);
       return fixture(key, { record }, [`pick1 = ${printExpr(expanded)}`]);
     });

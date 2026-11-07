@@ -46,7 +46,10 @@ struct ClubTimelineView: View {
         let anchor = ClubYearAnchor(clubs: clubs, initialCard: initial)
         _anchor = State(initialValue: anchor)
         _cardPosition = State(initialValue: Self.position(at: clubs.isEmpty ? nil : clubs[anchor.centredCard].id))
-        _railPosition = State(initialValue: Self.position(at: anchor.years.stops.first { $0.index == anchor.shownStop }?.id))
+        _railPosition = State(
+            initialValue: Self
+                .position(at: anchor.years.stops.first { $0.index == anchor.shownStop }?.id)
+        )
     }
 
     private static func position(at id: String?) -> ScrollPosition {
@@ -137,7 +140,8 @@ struct ClubTimelineView: View {
         }
         .contentMargins(.horizontal, max((width - ClubTimelineLayout.cardWidth) / 2, 0), for: .scrollContent)
         .scrollIndicators(.hidden)
-        // not sure about byOne: the web lets a hard flick cross several cards. `.viewAligned` alone would allow that here too.
+        // not sure about byOne: the web lets a hard flick cross several cards. `.viewAligned` alone would allow that
+        // here too.
         .scrollTargetBehavior(.viewAligned(limitBehavior: .alwaysByOne))
         .scrollPosition($cardPosition, anchor: .center)
         .onScrollGeometryChange(for: Int?.self) {

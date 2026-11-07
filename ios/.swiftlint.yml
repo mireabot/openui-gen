@@ -63,3 +63,7 @@ identifier_name:
 
 type_name:
   min_length: 3
+
+# SwiftFormat (wrapMultilineStatementBraces) puts the brace of a multi-line condition on its own line.
+opening_brace:
+  ignore_multiline_statement_conditions: true

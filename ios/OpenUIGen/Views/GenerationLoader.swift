@@ -43,9 +43,9 @@ private struct PixelGrid: View {
         TimelineView(.animation(paused: reduceMotion)) { context in
             let time = context.date.timeIntervalSinceReferenceDate
             VStack(spacing: cellSpacing) {
-                ForEach(0..<3, id: \.self) { row in
+                ForEach(0 ..< 3, id: \.self) { row in
                     HStack(spacing: cellSpacing) {
-                        ForEach(0..<3, id: \.self) { column in
+                        ForEach(0 ..< 3, id: \.self) { column in
                             cell(at: row * 3 + column, time: time)
                         }
                     }
@@ -115,7 +115,11 @@ private struct Shimmer: ViewModifier {
         let centre = -0.3 + phase * 1.6
         let stops = [centre - 0.3, centre, centre + 0.3].map { min(1, max(0, $0)) }
         return LinearGradient(
-            stops: [.init(color: .clear, location: stops[0]), .init(color: .white, location: stops[1]), .init(color: .clear, location: stops[2])],
+            stops: [
+                .init(color: .clear, location: stops[0]),
+                .init(color: .white, location: stops[1]),
+                .init(color: .clear, location: stops[2]),
+            ],
             startPoint: .leading,
             endPoint: .trailing
         )

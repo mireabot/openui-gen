@@ -16,6 +16,7 @@ const nextConfig: NextConfig = {
     resolveAlias: {
       "./primitives.js": "../src/lang/primitives.ts",
       "./props.js": "../src/lang/props.ts",
+      "./program.js": "../src/lang/program.ts",
       "../primitives/tokens.js": "../src/primitives/tokens.ts",
       "../primitives/year-timeline.js": "../src/primitives/year-timeline.ts",
     },

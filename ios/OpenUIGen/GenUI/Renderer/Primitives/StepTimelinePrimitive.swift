@@ -239,7 +239,8 @@ struct StepTimelinePrimitive: View {
     private func crest(_ stretch: Stretch, in stretches: [Stretch], plot: StepTimelinePlot) -> some View {
         let index = stretches.firstIndex { $0.id == stretch.id } ?? 0
         let left = plot.x(for: stretch.readings[0].date)
-        let right = plot.x(for: index + 1 < stretches.count ? stretches[index + 1].readings[0].date : stretch.readings.last!.date)
+        let right = plot
+            .x(for: index + 1 < stretches.count ? stretches[index + 1].readings[0].date : stretch.readings.last!.date)
         let highest = stretch.readings.map(\.value).max() ?? stretch.readings[0].value
         if right - left >= Self.crest, let url = PrimitiveImages.url(stretch.logo, base: base) {
             LazyImage(url: url) { state in

@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { SPORTS_TEMPLATES } from "../src/sports/components.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -108,7 +109,7 @@ try {
   assert.equal(answer.answers.q1.requestedGames, 5);
   assert.equal(answer.players.length, 4);
   assert.ok(answer.answers.q1.leaderboard.entries.every(entry => entry.logo.startsWith("https://example.test/")));
-  assert.equal(programTree(response.program, response.snapshot.result).nodes.filter(node => node.primitive === "Avatar").length, 4, "the screen renders players rather than substitute match cards");
+  assert.equal(programTree(response.program, response.snapshot.result, SPORTS_TEMPLATES).nodes.filter(node => node.primitive === "Avatar").length, 4, "the screen renders players rather than substitute match cards");
 
   const scorelessFixtures = fixtures.map(fixture => event(fixture.id, fixture.date, 0, fixture.competitions[0]!.status.type.state));
   const scorelessReports = Object.fromEntries(Object.keys(reports).map(id => [id, { keyEvents: [] }]));

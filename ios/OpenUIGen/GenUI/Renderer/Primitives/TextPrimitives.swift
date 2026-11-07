@@ -26,7 +26,7 @@ struct TextPrimitive: View {
         let lines = props.int("lines").flatMap { $0 > 0 ? $0 : nil }
         let alignment = props.string("align")
         // No data, no line: an empty detail or caption takes no space.
-        if props.string("content") != "" {
+        if props.string("content")?.isEmpty != true {
             // Unpublished facts arrive as null and read as a dash.
             Text(props.string("content") ?? "—")
                 .primitiveFont(
@@ -35,7 +35,8 @@ struct TextPrimitive: View {
                 )
                 .foregroundStyle(
                     dataColor ?? props.string("tone")
-                        .map { palette.tone($0) } ?? InkResolver(palette: palette, onMedia: onMedia)(props.string("ink"))
+                        .map { palette.tone($0) } ??
+                        InkResolver(palette: palette, onMedia: onMedia)(props.string("ink"))
                 )
                 .modifier(LineLimit(lines: lines, reserve: props.flag("reserve")))
                 .truncationMode(.tail)

@@ -1,4 +1,5 @@
-import { each, ui, type Node } from "../lang/program.js";
+import { each, printExpr, refAt, ui, type Node } from "../lang/program.js";
+import { templateSet, type TemplateDef } from "../lang/templates.js";
 import { NEST_DEPTH, ROOT_NAMES } from "./names.js";
 
 /**
@@ -30,9 +31,10 @@ export interface SportsComponent {
   readonly intent: string;
   readonly useWhen: string;
   readonly contract: readonly ContractField[];
-  /** Optional copy arguments after the data reference. */
-  readonly params: readonly { readonly name: string; readonly note: string }[];
-  readonly build: (data: AnyRef, args: readonly (string | null)[]) => Node;
+  /** Optional arguments after the record: text or a flag the writer passes, or null for `default` (an expression over `record`, or a literal). */
+  readonly params: readonly { readonly name: string; readonly note: string; readonly default: string; readonly kind?: "text" | "boolean" }[];
+  /** The primitives, over a reference to the record and one to each param. */
+  readonly build: (data: AnyRef, args: readonly AnyRef[]) => Node;
 }
 
 const f = (path: string, kind: ContractField["kind"], note: string): ContractField => ({ path, kind, note });
@@ -222,7 +224,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "MatchCard",
     intent: "One game between two teams: both teams on stacked rows with their scores, a side column (date and start time, or a status such as FT or Final), and one details line.",
-    useWhen: "a requested fixture, game result, score or latest meeting between two clubs; a list of requested matches (@Each over them); not a specific player's performance (StatsCard), current club or career, even when match data is also supplied",
+    useWhen: "a requested fixture, game result, score or latest meeting between two clubs; a list of requested matches (@Each over them); the game a player's one-game performance comes from, shown first, then the player's StatsCard without its header; not a player's season statistics (StatsCard), current club or career, even when match data is also supplied",
     contract: [
       ...team("home"), ...team("away"),
       f("label", "text", "small side line: a date such as \"Sat, Oct 31\", or \"\""),
@@ -331,8 +333,8 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   },
   {
     name: "StatsCard",
-    intent: "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. A part with no data is not shown.",
-    useWhen: "one identified player's or club's statistics for one game or season, including a specific player's latest-game performance; not the game's team result (MatchCard), comparisons across subjects or seasons (MetricBars), period-by-period progression (PlayerMetrics), career (ClubTimeline) or market value (PlayerValue)",
+    intent: "A player's or a club's stats: a header card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. Without its header only the rail shows. A part with no data is not shown.",
+    useWhen: "one identified player's or club's statistics for one game or season, including a specific player's latest-game performance, after that game's MatchCard when the data has one; not a game's result on its own (MatchCard), comparisons across subjects or seasons (MetricBars), period-by-period progression (PlayerMetrics), career (ClubTimeline) or market value (PlayerValue)",
     contract: [
       f("name", "text", "player or club"),
       f("kind", "text", "\"player\" or \"club\": a player's photo sits on the club colour, a crest on white"),
@@ -351,9 +353,9 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("stats[].value", "text", "one figure or a few words, e.g. \"5\", \"86%\" or \"Norway\""),
       s("showStats", "boolean"),
     ],
-    params: [],
-    build: c => ui.Stack({ axis: "v", gap: 12, children: [
-      ui.Card({ padding: 0, gap: 0, children: [
+    params: [{ name: "header", kind: "boolean", default: "true", note: "false hides the header card (photo, name, detail and rating) so only the stat rail shows, as under the game's MatchCard; keep it when the rating is one of the requested stats; null keeps it" }],
+    build: (c, [header]) => ui.Stack({ axis: "v", gap: 12, children: [
+      ui.Show({ when: header, child: ui.Card({ padding: 0, gap: 0, children: [
         ui.Stack({ axis: "h", gap: 12, align: "center", paddingX: 16, paddingY: 12, children: [
           mark(c, 40, c.kind),
           ui.Stack({ axis: "v", gap: 0, children: [
@@ -371,7 +373,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
             ] }),
           ] }),
         ] }) }),
-      ] }),
+      ] }) }),
       ui.Show({ when: c.showStats, child: ui.Rail({ gap: 12, minWidth: 124, children: each(c.stats, "s", (s: AnyRef) => ui.Card({ gap: 4, children: [
         ui.Text({ content: s.value, role: "headline", weight: "semibold", align: "start" }),
         ui.Text({ content: s.label, role: "footnote", ink: "secondary", align: "start" }),
@@ -503,10 +505,10 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("columns[].logo", "text", "photo or crest URL, or \"\"; the server fills a player's photo"),
       f("columns[].kind", "text", "\"player\" for a photo on the colour, \"club\" for a crest"),
     ],
-    params: [],
-    build: b => ui.Stack({ axis: "v", gap: 12, children: [
+    params: [{ name: "heading", note: "the heading to show instead of the record's, e.g. \"Points per game · this vs last season\"; null keeps the record's", default: "record.heading" }],
+    build: (b, [heading]) => ui.Stack({ axis: "v", gap: 12, children: [
       ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-        ui.Text({ content: b.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
         ui.Text({ content: b.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.ValueColumns({ columns: b.columns, marks: each(b.columns, "c", (c: AnyRef) => ui.Avatar({ name: c.name, size: 40, image: c.logo, color: c.color, kind: c.kind })) }),
@@ -995,15 +997,28 @@ const TEAM_SPORT_ONLY = new Set(["RecordTable"]);
 
 /** The writer's view: one signature line per component. */
 export const COMPONENT_SIGNATURES = SPORTS_COMPONENTS.map(c =>
-  `${c.name}(record) · ${c.intent} Use for ${c.useWhen}. Reads: ${c.contract.map(x => x.path).join(", ")}.`).join("\n");
+  `${c.name}(record${c.params.map(p => `, ${p.name}?`).join("")}) · ${c.intent} Use for ${c.useWhen}. Reads: ${c.contract.map(x => x.path).join(", ")}.${c.params.map(p => ` ${p.name} (${p.kind ?? "text"}): ${p.note}.`).join("")}`).join("\n");
 
 /** The schema stage's view: each contract with its notes. */
 export const contractsFor = (hasSoccer: boolean, hasTeamSports: boolean) => SPORTS_COMPONENTS
   .filter(c => (hasSoccer || !SOCCER_ONLY.has(c.name)) && (hasTeamSports || !TEAM_SPORT_ONLY.has(c.name)))
   .map(c => `${c.name}: ${c.intent} Use for ${c.useWhen}.\n${c.contract.map(x => `  ${x.path} (${x.kind}): ${x.note}`).join("\n")}`).join("\n\n");
 
+/**
+ * Each component as a template: its build printed once over a `record` parameter and one per param.
+ * Clients expand calls with these, so build stays the only definition.
+ */
+export const SPORTS_TEMPLATE_DEFS: readonly TemplateDef[] = SPORTS_COMPONENTS.map(c => ({
+  name: c.name,
+  params: [{ name: "record", role: "data" as const }, ...c.params.map(p => ({ name: p.name, role: "copy" as const, ...(p.kind ? { kind: p.kind } : {}), default: p.default, note: p.note }))],
+  body: printExpr(c.build(refAt({ k: "Ref", n: "record" }), c.params.map(p => refAt({ k: "Ref", n: p.name }))).expr),
+}));
+
+export const SPORTS_TEMPLATES = templateSet(SPORTS_TEMPLATE_DEFS);
+
 /** The index as clients and reviewers read it (catalog/openui/sports-components.json). */
 export const componentIndex = () => ({
-  version: 1,
+  version: 2,
   components: SPORTS_COMPONENTS.map(({ build: _build, ...entry }) => entry),
+  templates: SPORTS_TEMPLATE_DEFS,
 });

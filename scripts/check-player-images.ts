@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { SPORTS_TEMPLATES } from "../src/sports/components.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -121,6 +122,15 @@ for (const response of [
   const filled = fillClubMarks({ values: { answers: { q1: { match: { home: { name: "West Ham United", logo: "", color: "" }, away: { name: "Chelsea", logo: "chelsea.png", color: "#144992" }, unknown: { name: "Nowhere FC", logo: "", color: "#123456" } }, scorer: { kind: "player", name: "Everton", logo: "", color: "#0606fa" } } } }, fields: [], asOf: "", source: "espn" as const },
     [{ id: "21", name: "West Ham United", short: "West Ham", abbreviation: "WHU", color: "#7a263a", alternateColor: "", logo: "whu.png", league: "eng.1" }, { id: "368", name: "Everton", short: "Everton", abbreviation: "EVE", color: "#0606fa", alternateColor: "", logo: "eve.png", league: "eng.1" }]);
   assert.deepEqual((filled.values.answers as Record<string, unknown>).q1, { match: { home: { name: "West Ham United", logo: "whu.png", color: "clear" }, away: { name: "Chelsea", logo: "chelsea.png", color: "clear" }, unknown: { name: "Nowhere FC", logo: "", color: "#123456" } }, scorer: { kind: "player", name: "Everton", logo: "", color: "#0606fa" } }, "a club with a logo passes clear; a club without one keeps its colour for the monogram; a player keeps the disc colour");
+  // A gamelog names the opponent by abbreviation; the club beside it picks the league.
+  const bostons = [
+    { id: "2", name: "Boston Celtics", short: "Celtics", abbreviation: "BOS", color: "#008348", alternateColor: "", logo: "bos.png", league: "nba" },
+    { id: "1", name: "Boston Bruins", short: "Bruins", abbreviation: "BOS", color: "#231f20", alternateColor: "", logo: "bruins.png", league: "nhl" },
+    { id: "17", name: "Brooklyn Nets", short: "Nets", abbreviation: "BKN", color: "#000000", alternateColor: "", logo: "bkn.png", league: "nba" },
+  ] as const;
+  const game = (home: string) => (fillClubMarks({ values: { answers: { q1: { match: { home: { name: home, logo: "", color: "" }, away: { name: "Brooklyn Nets", logo: "bkn.png", color: "clear" } } } } }, fields: [], asOf: "", source: "espn" as const }, bostons as never).values.answers as { q1: { match: { home: unknown } } }).q1.match.home;
+  assert.deepEqual(game("BOS"), { name: "Boston Celtics", logo: "bos.png", color: "clear" }, "an abbreviation resolves in the league of the club beside it");
+  assert.deepEqual((fillClubMarks({ values: { answers: { q1: { side: { name: "BOS", logo: "", color: "" } } } }, fields: [], asOf: "", source: "espn" as const }, bostons as never).values.answers as { q1: unknown }).q1, { side: { name: "BOS", logo: "", color: "" } }, "an abbreviation two leagues share, with nothing beside it, stays as it is");
   // ESPN and FotMob name Inter differently, and a late kickoff can sit under FotMob's earlier day.
   const fotmobMatches = async (url: string) => url.includes("matchDetails") ? { content: { matchFacts: { topPlayers: { homeTopPlayers: [{ playerId: 7, name: { fullName: "Hakan Calhanoglu" }, playerRatingRounded: "8.1", positionLabel: { label: "DM" } }], awayTopPlayers: [] } } } }
     : url.endsWith("20261101") ? { leagues: [{ matches: [{ id: 1, home: { name: "Inter", score: 1 }, away: { name: "Roma", score: 1 } }, { id: 2, home: { name: "Inter", score: 2 }, away: { name: "Lille", score: 0 } }] }] } : { leagues: [] };
@@ -262,7 +272,7 @@ try {
   assert.equal(body.answers.q1.player.imageUrl, IMAGE);
   assert.equal(body.answers.q1.player.logo, IMAGE, "authoritative imagery replaces a model's guessed logo");
   assert.ok(result.snapshot.fields.some(field => field.path === "answers.q1.passAccuracy" && field.format === "percent"), "enrichment preserves numeric field formats");
-  assert.ok(programTree(result.program, result.snapshot.result).nodes.some(node => node.primitive === "Avatar" && node.props.image === IMAGE), "the compiled StatsCard uses the portrait");
+  assert.ok(programTree(result.program, result.snapshot.result, SPORTS_TEMPLATES).nodes.some(node => node.primitive === "Avatar" && node.props.image === IMAGE), "the compiled StatsCard uses the portrait");
 
   const saved = nextRevision(null, result.run, "Cole Palmer season stats", result);
   let keptLookups = 0;
@@ -273,7 +283,7 @@ try {
   assert.deepEqual(kept.snapshot.result.players, result.snapshot.result.players);
   assert.deepEqual(kept.snapshot.result.answers, result.snapshot.result.answers);
   assert.equal(keptLookups, 0, "kept player profiles need no lookup");
-  assert.deepEqual(programTree(kept.program, kept.snapshot.result), programTree(result.program, result.snapshot.result), "a kept part renders the same data and portrait from the new snapshot");
+  assert.deepEqual(programTree(kept.program, kept.snapshot.result, SPORTS_TEMPLATES), programTree(result.program, result.snapshot.result, SPORTS_TEMPLATES), "a kept part renders the same data and portrait from the new snapshot");
 
   let freshLookups = 0;
   const fresh = await editSports(saved, { prompt: "Also show his recent ratings" }, store, {}, "players-fresh", {
@@ -286,7 +296,7 @@ try {
   });
   assert.equal(freshLookups, 0, "new questions about a known player reuse the saved profile");
   assert.deepEqual(fresh.snapshot.result.players, [PROFILE]);
-  assert.equal(programTree(fresh.program, fresh.snapshot.result).nodes.filter(node => node.primitive === "Avatar" && node.props.image === IMAGE).length, 2, "kept and newly composed parts receive the same saved portrait");
+  assert.equal(programTree(fresh.program, fresh.snapshot.result, SPORTS_TEMPLATES).nodes.filter(node => node.primitive === "Avatar" && node.props.image === IMAGE).length, 2, "kept and newly composed parts receive the same saved portrait");
 
   const fallback = await askSports({ prompt: "Cole Palmer season stats" }, store, {}, "players-fallback", deps(lookup, async () => completion({ answers: [] })));
   assert.deepEqual(fallback.snapshot.result.players, [PROFILE], "raw fallback still returns the verified player object");
@@ -300,14 +310,14 @@ try {
   };
   const ranked = await askSports({ prompt: "Chelsea top scorers" }, store, {}, "players-leaderboard", boardDeps);
   assert.deepEqual(ranked.snapshot.result.players, [PROFILE], "player names introduced by component shaping are resolved");
-  assert.ok(programTree(ranked.program, ranked.snapshot.result).nodes.some(node => node.primitive === "Avatar" && node.props.image === IMAGE), "Leaderboard entries use their verified player portrait");
+  assert.ok(programTree(ranked.program, ranked.snapshot.result, SPORTS_TEMPLATES).nodes.some(node => node.primitive === "Avatar" && node.props.image === IMAGE), "Leaderboard entries use their verified player portrait");
 
   const clubRanking = await askSports({ prompt: "Premier League points leaders" }, store, {}, "players-club-ranking", {
     ...deps(async () => null, async () => completion({ answers: [{ id: "q1", title: "League table", fields: inferFields(clubAnswers.q1, ""), valuesJson: JSON.stringify(clubAnswers.q1) }] })),
     plan: async () => ({ ...plan, subject: { ...plan.subject, kind: "league", name: "Premier League" } }),
     write: writer("clubs = Leaderboard(d.answers.q1.board)\n"),
   });
-  assert.ok(programTree(clubRanking.program, clubRanking.snapshot.result).nodes.some(node => node.primitive === "Avatar" && node.props.image === "https://example.test/arsenal.png"), "failed player enrichment preserves a club leaderboard's existing crest through the full pipeline");
+  assert.ok(programTree(clubRanking.program, clubRanking.snapshot.result, SPORTS_TEMPLATES).nodes.some(node => node.primitive === "Avatar" && node.props.image === "https://example.test/arsenal.png"), "failed player enrichment preserves a club leaderboard's existing crest through the full pipeline");
 
   let missingLookups = 0;
   const withoutImages = await askSports({ prompt: "Cole Palmer season stats" }, store, {}, "players-unavailable", deps(async () => { missingLookups++; return null; }, async () => completion({ answers: [{
@@ -315,7 +325,7 @@ try {
   }] })));
   assert.ok(withoutImages.program.length > 0, "missing portraits cannot prevent the screen from being returned");
   assert.equal(missingLookups, 1, "schema shaping does not retry a missing identity within the same request");
-  assert.ok(programTree(withoutImages.program, withoutImages.snapshot.result).nodes.some(node => node.primitive === "Avatar" && node.props.image === ""), "unresolved players keep the initials fallback");
+  assert.ok(programTree(withoutImages.program, withoutImages.snapshot.result, SPORTS_TEMPLATES).nodes.some(node => node.primitive === "Avatar" && node.props.image === ""), "unresolved players keep the initials fallback");
 } finally {
   rmSync(directory, { recursive: true, force: true });
 }

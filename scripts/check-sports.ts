@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { SPORTS_TEMPLATES } from "../src/sports/components.js";
 import { z } from "zod";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -183,7 +184,7 @@ assert.deepEqual(meeting.upcoming.map((m: { date: string }) => m.date), ["2026-1
   assert.deepEqual(bars, comparisons.statBars, "prepared match comparisons survive model shaping without losing any bars");
   const writer: ProgramWriter = async (_messages, emit) => { const text = 'stats = Stack("v", 16, @Each(d.answers.q1.statBars, "s", StatBar(s)))\n'; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
   const compiled = await compileScreen({ run: "match-bars", request: "Match statistics", values: dataset.values, required: [{ id: "q1", text: "Match statistics" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, writer);
-  assert.equal(programTree(compiled.program, dataset.values).nodes.filter(n => n.primitive === "SplitBar").length, bars?.length, "every match statistic renders the same split-bar component");
+  assert.equal(programTree(compiled.program, dataset.values, SPORTS_TEMPLATES).nodes.filter(n => n.primitive === "SplitBar").length, bars?.length, "every match statistic renders the same split-bar component");
 }
 
 // Sports components: a MatchCard shaped to its contract expands, its club colour reaches the mark, the loser's score is secondary,
@@ -199,7 +200,7 @@ const callWriter: ProgramWriter = async (_m, emit) => { const text = "meeting = 
 const composed = await compileScreen({ run: "components", request: "Chelsea v City", values: componentValues, required: [{ id: "q1", text: "Last meeting" }, { id: "q2", text: "Shots" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, callWriter);
 assert.equal(composed.parts.filter(p => p.origin.kind === "writer").length, 1, "the writer's MatchCard call is admitted");
 assert.equal(composed.stats.fallbacks, 1, "q2 gets a default part");
-const nodes = programTree(composed.program, componentValues).nodes;
+const nodes = programTree(composed.program, componentValues, SPORTS_TEMPLATES).nodes;
 assert.ok(nodes.some(n => n.primitive === "Avatar" && n.props.color === "#034694"), "the club colour tints its mark");
 assert.ok(nodes.some(n => n.primitive === "Text" && n.props.content === "0" && n.props.ink === "secondary"), "the losing score is secondary");
 assert.ok(nodes.some(n => n.primitive === "SplitBar" && JSON.stringify(n.props.sides).includes("#99c5ea")), "q2's default is a StatBar with team colours");
@@ -223,7 +224,7 @@ assert.deepEqual([locked.q1!.player!.rating.show, locked.q2!.player!.rating.show
 const boardWriter: ProgramWriter = async (_m, emit) => { const text = "sheets = Leaderboard(d.answers.q1.board)\n"; emit(text); return { text, usage: { promptTokens: 0, completionTokens: 0, cost: 0 } }; };
 const empty = await compileScreen({ run: "empty", request: "Clean sheets and Palmer", values: emptyValues, required: [{ id: "q1", text: "Clean sheets" }, { id: "q2", text: "Palmer" }], base: [], editable: new Set(), explicitLayout: null }, SPORTS_SCREEN, boardWriter);
 assert.equal(empty.parts.filter(p => p.origin.kind === "writer").length, 1, "a Leaderboard over an empty list is admitted");
-assert.ok(programTree(empty.program, emptyValues).nodes.some(n => n.primitive === "Badge" && n.props.label === "7.21"), "q2's default is a StatsCard, showing its rating");
+assert.ok(programTree(empty.program, emptyValues, SPORTS_TEMPLATES).nodes.some(n => n.primitive === "Badge" && n.props.label === "7.21"), "q2's default is a StatsCard, showing its rating");
 
 // The writer's preview of a long list is still a list, so it offers no paths the data lacks.
 assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ rank })) }), { table: [{ rank: 0 }, { rank: 1 }, { rank: 2 }, "… 16 more items …", { rank: 19 }] });
@@ -294,7 +295,7 @@ assert.deepEqual(preview({ table: Array.from({ length: 20 }, (_, rank) => ({ ran
     researched.length = 0;
     const added = await post(`/lang/sports/${id}/follow-up`, { prompt: "add the Premier League table and Spurs' results", baseRevision: 1, model: "ignored", timeZone: "Europe/London" });
     assert.deepEqual(added.done!.document, { id, revision: 2 });
-    assert.deepEqual(added.events.map(e => e.event).filter(event => event !== "usage").filter(e => e !== "activity"), ["data", "openui", "done"], "content arrives only after the commit");
+    assert.deepEqual(added.events.map(e => e.event).filter(event => event !== "usage").filter(e => e !== "activity"), ["templates", "data", "openui", "done"], "content arrives only after the commit");
     assert.equal(added.events.find(e => e.event === "openui")!.data.replace, true);
     const r2 = (await documents.get(id))!;
     assert.deepEqual(r2.parts.map(p => [p.id, p.questions]), [["pick1", ["q1"]], ["pick2", ["q2"]], ["pick3", ["q3"]], ["pick4", ["q4"]]]);
@@ -401,7 +402,7 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
   });
   assert.ok(prompts[1]!.includes("Call TeamPoints(d.answers.q1.record)"), "the repair names the card");
   assert.deepEqual(screen.parts.map(p => p.origin.kind), ["writer"]);
-  const rendered = programTree(screen.program, { answers: { q1: answer } }).nodes;
+  const rendered = programTree(screen.program, { answers: { q1: answer } }, SPORTS_TEMPLATES).nodes;
   assert.ok(rendered.some(n => n.primitive === "Text" && n.props.content === "Home and away comparison"), "the card uses its supplied title");
   assert.ok(!rendered.some(n => n.primitive === "Text" && n.props.content === "PL"), "played is not abbreviated as Premier League");
   assert.ok(rendered.some(n => n.primitive === "Spacer" && n.props.size === 0), "the empty venue header keeps its grid cell instead of shifting the statistics left");
@@ -435,6 +436,11 @@ assert.deepEqual([5, 20, 21, 38, 46, 60].map(heatmapColumns), ["10", "10", "11",
   assert.deepEqual(twice.removed.map(r => r.path), ["answers.q2.best"], "the same record stays in the first place, whatever its key order");
   // A question whose facts all moved elsewhere needs nothing from the writer and no default part.
   assert.equal(SPORTS_SCREEN.shows("q2", [], twice.dataset.values as Parameters<typeof SPORTS_SCREEN.shows>[2]), true);
+  // `team` labels an answer as a club's name; a TeamDetail record under `team` is the answer.
+  const club = { answers: { q1: { status: "complete", title: "Playing today", team: { name: "Brooklyn Nets", logo: "", color: "", detail: "NBA" } } } };
+  assert.equal(SPORTS_SCREEN.shows("q1", [["team", "name"]], club), true, "reading a record under team shows the answer");
+  assert.equal(SPORTS_SCREEN.shows("q1", [["title"]], club), false);
+  assert.equal(SPORTS_SCREEN.shows("q1", [["team"]], { answers: { q1: { status: "complete", team: "Chelsea", summary: "Top of the table." } } }), false, "a club's name still only labels");
 }
 
 // Injuries: the server turns the league's wording and a date into the badge and the wait.

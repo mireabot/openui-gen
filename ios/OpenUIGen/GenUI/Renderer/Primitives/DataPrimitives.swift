@@ -215,45 +215,10 @@ struct BarsPrimitive: View {
     }
 
     private func chart(_ bars: [Bar], look: ChartLook, horizontal: Bool, lit: Int, peak: Double) -> some View {
-        let radius: CGFloat = switch look.corners {
-        case "square": 0
-        case "soft": PrimitiveMetrics.innerRadius
-        default: PrimitiveMetrics.pill
-        }
-        let rest = look.ink.map { palette.ink($0) } ?? palette.color(token: "surface.control")
-        let showsValues = props.flag("values")
         let labels = look.axis != "none" && look.axis != "y"
         let valueAxis = look.axis == "y" || look.axis == "both"
         return Chart {
-            ForEach(bars) { bar in
-                let fill = bar.id == lit ? palette.color(token: "surface.brand") : rest
-                let width: MarkDimension = .ratio(bar.id == lit ? 0.8 : 0.55)
-                if horizontal {
-                    BarMark(x: .value("Value", bar.value), y: .value("Bar", bar.key), height: width)
-                        .clipShape(.rect(cornerRadius: radius))
-                        .foregroundStyle(fill)
-                        .annotation(position: .trailing, spacing: 6) {
-                            if showsValues { valueLabel(bar.value, emphasised: bar.id == lit) }
-                        }
-                } else {
-                    BarMark(x: .value("Bar", bar.key), y: .value("Value", bar.value), width: width)
-                        .clipShape(.rect(cornerRadius: radius))
-                        .foregroundStyle(fill)
-                        .annotation(position: .top, spacing: 4) {
-                            if showsValues { valueLabel(bar.value, emphasised: bar.id == lit) }
-                        }
-                }
-            }
-            if props.flag("average"), !bars.isEmpty {
-                let average = bars.map(\.value).reduce(0, +) / Double(bars.count)
-                if horizontal {
-                    RuleMark(x: .value("Average", average))
-                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4])).foregroundStyle(palette.ink("tertiary"))
-                } else {
-                    RuleMark(y: .value("Average", average))
-                        .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4])).foregroundStyle(palette.ink("tertiary"))
-                }
-            }
+            marks(bars, look: look, horizontal: horizontal, lit: lit)
         }
         .chartXAxis {
             if horizontal { valueMarks(grid: look.grid, labels: valueAxis) } else { categoryMarks(bars, show: labels) }
@@ -263,37 +228,82 @@ struct BarsPrimitive: View {
             if !horizontal { valueMarks(grid: look.grid, labels: valueAxis) }
         }
         .chartLegend(.hidden)
-        .chartOverlay { proxy in
-            GeometryReader { frame in
-                Rectangle().fill(.clear).contentShape(.rect)
-                    .onTapGesture { location in
-                        guard props.flag("selectable"),
-                              let index = index(at: location, proxy: proxy, frame: frame, horizontal: horizontal)
-                        else { return }
-                        selection = selection == index ? -1 : index
-                    }
-                    .simultaneousGesture(
-                        DragGesture(minimumDistance: 12)
-                            .onChanged { drag in
-                                guard props.flag("selectable"),
-                                      horizontal ? abs(drag.translation.height) > abs(drag.translation.width) :
-                                      abs(drag.translation.width) > abs(drag.translation.height),
-                                      let index = index(
-                                          at: drag.location,
-                                          proxy: proxy,
-                                          frame: frame,
-                                          horizontal: horizontal
-                                      ) else { return }
-                                scrubbing = true
-                                selection = index
-                            }
-                            .onEnded { _ in scrubbing = false }
-                    )
-            }
-        }
+        .chartOverlay { proxy in scrubOverlay(proxy: proxy, horizontal: horizontal) }
         // Resolve the chart and its labels as one geometry during parent movement.
         .geometryGroup()
         .accessibilityElement(children: .combine)
+    }
+
+    /// One bar per value, the lit one wider and in the brand colour, and the average as a dashed rule.
+    @ChartContentBuilder
+    private func marks(_ bars: [Bar], look: ChartLook, horizontal: Bool, lit: Int) -> some ChartContent {
+        let radius: CGFloat = switch look.corners {
+        case "square": 0
+        case "soft": PrimitiveMetrics.innerRadius
+        default: PrimitiveMetrics.pill
+        }
+        let rest = look.ink.map { palette.ink($0) } ?? palette.color(token: "surface.control")
+        let showsValues = props.flag("values")
+        ForEach(bars) { bar in
+            let fill = bar.id == lit ? palette.color(token: "surface.brand") : rest
+            let width: MarkDimension = .ratio(bar.id == lit ? 0.8 : 0.55)
+            if horizontal {
+                BarMark(x: .value("Value", bar.value), y: .value("Bar", bar.key), height: width)
+                    .clipShape(.rect(cornerRadius: radius))
+                    .foregroundStyle(fill)
+                    .annotation(position: .trailing, spacing: 6) {
+                        if showsValues { valueLabel(bar.value, emphasised: bar.id == lit) }
+                    }
+            } else {
+                BarMark(x: .value("Bar", bar.key), y: .value("Value", bar.value), width: width)
+                    .clipShape(.rect(cornerRadius: radius))
+                    .foregroundStyle(fill)
+                    .annotation(position: .top, spacing: 4) {
+                        if showsValues { valueLabel(bar.value, emphasised: bar.id == lit) }
+                    }
+            }
+        }
+        if props.flag("average"), !bars.isEmpty {
+            let average = bars.map(\.value).reduce(0, +) / Double(bars.count)
+            if horizontal {
+                RuleMark(x: .value("Average", average))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4])).foregroundStyle(palette.ink("tertiary"))
+            } else {
+                RuleMark(y: .value("Average", average))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4])).foregroundStyle(palette.ink("tertiary"))
+            }
+        }
+    }
+
+    /// Tap a bar to select it, or drag along the bars to scrub, when the chart is selectable.
+    private func scrubOverlay(proxy: ChartProxy, horizontal: Bool) -> some View {
+        GeometryReader { frame in
+            Rectangle().fill(.clear).contentShape(.rect)
+                .onTapGesture { location in
+                    guard props.flag("selectable"),
+                          let index = index(at: location, proxy: proxy, frame: frame, horizontal: horizontal)
+                    else { return }
+                    selection = selection == index ? -1 : index
+                }
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 12)
+                        .onChanged { drag in
+                            let along = horizontal ? abs(drag.translation.height) > abs(drag.translation.width) :
+                                abs(drag.translation.width) > abs(drag.translation.height)
+                            guard props.flag("selectable"), along,
+                                  let index = index(
+                                      at: drag.location,
+                                      proxy: proxy,
+                                      frame: frame,
+                                      horizontal: horizontal
+                                  )
+                            else { return }
+                            scrubbing = true
+                            selection = index
+                        }
+                        .onEnded { _ in scrubbing = false }
+                )
+        }
     }
 
     private func index(at location: CGPoint, proxy: ChartProxy, frame: GeometryProxy, horizontal: Bool) -> Int? {
@@ -361,191 +371,6 @@ struct BarsPrimitive: View {
                 id: index,
                 label: item["label"].flatMap(PrimitiveProps.text) ?? "",
                 value: item["value"]?.numberValue ?? 0
-            )
-        }
-    }
-}
-
-// MARK: ShareBar
-
-/// `ShareBar(@parts, legend?, selectable?, style?)`: a pill track split into coloured parts (or a
-/// donut / pie on Swift Charts), with a legend.
-struct ShareBarPrimitive: View {
-    let props: PrimitiveProps
-    @Environment(\.primitivePalette) private var palette
-    @State private var selection: Int?
-
-    struct Part: Identifiable {
-        let id: Int
-        let label: String
-        let value: Double
-        let color: Color
-        let detail: String
-    }
-
-    var body: some View {
-        let parts = parts
-        let total = max(parts.map(\.value).reduce(0, +), .leastNonzeroMagnitude)
-        VStack(alignment: .leading, spacing: PrimitiveMetrics.labelGap) {
-            switch ChartLook(props.value("style")).shape {
-            case let shape? where shape == "donut" || shape == "pie":
-                // SectorMark: 1.5° gaps, inner radius 0.62 for the donut; 160 square, centred.
-                Chart(parts) { part in
-                    SectorMark(
-                        angle: .value("Share", part.value),
-                        innerRadius: .ratio(shape == "donut" ? 0.62 : 0),
-                        angularInset: parts.count > 1 ? 1.5 : 0
-                    )
-                    .cornerRadius(PrimitiveMetrics.innerRadius)
-                    .foregroundStyle(part.color)
-                    .opacity(selection == nil || selection == part.id ? 1 : 0.3)
-                }
-                .chartLegend(.hidden)
-                .frame(width: 160, height: 160)
-                .frame(maxWidth: .infinity)
-            default:
-                WeightedRowLayout(weights: parts.map { CGFloat($0.value) }, spacing: 0) {
-                    ForEach(parts) { part in
-                        Rectangle().fill(part.color).opacity(selection == nil || selection == part.id ? 1 : 0.3)
-                    }
-                }
-                .frame(height: 16)
-                .background(palette.color(token: "surface.control"))
-                .clipShape(.capsule)
-            }
-            if props.bool("legend") ?? true {
-                if props.flag("selectable") {
-                    VStack(spacing: 4) {
-                        ForEach(parts) { part in
-                            Button { selection = selection == part.id ? nil : part.id } label: {
-                                HStack(spacing: 8) {
-                                    Circle().fill(part.color).frame(width: 8, height: 8)
-                                    Text(part.label).frame(maxWidth: .infinity, alignment: .leading)
-                                    Text(part.detail).foregroundStyle(palette.ink("secondary"))
-                                    Text(
-                                        "\((100 * part.value / total).formatted(.number.precision(.fractionLength(1))))%"
-                                    )
-                                }
-                                .primitiveFont(.footnote)
-                                .monospacedDigit()
-                                .foregroundStyle(palette.ink("primary"))
-                                .padding(.horizontal, 8)
-                                .frame(minHeight: 44)
-                                .background(
-                                    selection == part.id ? palette.color(token: "surface.control") : .clear,
-                                    in: .rect(cornerRadius: 8)
-                                )
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityAddTraits(selection == part.id ? .isSelected : [])
-                        }
-                    }
-                } else {
-                    FlowLayout(spacing: 8) {
-                        ForEach(parts) { part in
-                            HStack(spacing: 6) {
-                                Circle().fill(part.color).frame(width: 8, height: 8)
-                                Text("\(part.label) \(Int((100 * part.value / total).rounded()))%")
-                                    .primitiveFont(.footnote)
-                                    .foregroundStyle(palette.color(token: "ink.secondary"))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .accessibilityElement(children: props.flag("selectable") ? .contain : .combine)
-    }
-
-    private var parts: [Part] {
-        props.list("parts").enumerated().map { index, item in
-            Part(
-                id: index,
-                label: item["label"].flatMap(PrimitiveProps.text) ?? "",
-                value: max(0, item["value"]?.numberValue ?? item["share"]?.numberValue ?? 0),
-                color: palette.ink(item["ink"]?.stringValue),
-                detail: item["detail"].flatMap(PrimitiveProps.text) ?? ""
-            )
-        }
-    }
-}
-
-// MARK: SplitBar
-
-/// `SplitBar(@sides, size?, dim?, legend?)`: how votes split between two or three sides, in the
-/// data's order. A pill track where each side's width is its share of the votes, 2 pt apart.
-struct SplitBarPrimitive: View {
-    let props: PrimitiveProps
-    @Environment(\.primitivePalette) private var palette
-
-    struct Side: Identifiable {
-        let id: Int
-        let label: String
-        let count: Double
-        let tone: String
-        /// A team's `#hex`; it wins over the tone when present.
-        let color: String?
-    }
-
-    private static let gap: CGFloat = 2
-
-    private func fill(_ side: Side) -> Color {
-        side.color.flatMap { $0.hasPrefix("#") ? palette.value($0) : nil } ?? palette.tone(side.tone)
-    }
-
-    var body: some View {
-        let sides = sides
-        let shown = sides.filter(\.count.isNormal)
-        let top = sides.map(\.count).max() ?? 0
-        let winners = sides.filter { $0.count == top }.count
-        let dims = props.flag("dim") && winners == 1
-        let size = props.string("size")
-        let height: CGFloat = size == "micro" ? 4 : size == "thin" ? 6 : 8
-        // Each side's rectangle takes its share of the width (count / total), 2 pt apart.
-        let total = max(shown.map(\.count).reduce(0, +), .leastNonzeroMagnitude)
-        let bar = GeometryReader { geometry in
-            let room = max(0, geometry.size.width - Self.gap * CGFloat(max(0, shown.count - 1)))
-            HStack(spacing: Self.gap) {
-                ForEach(shown) { side in
-                    Rectangle()
-                        .fill(fill(side))
-                        .opacity(dims && side.count != top ? 0.35 : 1)
-                        .frame(width: room * side.count / total)
-                }
-            }
-        }
-        .frame(width: size == "micro" ? 40 : nil, height: height)
-        .frame(maxWidth: size == "micro" ? nil : .infinity, alignment: .leading)
-        .clipShape(.capsule)
-        .accessibilityElement(children: .ignore)
-
-        if props.flag("legend") {
-            VStack(alignment: .leading, spacing: 8) {
-                bar
-                HStack {
-                    ForEach(shown) { side in
-                        Text("\(side.label) \(Int(side.count))")
-                            .foregroundStyle(fill(side))
-                        if side.id != shown.last?.id { Spacer(minLength: 8) }
-                    }
-                }
-                .primitiveFont(.footnote)
-                .monospacedDigit()
-            }
-        } else {
-            bar
-        }
-    }
-
-    private var sides: [Side] {
-        props.list("sides").enumerated().map { index, item in
-            Side(
-                id: index,
-                label: item["label"].flatMap(PrimitiveProps.text) ?? "",
-                count: max(0, item["count"]?.numberValue ?? 0),
-                tone: item["tone"]?.stringValue ?? "neutral",
-                color: item["color"]?.stringValue
             )
         }
     }

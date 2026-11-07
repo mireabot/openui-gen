@@ -102,7 +102,11 @@ enum ComponentGallery {
     private static var clubCard: GalleryComponent {
         GalleryComponent(name: "ClubCard", summary: "A club in a player's career.", samples: [
             GallerySample(id: "ClubCard/loan", variant: "loan", content: .clubCard(ClubSamples.benfica)),
-            GallerySample(id: "ClubCard/stats", variant: "loan, 3 stats", content: .clubCard(ClubSamples.benficaWithStats)),
+            GallerySample(
+                id: "ClubCard/stats",
+                variant: "loan, 3 stats",
+                content: .clubCard(ClubSamples.benficaWithStats)
+            ),
         ])
     }
 
