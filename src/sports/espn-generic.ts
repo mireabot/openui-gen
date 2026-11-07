@@ -84,7 +84,7 @@ function keptColumns(labels: readonly string[], preferred: readonly string[]) {
 function statTable(title: string, labels: readonly string[], rows: readonly { readonly label: string; readonly stats: readonly unknown[]; readonly extra?: Values }[], preferred: readonly string[]): Values {
   const kept = keptColumns(labels, preferred);
   return {
-    title, columnCount: String(kept.length || 1), columns: kept.map(at => ({ label: labels[at]! })),
+    heading: title, columnCount: String(kept.length || 1), columns: kept.map(at => ({ label: labels[at]! })),
     rows: rows.map(row => ({ label: row.label, ...row.extra, cells: kept.map(at => ({ value: text(row.stats[at]) })) })),
   };
 }
@@ -170,7 +170,7 @@ async function leaders(league: LeagueCode, request: EspnRequest, send: EspnTrans
       const team = isRecord(entry.team) ? entry.team : {};
       return { rank: at + 1, athleteId: text(athlete.id), name: text(athlete.displayName), kind: "player", detail: text(team.displayName), team: text(team.displayName), value: text(entry.displayValue), logo: headshot(athlete), color: colorOf(text(team.color)) };
     });
-    return [{ key, title: text(category.displayName), metric: text(category.abbreviation) || text(category.displayName), entries } as Values];
+    return [{ key, heading: text(category.displayName), metric: text(category.abbreviation) || text(category.displayName), entries } as Values];
   });
   const season = seasonName(league, request.season);
   return { league: leagueOf(league).name, ...(season ? { season } : {}), leaderboards };
@@ -260,7 +260,7 @@ async function injuries(league: LeagueCode, request: EspnRequest, send: EspnTran
     const details = isRecord(injury.details) ? injury.details : {};
     const where = [text(details.side), text(details.type)].filter(side => side && side !== "Not Specified").join(" ");
     return { name: text(athlete.displayName), kind: "player", team: text(group.displayName), position: positionOf(athlete), logo: headshot(athlete),
-      status: text(injury.status), injury: where, returnDate: text(details.returnDate), source: reportSource(text(injury.shortComment), text(group.displayName)), detail: text(injury.shortComment) || [text(injury.status), where].filter(Boolean).join(" · "), date: text(injury.date) };
+      injuryStatus: text(injury.status), injury: where, returnDate: text(details.returnDate), reportedBy: reportSource(text(injury.shortComment), text(group.displayName)), detail: text(injury.shortComment) || [text(injury.status), where].filter(Boolean).join(" · "), date: text(injury.date) };
   }));
   // An empty list is an answer: nobody is reported hurt.
   return { league: leagueOf(league).name, ...(request.team ? { team: request.team } : {}), count: rows.length, injuries: rows.slice(0, 30) };

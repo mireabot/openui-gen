@@ -1,4 +1,5 @@
 import { each, ui, type Node } from "../lang/program.js";
+import { NEST_DEPTH, ROOT_NAMES } from "./names.js";
 
 /**
  * The Sports component index: the sports components as server templates. Each entry says what it is for, when to use it, and the exact data contract it
@@ -20,6 +21,8 @@ export interface ContractField {
   readonly path: string;
   readonly kind: "text" | "number" | "boolean" | "tone" | "ink" | "color" | "list";
   readonly note: string;
+  /** The server sets or defaults it after the dataset stage, so a record fits its data without it. */
+  readonly by?: "server";
 }
 
 export interface SportsComponent {
@@ -33,6 +36,8 @@ export interface SportsComponent {
 }
 
 const f = (path: string, kind: ContractField["kind"], note: string): ContractField => ({ path, kind, note });
+/** A field the server sets or defaults; `note` says how when that helps the designer. */
+const s = (path: string, kind: ContractField["kind"], note = "the server sets this"): ContractField => ({ path, kind, note, by: "server" });
 const CLUB_COLOR = "\"clear\" for a club with a logo, so its crest has no fill; else the club's colour \"#rrggbb\" from d.clubs, or \"\"";
 const team = (prefix: string): ContractField[] => [
   f(`${prefix}.name`, "text", "team name"),
@@ -102,21 +107,21 @@ const injuredPlayer = (prefix: string): ContractField[] => [
   f(`${prefix}team`, "text", "the player's team, e.g. \"Cardinals\" or \"Chelsea\""),
   f(`${prefix}logo`, "text", "photo URL, or \"\""),
   f(`${prefix}color`, "color", "their team's colour \"#rrggbb\" from d.clubs, or \"\""),
-  f(`${prefix}status`, "text", "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"),
+  f(`${prefix}injuryStatus`, "text", "the league's status as the data writes it, e.g. \"Injured Reserve\", \"Questionable\", \"Day-To-Day\"; \"\" when there is none, as in most soccer reports"),
   f(`${prefix}returnDate`, "text", "the expected return as \"YYYY-MM-DD\", or \"\" when no date is given or the player is out for the season"),
   f(`${prefix}returnNote`, "text", "what stands in for a missing date, e.g. \"Out for season\" or \"Mid-January 2027\"; \"\" otherwise"),
-  f(`${prefix}source`, "text", "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"),
-  f(`${prefix}detail`, "text", "the server sets this"),
-  f(`${prefix}badge.label`, "text", "the server sets this"),
-  f(`${prefix}badge.tone`, "tone", "the server sets this"),
-  f(`${prefix}badge.show`, "boolean", "the server sets this"),
-  f(`${prefix}wait.label`, "text", "the server sets this"),
-  f(`${prefix}wait.value`, "text", "the server sets this"),
-  f(`${prefix}wait.day`, "text", "the server sets this"),
-  f(`${prefix}wait.dated`, "boolean", "the server sets this"),
-  f(`${prefix}wait.undated`, "boolean", "the server sets this"),
-  f(`${prefix}line`, "text", "the server sets this"),
-  f(`${prefix}sourceLine`, "text", "the server sets this"),
+  f(`${prefix}reportedBy`, "text", "who reported it, e.g. \"The Athletic\" or \"Cardinals' official site\"; \"\" when the data names no one"),
+  s(`${prefix}detail`, "text"),
+  s(`${prefix}badge.label`, "text"),
+  s(`${prefix}badge.tone`, "tone"),
+  s(`${prefix}badge.show`, "boolean"),
+  s(`${prefix}wait.label`, "text"),
+  s(`${prefix}wait.value`, "text"),
+  s(`${prefix}wait.day`, "text"),
+  s(`${prefix}wait.dated`, "boolean"),
+  s(`${prefix}wait.undated`, "boolean"),
+  s(`${prefix}line`, "text"),
+  s(`${prefix}sourceLine`, "text"),
 ];
 
 /** The photo on the team colour, with a band-aid at its bottom right. */
@@ -279,7 +284,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "A ranked list for one metric: a header naming the list and the metric, then rows of logo or monogram, name, a detail line and the value.",
     useWhen: "a plain ranked list of at most 10, where the order is the answer: who are the top scorers, the top assisters, most clean sheets; not when the request asks to compare the subjects, and not for more than 10 (use MetricBars)",
     contract: [
-      f("title", "text", "the list's name, e.g. \"Top scorers · Premier League\""),
+      f("heading", "text", "the list's name, e.g. \"Top scorers · Premier League\""),
       f("metric", "text", "the one metric every value is, e.g. \"Goals\""),
       f("entries", "list", "in rank order, at most 10"),
       f("entries[].name", "text", "player or club"),
@@ -292,7 +297,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     params: [],
     build: b => ui.Card({ children: [
       ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-        ui.Text({ content: b.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: b.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
         ui.Text({ content: b.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.Stack({ axis: "v", gap: 12, divided: true, children: each(b.entries, "e", (e: AnyRef) => ui.Row({
@@ -311,8 +316,8 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("results", "list", "one per fixture, oldest first, every fixture of the run however many: a season is one record, never split"),
       f("results[].label", "text", "spoken result, e.g. \"Win\", \"Draw\", \"Tie\", \"Loss\" or \"Upcoming\"; not visible in the square"),
       f("results[].fill", "text", "win \"tone.good.fg\", loss \"tone.bad.fg\", draw or tie \"outline.control\", upcoming \"surface.filled\""),
-      f("summary", "text", "e.g. \"4 won · 1 drawn · 3 lost\" or \"6-2\""),
-      f("columns", "text", "\"10\"; the server sets it from the number of results"),
+      f("tally", "text", "e.g. \"4 won · 1 drawn · 3 lost\" or \"6-2\""),
+      s("columns", "text", "\"10\"; the server sets it from the number of results"),
     ],
     params: [],
     build: h => ui.Card({ children: [
@@ -321,7 +326,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
         ui.Text({ content: h.caption, role: "body", ink: "secondary", align: "center" }),
       ] }),
       ui.Grid({ columns: h.columns, gap: 4, children: each(h.results, "r", (r: AnyRef) => ui.ColorCell({ label: r.label, fill: r.fill })) }),
-      ui.Text({ content: h.summary, role: "footnote", ink: "secondary", align: "center" }),
+      ui.Text({ content: h.tally, role: "footnote", ink: "secondary", align: "center" }),
     ] }),
   },
   {
@@ -331,20 +336,20 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     contract: [
       f("name", "text", "player or club"),
       f("kind", "text", "\"player\" or \"club\": a player's photo sits on the club colour, a crest on white"),
-      f("detail", "text", "club · position for a player, league · season for a club"),
+      s("detail", "text", "club · position for a player, league · season for a club"),
       f("logo", "text", "photo or logo URL, or \"\""),
       f("color", "color", "a player: their club's colour \"#rrggbb\", or \"\"; a club: \"clear\" with a logo, else its colour"),
-      f("rating.value", "text", "rating as shown, e.g. \"6.60\"; leave rating out when there is none"),
-      f("rating.tone", "tone", "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\""),
-      f("rating.fill", "text", "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand"),
-      f("rating.ink", "text", "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand"),
-      f("rating.label", "text", "e.g. \"Season rating\""),
-      f("rating.caption", "text", "what it averages, e.g. \"Average of 6 matches\", or \"\""),
-      f("rating.show", "boolean", "the server sets this"),
+      s("rating.value", "text", "rating as shown, e.g. \"6.60\"; leave rating out when there is none"),
+      s("rating.tone", "tone", "7.0 and up \"good\", 6.0–6.99 \"warn\", under 6.0 \"bad\""),
+      s("rating.fill", "text", "7.0 and up: tone.good.fg; 6.0–6.99: ink.brand; under 6.0: surface.brand"),
+      s("rating.ink", "text", "7.0 and up and 6.0–6.99: surface.screen; under 6.0: ink.onBrand"),
+      s("rating.label", "text", "e.g. \"Season rating\""),
+      s("rating.caption", "text", "what it averages, e.g. \"Average of 6 matches\", or \"\""),
+      s("rating.show", "boolean"),
       f("stats", "list", "any number, in reading order; leave out a stat with no value"),
       f("stats[].label", "text", "e.g. \"Goals\""),
       f("stats[].value", "text", "one figure or a few words, e.g. \"5\", \"86%\" or \"Norway\""),
-      f("showStats", "boolean", "the server sets this"),
+      s("showStats", "boolean"),
     ],
     params: [],
     build: c => ui.Stack({ axis: "v", gap: 12, children: [
@@ -378,7 +383,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "A team's points so far this season: the total and its rank, then a table splitting the record into home and away (played, won, drawn, lost, goals, goal difference, points).",
     useWhen: "one soccer club's season points and home/away record in one competition; not its league position (LeagueStanding), a player's scoring points or an NBA/NFL win-loss record",
     contract: [
-      f("title", "text", "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"),
+      f("heading", "text", "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"),
       f("subtitle", "text", "rank and matches played, e.g. \"Rank 1 · 9 played\""),
       f("points", "text", "total points as shown, e.g. \"27\""),
       ...venueRow("home"), ...venueRow("away"),
@@ -387,7 +392,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     build: t => ui.Card({ children: [
       ui.Stack({ axis: "h", gap: 16, align: "start", justify: "between", children: [
         ui.Stack({ axis: "v", gap: 0, children: [
-          ui.Text({ content: t.title, role: "headline", weight: "semibold", lines: 2, align: "start" }),
+          ui.Text({ content: t.heading, role: "headline", weight: "semibold", lines: 2, align: "start" }),
           ui.Text({ content: t.subtitle, role: "footnote", ink: "secondary", lines: 2, align: "start" }),
         ] }),
         ui.Text({ content: t.points, role: "title1", weight: "semibold", align: "end" }),
@@ -405,7 +410,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     useWhen: "one team's league position and gaps to nearby teams; not a final top-three podium (SeasonPodium) or its complete home/away record (TeamPoints); for the whole table use a list of rows instead",
     contract: [
       f("place", "text", "the team's place as shown, e.g. \"13th\""),
-      f("summary", "text", "points and gaps, e.g. \"9 points · 1 behind 12th, 1 ahead of 14th\"; for first place \"27 points · 5 clear of 2nd\""),
+      f("gaps", "text", "points and gaps, e.g. \"9 points · 1 behind 12th, 1 ahead of 14th\"; for first place \"27 points · 5 clear of 2nd\""),
       f("rows", "list", "exactly three in table order: the team and its nearest two, one either side, or the two below it in first place and the two above it in last"),
       f("rows[].rank", "text", "the place, e.g. \"12\""),
       f("rows[].name", "text", "club name"),
@@ -415,13 +420,13 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("rows[].weight", "text", "\"medium\" for the team, \"regular\" for the others"),
       f("home.detail", "text", "points and record at home, e.g. \"7 pts · 2-1-1\", from the schedule's venues; \"\" without them"),
       f("away.detail", "text", "the same away"),
-      f("showVenues", "boolean", "whether to show home and away here; false when a TeamPoints record answers them, which is their primary place"),
+      s("showVenues", "boolean", "whether to show home and away here; false when a TeamPoints record answers them, which is their primary place"),
     ],
     params: [],
     build: l => ui.Card({ children: [
       ui.Stack({ axis: "v", gap: 8, children: [
         ui.Text({ content: l.place, role: "display", weight: "semibold" }),
-        ui.Text({ content: l.summary, role: "body", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: l.gaps, role: "body", ink: "secondary", lines: 2, align: "start" }),
       ] }),
       ui.Stack({ axis: "v", gap: 0, children: each(l.rows, "r", (r: AnyRef) => ui.Card({ surface: r.surface, radius: "control", padding: 8, children: [
         ui.Stack({ axis: "h", gap: 12, align: "center", children: [
@@ -441,7 +446,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "The top players of one game from both teams, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
     useWhen: "best players from both sides of one match; not one named player's own statistics (StatsCard) or a ranking across matches (Leaderboard or MetricBars)",
     contract: [
-      f("title", "text", "the card's name, e.g. \"Top scorers\""),
+      f("heading", "text", "the card's name, e.g. \"Top scorers\""),
       f("metric", "text", "the one metric every value is, e.g. \"Goals\" or \"Rating\""),
       f("rows", "list", "as many as the request asks for per side, e.g. 1 or 3, otherwise 3; best first on each side, and only players the metric applies to, so a scorer has scored"),
       ...matchPlayer("rows[].home"), ...matchPlayer("rows[].away"),
@@ -449,7 +454,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     params: [],
     build: m => ui.Card({ children: [
       ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-        ui.Text({ content: m.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: m.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
         ui.Text({ content: m.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.Stack({ axis: "v", gap: 12, divided: true, children: each(m.rows, "r", (r: AnyRef) => ui.Grid({ columns: "2", gap: 16, children: [
@@ -486,7 +491,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "One metric across any number of subjects: a club-colour value pill per column at the value's height, with an optional second line, then the subject's photo or crest, name and caption; more than five page sideways. No card.",
     useWhen: "one figure compared across players, clubs or seasons, whenever the request asks to compare them (compare, vs, against each other, side by side), even when it also asks for the top N, and for any one-figure list of more than 10: the top 16 scorers compared, points per game this season vs last, strikes of three players, a club's points per game by season with the coach under each; not values period by period within a season (PlayerMetrics or PlayersMetric), a single subject's key stats (StatsCard), or two clubs compared head to head on a statistic for the same period (StatBar)",
     contract: [
-      f("title", "text", "what is compared, e.g. \"Egor Demin · points per game\", or \"\" when the screen already says it"),
+      f("heading", "text", "what is compared, e.g. \"Egor Demin · points per game\", or \"\" when the screen already says it"),
       f("metric", "text", "the one metric every value is, e.g. \"PPG\""),
       f("columns", "list", "one per subject, in the order to read them (seasons oldest first)"),
       f("columns[].name", "text", "player, club or coach"),
@@ -501,7 +506,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     params: [],
     build: b => ui.Stack({ axis: "v", gap: 12, children: [
       ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-        ui.Text({ content: b.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: b.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
         ui.Text({ content: b.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.ValueColumns({ columns: b.columns, marks: each(b.columns, "c", (c: AnyRef) => ui.Avatar({ name: c.name, size: 40, image: c.logo, color: c.color, kind: c.kind })) }),
@@ -542,9 +547,9 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "Several players on one metric over a season as a race: one row per player starting with the plain photo, sorted by the value at the scrub, over one stepped line each. No card.",
     useWhen: "two to four players compared on one metric within a season, period by period: quarterbacks' interceptions by week, strikers' goals by matchweek; not several metrics for one player (PlayerMetrics), season totals (MetricBars) or one game's key stats (StatsCard)",
     contract: [
-      f("title", "text", "the metric, e.g. \"Interceptions thrown\""),
+      f("heading", "text", "the metric, e.g. \"Interceptions thrown\""),
       f("subtitle", "text", "e.g. \"AFC quarterbacks · 2026 season\""),
-      f("kind", "text", "\"cumulative\" for running totals, \"period\" for one value per period"),
+      f("seriesKind", "text", "\"cumulative\" for running totals, \"period\" for one value per period"),
       f("periods", "list", "one label per period, e.g. \"Week 8\""),
       f("from", "text", "the first period's short label, e.g. \"Wk 1\""),
       f("to", "text", "the last period's short label"),
@@ -561,8 +566,8 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     ],
     params: [],
     build: p => ui.Stack({ axis: "v", gap: 16, children: [
-      ui.Text({ content: p.title, role: "title2", weight: "semibold", lines: 2, align: "start" }),
-      ui.MetricLines({ lines: p.players, periods: p.periods, from: p.from, to: p.to, style: "race", kind: p.kind, caption: p.subtitle, marks: each(p.players, "x", (x: AnyRef) => ui.Avatar({ name: x.name, size: 40, image: x.logo, color: x.color, kind: "player" })) }),
+      ui.Text({ content: p.heading, role: "title2", weight: "semibold", lines: 2, align: "start" }),
+      ui.MetricLines({ lines: p.players, periods: p.periods, from: p.from, to: p.to, style: "race", kind: p.seriesKind, caption: p.subtitle, marks: each(p.players, "x", (x: AnyRef) => ui.Avatar({ name: x.name, size: 40, image: x.logo, color: x.color, kind: "player" })) }),
     ] }),
   },
   {
@@ -586,8 +591,8 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "A table whose columns come from the data: a title, a row of column labels, then one row per player, team or game with its name in a wider first column (up to two lines) and its figures in the rest.",
     useWhen: "requested multi-subject box-score columns, full standings, a game log or an NBA/NFL record split; not one named player's key statistics (StatsCard), soccer home/away points (TeamPoints), a one-figure comparison (MetricBars), or honours and prose facts",
     contract: [
-      f("title", "text", "what the table shows, e.g. \"Passing\" or \"AFC West\""),
-      f("columnCount", "text", "\"5\"; the server sets it from the columns"),
+      f("heading", "text", "what the table shows, e.g. \"Passing\" or \"AFC West\""),
+      s("columnCount", "text", "\"5\"; the server sets it from the columns"),
       f("columns", "list", "at most 7, in the order the cells follow"),
       f("columns[].label", "text", "a short column label as the source writes it, e.g. \"YDS\" or \"W-L\""),
       f("rows", "list", "one per player, team or game"),
@@ -597,7 +602,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     ],
     params: [],
     build: t => ui.Card({ children: [
-      ui.Text({ content: t.title, role: "headline", weight: "semibold" }),
+      ui.Text({ content: t.heading, role: "headline", weight: "semibold" }),
       ui.Stack({ axis: "v", gap: 12, children: [
         // The name takes a lead column three cells wide, so the figures keep their room; the header leaves it blank.
         ui.Grid({ columns: t.columnCount, gap: 4, lead: "3", children: [ui.Spacer({ size: 0 }), each(t.columns, "c", (c: AnyRef) => ui.Text({ content: c.label, role: "footnote", ink: "secondary", lines: 1 }))] }),
@@ -627,7 +632,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
         ] }),
         ui.Stack({ axis: "v", gap: 0, align: "end", children: [
           ui.Text({ content: p.wait.day, role: "footnote", ink: "secondary", align: "end" }),
-          ui.Text({ content: p.source, role: "footnote", ink: "secondary", lines: 1, align: "end" }),
+          ui.Text({ content: p.reportedBy, role: "footnote", ink: "secondary", lines: 1, align: "end" }),
         ] }),
       ] }),
     ] }),
@@ -637,14 +642,14 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     intent: "An injury report as a list with no card: one row per player (photo with a band-aid, name, position · team, status badge), then the return and the source under the name.",
     useWhen: "a team's or a league's injured players, any number, in the order the data gives them",
     contract: [
-      f("title", "text", "what the list is, e.g. \"Cardinals injuries\", or \"\""),
-      f("showTitle", "boolean", "the server sets this"),
+      f("heading", "text", "what the list is, e.g. \"Cardinals injuries\", or \"\""),
+      s("showHeading", "boolean"),
       f("players", "list", "the injured players, at most 30"),
       ...injuredPlayer("players[]."),
     ],
     params: [],
     build: l => ui.Stack({ axis: "v", gap: 12, children: [
-      ui.Show({ when: l.showTitle, child: ui.Text({ content: l.title, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }) }),
+      ui.Show({ when: l.showHeading, child: ui.Text({ content: l.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }) }),
       ui.Stack({ axis: "v", gap: 12, divided: true, children: each(l.players, "p", (p: AnyRef) => injuryRow(p)) }),
     ] }),
   },
@@ -735,14 +740,14 @@ export function settleInjuries<T extends { readonly values: Record<string, unkno
     // An answer's own title is the heading its parts must not repeat.
     const own = /^answers\.[^.]+$/.test(path) ? text(value.title) : heading;
     const record: Record<string, unknown> = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, walk(child, `${path}.${key}`, own)]));
-    if (Array.isArray(record.players) && "title" in record) {
-      record.showTitle = text(record.title) !== "" && !sameTitle(text(record.title), own);
-      add(`${path}.showTitle`, "boolean");
+    if (fits(COMPONENT_BY_NAME.get("InjuryList")!, record, "data")) {
+      record.showHeading = text(record.heading) !== "" && !sameTitle(text(record.heading), own);
+      add(`${path}.showHeading`, "boolean");
     }
-    if (typeof record.name !== "string" || !("returnDate" in record) || !("status" in record)) return record;
-    const status = text(record.status);
+    if (!fits(COMPONENT_BY_NAME.get("InjuryReport")!, record, "data")) return record;
+    const status = text(record.injuryStatus);
     const badge = STATUS_BADGES[status.toLowerCase()] ?? { label: status, tone: "neutral" };
-    const source = text(record.source);
+    const source = text(record.reportedBy);
     const { wait, line } = injuryWait(record, today);
     for (const key of ["detail", "badge.label", "wait.label", "wait.value", "wait.day", "line", "sourceLine"]) add(`${path}.${key}`, "text");
     for (const key of ["badge.show", "wait.dated", "wait.undated"]) add(`${path}.${key}`, "boolean");
@@ -767,12 +772,12 @@ export function fitHeatmaps<T extends { readonly values: Record<string, unknown>
     if (!isObject(value)) return value;
     const result = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, fit(child, `${path}.${key}`)]));
     // A RecordTable's columns follow its data the same way, up to what fits a phone.
-    if (Array.isArray(value.columns) && Array.isArray(value.rows) && "columnCount" in value) {
+    if (fits(COMPONENT_BY_NAME.get("RecordTable")!, value, "data") && Array.isArray(value.columns) && Array.isArray(value.rows)) {
       const columns = value.columns.slice(0, RECORD_TABLE_COLUMNS);
       const rows = value.rows.map(row => (isObject(row) && Array.isArray(row.cells) ? { ...row, cells: row.cells.slice(0, columns.length) } : row));
       return { ...result, columns, rows, columnCount: String(columns.length || 1) };
     }
-    if (!("caption" in value && "summary" in value && Array.isArray(value.results))) return result;
+    if (!fits(COMPONENT_BY_NAME.get("FixturesHeatmap")!, value, "data") || !Array.isArray(value.results)) return result;
     if (!paths.has(`${path}.columns`)) added.push(`${path}.columns`);
     return { ...result, columns: heatmapColumns(value.results.length) };
   };
@@ -818,8 +823,8 @@ export function settleMissing<T extends { readonly values: Record<string, unknow
     if (Array.isArray(value)) return value.map(item => walk(item, `${path}[]`));
     if (!isObject(value)) return value;
     const record: Record<string, unknown> = Object.fromEntries(Object.entries(value).map(([key, child]) => [key, walk(child, `${path}.${key}`)]));
-    if (Array.isArray(record.entries) && "metric" in record) record.entries = record.entries.filter(entry => !isObject(entry) || !isMissing(entry.value));
-    if (typeof record.name !== "string" || !Array.isArray(record.stats)) return record;
+    if (fits(COMPONENT_BY_NAME.get("Leaderboard")!, record, "data") && Array.isArray(record.entries)) record.entries = record.entries.filter(entry => !isObject(entry) || !isMissing(entry.value));
+    if (!fits(COMPONENT_BY_NAME.get("StatsCard")!, record, "data") || !Array.isArray(record.stats)) return record;
     const stats = record.stats.filter(stat => isObject(stat) && !isMissing(stat.value));
     const rating = isObject(record.rating) ? record.rating : {};
     for (const key of ["value", "tone", "fill", "ink", "label", "caption"]) add(`${path}.rating.${key}`, "text");
@@ -834,7 +839,6 @@ export function settleMissing<T extends { readonly values: Record<string, unknow
   return { ...dataset, values: { ...dataset.values, answers: walk(dataset.values.answers, "answers") }, fields: [...fields.values()] };
 }
 
-const ANSWER_FRAME = new Set(["status", "question", "title", "summary", "note", "source", "asOf", "team"]);
 
 /**
  * Every fact is locked to one place before the writer sees the data, so no card can show it twice:
@@ -850,7 +854,15 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
   const answers = structuredClone(dataset.values.answers) as Record<string, Record<string, unknown>>;
   const removed: { path: string; reason: string }[] = [];
   const at = (id: string, keys: readonly string[]) => keys.reduce<unknown>((value, key) => isObject(value) ? value[key] : undefined, answers[id]);
-  const drop = (id: string, keys: readonly string[], reason: string) => {
+  // A record at the answer's top level goes key by key: its fields never share a name with the frame.
+  const drop = (id: string, keys: readonly string[], reason: string, component?: SportsComponent) => {
+    if (!keys.length) {
+      const answer = answers[id];
+      const own = new Set((component?.contract ?? []).map(field => field.path.split(".")[0]!.replace("[]", "")));
+      if (isObject(answer)) for (const key of own) delete answer[key];
+      for (const key of own) removed.push({ path: ["answers", id, key].join("."), reason });
+      return;
+    }
     const parent = at(id, keys.slice(0, -1));
     if (isObject(parent)) delete parent[keys.at(-1)!];
     removed.push({ path: ["answers", id, ...keys].join("."), reason });
@@ -861,14 +873,14 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
   for (const [id, answer] of Object.entries(answers)) {
     if (!isObject(answer)) continue;
     for (const [key, value] of Object.entries(answer)) {
-      if (ANSWER_FRAME.has(key) || !value || typeof value !== "object") continue;
+      if (ROOT_NAMES.has(key) || !value || typeof value !== "object") continue;
       const print = JSON.stringify(sorted(value));
       const first = seen.get(print);
       if (first) drop(id, [key], `the same data as ${first}`); else seen.set(print, `answers.${id}.${key}`);
     }
   }
 
-  const found = (name: string) => Object.entries(answers).flatMap(([id, answer]) => placements(answer).filter(p => p.component.name === name && !p.list).map(p => ({ id, keys: p.keys })));
+  const found = (name: string) => Object.entries(answers).flatMap(([id, answer]) => placements(answer).filter(p => p.component.name === name && !p.list).map(p => ({ id, keys: p.keys, component: p.component })));
   // A player's second card shows only what the first doesn't; with nothing left, it goes.
   const shown = new Map<string, Set<string>>();
   for (const { id, keys } of found("StatsCard")) {
@@ -885,7 +897,7 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
     card.showStats = kept.length > 0;
     if (card.rating.show) facts.add(fact(card.rating.label, card.rating.value));
     for (const stat of kept) facts.add(fact(stat.label, stat.value));
-    if (!first && !card.rating.show && !kept.length) drop(id, keys, "the first card already shows everything in this one");
+    if (!first && !card.rating.show && !kept.length) drop(id, keys, "the first card already shows everything in this one", COMPONENT_BY_NAME.get("StatsCard"));
   }
   const points = found("TeamPoints");
   if (points.length) {
@@ -895,7 +907,7 @@ export function lockFacts<T extends { readonly values: Record<string, unknown>; 
     const heatmaps = found("FixturesHeatmap");
     const played = (results: unknown) => Array.isArray(results) ? results.filter(r => !(isObject(r) && r.label === "Upcoming")).length : 0;
     const covered = heatmaps.reduce((sum, { id, keys }) => sum + played((at(id, keys) as Record<string, unknown>).results), 0);
-    if (season > 0 && covered >= season) for (const { id, keys } of heatmaps) drop(id, keys, "TeamPoints already shows this season's points and record");
+    if (season > 0 && covered >= season) for (const { id, keys, component } of heatmaps) drop(id, keys, "TeamPoints already shows this season's points and record", component);
   }
   if (found("LeagueStanding").length) {
     for (const { id, keys } of points) {
@@ -917,10 +929,14 @@ export const COMPONENT_BY_NAME: ReadonlyMap<string, SportsComponent> = new Map(S
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
 
-/** Whether `value` carries every field of the contract (lists checked on their first item). */
-export function fits(component: SportsComponent, value: unknown): boolean {
+/**
+ * Whether `value` carries every field of the contract (lists checked on their first item). In the
+ * "data" phase, before the server's settle steps, fields the server sets or defaults are not needed.
+ */
+export function fits(component: SportsComponent, value: unknown, phase: "settled" | "data" = "settled"): boolean {
   if (!isObject(value)) return false;
   return component.contract.every(field => {
+    if (phase === "data" && field.by === "server") return true;
     let current: unknown[] = [value];
     for (const segment of field.path.split(".")) {
       const key = segment.replace(/\[\]$/, "");
@@ -941,18 +957,22 @@ export interface Placement {
   readonly list: boolean;
 }
 
-/** Where components fit inside an answer: a record that fits, or a list whose items fit. */
-export function placements(answer: unknown): Placement[] {
+/**
+ * Where components fit inside an answer, from its top level down to NEST_DEPTH: a record that fits,
+ * or a list whose items fit. Contract names never collide with the server's, so the answer itself
+ * can be a record.
+ */
+export function placements(answer: unknown, phase: "settled" | "data" = "settled"): Placement[] {
   const found: Placement[] = [];
   const walk = (value: unknown, keys: string[], depth: number) => {
-    if (depth > 3) return;
+    if (depth > NEST_DEPTH) return;
     if (Array.isArray(value)) {
       const first = value.find(isObject);
-      if (first) for (const component of SPORTS_COMPONENTS) if (fits(component, first)) found.push({ component, keys, list: true });
+      if (first) for (const component of SPORTS_COMPONENTS) if (fits(component, first, phase)) found.push({ component, keys, list: true });
       return;
     }
     if (!isObject(value)) return;
-    if (keys.length) for (const component of SPORTS_COMPONENTS) if (fits(component, value)) found.push({ component, keys, list: false });
+    for (const component of SPORTS_COMPONENTS) if (fits(component, value, phase)) found.push({ component, keys, list: false });
     for (const [key, child] of Object.entries(value)) walk(child, [...keys, key], depth + 1);
   };
   walk(answer, [], 0);

@@ -1255,7 +1255,7 @@
     },
     {
       "key": "Leaderboard/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Leaderboard/full\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.entries, \"e\", Row(e.name, e.detail, Avatar(e.name, 40, e.logo, null, null, e.color, e.kind), Text(e.value, \"body\", \"semibold\"))), null, null, null, true)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Leaderboard/full\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.entries, \"e\", Row(e.name, e.detail, Avatar(e.name, 40, e.logo, null, null, e.color, e.kind), Text(e.value, \"body\", \"semibold\"))), null, null, null, true)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -1268,7 +1268,7 @@
               "question": "Leaderboard/full",
               "title": "Leaderboard/full",
               "record": {
-                "title": "Top scorers · Premier League",
+                "heading": "Top scorers · Premier League",
                 "metric": "Goals",
                 "entries": [
                   {
@@ -1466,7 +1466,7 @@
     },
     {
       "key": "Leaderboard/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Leaderboard/sparse\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.entries, \"e\", Row(e.name, e.detail, Avatar(e.name, 40, e.logo, null, null, e.color, e.kind), Text(e.value, \"body\", \"semibold\"))), null, null, null, true)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"Leaderboard/sparse\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.entries, \"e\", Row(e.name, e.detail, Avatar(e.name, 40, e.logo, null, null, e.color, e.kind), Text(e.value, \"body\", \"semibold\"))), null, null, null, true)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -1479,7 +1479,7 @@
               "question": "Leaderboard/sparse",
               "title": "Leaderboard/sparse",
               "record": {
-                "title": "Clean sheets",
+                "heading": "Clean sheets",
                 "metric": "",
                 "entries": []
               }
@@ -1550,7 +1550,7 @@
     },
     {
       "key": "FixturesHeatmap/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"FixturesHeatmap/full\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.value, \"display\", \"semibold\", null, null, \"center\"), Text(d.answers.q1.record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Grid(d.answers.q1.record.columns, 4, @Each(d.answers.q1.record.results, \"r\", ColorCell(r.label, r.fill))), Text(d.answers.q1.record.summary, \"footnote\", null, \"secondary\", null, \"center\")])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"FixturesHeatmap/full\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.value, \"display\", \"semibold\", null, null, \"center\"), Text(d.answers.q1.record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Grid(d.answers.q1.record.columns, 4, @Each(d.answers.q1.record.results, \"r\", ColorCell(r.label, r.fill))), Text(d.answers.q1.record.tally, \"footnote\", null, \"secondary\", null, \"center\")])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -1565,7 +1565,7 @@
               "record": {
                 "value": "1.6",
                 "caption": "Points per game · Premier League 2026/27",
-                "summary": "4 won · 2 drawn · 3 lost",
+                "tally": "4 won · 2 drawn · 3 lost",
                 "columns": "10",
                 "results": [
                   {
@@ -1790,7 +1790,7 @@
     },
     {
       "key": "FixturesHeatmap/season",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"FixturesHeatmap/season\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.value, \"display\", \"semibold\", null, null, \"center\"), Text(d.answers.q1.record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Grid(d.answers.q1.record.columns, 4, @Each(d.answers.q1.record.results, \"r\", ColorCell(r.label, r.fill))), Text(d.answers.q1.record.summary, \"footnote\", null, \"secondary\", null, \"center\")])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"FixturesHeatmap/season\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.value, \"display\", \"semibold\", null, null, \"center\"), Text(d.answers.q1.record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Grid(d.answers.q1.record.columns, 4, @Each(d.answers.q1.record.results, \"r\", ColorCell(r.label, r.fill))), Text(d.answers.q1.record.tally, \"footnote\", null, \"secondary\", null, \"center\")])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -1805,7 +1805,7 @@
               "record": {
                 "value": "1.37",
                 "caption": "Points per game · Premier League 2025/26",
-                "summary": "14 won · 10 drawn · 14 lost",
+                "tally": "14 won · 10 drawn · 14 lost",
                 "columns": "19",
                 "results": [
                   {
@@ -2342,7 +2342,7 @@
     },
     {
       "key": "FixturesHeatmap/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"FixturesHeatmap/sparse\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.value, \"display\", \"semibold\", null, null, \"center\"), Text(d.answers.q1.record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Grid(d.answers.q1.record.columns, 4, @Each(d.answers.q1.record.results, \"r\", ColorCell(r.label, r.fill))), Text(d.answers.q1.record.summary, \"footnote\", null, \"secondary\", null, \"center\")])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"FixturesHeatmap/sparse\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.value, \"display\", \"semibold\", null, null, \"center\"), Text(d.answers.q1.record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Grid(d.answers.q1.record.columns, 4, @Each(d.answers.q1.record.results, \"r\", ColorCell(r.label, r.fill))), Text(d.answers.q1.record.tally, \"footnote\", null, \"secondary\", null, \"center\")])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -2357,7 +2357,7 @@
               "record": {
                 "value": "0 pts",
                 "caption": "",
-                "summary": "",
+                "tally": "",
                 "columns": "10",
                 "results": []
               }
@@ -4109,7 +4109,7 @@
     },
     {
       "key": "TeamPoints/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"TeamPoints/full\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 0, [Text(d.answers.q1.record.title, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.subtitle, \"footnote\", null, \"secondary\", 2, \"start\")]), Text(d.answers.q1.record.points, \"title1\", \"semibold\", null, null, \"end\")], \"start\", \"between\"), Stack(\"v\", 12, [Grid(\"8\", 0, [Spacer(0), Text(\"Pld\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"W\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"D\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"L\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"+/-\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"GD\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"PTS\", \"footnote\", null, \"secondary\", null, \"end\")]), Stack(\"v\", 12, [Grid(\"8\", 0, [Text(\"Home\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.home.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.home.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.home.goalDifferenceTone), Text(d.answers.q1.record.home.points, \"footnote\", \"semibold\", null, null, \"end\")]), Grid(\"8\", 0, [Text(\"Away\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.away.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.away.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.away.goalDifferenceTone), Text(d.answers.q1.record.away.points, \"footnote\", \"semibold\", null, null, \"end\")])], null, null, null, true)])])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"TeamPoints/full\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 0, [Text(d.answers.q1.record.heading, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.subtitle, \"footnote\", null, \"secondary\", 2, \"start\")]), Text(d.answers.q1.record.points, \"title1\", \"semibold\", null, null, \"end\")], \"start\", \"between\"), Stack(\"v\", 12, [Grid(\"8\", 0, [Spacer(0), Text(\"Pld\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"W\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"D\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"L\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"+/-\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"GD\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"PTS\", \"footnote\", null, \"secondary\", null, \"end\")]), Stack(\"v\", 12, [Grid(\"8\", 0, [Text(\"Home\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.home.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.home.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.home.goalDifferenceTone), Text(d.answers.q1.record.home.points, \"footnote\", \"semibold\", null, null, \"end\")]), Grid(\"8\", 0, [Text(\"Away\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.away.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.away.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.away.goalDifferenceTone), Text(d.answers.q1.record.away.points, \"footnote\", \"semibold\", null, null, \"end\")])], null, null, null, true)])])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -4122,7 +4122,7 @@
               "question": "TeamPoints/full",
               "title": "TeamPoints/full",
               "record": {
-                "title": "Home and away",
+                "heading": "Home and away",
                 "subtitle": "Rank 1 · 9 played",
                 "points": "27",
                 "home": {
@@ -4512,7 +4512,7 @@
     },
     {
       "key": "TeamPoints/mixed",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"TeamPoints/mixed\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 0, [Text(d.answers.q1.record.title, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.subtitle, \"footnote\", null, \"secondary\", 2, \"start\")]), Text(d.answers.q1.record.points, \"title1\", \"semibold\", null, null, \"end\")], \"start\", \"between\"), Stack(\"v\", 12, [Grid(\"8\", 0, [Spacer(0), Text(\"Pld\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"W\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"D\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"L\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"+/-\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"GD\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"PTS\", \"footnote\", null, \"secondary\", null, \"end\")]), Stack(\"v\", 12, [Grid(\"8\", 0, [Text(\"Home\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.home.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.home.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.home.goalDifferenceTone), Text(d.answers.q1.record.home.points, \"footnote\", \"semibold\", null, null, \"end\")]), Grid(\"8\", 0, [Text(\"Away\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.away.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.away.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.away.goalDifferenceTone), Text(d.answers.q1.record.away.points, \"footnote\", \"semibold\", null, null, \"end\")])], null, null, null, true)])])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"TeamPoints/mixed\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 0, [Text(d.answers.q1.record.heading, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.subtitle, \"footnote\", null, \"secondary\", 2, \"start\")]), Text(d.answers.q1.record.points, \"title1\", \"semibold\", null, null, \"end\")], \"start\", \"between\"), Stack(\"v\", 12, [Grid(\"8\", 0, [Spacer(0), Text(\"Pld\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"W\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"D\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"L\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"+/-\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"GD\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"PTS\", \"footnote\", null, \"secondary\", null, \"end\")]), Stack(\"v\", 12, [Grid(\"8\", 0, [Text(\"Home\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.home.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.home.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.home.goalDifferenceTone), Text(d.answers.q1.record.home.points, \"footnote\", \"semibold\", null, null, \"end\")]), Grid(\"8\", 0, [Text(\"Away\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.away.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.away.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.away.goalDifferenceTone), Text(d.answers.q1.record.away.points, \"footnote\", \"semibold\", null, null, \"end\")])], null, null, null, true)])])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -4525,7 +4525,7 @@
               "question": "TeamPoints/mixed",
               "title": "TeamPoints/mixed",
               "record": {
-                "title": "League record",
+                "heading": "League record",
                 "subtitle": "Rank 13 · 9 played",
                 "points": "9",
                 "home": {
@@ -4915,7 +4915,7 @@
     },
     {
       "key": "TeamPoints/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"TeamPoints/sparse\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 0, [Text(d.answers.q1.record.title, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.subtitle, \"footnote\", null, \"secondary\", 2, \"start\")]), Text(d.answers.q1.record.points, \"title1\", \"semibold\", null, null, \"end\")], \"start\", \"between\"), Stack(\"v\", 12, [Grid(\"8\", 0, [Spacer(0), Text(\"Pld\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"W\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"D\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"L\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"+/-\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"GD\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"PTS\", \"footnote\", null, \"secondary\", null, \"end\")]), Stack(\"v\", 12, [Grid(\"8\", 0, [Text(\"Home\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.home.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.home.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.home.goalDifferenceTone), Text(d.answers.q1.record.home.points, \"footnote\", \"semibold\", null, null, \"end\")]), Grid(\"8\", 0, [Text(\"Away\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.away.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.away.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.away.goalDifferenceTone), Text(d.answers.q1.record.away.points, \"footnote\", \"semibold\", null, null, \"end\")])], null, null, null, true)])])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"TeamPoints/sparse\"}, {})\npick1 = Card([Stack(\"h\", 16, [Stack(\"v\", 0, [Text(d.answers.q1.record.heading, \"headline\", \"semibold\", null, 2, \"start\"), Text(d.answers.q1.record.subtitle, \"footnote\", null, \"secondary\", 2, \"start\")]), Text(d.answers.q1.record.points, \"title1\", \"semibold\", null, null, \"end\")], \"start\", \"between\"), Stack(\"v\", 12, [Grid(\"8\", 0, [Spacer(0), Text(\"Pld\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"W\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"D\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"L\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"+/-\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"GD\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"PTS\", \"footnote\", null, \"secondary\", null, \"end\")]), Stack(\"v\", 12, [Grid(\"8\", 0, [Text(\"Home\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.home.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.home.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.home.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.home.goalDifferenceTone), Text(d.answers.q1.record.home.points, \"footnote\", \"semibold\", null, null, \"end\")]), Grid(\"8\", 0, [Text(\"Away\", \"footnote\", \"medium\", null, 1, \"start\"), Text(d.answers.q1.record.away.played, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.won, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.drawn, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.lost, \"footnote\", null, null, null, \"end\"), Text(d.answers.q1.record.away.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.away.goalDifference, \"footnote\", null, null, null, \"end\", d.answers.q1.record.away.goalDifferenceTone), Text(d.answers.q1.record.away.points, \"footnote\", \"semibold\", null, null, \"end\")])], null, null, null, true)])])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -4928,7 +4928,7 @@
               "question": "TeamPoints/sparse",
               "title": "TeamPoints/sparse",
               "record": {
-                "title": "Points",
+                "heading": "Points",
                 "subtitle": "",
                 "points": "0",
                 "home": {
@@ -5318,7 +5318,7 @@
     },
     {
       "key": "LeagueStanding/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"LeagueStanding/full\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.place, \"display\", \"semibold\"), Text(d.answers.q1.record.summary, \"body\", null, \"secondary\", 2, \"start\")]), Stack(\"v\", 0, @Each(d.answers.q1.record.rows, \"r\", Card([Stack(\"h\", 12, [Text(r.rank, \"footnote\", r.weight, r.ink), Stack(\"v\", 0, [Text(r.name, \"footnote\", r.weight, r.ink, 2, \"start\")]), Text(r.points, \"footnote\", r.weight, r.ink)], \"center\")], r.surface, \"control\", 8))), Show(d.answers.q1.record.showVenues, Stack(\"v\", 16, [Divider(), Grid(\"2\", 16, [Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"house\", 16, \"secondary\"), Text(\"Home\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.home.detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"airplane\", 16, \"secondary\"), Text(\"Away\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.away.detail, \"footnote\", null, \"secondary\")])])]))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"LeagueStanding/full\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.place, \"display\", \"semibold\"), Text(d.answers.q1.record.gaps, \"body\", null, \"secondary\", 2, \"start\")]), Stack(\"v\", 0, @Each(d.answers.q1.record.rows, \"r\", Card([Stack(\"h\", 12, [Text(r.rank, \"footnote\", r.weight, r.ink), Stack(\"v\", 0, [Text(r.name, \"footnote\", r.weight, r.ink, 2, \"start\")]), Text(r.points, \"footnote\", r.weight, r.ink)], \"center\")], r.surface, \"control\", 8))), Show(d.answers.q1.record.showVenues, Stack(\"v\", 16, [Divider(), Grid(\"2\", 16, [Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"house\", 16, \"secondary\"), Text(\"Home\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.home.detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"airplane\", 16, \"secondary\"), Text(\"Away\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.away.detail, \"footnote\", null, \"secondary\")])])]))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -5332,7 +5332,7 @@
               "title": "LeagueStanding/full",
               "record": {
                 "place": "1st",
-                "summary": "27 points · 5 clear of 2nd",
+                "gaps": "27 points · 5 clear of 2nd",
                 "rows": [
                   {
                     "rank": "1",
@@ -5770,7 +5770,7 @@
     },
     {
       "key": "LeagueStanding/mixed",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"LeagueStanding/mixed\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.place, \"display\", \"semibold\"), Text(d.answers.q1.record.summary, \"body\", null, \"secondary\", 2, \"start\")]), Stack(\"v\", 0, @Each(d.answers.q1.record.rows, \"r\", Card([Stack(\"h\", 12, [Text(r.rank, \"footnote\", r.weight, r.ink), Stack(\"v\", 0, [Text(r.name, \"footnote\", r.weight, r.ink, 2, \"start\")]), Text(r.points, \"footnote\", r.weight, r.ink)], \"center\")], r.surface, \"control\", 8))), Show(d.answers.q1.record.showVenues, Stack(\"v\", 16, [Divider(), Grid(\"2\", 16, [Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"house\", 16, \"secondary\"), Text(\"Home\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.home.detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"airplane\", 16, \"secondary\"), Text(\"Away\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.away.detail, \"footnote\", null, \"secondary\")])])]))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"LeagueStanding/mixed\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.place, \"display\", \"semibold\"), Text(d.answers.q1.record.gaps, \"body\", null, \"secondary\", 2, \"start\")]), Stack(\"v\", 0, @Each(d.answers.q1.record.rows, \"r\", Card([Stack(\"h\", 12, [Text(r.rank, \"footnote\", r.weight, r.ink), Stack(\"v\", 0, [Text(r.name, \"footnote\", r.weight, r.ink, 2, \"start\")]), Text(r.points, \"footnote\", r.weight, r.ink)], \"center\")], r.surface, \"control\", 8))), Show(d.answers.q1.record.showVenues, Stack(\"v\", 16, [Divider(), Grid(\"2\", 16, [Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"house\", 16, \"secondary\"), Text(\"Home\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.home.detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"airplane\", 16, \"secondary\"), Text(\"Away\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.away.detail, \"footnote\", null, \"secondary\")])])]))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -5784,7 +5784,7 @@
               "title": "LeagueStanding/mixed",
               "record": {
                 "place": "13th",
-                "summary": "9 points · 1 behind 12th, 1 ahead of 14th",
+                "gaps": "9 points · 1 behind 12th, 1 ahead of 14th",
                 "rows": [
                   {
                     "rank": "12",
@@ -6222,7 +6222,7 @@
     },
     {
       "key": "LeagueStanding/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"LeagueStanding/sparse\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.place, \"display\", \"semibold\"), Text(d.answers.q1.record.summary, \"body\", null, \"secondary\", 2, \"start\")]), Stack(\"v\", 0, @Each(d.answers.q1.record.rows, \"r\", Card([Stack(\"h\", 12, [Text(r.rank, \"footnote\", r.weight, r.ink), Stack(\"v\", 0, [Text(r.name, \"footnote\", r.weight, r.ink, 2, \"start\")]), Text(r.points, \"footnote\", r.weight, r.ink)], \"center\")], r.surface, \"control\", 8))), Show(d.answers.q1.record.showVenues, Stack(\"v\", 16, [Divider(), Grid(\"2\", 16, [Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"house\", 16, \"secondary\"), Text(\"Home\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.home.detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"airplane\", 16, \"secondary\"), Text(\"Away\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.away.detail, \"footnote\", null, \"secondary\")])])]))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"LeagueStanding/sparse\"}, {})\npick1 = Card([Stack(\"v\", 8, [Text(d.answers.q1.record.place, \"display\", \"semibold\"), Text(d.answers.q1.record.gaps, \"body\", null, \"secondary\", 2, \"start\")]), Stack(\"v\", 0, @Each(d.answers.q1.record.rows, \"r\", Card([Stack(\"h\", 12, [Text(r.rank, \"footnote\", r.weight, r.ink), Stack(\"v\", 0, [Text(r.name, \"footnote\", r.weight, r.ink, 2, \"start\")]), Text(r.points, \"footnote\", r.weight, r.ink)], \"center\")], r.surface, \"control\", 8))), Show(d.answers.q1.record.showVenues, Stack(\"v\", 16, [Divider(), Grid(\"2\", 16, [Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"house\", 16, \"secondary\"), Text(\"Home\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.home.detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"airplane\", 16, \"secondary\"), Text(\"Away\", \"body\", \"medium\")], \"center\"), Text(d.answers.q1.record.away.detail, \"footnote\", null, \"secondary\")])])]))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -6236,7 +6236,7 @@
               "title": "LeagueStanding/sparse",
               "record": {
                 "place": "",
-                "summary": "",
+                "gaps": "",
                 "rows": [],
                 "home": {
                   "detail": ""
@@ -6445,7 +6445,7 @@
     },
     {
       "key": "MatchTopPlayers/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchTopPlayers/full\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchTopPlayers/full\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -6458,7 +6458,7 @@
               "question": "MatchTopPlayers/full",
               "title": "MatchTopPlayers/full",
               "record": {
-                "title": "Top rated · Chelsea 2-1 Arsenal",
+                "heading": "Top rated · Chelsea 2-1 Arsenal",
                 "metric": "Rating",
                 "rows": [
                   {
@@ -7463,7 +7463,7 @@
     },
     {
       "key": "MatchTopPlayers/one",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchTopPlayers/one\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchTopPlayers/one\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -7476,7 +7476,7 @@
               "question": "MatchTopPlayers/one",
               "title": "MatchTopPlayers/one",
               "record": {
-                "title": "Top scorers · Chelsea 2-1 Arsenal",
+                "heading": "Top scorers · Chelsea 2-1 Arsenal",
                 "metric": "Goals",
                 "rows": [
                   {
@@ -7861,7 +7861,7 @@
     },
     {
       "key": "MatchTopPlayers/uneven",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchTopPlayers/uneven\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchTopPlayers/uneven\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -7874,7 +7874,7 @@
               "question": "MatchTopPlayers/uneven",
               "title": "MatchTopPlayers/uneven",
               "record": {
-                "title": "Top scorers · Chelsea 3-1 Arsenal",
+                "heading": "Top scorers · Chelsea 3-1 Arsenal",
                 "metric": "Goals",
                 "rows": [
                   {
@@ -8569,7 +8569,7 @@
     },
     {
       "key": "MatchTopPlayers/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchTopPlayers/sparse\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MatchTopPlayers/sparse\"}, {})\npick1 = Card([Stack(\"h\", 12, [Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -8582,7 +8582,7 @@
               "question": "MatchTopPlayers/sparse",
               "title": "MatchTopPlayers/sparse",
               "record": {
-                "title": "Top scorers",
+                "heading": "Top scorers",
                 "metric": "",
                 "rows": []
               }
@@ -9221,7 +9221,7 @@
     },
     {
       "key": "MetricBars/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MetricBars/full\"}, {})\npick1 = Stack(\"v\", 12, [Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(d.answers.q1.record.columns, @Each(d.answers.q1.record.columns, \"c\", Avatar(c.name, 40, c.logo, null, null, c.color, c.kind)))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MetricBars/full\"}, {})\npick1 = Stack(\"v\", 12, [Stack(\"h\", 12, [Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(d.answers.q1.record.columns, @Each(d.answers.q1.record.columns, \"c\", Avatar(c.name, 40, c.logo, null, null, c.color, c.kind)))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -9234,7 +9234,7 @@
               "question": "MetricBars/full",
               "title": "MetricBars/full",
               "record": {
-                "title": "Egor Demin · points per game",
+                "heading": "Egor Demin · points per game",
                 "metric": "PPG",
                 "columns": [
                   {
@@ -9373,7 +9373,7 @@
     },
     {
       "key": "MetricBars/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MetricBars/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(d.answers.q1.record.columns, @Each(d.answers.q1.record.columns, \"c\", Avatar(c.name, 40, c.logo, null, null, c.color, c.kind)))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MetricBars/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Stack(\"h\", 12, [Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(d.answers.q1.record.columns, @Each(d.answers.q1.record.columns, \"c\", Avatar(c.name, 40, c.logo, null, null, c.color, c.kind)))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -9386,7 +9386,7 @@
               "question": "MetricBars/sparse",
               "title": "MetricBars/sparse",
               "record": {
-                "title": "Egor Demin · points per game",
+                "heading": "Egor Demin · points per game",
                 "metric": "PPG",
                 "columns": [
                   {
@@ -10298,7 +10298,7 @@
     },
     {
       "key": "PlayersMetric/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayersMetric/full\"}, {})\npick1 = Stack(\"v\", 16, [Text(d.answers.q1.record.title, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(d.answers.q1.record.players, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"race\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, null, @Each(d.answers.q1.record.players, \"x\", Avatar(x.name, 40, x.logo, null, null, x.color, \"player\")))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayersMetric/full\"}, {})\npick1 = Stack(\"v\", 16, [Text(d.answers.q1.record.heading, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(d.answers.q1.record.players, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"race\", d.answers.q1.record.seriesKind, d.answers.q1.record.subtitle, null, @Each(d.answers.q1.record.players, \"x\", Avatar(x.name, 40, x.logo, null, null, x.color, \"player\")))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -10311,9 +10311,9 @@
               "question": "PlayersMetric/full",
               "title": "PlayersMetric/full",
               "record": {
-                "title": "Interceptions thrown",
+                "heading": "Interceptions thrown",
                 "subtitle": "AFC quarterbacks · 2026 season",
-                "kind": "cumulative",
+                "seriesKind": "cumulative",
                 "periods": [
                   "Week 1",
                   "Week 2",
@@ -10596,7 +10596,7 @@
     },
     {
       "key": "PlayersMetric/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayersMetric/sparse\"}, {})\npick1 = Stack(\"v\", 16, [Text(d.answers.q1.record.title, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(d.answers.q1.record.players, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"race\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, null, @Each(d.answers.q1.record.players, \"x\", Avatar(x.name, 40, x.logo, null, null, x.color, \"player\")))])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayersMetric/sparse\"}, {})\npick1 = Stack(\"v\", 16, [Text(d.answers.q1.record.heading, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(d.answers.q1.record.players, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"race\", d.answers.q1.record.seriesKind, d.answers.q1.record.subtitle, null, @Each(d.answers.q1.record.players, \"x\", Avatar(x.name, 40, x.logo, null, null, x.color, \"player\")))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -10609,9 +10609,9 @@
               "question": "PlayersMetric/sparse",
               "title": "PlayersMetric/sparse",
               "record": {
-                "title": "Interceptions thrown",
+                "heading": "Interceptions thrown",
                 "subtitle": "Chiefs quarterbacks · 2026 season",
-                "kind": "cumulative",
+                "seriesKind": "cumulative",
                 "periods": [
                   "Week 1",
                   "Week 2",
@@ -11186,7 +11186,7 @@
     },
     {
       "key": "RecordTable/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"RecordTable/full\"}, {})\npick1 = Card([Text(d.answers.q1.record.title, \"headline\", \"semibold\"), Stack(\"v\", 12, [Grid(d.answers.q1.record.columnCount, 4, [Spacer(0), @Each(d.answers.q1.record.columns, \"c\", Text(c.label, \"footnote\", null, \"secondary\", 1))], null, \"3\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(d.answers.q1.record.columnCount, 4, [Text(r.label, \"footnote\", \"medium\", null, 2, \"start\"), @Each(r.cells, \"v\", Text(v.value, \"footnote\", null, null, 1))], null, \"3\")), null, null, null, true)])])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"RecordTable/full\"}, {})\npick1 = Card([Text(d.answers.q1.record.heading, \"headline\", \"semibold\"), Stack(\"v\", 12, [Grid(d.answers.q1.record.columnCount, 4, [Spacer(0), @Each(d.answers.q1.record.columns, \"c\", Text(c.label, \"footnote\", null, \"secondary\", 1))], null, \"3\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(d.answers.q1.record.columnCount, 4, [Text(r.label, \"footnote\", \"medium\", null, 2, \"start\"), @Each(r.cells, \"v\", Text(v.value, \"footnote\", null, null, 1))], null, \"3\")), null, null, null, true)])])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -11199,7 +11199,7 @@
               "question": "RecordTable/full",
               "title": "RecordTable/full",
               "record": {
-                "title": "Passing",
+                "heading": "Passing",
                 "columnCount": "4",
                 "columns": [
                   {
@@ -11484,7 +11484,7 @@
     },
     {
       "key": "RecordTable/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"RecordTable/sparse\"}, {})\npick1 = Card([Text(d.answers.q1.record.title, \"headline\", \"semibold\"), Stack(\"v\", 12, [Grid(d.answers.q1.record.columnCount, 4, [Spacer(0), @Each(d.answers.q1.record.columns, \"c\", Text(c.label, \"footnote\", null, \"secondary\", 1))], null, \"3\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(d.answers.q1.record.columnCount, 4, [Text(r.label, \"footnote\", \"medium\", null, 2, \"start\"), @Each(r.cells, \"v\", Text(v.value, \"footnote\", null, null, 1))], null, \"3\")), null, null, null, true)])])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"RecordTable/sparse\"}, {})\npick1 = Card([Text(d.answers.q1.record.heading, \"headline\", \"semibold\"), Stack(\"v\", 12, [Grid(d.answers.q1.record.columnCount, 4, [Spacer(0), @Each(d.answers.q1.record.columns, \"c\", Text(c.label, \"footnote\", null, \"secondary\", 1))], null, \"3\"), Stack(\"v\", 12, @Each(d.answers.q1.record.rows, \"r\", Grid(d.answers.q1.record.columnCount, 4, [Text(r.label, \"footnote\", \"medium\", null, 2, \"start\"), @Each(r.cells, \"v\", Text(v.value, \"footnote\", null, null, 1))], null, \"3\")), null, null, null, true)])])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -11497,7 +11497,7 @@
               "question": "RecordTable/sparse",
               "title": "RecordTable/sparse",
               "record": {
-                "title": "No games yet",
+                "heading": "No games yet",
                 "columnCount": "1",
                 "columns": [],
                 "rows": []
@@ -11573,7 +11573,7 @@
     },
     {
       "key": "InjuryReport/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/full\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.source, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/full\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.reportedBy, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -11592,10 +11592,10 @@
                 "team": "Cardinals",
                 "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4870808.png",
                 "color": "#a40227",
-                "status": "Injured Reserve",
+                "injuryStatus": "Injured Reserve",
                 "returnDate": "2026-12-06",
                 "returnNote": "",
-                "source": "Cardinals' official site",
+                "reportedBy": "Cardinals' official site",
                 "detail": "RB · Cardinals",
                 "badge": {
                   "label": "IR",
@@ -11846,7 +11846,7 @@
     },
     {
       "key": "InjuryReport/tomorrow",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/tomorrow\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.source, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/tomorrow\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.reportedBy, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -11865,10 +11865,10 @@
                 "team": "Hawks",
                 "logo": "https://a.espncdn.com/i/headshots/nba/players/full/3146557.png",
                 "color": "#c8102e",
-                "status": "Day-To-Day",
+                "injuryStatus": "Day-To-Day",
                 "returnDate": "2026-11-06",
                 "returnNote": "",
-                "source": "Hawks' official site",
+                "reportedBy": "Hawks' official site",
                 "detail": "C · Hawks",
                 "badge": {
                   "label": "Day-to-day",
@@ -12119,7 +12119,7 @@
     },
     {
       "key": "InjuryReport/noted",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/noted\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.source, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/noted\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.reportedBy, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -12138,10 +12138,10 @@
                 "team": "Chelsea",
                 "logo": "https://images.fotmob.com/image_resources/playerimages/807729.png",
                 "color": "#034694",
-                "status": "",
+                "injuryStatus": "",
                 "returnDate": "",
                 "returnNote": "Mid-January 2027",
-                "source": "The Standard",
+                "reportedBy": "The Standard",
                 "detail": "Defender · Chelsea",
                 "badge": {
                   "label": "",
@@ -12392,7 +12392,7 @@
     },
     {
       "key": "InjuryReport/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/sparse\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.source, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryReport/sparse\"}, {})\npick1 = Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(d.answers.q1.record.name, 56, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, d.answers.q1.record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(d.answers.q1.record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(d.answers.q1.record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(d.answers.q1.record.badge.show, Badge(d.answers.q1.record.badge.label, d.answers.q1.record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(d.answers.q1.record.wait.dated, Stack(\"v\", 0, [Text(d.answers.q1.record.wait.label, \"footnote\", null, \"secondary\"), Text(d.answers.q1.record.wait.value, \"headline\", \"semibold\")])), Show(d.answers.q1.record.wait.undated, Text(d.answers.q1.record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(d.answers.q1.record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(d.answers.q1.record.reportedBy, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -12411,10 +12411,10 @@
                 "team": "",
                 "logo": "",
                 "color": "",
-                "status": "",
+                "injuryStatus": "",
                 "returnDate": "",
                 "returnNote": "",
-                "source": "",
+                "reportedBy": "",
                 "detail": "",
                 "badge": {
                   "label": "",
@@ -12665,7 +12665,7 @@
     },
     {
       "key": "InjuryList/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryList/full\"}, {})\npick1 = Stack(\"v\", 12, [Show(d.answers.q1.record.showTitle, Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\")), Stack(\"v\", 12, @Each(d.answers.q1.record.players, \"p\", Stack(\"v\", 4, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(p.name, 40, p.logo, null, null, p.color, p.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(p.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(p.detail, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(p.badge.show, Badge(p.badge.label, p.badge.tone))], \"center\", \"between\"), Stack(\"h\", 12, [Spacer(40), Stack(\"h\", 4, [Text(p.line, \"footnote\", \"medium\", null, 1), Text(p.sourceLine, \"footnote\", null, \"secondary\", 1, \"start\")])])])), null, null, null, true)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryList/full\"}, {})\npick1 = Stack(\"v\", 12, [Show(d.answers.q1.record.showHeading, Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\")), Stack(\"v\", 12, @Each(d.answers.q1.record.players, \"p\", Stack(\"v\", 4, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(p.name, 40, p.logo, null, null, p.color, p.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(p.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(p.detail, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(p.badge.show, Badge(p.badge.label, p.badge.tone))], \"center\", \"between\"), Stack(\"h\", 12, [Spacer(40), Stack(\"h\", 4, [Text(p.line, \"footnote\", \"medium\", null, 1), Text(p.sourceLine, \"footnote\", null, \"secondary\", 1, \"start\")])])])), null, null, null, true)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -12678,8 +12678,8 @@
               "question": "InjuryList/full",
               "title": "InjuryList/full",
               "record": {
-                "title": "NFL injuries",
-                "showTitle": true,
+                "heading": "NFL injuries",
+                "showHeading": true,
                 "players": [
                   {
                     "name": "Jeremiyah Love",
@@ -12688,10 +12688,10 @@
                     "team": "Cardinals",
                     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4870808.png",
                     "color": "#a40227",
-                    "status": "Injured Reserve",
+                    "injuryStatus": "Injured Reserve",
                     "returnDate": "2026-12-06",
                     "returnNote": "",
-                    "source": "Cardinals' official site",
+                    "reportedBy": "Cardinals' official site",
                     "detail": "RB · Cardinals",
                     "badge": {
                       "label": "IR",
@@ -12715,10 +12715,10 @@
                     "team": "Ravens",
                     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4035671.png",
                     "color": "#29126f",
-                    "status": "Out",
+                    "injuryStatus": "Out",
                     "returnDate": "",
                     "returnNote": "Out for season",
-                    "source": "ESPN",
+                    "reportedBy": "ESPN",
                     "detail": "QB · Ravens",
                     "badge": {
                       "label": "Out",
@@ -12742,10 +12742,10 @@
                     "team": "Cardinals",
                     "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4685503.png",
                     "color": "#a40227",
-                    "status": "Questionable",
+                    "injuryStatus": "Questionable",
                     "returnDate": "2026-11-08",
                     "returnNote": "",
-                    "source": "",
+                    "reportedBy": "",
                     "detail": "DT · Cardinals",
                     "badge": {
                       "label": "Questionable",
@@ -13274,7 +13274,7 @@
     },
     {
       "key": "InjuryList/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryList/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Show(d.answers.q1.record.showTitle, Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\")), Stack(\"v\", 12, @Each(d.answers.q1.record.players, \"p\", Stack(\"v\", 4, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(p.name, 40, p.logo, null, null, p.color, p.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(p.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(p.detail, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(p.badge.show, Badge(p.badge.label, p.badge.tone))], \"center\", \"between\"), Stack(\"h\", 12, [Spacer(40), Stack(\"h\", 4, [Text(p.line, \"footnote\", \"medium\", null, 1), Text(p.sourceLine, \"footnote\", null, \"secondary\", 1, \"start\")])])])), null, null, null, true)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"InjuryList/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Show(d.answers.q1.record.showHeading, Text(d.answers.q1.record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\")), Stack(\"v\", 12, @Each(d.answers.q1.record.players, \"p\", Stack(\"v\", 4, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(p.name, 40, p.logo, null, null, p.color, p.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(p.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(p.detail, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(p.badge.show, Badge(p.badge.label, p.badge.tone))], \"center\", \"between\"), Stack(\"h\", 12, [Spacer(40), Stack(\"h\", 4, [Text(p.line, \"footnote\", \"medium\", null, 1), Text(p.sourceLine, \"footnote\", null, \"secondary\", 1, \"start\")])])])), null, null, null, true)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -13287,8 +13287,8 @@
               "question": "InjuryList/sparse",
               "title": "InjuryList/sparse",
               "record": {
-                "title": "",
-                "showTitle": false,
+                "heading": "",
+                "showHeading": false,
                 "players": []
               }
             }

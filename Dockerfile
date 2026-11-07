@@ -5,13 +5,14 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# The preview imports ../src/lang and reads ../design at build time.
+# The preview imports ../src/lang and ../catalog/openui and reads ../design at build time.
 FROM deps AS preview-build
 COPY preview/package.json preview/package-lock.json preview/
 RUN npm --prefix preview ci
 COPY tsconfig.json ./
 COPY src/ src/
 COPY design/ design/
+COPY catalog/ catalog/
 COPY preview/ preview/
 RUN npm --prefix preview run build
 

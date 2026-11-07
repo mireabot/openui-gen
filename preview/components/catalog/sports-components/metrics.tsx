@@ -14,7 +14,7 @@ import { Example, Showcase } from "./screen";
  */
 
 const bars = (record: typeof samples.MetricBars.full): BarSet => ({
-  title: record.title,
+  title: record.heading,
   metric: record.metric,
   subjects: record.columns.map((column, i) => ({ id: `${column.caption}-${i}`, name: column.name, caption: column.caption, value: column.value, display: column.display, secondary: column.secondary, color: column.color, photo: column.logo })),
 });
@@ -59,10 +59,10 @@ export function PlayersMetricShowcase() {
   return (
     <Showcase title="Players metric">
       <Example label="Four AFC quarterbacks" first>
-        <PlayersMetric title={qbs.title} subtitle={qbs.subtitle} people={people} values={qbs.players.map(player => player.values as Values)} periods={qbs.periods} ends={[qbs.from, qbs.to]} footnote="A gap is a bye week." />
+        <PlayersMetric title={qbs.heading} subtitle={qbs.subtitle} people={people} values={qbs.players.map(player => player.values as Values)} periods={qbs.periods} ends={[qbs.from, qbs.to]} footnote="A gap is a bye week." />
       </Example>
       <Example label="Two from one club, one with a single game">
-        <PlayersMetric title={chiefs.title} subtitle={chiefs.subtitle} people={chiefsPeople} values={chiefs.players.map(player => player.values as Values)} periods={chiefs.periods} ends={[chiefs.from, chiefs.to]} footnote="Fields played week 1 only, so his line runs flat across the season. A second player from a club draws in white." />
+        <PlayersMetric title={chiefs.heading} subtitle={chiefs.subtitle} people={chiefsPeople} values={chiefs.players.map(player => player.values as Values)} periods={chiefs.periods} ends={[chiefs.from, chiefs.to]} footnote="Fields played week 1 only, so his line runs flat across the season. A second player from a club draws in white." />
       </Example>
     </Showcase>
   );

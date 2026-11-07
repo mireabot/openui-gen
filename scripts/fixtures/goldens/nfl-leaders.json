@@ -11,7 +11,7 @@
    "leaderboards": [
     {
      "key": "passingYards",
-     "title": "Passing Yards",
+     "heading": "Passing Yards",
      "metric": "YDS",
      "entries": [
       {
@@ -128,7 +128,7 @@
     },
     {
      "key": "passingTouchdowns",
-     "title": "Passing Touchdowns",
+     "heading": "Passing Touchdowns",
      "metric": "TD",
      "entries": [
       {
@@ -245,7 +245,7 @@
     },
     {
      "key": "rushingYards",
-     "title": "Rushing Yards",
+     "heading": "Rushing Yards",
      "metric": "YDS",
      "entries": [
       {
@@ -362,7 +362,7 @@
     },
     {
      "key": "receivingYards",
-     "title": "Receiving Yards",
+     "heading": "Receiving Yards",
      "metric": "YDS",
      "entries": [
       {
@@ -479,7 +479,7 @@
     },
     {
      "key": "receptions",
-     "title": "Receptions",
+     "heading": "Receptions",
      "metric": "REC",
      "entries": [
       {
@@ -596,7 +596,7 @@
     },
     {
      "key": "sacks",
-     "title": "Sacks",
+     "heading": "Sacks",
      "metric": "SACK",
      "entries": [
       {
@@ -713,7 +713,7 @@
     },
     {
      "key": "interceptions",
-     "title": "Interceptions",
+     "heading": "Interceptions",
      "metric": "INT",
      "entries": [
       {

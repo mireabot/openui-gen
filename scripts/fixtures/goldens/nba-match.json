@@ -307,7 +307,7 @@
    ],
    "teamTables": [
     {
-     "title": "Box score",
+     "heading": "Box score",
      "columnCount": "7",
      "columns": [
       {
@@ -570,7 +570,7 @@
    ],
    "opponentTables": [
     {
-     "title": "Box score",
+     "heading": "Box score",
      "columnCount": "7",
      "columns": [
       {

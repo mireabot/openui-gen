@@ -11,7 +11,7 @@
    "leaderboards": [
     {
      "key": "pointsPerGame",
-     "title": "Points Per Game",
+     "heading": "Points Per Game",
      "metric": "PTS",
      "entries": [
       {
@@ -128,7 +128,7 @@
     },
     {
      "key": "reboundsPerGame",
-     "title": "Rebounds Per Game",
+     "heading": "Rebounds Per Game",
      "metric": "REB",
      "entries": [
       {
@@ -245,7 +245,7 @@
     },
     {
      "key": "assistsPerGame",
-     "title": "Assists Per Game",
+     "heading": "Assists Per Game",
      "metric": "AST",
      "entries": [
       {
@@ -362,7 +362,7 @@
     },
     {
      "key": "stealsPerGame",
-     "title": "Steals Per Game",
+     "heading": "Steals Per Game",
      "metric": "STL",
      "entries": [
       {
@@ -479,7 +479,7 @@
     },
     {
      "key": "blocksPerGame",
-     "title": "Blocks Per Game",
+     "heading": "Blocks Per Game",
      "metric": "BLK",
      "entries": [
       {
@@ -596,7 +596,7 @@
     },
     {
      "key": "3PointsMadePerGame",
-     "title": "Average 3-Point Field Goals Made",
+     "heading": "Average 3-Point Field Goals Made",
      "metric": "3PM",
      "entries": [
       {

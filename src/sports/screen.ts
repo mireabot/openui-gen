@@ -1,7 +1,7 @@
 import type { DataPath, DatasetValues, QuestionId, ScreenPack, ScreenSource } from "../lang/compiler.js";
 import { each, refAt, ui, type Expr, type Node } from "../lang/program.js";
 import { COMPONENT_BY_NAME, COMPONENT_SIGNATURES, placementCall, placements } from "./components.js";
-import { BASE_FIELDS } from "./dataset.js";
+import { isFrameName, LABEL_NAMES, ROOT_NAMES } from "./names.js";
 
 /**
  * The sports screen pack: answers live at `d.answers.<id>`; a question is shown when a part reads
@@ -16,16 +16,14 @@ type Answer = Record<string, unknown>;
 const answerOf = (values: DatasetValues, q: QuestionId): Answer | undefined => ((values.answers ?? {}) as Record<string, Answer>)[q];
 const at = (q: QuestionId, ...keys: string[]): Expr => ["answers", q, ...keys].reduce<Expr>((obj, field) => ({ k: "Member", obj, field }), { k: "Ref", n: "d" });
 const ref = (q: QuestionId, ...keys: string[]): AnyRef => refAt(at(q, ...keys));
-/** Reading only these names the subject of an answer; it does not answer anything. */
-const NOT_CONTENT = new Set<string>(["status", "question", "title", "source", "asOf", "team"]);
 
 function shows(q: QuestionId, reads: readonly DataPath[], values: DatasetValues): boolean {
   const answer = answerOf(values, q);
   if (!answer) return true;
   if (answer.status === "unavailable") return reads.some(path => path[0] === "note");
   // Its facts were locked to another answer: nothing is left here to show.
-  if (Object.keys(answer).every(key => NOT_CONTENT.has(key))) return true;
-  return reads.some(path => typeof path[0] === "string" && !NOT_CONTENT.has(path[0]));
+  if (Object.keys(answer).every(key => LABEL_NAMES.has(key))) return true;
+  return reads.some(path => typeof path[0] === "string" && !LABEL_NAMES.has(path[0]));
 }
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
@@ -51,7 +49,7 @@ function fallback(q: QuestionId, values: DatasetValues): Expr {
   const footnote = typeof answer.source === "string" && answer.source ? [ui.Text({ content: ref(q, "source"), role: "footnote", ink: "tertiary" })] : [];
   // An answer shaped for a Sports component shows as that component.
   // Not a club's name line, though, when the answer has more to say than which club it is about.
-  const hasContent = Object.keys(answer).some(key => !(BASE_FIELDS as readonly string[]).includes(key) && key !== "team");
+  const hasContent = Object.keys(answer).some(key => !ROOT_NAMES.has(key));
   const placed = placements(answer).find(p => !(hasContent && p.keys[0] === "team"));
   if (placed) {
     const data = ref(q, ...placed.keys);
@@ -60,7 +58,7 @@ function fallback(q: QuestionId, values: DatasetValues): Expr {
   }
   const children: Node[] = [ui.Text({ content: ref(q, "title"), role: "headline", weight: "semibold" })];
   if (typeof answer.summary === "string" && answer.summary) children.push(ui.Text({ content: ref(q, "summary"), role: "body" }));
-  const content = Object.entries(answer).filter(([key]) => !(BASE_FIELDS as readonly string[]).includes(key));
+  const content = Object.entries(answer).filter(([key]) => !isFrameName(key));
   const scalars = content.filter(([, v]) => typeof v === "string" || typeof v === "number").slice(0, 6);
   // KeyValue takes text only: numbers go in a row with a Number on the right.
   if (scalars.length) children.push(ui.Stack({ axis: "v", gap: 8, children: scalars.map(([key, v]) => typeof v === "number"

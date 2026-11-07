@@ -6,6 +6,7 @@ import { isElement } from "../src/lang/tree.js";
 import { SPORTS_COMPONENTS, fits, settleInjuries } from "../src/sports/components.js";
 import { valueTicks } from "../src/sports/fotmob.js";
 import { SPORTS_SCREEN } from "../src/sports/screen.js";
+import METRIC_SAMPLES from "../preview/components/catalog/sports-components/metrics-data.json" with { type: "json" };
 
 /**
  * The compiler parity suite (catalog/openui/fixtures.json): OpenUI programs in the shape the server
@@ -29,7 +30,7 @@ const fromArsenal = (name: string, detail: string, photo: number, value: string,
 /** An injured player as the schema stage writes it, settled as the server would on 5 Nov 2026. */
 const INJURY_DAY = new Date("2026-11-05T12:00:00Z");
 const injured = (name: string, position: string, team: string, logo: string, color: string, status: string, returnDate: string, returnNote: string, source: string) => {
-  const raw = { name, kind: "player", position, team, logo, color, status, returnDate, returnNote, source };
+  const raw = { name, kind: "player", position, team, logo, color, injuryStatus: status, returnDate, returnNote, reportedBy: source };
   return (settleInjuries({ values: { answers: { q: raw } }, fields: [] }, INJURY_DAY).values.answers as { q: Record<string, unknown> }).q;
 };
 const nflPhoto = (id: number) => `https://a.espncdn.com/i/headshots/nfl/players/full/${id}.png`;
@@ -73,22 +74,22 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
     ] },
   },
   Leaderboard: {
-    full: { title: "Top scorers · Premier League", metric: "Goals", entries: [
+    full: { heading: "Top scorers · Premier League", metric: "Goals", entries: [
       { kind: "player", name: "Erling Haaland", detail: "Forward · Manchester City", value: "11", logo: "https://images.fotmob.com/image_resources/playerimages/737066.png", color: "#99c5ea" },
       { kind: "player", name: "João Pedro", detail: "Forward · Chelsea", value: "5", logo: "https://images.fotmob.com/image_resources/playerimages/1021382.png", color: "#034694" },
       { kind: "player", name: "Bukayo Saka", detail: "Winger · Arsenal", value: "4", logo: "https://images.fotmob.com/image_resources/playerimages/961995.png", color: "#e20520" },
     ] },
-    sparse: { title: "Clean sheets", metric: "", entries: [] },
+    sparse: { heading: "Clean sheets", metric: "", entries: [] },
   },
   FixturesHeatmap: {
-    full: { value: "1.6", caption: "Points per game · Premier League 2026/27", summary: "4 won · 2 drawn · 3 lost", columns: "10", results: [
+    full: { value: "1.6", caption: "Points per game · Premier League 2026/27", tally: "4 won · 2 drawn · 3 lost", columns: "10", results: [
       { label: "Win", fill: "tone.good.fg" }, { label: "Draw", fill: "outline.control" }, { label: "Loss", fill: "tone.bad.fg" },
       { label: "Win", fill: "tone.good.fg" }, { label: "Loss", fill: "tone.bad.fg" }, { label: "Draw", fill: "outline.control" },
       { label: "Win", fill: "tone.good.fg" }, { label: "Win", fill: "tone.good.fg" }, { label: "Loss", fill: "tone.bad.fg" },
       { label: "Upcoming", fill: "surface.filled" }, { label: "Upcoming", fill: "surface.filled" }, { label: "Upcoming", fill: "surface.filled" },
     ] },
-    season: { value: "1.37", caption: "Points per game · Premier League 2025/26", summary: "14 won · 10 drawn · 14 lost", columns: "19", results: Array.from({ length: 38 }, (_, i) => i % 19 === 0 ? { label: "Draw", fill: "outline.control" } : i % 2 ? { label: "Win", fill: "tone.good.fg" } : { label: "Loss", fill: "tone.bad.fg" }) },
-    sparse: { value: "0 pts", caption: "", summary: "", columns: "10", results: [] },
+    season: { value: "1.37", caption: "Points per game · Premier League 2025/26", tally: "14 won · 10 drawn · 14 lost", columns: "19", results: Array.from({ length: 38 }, (_, i) => i % 19 === 0 ? { label: "Draw", fill: "outline.control" } : i % 2 ? { label: "Win", fill: "tone.good.fg" } : { label: "Loss", fill: "tone.bad.fg" }) },
+    sparse: { value: "0 pts", caption: "", tally: "", columns: "10", results: [] },
   },
   StatsCard: {
     full: {
@@ -114,46 +115,46 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
     sparse: { kind: "player", name: "Unknown player", detail: "", logo: "", color: "", rating: { value: "", tone: "neutral", fill: "none", ink: "ink.secondary", label: "", caption: "", show: false }, stats: [], showStats: false, },
   },
   TeamPoints: {
-    full: { title: "Home and away", subtitle: "Rank 1 · 9 played", points: "27",
+    full: { heading: "Home and away", subtitle: "Rank 1 · 9 played", points: "27",
       home: { played: "5", won: "5", drawn: "0", lost: "0", goals: "20-1", goalDifference: "+19", goalDifferenceTone: "neutral", points: "15" },
       away: { played: "4", won: "4", drawn: "0", lost: "0", goals: "13-3", goalDifference: "+10", goalDifferenceTone: "neutral", points: "12" },
     },
-    mixed: { title: "League record", subtitle: "Rank 13 · 9 played", points: "9",
+    mixed: { heading: "League record", subtitle: "Rank 13 · 9 played", points: "9",
       home: { played: "4", won: "2", drawn: "1", lost: "1", goals: "7-6", goalDifference: "+1", goalDifferenceTone: "neutral", points: "7" },
       away: { played: "5", won: "0", drawn: "2", lost: "3", goals: "3-9", goalDifference: "−6", goalDifferenceTone: "bad", points: "2" },
     },
-    sparse: { title: "Points", subtitle: "", points: "0",
+    sparse: { heading: "Points", subtitle: "", points: "0",
       home: { played: "0", won: "0", drawn: "0", lost: "0", goals: "0-0", goalDifference: "0", goalDifferenceTone: "neutral", points: "0" },
       away: { played: "0", won: "0", drawn: "0", lost: "0", goals: "0-0", goalDifference: "0", goalDifferenceTone: "neutral", points: "0" },
     },
   },
   LeagueStanding: {
-    full: { place: "1st", summary: "27 points · 5 clear of 2nd", rows: [
+    full: { place: "1st", gaps: "27 points · 5 clear of 2nd", rows: [
       { rank: "1", name: "Bayern München", points: "27", surface: "filled", ink: "primary", weight: "medium" },
       { rank: "2", name: "Borussia Dortmund", points: "22", surface: "none", ink: "secondary", weight: "regular" },
       { rank: "3", name: "RB Leipzig", points: "20", surface: "none", ink: "secondary", weight: "regular" },
     ], home: { detail: "15 pts · 5-0-0" }, away: { detail: "12 pts · 4-0-0" }, showVenues: true },
-    mixed: { place: "13th", summary: "9 points · 1 behind 12th, 1 ahead of 14th", rows: [
+    mixed: { place: "13th", gaps: "9 points · 1 behind 12th, 1 ahead of 14th", rows: [
       { rank: "12", name: "Brentford", points: "10", surface: "none", ink: "secondary", weight: "regular" },
       { rank: "13", name: "Everton", points: "9", surface: "filled", ink: "primary", weight: "medium" },
       { rank: "14", name: "Aston Villa", points: "8", surface: "none", ink: "secondary", weight: "regular" },
     ], home: { detail: "7 pts · 2-1-1" }, away: { detail: "2 pts · 0-2-3" }, showVenues: false },
-    sparse: { place: "", summary: "", rows: [], home: { detail: "" }, away: { detail: "" }, showVenues: false },
+    sparse: { place: "", gaps: "", rows: [], home: { detail: "" }, away: { detail: "" }, showVenues: false },
   },
   MatchTopPlayers: {
-    full: { title: "Top rated · Chelsea 2-1 Arsenal", metric: "Rating", rows: [
+    full: { heading: "Top rated · Chelsea 2-1 Arsenal", metric: "Rating", rows: [
       { home: fromChelsea("Cole Palmer", "Midfielder", 1096353, "8.6", "tone.good.fg", "surface.screen"), away: fromArsenal("Bukayo Saka", "Attacker", 961995, "7.7", "tone.good.fg", "surface.screen") },
       { home: fromChelsea("João Pedro", "Attacker", 1021382, "7.5", "tone.good.fg", "surface.screen"), away: fromArsenal("Declan Rice", "Midfielder", 654096, "6.9", "ink.brand", "surface.screen") },
       { home: fromChelsea("Enzo Fernández", "Midfielder", 0, "6.8", "ink.brand", "surface.screen"), away: fromArsenal("Martin Ødegaard", "Midfielder", 0, "5.9", "surface.brand", "ink.onBrand") },
     ] },
-    one: { title: "Top scorers · Chelsea 2-1 Arsenal", metric: "Goals", rows: [
+    one: { heading: "Top scorers · Chelsea 2-1 Arsenal", metric: "Goals", rows: [
       { home: fromChelsea("Cole Palmer", "Midfielder", 1096353, "2", "surface.filled", "ink.primary"), away: fromArsenal("Bukayo Saka", "Attacker", 961995, "1", "surface.filled", "ink.primary") },
     ] },
-    uneven: { title: "Top scorers · Chelsea 3-1 Arsenal", metric: "Goals", rows: [
+    uneven: { heading: "Top scorers · Chelsea 3-1 Arsenal", metric: "Goals", rows: [
       { home: fromChelsea("Cole Palmer", "Midfielder", 1096353, "2", "surface.filled", "ink.primary"), away: fromArsenal("Bukayo Saka", "Attacker", 961995, "1", "surface.filled", "ink.primary") },
       { home: fromChelsea("João Pedro", "Attacker", 1021382, "1", "surface.filled", "ink.primary"), away: noPlayer },
     ] },
-    sparse: { title: "Top scorers", metric: "", rows: [] },
+    sparse: { heading: "Top scorers", metric: "", rows: [] },
   },
   PlayerValue: {
     full: { value: "€97.7M", caption: "Cole Palmer · Market value", segments: [
@@ -170,9 +171,9 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
     sparse: { value: "", caption: "", segments: [], ticks: [] },
   },
   RecordTable: {
-    full: { title: "Passing", columnCount: "4", columns: [{ label: "C/ATT" }, { label: "YDS" }, { label: "TD" }, { label: "INT" }],
+    full: { heading: "Passing", columnCount: "4", columns: [{ label: "C/ATT" }, { label: "YDS" }, { label: "TD" }, { label: "INT" }],
       rows: [{ label: "Patrick Mahomes", cells: [{ value: "30/41" }, { value: "321" }, { value: "3" }, { value: "0" }] }, { label: "Gardner Minshew", cells: [{ value: "1/2" }, { value: "9" }, { value: "0" }, { value: "0" }] }] },
-    sparse: { title: "No games yet", columnCount: "1", columns: [], rows: [] },
+    sparse: { heading: "No games yet", columnCount: "1", columns: [], rows: [] },
   },
   InjuryReport: {
     full: injured("Jeremiyah Love", "RB", "Cardinals", nflPhoto(4870808), "#a40227", "Injured Reserve", "2026-12-06", "", "Cardinals' official site"),
@@ -187,9 +188,9 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
         injured("Tyler Huntley", "QB", "Ravens", nflPhoto(4035671), "#29126f", "Out", "", "Out for season", "ESPN"),
         injured("Walter Nolen III", "DT", "Cardinals", nflPhoto(4685503), "#a40227", "Questionable", "2026-11-08", "", ""),
       ];
-      return { title: "NFL injuries", showTitle: true, players };
+      return { heading: "NFL injuries", showHeading: true, players };
     })(),
-    sparse: { title: "", showTitle: false, players: [] },
+    sparse: { heading: "", showHeading: false, players: [] },
   },
   SeasonPodium: {
     full: {
@@ -203,12 +204,8 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
       third: { name: "Third", logo: "", color: "", medal: "#CD7F32" },
     },
   },
-  // Real data, fetched 6 Nov 2026: ESPN game logs and box scores, FotMob chances created.
-  MetricBars: {"full": {"title": "Egor Demin · points per game", "metric": "PPG", "columns": [{"name": "Egor Demin", "caption": "2025-26", "value": 10.31, "display": "10.3", "secondary": "52 games", "color": "#FFFFFF", "kind": "player", "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"}, {"name": "Egor Demin", "caption": "2026-27", "value": 7.75, "display": "7.8", "secondary": "4 games", "color": "#FFFFFF", "kind": "player", "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"}]}, "sparse": {"title": "Egor Demin · points per game", "metric": "PPG", "columns": [{"name": "Egor Demin", "caption": "2026-27", "value": 7.75, "display": "7.8", "secondary": "4 games", "color": "#FFFFFF", "kind": "player", "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"}]}},
-  // Real data, fetched 6 Nov 2026: ESPN game logs and box scores, FotMob chances created.
-  PlayerMetrics: {"full": {"showPlayer": true, "name": "Cole Palmer", "color": "#034694", "subtitle": "", "kind": "player", "seriesKind": "cumulative", "periods": ["Matchweek 1", "Matchweek 2", "Matchweek 3", "Matchweek 4", "Matchweek 5", "Matchweek 6", "Matchweek 7", "Matchweek 8", "Matchweek 9", "Matchweek 10", "Matchweek 11", "Matchweek 12", "Matchweek 13", "Matchweek 14", "Matchweek 15", "Matchweek 16", "Matchweek 17", "Matchweek 18", "Matchweek 19", "Matchweek 20", "Matchweek 21", "Matchweek 22", "Matchweek 23", "Matchweek 24", "Matchweek 25", "Matchweek 26", "Matchweek 27", "Matchweek 28", "Matchweek 29", "Matchweek 30", "Matchweek 31", "Matchweek 32", "Matchweek 33", "Matchweek 34", "Matchweek 35", "Matchweek 36", "Matchweek 37", "Matchweek 38"], "from": "MW1", "to": "MW38", "details": [], "metrics": [{"label": "Goals", "opacity": 1, "values": [0, 0, null, 1, 1, null, null, null, null, null, null, null, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, null, 4, 7, 8, 8, 8, 9, 9, 9, 9, 9, null, 9, 9, 9, 10], "decimals": 0, "lineColor": "#033cc1"}, {"label": "Assists", "opacity": 0.6, "values": [0, 0, null, 0, 0, null, null, null, null, null, null, null, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, null, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, null, 1, 1, 1, 1], "decimals": 0, "lineColor": "#033cc1"}, {"label": "Chances created", "opacity": 1, "values": [1, null, null, 1, 1, null, null, null, null, null, null, null, null, 1, 2, 4, 5, 5, 7, 7, 7, 7, null, 7, 7, 11, 13, 13, 15, 18, 19, 21, 22, null, 23, 23, 24, 24], "decimals": 0, "lineColor": "ink.primary"}], "detail": "Chelsea · Premier League 2025/26", "logo": "https://images.fotmob.com/image_resources/playerimages/1096353.png"}, "sparse": {"showPlayer": false, "name": "Cole Palmer", "color": "#034694", "subtitle": "Premier League goals · 2025/26", "kind": "player", "seriesKind": "cumulative", "periods": ["Matchweek 1", "Matchweek 2", "Matchweek 3", "Matchweek 4", "Matchweek 5", "Matchweek 6", "Matchweek 7", "Matchweek 8", "Matchweek 9", "Matchweek 10", "Matchweek 11", "Matchweek 12", "Matchweek 13", "Matchweek 14", "Matchweek 15", "Matchweek 16", "Matchweek 17", "Matchweek 18", "Matchweek 19", "Matchweek 20", "Matchweek 21", "Matchweek 22", "Matchweek 23", "Matchweek 24", "Matchweek 25", "Matchweek 26", "Matchweek 27", "Matchweek 28", "Matchweek 29", "Matchweek 30", "Matchweek 31", "Matchweek 32", "Matchweek 33", "Matchweek 34", "Matchweek 35", "Matchweek 36", "Matchweek 37", "Matchweek 38"], "from": "MW1", "to": "MW38", "details": ["Crystal Palace at Chelsea", "Chelsea at West Ham United", "", "Chelsea at Brentford", "Chelsea at Manchester United", "", "", "", "", "", "", "", "Arsenal at Chelsea", "Chelsea at Leeds United", "Chelsea at AFC Bournemouth", "Everton at Chelsea", "Chelsea at Newcastle United", "Aston Villa at Chelsea", "AFC Bournemouth at Chelsea", "Chelsea at Manchester City", "Chelsea at Fulham", "Brentford at Chelsea", "", "West Ham United at Chelsea", "Chelsea at Wolverhampton Wanderers", "Leeds United at Chelsea", "Burnley at Chelsea", "Chelsea at Arsenal", "Chelsea at Aston Villa", "Newcastle United at Chelsea", "Chelsea at Everton", "Manchester City at Chelsea", "Manchester United at Chelsea", "", "Nottingham Forest at Chelsea", "Chelsea at Liverpool", "Tottenham Hotspur at Chelsea", "Chelsea at Sunderland"], "metrics": [{"label": "Goals", "opacity": 1, "values": [0, 0, null, 1, 1, null, null, null, null, null, null, null, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, null, 4, 7, 8, 8, 8, 9, 9, 9, 9, 9, null, 9, 9, 9, 10], "decimals": 0, "lineColor": "#033cc1"}], "detail": "Chelsea · Premier League 2025/26", "logo": "https://images.fotmob.com/image_resources/playerimages/1096353.png"}},
-  // Real data, fetched 6 Nov 2026: ESPN game logs and box scores, FotMob chances created.
-  PlayersMetric: {"full": {"title": "Interceptions thrown", "subtitle": "AFC quarterbacks · 2026 season", "kind": "cumulative", "periods": ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"], "from": "Wk 1", "to": "Wk 8", "players": [{"opacity": 1, "values": [1, 1, 2, 2, null, 3, 4, 4], "decimals": 0, "name": "Patrick Mahomes", "team": "Chiefs", "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png", "color": "#E31837", "lineColor": "#E31837", "kind": "player"}, {"opacity": 1, "values": [0, 0, 2, 3, 4, 4, null, 5], "decimals": 0, "name": "Josh Allen", "team": "Bills", "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png", "color": "#00338D", "lineColor": "#00338D", "kind": "player"}, {"opacity": 1, "values": [1, 1, 1, 3, 3, null, 3, 6], "decimals": 0, "name": "Joe Burrow", "team": "Bengals", "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png", "color": "#FB4F14", "lineColor": "#FB4F14", "kind": "player"}, {"opacity": 1, "values": [1, 3, 4, 6, 7, 8, null, 10], "decimals": 0, "name": "Justin Herbert", "team": "Chargers", "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png", "color": "#0080C6", "lineColor": "#0080C6", "kind": "player"}]}, "sparse": {"title": "Interceptions thrown", "subtitle": "Chiefs quarterbacks · 2026 season", "kind": "cumulative", "periods": ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Week 6", "Week 7", "Week 8"], "from": "Wk 1", "to": "Wk 8", "players": [{"opacity": 1, "values": [1, 1, 2, 2, null, 3, 4, 4], "decimals": 0, "name": "Patrick Mahomes", "team": "Chiefs", "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png", "color": "#E31837", "lineColor": "#E31837", "kind": "player"}, {"opacity": 1, "values": [0, null, null, null, null, null, null, null], "decimals": 0, "name": "Justin Fields", "team": "Chiefs", "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4362887.png", "color": "#E31837", "lineColor": "ink.primary", "kind": "player"}]}},
+  // Real data, fetched 6 Nov 2026: ESPN game logs and box scores, FotMob chances created. One copy, shared with the preview.
+  ...METRIC_SAMPLES,
 };
 
 const scorers = [{ name: "Erling Haaland", club: "Manchester City", goals: 11, xg: 9.42 }, { name: "João Pedro", club: "Chelsea", goals: 5, xg: 3.1 }];
