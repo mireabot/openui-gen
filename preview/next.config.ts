@@ -7,7 +7,7 @@ import type { NextConfig } from "next";
  */
 const nextConfig: NextConfig = {
   output: "export",
-  // Set when the export is served under a sub-path, e.g. /projects/openui-gen on the portfolio.
+  // Set when the export is served under a sub-path, e.g. /projects/openui-sports on the portfolio.
   basePath: process.env.NEXT_PUBLIC_BASE_PATH || undefined,
   experimental: { extensionAlias: { ".js": [".ts", ".tsx", ".js"] } },
   // Next 16 blocks dev resources for any host but localhost, so a page opened at 127.0.0.1 never hydrates.

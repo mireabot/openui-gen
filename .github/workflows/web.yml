@@ -1,5 +1,5 @@
 name: Web
-# Builds the landing export for the portfolio (served at /projects/openui-gen) and publishes it
+# Builds the landing export for the portfolio (served at /projects/openui-sports) and publishes it
 # as the `web` release asset site.tar.gz. The portfolio downloads it when it builds.
 on:
   push:
@@ -27,7 +27,7 @@ jobs:
       - run: npm --prefix preview ci
       - run: npm run preview:build:landing
         env:
-          NEXT_PUBLIC_BASE_PATH: /projects/openui-gen
+          NEXT_PUBLIC_BASE_PATH: /projects/openui-sports
       - run: tar -czf site.tar.gz -C preview/out .
       - name: Upload to the web release
         env:
