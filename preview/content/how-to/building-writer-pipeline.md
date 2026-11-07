@@ -400,6 +400,6 @@ Write the rule as an instruction with the exact call when there is one. The icon
 
 Validation proves a screen is well formed. It cannot prove it is the right screen. Every gate check has a test a statement can fail: a name, a path, a type or a count. A wrong component with a valid record passes all of them, so relevance lives in the prompt and is measured by contrast probes.
 
-The code comments give other reasons. The compiler never throws for writer behaviour: it rejects statements, drops unfinished parts and fills gaps with default parts. The prompt comment says the system prompt is fixed so it stays one cache entry. The `refuses` comment says a hand-built record table loses the card's total and rank.
+The code comments give other reasons. The prompt comment says the system prompt is fixed so it stays one cache entry. The `refuses` comment says a hand-built record table loses the card's total and rank.
 
 The evidence for this guide is the working tree and git history. Recorded generation runs were not reviewed.
