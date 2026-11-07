@@ -4,7 +4,7 @@ import { StreamingGuide } from "@/components/catalog/custom/streaming-guide";
 import { ChelseaInjuries } from "@/components/catalog/custom/chelsea-injuries";
 import { readDesign, themeVars } from "@/lib/primitives/design";
 
-export const metadata: Metadata = { title: "Components · OpenUI", description: "Design system sports cards, charts, lists and club timelines with their variations." };
+export const metadata: Metadata = { title: "Components · OpenUI Sports", description: "Design system sports cards, charts, lists and club timelines with their variations." };
 
 export default function Catalog() {
   const design = readDesign();

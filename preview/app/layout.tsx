@@ -3,8 +3,8 @@ import { AppNav } from "@/components/app-nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "OpenUI generation",
-  description: "Live OpenUI Lang generation for sports, rendered with the design system components.",
+  title: "OpenUI Sports",
+  description: "Interactive sports components registry powered by OpenUI Lang and a custom SwiftUI rendering engine.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

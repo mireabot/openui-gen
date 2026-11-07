@@ -4,7 +4,7 @@ import { AgentBody, AgentView, ForAgentsButton } from "@/components/how-to/agent
 import { allGuidesDoc } from "@/lib/how-to-docs";
 import styles from "./how-to.module.css";
 
-export const metadata: Metadata = { title: "How to · OpenUI", description: "Interactive guides to the OpenUI generation pipeline." };
+export const metadata: Metadata = { title: "How to · OpenUI Sports", description: "Interactive guides to the OpenUI Sports pipeline." };
 
 export default function HowTo() {
   return <AgentView><div className={styles.indexPage}>

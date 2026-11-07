@@ -3,7 +3,7 @@ import { SwiftUIRenderingGuide } from "@/components/how-to/swiftui-rendering-gui
 import { swiftUIRenderingDoc } from "@/lib/how-to-docs";
 import { readDesign, themeVars } from "@/lib/primitives/design";
 
-export const metadata: Metadata = { title: "From DSL to SwiftUI · How to · OpenUI", description: "An interactive walkthrough of how OpenUI Lang primitives, sports components, layouts, streamed programs and data become SwiftUI views." };
+export const metadata: Metadata = { title: "From DSL to SwiftUI · How to · OpenUI Sports", description: "An interactive walkthrough of how OpenUI Lang primitives, sports components, layouts, streamed programs and data become SwiftUI views." };
 
 export default function SwiftUIRenderingPage() {
   const design = readDesign();
