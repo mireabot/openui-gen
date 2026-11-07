@@ -60,7 +60,6 @@ public struct OpenUIStreamRequest: Sendable, Encodable {
 
 public protocol OpenUIStreaming: Sendable {
     func stream(_ request: OpenUIStreamRequest) -> AsyncThrowingStream<OpenUIStreamEvent, any Error>
-    func query(tool: String, args: PValue) async throws -> PValue
     /// Keeps a copy of this revision on the server.
     func save(_ document: OpenUIDocumentVersion) async throws
 }
@@ -78,16 +77,6 @@ public struct OpenUIStreamService: OpenUIStreaming {
             }
             continuation.onTermination = { _ in task.cancel() }
         }
-    }
-
-    public func query(tool: String, args: PValue) async throws -> PValue {
-        guard tool == "sports_dataset" else { throw OpenUIError.missingQuery(tool) }
-        var request = URLRequest(url: baseURL.appending(path: "tools/sports_dataset"))
-        request.httpMethod = "POST"; request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = try JSONEncoder().encode(args)
-        let (data, response) = try await session.data(for: request)
-        try Self.check(response, data: data)
-        return try JSONDecoder().decode(PValue.self, from: data)
     }
 
     public func save(_ document: OpenUIDocumentVersion) async throws {
