@@ -302,14 +302,15 @@ function MetricLines({ lines, periods, from, to, style, kind, caption, details, 
   const [scrub, setScrub] = useState<number | null>(null);
   const [focus, setFocus] = useState<number | null>(null);
   const [width, setWidth] = useState(0);
-  const box = useRef<HTMLDivElement>(null);
+  // The plot mounts only once there are lines, which can be after the first render, so it is
+  // observed whenever its element appears rather than once on mount.
+  const [box, setBox] = useState<HTMLDivElement | null>(null);
   useEffect(() => {
-    const el = box.current;
-    if (!el) return;
+    if (!box) return;
     const observer = new ResizeObserver(([entry]) => setWidth(entry!.contentRect.width));
-    observer.observe(el);
+    observer.observe(box);
     return () => observer.disconnect();
-  }, []);
+  }, [box]);
   const shown = lines.slice(0, 4);
   const count = Math.max(periods.length, ...shown.map(l => l.values.length));
   if (!shown.length || count < 1) return null;
@@ -401,7 +402,7 @@ function MetricLines({ lines, periods, from, to, style, kind, caption, details, 
       )}
       <div className="flex flex-col gap-2">
         <div className="flex gap-2">
-          <div ref={box} className="relative min-w-0 flex-1 touch-none select-none" style={{ height: H }} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); pick(e); }} onPointerMove={pick} onPointerUp={e => { if (e.pointerType !== "mouse") setScrub(null); }} onPointerCancel={() => setScrub(null)} onPointerLeave={() => setScrub(null)}>
+          <div ref={setBox} className="relative min-w-0 flex-1 touch-none select-none" style={{ height: H }} onPointerDown={e => { e.currentTarget.setPointerCapture(e.pointerId); pick(e); }} onPointerMove={pick} onPointerUp={e => { if (e.pointerType !== "mouse") setScrub(null); }} onPointerCancel={() => setScrub(null)} onPointerLeave={() => setScrub(null)}>
             {scrubX !== null && <span className="pointer-events-none absolute inset-y-0 border-l border-dotted" style={{ left: scrubX, borderColor: tv("ink.secondary") }} />}
             <div className="pointer-events-none absolute inset-0 motion-safe:animate-[metric-draw_600ms_cubic-bezier(0.23,1,0.32,1)]">
               <div className="absolute inset-0 opacity-30">{paths()}</div>
