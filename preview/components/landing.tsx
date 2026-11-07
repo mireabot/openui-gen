@@ -47,14 +47,14 @@ export function Landing({ theme, specs }: { theme?: CSSProperties; specs?: Desig
             ] }} />
           </Link>)}
         </div>
+        <footer className="mt-12 flex items-center justify-center gap-5 text-[13px] leading-[18px] text-ds-ink-secondary">
+          <a href="https://www.openui.com" className="flex items-center gap-2 hover:text-ds-ink-primary">
+            Powered by <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/openui-logo.svg`} alt="" width={30} height={24} /> <span className="font-medium text-ds-ink-primary">OpenUI</span>
+          </a>
+          <span className="h-4 w-px bg-ds-outline-subtle" />
+          <a href={REPO} className="text-ds-ink-secondary hover:text-ds-ink-primary"><GithubLogoIcon size={20} weight="fill" /></a>
+        </footer>
       </div>
-      <footer className="flex shrink-0 items-center justify-center gap-5 px-5 py-8 text-[13px] leading-[18px] text-ds-ink-secondary">
-        <a href="https://www.openui.com" className="flex items-center gap-2 hover:text-ds-ink-primary">
-          Powered by <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/openui-logo.svg`} alt="" width={30} height={24} /> <span className="font-medium text-ds-ink-primary">OpenUI</span>
-        </a>
-        <span className="h-4 w-px bg-ds-outline-subtle" />
-        <a href={REPO} className="text-ds-ink-secondary hover:text-ds-ink-primary"><GithubLogoIcon size={20} weight="fill" /></a>
-      </footer>
     </DesignSystemProvider>
   </main>;
 }
