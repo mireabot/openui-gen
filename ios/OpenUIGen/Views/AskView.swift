@@ -12,6 +12,8 @@ struct AskView: View {
     @State private var runOpen = false
     /// The composer's height, so the run card sits 20 above it.
     @State private var composerHeight: CGFloat = 0
+    /// Fixed card values from the debug menu, shown instead of the session's run until the card closes.
+    @State private var demo: RunSummary?
 
     var body: some View {
         NavigationStack {
@@ -43,6 +45,18 @@ struct AskView: View {
                             Label("Paste schema", systemImage: "doc.on.clipboard")
                         }
                     }
+                    #if DEBUG
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu("Run card states", systemImage: "testtube.2") {
+                            ForEach(DemoRun.allCases) { state in
+                                Button(state.title) {
+                                    demo = state.summary()
+                                    setRunOpen(true)
+                                }
+                            }
+                        }
+                    }
+                    #endif
                     if model.session != nil {
                         ToolbarItem(placement: .topBarTrailing) {
                             Button("New", systemImage: "square.and.pencil") {
@@ -98,9 +112,9 @@ struct AskView: View {
             placeholder: model.session == nil ? "Ask about soccer, NFL or NBA" : "Follow up",
             suggestions: model.session == nil ? PromptSuggestion.starters : [],
             isBusy: model.isBusy,
-            showsRun: model.session != nil,
+            showsRun: model.session != nil || demo != nil,
             runOpen: runOpen,
-            onSend: { Task { await model.send() } },
+            onSend: send,
             onSuggestion: { suggestion in
                 model.prompt = suggestion.text
                 Task { await model.send() }
@@ -112,9 +126,9 @@ struct AskView: View {
     /// Over the screen, 20 above the composer, fading in and out.
     @ViewBuilder
     private var runCard: some View {
-        if runOpen, let session = model.session {
-            GenerationStatusView(session: session, saveState: model.saveState) {
-                Task { await model.save() }
+        if runOpen, let run = demo ?? model.session.map({ RunSummary(session: $0, followUp: model.followUp) }) {
+            GenerationStatusView(run: run, saveState: demo == nil ? model.saveState : .idle) {
+                if demo == nil { Task { await model.save() } }
             }
             .padding(.horizontal, 16)
             .padding(.bottom, composerHeight + 20)
@@ -122,8 +136,22 @@ struct AskView: View {
         }
     }
 
+    /// A follow-up opens the run card a second after it is sent, so the composer settles first.
+    private func send() {
+        demo = nil
+        let isFollowUp = model.session != nil && !model.isBusy
+            && !model.prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        Task { await model.send() }
+        guard isFollowUp else { return }
+        Task {
+            try? await Task.sleep(for: .seconds(1))
+            setRunOpen(true)
+        }
+    }
+
     private func setRunOpen(_ open: Bool) {
         withAnimation(.smooth(duration: 0.3)) { runOpen = open }
+        if !open { demo = nil }
     }
 
     /// Sent, and nothing on screen yet.
