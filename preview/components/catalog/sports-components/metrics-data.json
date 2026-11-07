@@ -50,6 +50,7 @@
    "color": "#034694",
    "subtitle": "",
    "kind": "player",
+   "seriesKind": "cumulative",
    "periods": [
     "Matchweek 1",
     "Matchweek 2",
@@ -242,6 +243,7 @@
    "color": "#034694",
    "subtitle": "Premier League goals · 2025/26",
    "kind": "player",
+   "seriesKind": "cumulative",
    "periods": [
     "Matchweek 1",
     "Matchweek 2",

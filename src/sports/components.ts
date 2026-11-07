@@ -196,7 +196,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "ClubTimeline",
     intent: "A player's club history as a swipeable row of club cards under one stop per year. Loans have a currency marker; brief stats are optional.",
-    useWhen: "a player's career, transfer history or clubs over time; use stats only when asked for and supplied by the research",
+    useWhen: "a player's career, transfer history or clubs over time; use stats only when asked for and supplied by the research; not a current-club-only question and not a market-value history (PlayerValue)",
     contract: [
       f("initial", "number", "zero-based card to open on; 0 for oldest, last index for current club"),
       f("clubs", "list", "club spells oldest first; multiple clubs can share the same year"),
@@ -217,7 +217,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "MatchCard",
     intent: "One game between two teams: both teams on stacked rows with their scores, a side column (date and start time, or a status such as FT or Final), and one details line.",
-    useWhen: "a fixture or a result; a list of matches (@Each over them); the latest meeting between two clubs",
+    useWhen: "a requested fixture, game result, score or latest meeting between two clubs; a list of requested matches (@Each over them); not a specific player's performance (StatsCard), current club or career, even when match data is also supplied",
     contract: [
       ...team("home"), ...team("away"),
       f("label", "text", "small side line: a date such as \"Sat, Oct 31\", or \"\""),
@@ -242,7 +242,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "TeamDetail",
     intent: "A team on one line: logo or monogram, name, and a short secondary line (nickname, code or league).",
-    useWhen: "naming the clubs a screen is about, above stats or a comparison",
+    useWhen: "identifying a requested club with its crest and league, or a necessary club heading; not a player profile or a replacement for requested statistics",
     contract: [f("name", "text", "club name"), f("logo", "text", "logo URL, or \"\""), f("color", "color", CLUB_COLOR), f("detail", "text", "nickname, code or league, or \"\"")],
     params: [],
     build: t => ui.Row({ title: t.name, subtitle: t.detail, leading: mark(t, 40) }),
@@ -250,7 +250,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "StatBar",
     intent: "One stat between two teams: each side's figure at its edge, the stat's name between them, and a bar split in proportion.",
-    useWhen: "comparing two clubs on a stat (possession, shots, shots on target, corners, goals); stack several in a vertical Stack, no card",
+    useWhen: "one statistic compared head to head between two clubs for the same game or season (possession, shots, shots on target, corners, goals); stack one per requested statistic, no card; not one player's statistics or a season-by-season progression",
     contract: [
       f("label", "text", "the stat's name, e.g. \"Shots on target\""),
       f("homeDisplay", "text", "home figure as shown, e.g. \"3\" or \"37%\""),
@@ -304,7 +304,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "FixturesHeatmap",
     intent: "A team's run of fixtures: a headline figure, a caption saying what it is, one square per fixture in result colours, and the record.",
-    useWhen: "form, a season so far, a run of results; no title of its own",
+    useWhen: "a team's form or results across a sequence of fixtures; no title of its own; not a player's game log or a substitute for season points and home/away totals (TeamPoints)",
     contract: [
       f("value", "text", "the headline figure, e.g. points per game \"1.6\", \"13 pts\" or a record \"6-2\""),
       f("caption", "text", "what the figure is, e.g. \"Points per game · Premier League 2026/27\""),
@@ -327,7 +327,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "StatsCard",
     intent: "A player's or a club's stats: a short card with the logo, name and a detail line, the rating in its bracket colour when there is one, then a scroll rail of small cards, one per stat, value over label, each as wide as its content and at least 124. A part with no data is not shown.",
-    useWhen: "a player's or a club's season or match stats; any set of figures about one subject",
+    useWhen: "one identified player's or club's statistics for one game or season, including a specific player's latest-game performance; not the game's team result (MatchCard), comparisons across subjects or seasons (MetricBars), period-by-period progression (PlayerMetrics), career (ClubTimeline) or market value (PlayerValue)",
     contract: [
       f("name", "text", "player or club"),
       f("kind", "text", "\"player\" or \"club\": a player's photo sits on the club colour, a crest on white"),
@@ -376,7 +376,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "TeamPoints",
     intent: "A team's points so far this season: the total and its rank, then a table splitting the record into home and away (played, won, drawn, lost, goals, goal difference, points).",
-    useWhen: "how many points a team has, or its record this season, home and away; one team in one competition",
+    useWhen: "one soccer club's season points and home/away record in one competition; not its league position (LeagueStanding), a player's scoring points or an NBA/NFL win-loss record",
     contract: [
       f("title", "text", "a heading for this comparison, e.g. \"Home and away\" or \"League record\"; not a fixed competition abbreviation"),
       f("subtitle", "text", "rank and matches played, e.g. \"Rank 1 · 9 played\""),
@@ -402,7 +402,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "LeagueStanding",
     intent: "Where a team stands in the league table: its place as the hero, the points gap to the places around it, its row between its nearest two neighbours, and optionally its home and away record.",
-    useWhen: "a team's position in the table, or how far it is from the teams around it; for the whole table use a list of rows instead",
+    useWhen: "one team's league position and gaps to nearby teams; not a final top-three podium (SeasonPodium) or its complete home/away record (TeamPoints); for the whole table use a list of rows instead",
     contract: [
       f("place", "text", "the team's place as shown, e.g. \"13th\""),
       f("summary", "text", "points and gaps, e.g. \"9 points · 1 behind 12th, 1 ahead of 14th\"; for first place \"27 points · 5 clear of 2nd\""),
@@ -439,7 +439,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "MatchTopPlayers",
     intent: "The top players of one game from both teams, side by side: each row a player from each side with an avatar carrying the metric's value at its top right and the club's crest at its bottom corner, then name and position.",
-    useWhen: "the top scorers, top rated or other best players of one match, from both sides; not a ranking across matches, which is a Leaderboard",
+    useWhen: "best players from both sides of one match; not one named player's own statistics (StatsCard) or a ranking across matches (Leaderboard or MetricBars)",
     contract: [
       f("title", "text", "the card's name, e.g. \"Top scorers\""),
       f("metric", "text", "the one metric every value is, e.g. \"Goals\" or \"Rating\""),
@@ -460,7 +460,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "PlayerValue",
     intent: "A player's market value over time: the current value, then a stepped line coloured by club with each club's crest above its stretch and prices on the y axis, no card; scrubbing shows the club, date and value.",
-    useWhen: "a player's market value, or how it changed over time; the server builds the record",
+    useWhen: "one player's market value and its changes over time, including club stretches; the server builds the record; not transfer fees, a club-career-only timeline (ClubTimeline) or match performance",
     contract: [
       f("value", "text", "the current value, e.g. \"€97.7M\""),
       f("caption", "text", "e.g. \"Cole Palmer · Market value\""),
@@ -484,7 +484,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "MetricBars",
     intent: "One metric across any number of subjects: a club-colour value pill per column at the value's height, with an optional second line, then the subject's photo or crest, name and caption; more than five page sideways. No card.",
-    useWhen: "one figure compared across players, clubs or seasons, whenever the request asks to compare them (compare, vs, against each other, side by side), even when it also asks for the top N, and for any one-figure list of more than 10: the top 16 scorers compared, points per game this season vs last, strikes of three players, a club's points per game by season with the coach under each",
+    useWhen: "one figure compared across players, clubs or seasons, whenever the request asks to compare them (compare, vs, against each other, side by side), even when it also asks for the top N, and for any one-figure list of more than 10: the top 16 scorers compared, points per game this season vs last, strikes of three players, a club's points per game by season with the coach under each; not values period by period within a season (PlayerMetrics or PlayersMetric), a single subject's key stats (StatsCard), or two clubs compared head to head on a statistic for the same period (StatBar)",
     contract: [
       f("title", "text", "what is compared, e.g. \"Egor Demin · points per game\", or \"\" when the screen already says it"),
       f("metric", "text", "the one metric every value is, e.g. \"PPG\""),
@@ -510,7 +510,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "PlayerMetrics",
     intent: "One player over a season as stepped lines: one metric leads with its total and a scrub readout; two to four metrics get a legend grid of chips with each value at the scrub. The player row is optional. No card.",
-    useWhen: "one player's numbers over a season, period by period: goals, assists and chances by matchweek, triple-doubles by game, progress or progression; up to four metrics; for a single season total per subject use MetricBars",
+    useWhen: "one player's numbers within a season, period by period: goals, assists and chances by matchweek, triple-doubles by game; up to four metrics; the word progression alone does not establish a period series; season totals or averages this season versus last use MetricBars, and one game's key stats use StatsCard",
     contract: [
       f("showPlayer", "boolean", "true to show the player row; false when the screen already names the player"),
       f("name", "text", "the player's name"),
@@ -519,7 +519,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("kind", "text", "\"player\""),
       f("color", "color", "the club colour behind the photo; the server fills it from detail"),
       f("subtitle", "text", "with one metric, under the total, e.g. \"Triple-doubles this season\""),
-      f("kind", "text", "\"cumulative\" for running totals, \"period\" for one value per period"),
+      f("seriesKind", "text", "\"cumulative\" for running totals, \"period\" for one value per period"),
       f("periods", "list", "one label per period, e.g. \"Matchweek 12\""),
       f("from", "text", "the first period's short label, e.g. \"MW1\""),
       f("to", "text", "the last period's short label, e.g. \"MW38\""),
@@ -534,13 +534,13 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
     params: [],
     build: p => ui.Stack({ axis: "v", gap: 16, children: [
       ui.Show({ when: p.showPlayer, child: ui.Row({ title: p.name, subtitle: p.detail, leading: ui.Avatar({ name: p.name, size: 40, image: p.logo, color: p.color, kind: "player" }) }) }),
-      ui.MetricLines({ lines: p.metrics, periods: p.periods, from: p.from, to: p.to, style: "player", kind: p.kind, caption: p.subtitle, details: p.details }),
+      ui.MetricLines({ lines: p.metrics, periods: p.periods, from: p.from, to: p.to, style: "player", kind: p.seriesKind, caption: p.subtitle, details: p.details }),
     ] }),
   },
   {
     name: "PlayersMetric",
     intent: "Several players on one metric over a season as a race: one row per player starting with the plain photo, sorted by the value at the scrub, over one stepped line each. No card.",
-    useWhen: "two to four players compared on one metric over time, period by period: quarterbacks' interceptions by week, strikers' goals by matchweek; for season totals only use MetricBars",
+    useWhen: "two to four players compared on one metric within a season, period by period: quarterbacks' interceptions by week, strikers' goals by matchweek; not several metrics for one player (PlayerMetrics), season totals (MetricBars) or one game's key stats (StatsCard)",
     contract: [
       f("title", "text", "the metric, e.g. \"Interceptions thrown\""),
       f("subtitle", "text", "e.g. \"AFC quarterbacks · 2026 season\""),
@@ -584,7 +584,7 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
   {
     name: "RecordTable",
     intent: "A table whose columns come from the data: a title, a row of column labels, then one row per player, team or game with its name in a wider first column (up to two lines) and its figures in the rest.",
-    useWhen: "a box score, a team's record split, standings or a game log, where the columns depend on the sport",
+    useWhen: "requested multi-subject box-score columns, full standings, a game log or an NBA/NFL record split; not one named player's key statistics (StatsCard), soccer home/away points (TeamPoints), a one-figure comparison (MetricBars), or honours and prose facts",
     contract: [
       f("title", "text", "what the table shows, e.g. \"Passing\" or \"AFC West\""),
       f("columnCount", "text", "\"5\"; the server sets it from the columns"),

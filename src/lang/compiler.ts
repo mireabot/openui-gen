@@ -1,4 +1,4 @@
-import { autoClose, generateSystemPrompt, parseExpression, split, tokenize } from "@openuidev/lang-core";
+import { autoClose, parseExpression, split, tokenize } from "@openuidev/lang-core";
 import { iconProblem } from "../primitives/icons.js";
 import { z } from "zod";
 import { slotLibrary } from "./library.js";
@@ -661,18 +661,21 @@ function groupEvidence(reads: readonly DataPath[], pack: ScreenPack): Evidence {
 
 /** The system prompt is the same for every screen and follow-up, so it stays one cache entry: anything that varies goes in the user turn. */
 function writerMessages(source: ScreenSource, pack: ScreenPack, allowNew: boolean): Message[] {
-  const signatures = generateSystemPrompt(slotLibrary(WRITER_PRIMITIVES).library.toSpec());
+  const signatures = Object.entries(slotLibrary(WRITER_PRIMITIVES).library.toSpec().components)
+    .filter(([name]) => name !== "Slot")
+    .map(([, component]) => `${component.signature}${component.description ? ` — ${component.description}` : ""}`).join("\n");
   // The signatures name token types; these are their only values (the closed ground rules).
   const tokens = (Object.keys(TOKEN_SCHEMA) as (keyof typeof TOKEN_SCHEMA)[]).map(key => `${TOKEN_IDS[key]} = ${((z.toJSONSchema(TOKEN_SCHEMA[key]) as { enum?: unknown[] }).enum ?? []).map(v => JSON.stringify(v)).join(" | ")}`).join("\n");
   const rewrite = source.editable.size ? ` You may rewrite these existing parts by writing their own names (${[...source.editable].join(", ")}, with sub-statements ${[...source.editable].map(id => `${id}_x`).join(", ")}); a rewritten part replaces the old one completely.` : "";
   const editing = source.base.length ? `\nThis turn edits a saved screen. Its parts stay as they are and already show the other answers: never show those again in a new part.${rewrite} New parts use new labels and go after the existing ones.` : "";
   const current = source.base.filter(part => source.editable.has(part.id)).map(part => [...part.statements].map(([name, expr]) => printStatement(name, expr)).join("\n")).join("\n\n");
   return [{ role: "system", content: `You compose a mobile screen in OpenUI Lang that answers the user's request from the supplied data.
-Write one statement per line. Each part of the screen is a statement named with a lowerCamel label (\`quarters = Section(...)\`); split a large part into sub-statements named label_name (\`quarters_table = Card(...)\`) and reference them by name from the part. Write the part statement first, then its sub-statements top-down. Parts appear in the order you write them. Never write root, d, Screen, queries, mutations, state or actions; never reference another part.
+Write OpenUI code only, with one complete statement per line and double-quoted strings. Each part of the screen is a statement named with a lowerCamel label (\`quarters = Section(...)\`); split a large part into sub-statements named label_name (\`quarters_table = Card(...)\`) and reference them by name from the part. Write the part statement first, then its sub-statements top-down. Parts appear in the order you write them. Never write root, d, Screen, Slot, queries, mutations, state or actions; the server owns the root and data binding. Never reference another part.
 Data props must reference the data: d.<path> or an @Each item (\`@Each(d.answers.q1.rows, "r", Row(r.name))\`); never type figures as literals in data props. Copy (titles, labels) is plain text; do not invent figures in it.
-Answer every required question named with the request: each must be shown by reading its answer data (d.answers.<id>). An answer marked partial or unavailable must show its note.
+Answer every required question named with the request by reading its answer data (d.answers.<id>). Completeness means showing every requested fact available in the data, once. A related fact, a subject's name or a game result does not replace the statistics the user asked for. Extra research data is context, not a requirement to display it. An answer marked partial or unavailable must show its note.
 Wrap descriptive text in full: omit Text.lines for paragraphs and coverage details. Use Stack with Text instead of Row when its two-line limit would hide the description. Do not shorten sourced sentences with ellipses.
-Templates are optional: call one by name with data that fits it, or copy its structure and change it. Use only token values the signatures allow. Arguments are positional: to set a later optional argument, pass null for each one before it (\`Stack("v", 12, [a, b], null, null, null, true)\` sets divided).
+Choose components by the user's requested subject, facts, time period and comparison, using their Use for definitions. A data-shape match only identifies a candidate. When a supplied record fits a component that directly answers the request, call that component by name. Once that match is established, use it without rebuilding it from primitives or adding alternative views of the same facts. Compose a custom layout from primitives only for requested content that no supplied component can express. Use only token values the signatures allow. Arguments are positional: to set a later optional argument, pass null for each one before it (\`Stack("v", 12, [a, b], null, null, null, true)\` sets divided).
+Before responding, silently check that the selected components answer the original request, every requested available fact is visible, unrelated context is omitted, and every referenced sub-statement is defined and reachable from its part. Close every call, array and string. Output only the finished statements, without the check or an explanation.
 At most ${LIMITS.parts} parts, ${LIMITS.statementsPerPart} statements per part, ${LIMITS.nodesPerPart} nodes per part after @Each expansion.
 
 Primitives:

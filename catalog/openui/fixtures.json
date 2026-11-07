@@ -9494,7 +9494,7 @@
     },
     {
       "key": "PlayerMetrics/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayerMetrics/full\"}, {})\npick1 = Stack(\"v\", 16, [Show(d.answers.q1.record.showPlayer, Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, \"player\"))), MetricLines(d.answers.q1.record.metrics, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"player\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, d.answers.q1.record.details)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayerMetrics/full\"}, {})\npick1 = Stack(\"v\", 16, [Show(d.answers.q1.record.showPlayer, Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, \"player\"))), MetricLines(d.answers.q1.record.metrics, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"player\", d.answers.q1.record.seriesKind, d.answers.q1.record.subtitle, d.answers.q1.record.details)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -9512,6 +9512,7 @@
                 "color": "#034694",
                 "subtitle": "",
                 "kind": "player",
+                "seriesKind": "cumulative",
                 "periods": [
                   "Matchweek 1",
                   "Matchweek 2",
@@ -9933,7 +9934,7 @@
                       "from": "MW1",
                       "to": "MW38",
                       "style": "player",
-                      "kind": "player",
+                      "kind": "cumulative",
                       "caption": "",
                       "details": []
                     },
@@ -9948,7 +9949,7 @@
     },
     {
       "key": "PlayerMetrics/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayerMetrics/sparse\"}, {})\npick1 = Stack(\"v\", 16, [Show(d.answers.q1.record.showPlayer, Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, \"player\"))), MetricLines(d.answers.q1.record.metrics, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"player\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, d.answers.q1.record.details)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayerMetrics/sparse\"}, {})\npick1 = Stack(\"v\", 16, [Show(d.answers.q1.record.showPlayer, Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, \"player\"))), MetricLines(d.answers.q1.record.metrics, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"player\", d.answers.q1.record.seriesKind, d.answers.q1.record.subtitle, d.answers.q1.record.details)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -9966,6 +9967,7 @@
                 "color": "#034694",
                 "subtitle": "Premier League goals · 2025/26",
                 "kind": "player",
+                "seriesKind": "cumulative",
                 "periods": [
                   "Matchweek 1",
                   "Matchweek 2",
@@ -10242,7 +10244,7 @@
                       "from": "MW1",
                       "to": "MW38",
                       "style": "player",
-                      "kind": "player",
+                      "kind": "cumulative",
                       "caption": "Premier League goals · 2025/26",
                       "details": [
                         "Crystal Palace at Chelsea",
