@@ -6,7 +6,8 @@ import { isElement } from "../src/lang/tree.js";
 import { SPORTS_COMPONENTS, SPORTS_TEMPLATES, fits, settleInjuries } from "../src/sports/components.js";
 import { valueTicks } from "../src/sports/fotmob.js";
 import { expandCall } from "../src/lang/templates.js";
-import METRIC_SAMPLES from "../preview/components/catalog/sports-components/metrics-data.json" with { type: "json" };
+import METRIC_SAMPLES from "./metric-samples.json" with { type: "json" };
+import { TEAM_SAMPLES } from "./team-sports-samples.js";
 
 /**
  * The compiler parity suite (catalog/openui/fixtures.json): OpenUI programs in the shape the server
@@ -14,7 +15,7 @@ import METRIC_SAMPLES from "../preview/components/catalog/sports-components/metr
  * build the same tree from the same program and dataset.
  *
  * Every Sports component is expanded over a full record and a sparse one (empty strings, no club
- * colour, empty lists). Plain programs cover @Each, nested @Each, member, index and statement
+ * colour, empty lists), and most over recorded NBA and NFL records too (scripts/team-sports-samples.ts). Plain programs cover @Each, nested @Each, member, index and statement
  * reads, and null arguments.
  */
 
@@ -214,7 +215,7 @@ const SAMPLES: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
       third: { name: "Third", logo: "", color: "", medal: "#CD7F32" },
     },
   },
-  // Real data, fetched 6 Nov 2026: ESPN game logs and box scores, FotMob chances created. One copy, shared with the preview.
+  // Real data, fetched 6 Nov 2026: ESPN game logs and box scores, FotMob chances created.
   ...METRIC_SAMPLES,
 };
 
@@ -297,7 +298,9 @@ function fixture(key: string, answer: Record<string, unknown>, statements: reado
 
 export function fixtureSuite(): { version: number; fixtures: Fixture[] } {
   const components = SPORTS_COMPONENTS.flatMap(component => {
-    const samples = SAMPLES[component.name];
+    const own = SAMPLES[component.name];
+    // Recorded NBA and NFL records, after the component's own samples.
+    const samples = own && { ...own, ...TEAM_SAMPLES[component.name] };
     if (!samples) throw new Error(`${component.name} has no parity sample in scripts/openui-fixtures.ts`);
     return Object.entries(samples).map(([variant, record]) => {
       const key = `${component.name}/${variant}`;

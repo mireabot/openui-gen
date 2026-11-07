@@ -9,7 +9,7 @@ import { phosphorFor } from "@/lib/primitives/icons";
 import { Bar, Frame, Shimmer, type SkeletonFrame } from "./skeleton";
 import { BE_URL } from "@/lib/be-url";
 import { cn } from "@/lib/utils";
-import { ClubTimeline } from "@/components/catalog/club-timeline/lib/club-timeline";
+import { YearTimelineView } from "./year-timeline";
 import { YearTimelineItemsSchema } from "../../../src/primitives/year-timeline";
 
 /**
@@ -977,7 +977,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       const clubs = parsed.data.map(item => ({ ...item, loan: item.marker === "currency" }));
       const value = Number(p("initial") ?? 0);
       const initial = Number.isFinite(value) ? Math.min(clubs.length - 1, Math.max(0, Math.trunc(value))) : 0;
-      return <ClubTimeline key={JSON.stringify([clubs, initial])} clubs={clubs} initial={initial} />;
+      return <YearTimelineView key={JSON.stringify([clubs, initial])} clubs={clubs} initial={initial} />;
     }
     case "StepTimeline":
       return <StepTimeline value={String(p("value") ?? "")} caption={p("caption") ? String(p("caption")) : undefined} segments={Array.isArray(p("segments")) ? p("segments") as unknown as TimelineStretch[] : []} ticks={Array.isArray(p("ticks")) ? p("ticks") as unknown as { value: number; display: string }[] : []} />;

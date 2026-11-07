@@ -5,8 +5,8 @@
  * - no file in the repo may say "kino": the design system has no other name;
  * - every `*-ds-<token>` class and `var(--color-ds-<token>)` in the preview must name a token
  *   (or an `@utility`) defined in preview/app/design-system.css.
- * When bringing a component in (from a canvas exploration or another branch), rename `kino` to
- * `ds` in its classes and import `@/components/catalog/design-system`.
+ * When bringing code in (from a canvas exploration or another branch), rename `kino` to `ds` in
+ * its classes.
  */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";

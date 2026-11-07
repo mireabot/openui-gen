@@ -2,12 +2,11 @@
 
 import { CurrencyDollarIcon } from "@phosphor-icons/react/dist/csr/CurrencyDollar";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { dataFill } from "@/components/catalog/design-system";
-import type { ClubSpell } from "../data";
-import { smooth, stops, toLeft, toProgress, useDragScroll } from "./timeline";
+import { smooth, stops, toLeft, toProgress, useDragScroll } from "./year-timeline-scroll";
 
 export type ClubStat = { label: string; value: string };
-export type ClubStop = Pick<ClubSpell, "id" | "name" | "logo" | "color" | "year" | "dates" | "location"> & { loan?: boolean; stats?: ClubStat[] };
+/** One club spell. `logo` is empty with no crest (the card shows a monogram on the club colour); `location` is null with none. */
+export type ClubStop = { id: string; name: string; logo: string; color: string; year: string; dates: string; location: string | null; loan?: boolean; stats?: ClubStat[] };
 
 const STATS_MAX = 3;
 /** How long a hop's glide takes, during which the cards' position doesn't move the years. */
@@ -86,7 +85,7 @@ function Card({ club }: { club: ClubStop }) {
       <span data-node-id="crest" className="block size-14 shrink-0">
         {club.logo
           ? <img src={club.logo} alt="" draggable={false} className="size-full object-contain" />
-          : <span className="flex size-full items-center justify-center rounded-full text-[17px] leading-[22px] font-semibold text-ds-ink-on-brand" style={dataFill(club.color)}>{club.name.charAt(0)}</span>}
+          : <span className="flex size-full items-center justify-center rounded-full text-[17px] leading-[22px] font-semibold text-ds-ink-on-brand" style={{ backgroundColor: club.color }}>{club.name.charAt(0)}</span>}
       </span>
       <h3 data-node-id="name" className="mt-4 text-[17px] leading-[22px] font-semibold">
         {club.name}
@@ -111,7 +110,7 @@ function Card({ club }: { club: ClubStop }) {
 }
 
 /** One stop per year over one row of club cards. With a single year there is nothing to hop between, so no years. */
-export function ClubTimeline({ clubs, initial = 0 }: { clubs: ClubStop[]; initial?: number }) {
+export function YearTimelineView({ clubs, initial = 0 }: { clubs: ClubStop[]; initial?: number }) {
   const { years, cards, rail, progress, railAt, hopTo, onCards, onRail, releaseRail } = useYearAnchor(clubs, initial);
   useDragScroll(rail);
   useDragScroll(cards);
