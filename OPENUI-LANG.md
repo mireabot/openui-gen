@@ -28,7 +28,7 @@ fallback (`fallbacks: "default"`); Haiku has none.
 
 `src/lang/primitives.ts` is the only list of primitives, including `Screen`, `Section`, `Card`, `Stack`,
 `Grid`, `Rail`, `Text`, `Number`, and `ColorCell`. Each has zod props whose key order
-is the positional order on the wire, a role per prop (`node`, `nodes`, `data`, `copy`, `token`), and
+is the positional order on the wire, a role per prop (`node`, `nodes`, `data`, `copy`, `token`, `style`), and
 ground rules the renderer applies (a Card has radius 24 and padding 16; props only choose between
 allowed tokens).
 
@@ -36,21 +36,39 @@ allowed tokens).
 gives the JSON schema, the prompt signatures and the parser. Clients attach their own renderers by
 primitive name:
 
-- web: `preview/components/primitives/openui-render.tsx` maps every name to `DesignSystemPrimitive`
-  using `@openuidev/react-lang`'s `Renderer`;
+- web: `preview/components/primitives/openui-render.tsx` expands template calls with
+  `expandProgram`, then maps every primitive name to `DesignSystemPrimitive` using
+  `@openuidev/react-lang`'s `Renderer`;
 - SwiftUI: `OpenUICompiler` and the design system views (see below).
 
-Templates are server-side compositions the writer may call, as typed builders (`ui.Card(...)`) that
-expand to primitives when admitted, so clients never learn a template, only primitives. The
-sports pack includes MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, SeasonPodium, InjuryReport, and InjuryList.
-Their contracts live in `src/sports/components.ts`. See `catalog/sports-parity.md` for source-design coverage and remaining visual differences.
+### Components are templates
+
+A sports component is a template: a named composition of primitives the writer calls by name. Each
+one is defined once in `src/sports/components.ts` as a typed builder (`build`, using `ui.Card(...)`)
+with a data contract, `useWhen` guidance and optional params. `SPORTS_TEMPLATE_DEFS` prints every
+`build` once over a `record` parameter, so a template is data: `{name, params, body}`, where the body
+is OpenUI text.
+
+The program keeps the call. The compiler expands it only to check it, and the client expands it
+before it evaluates. Every client therefore needs the run's templates: the stream sends them first,
+and a client without them falls back to its bundled copy of `catalog/openui/sports-components.json`.
+`src/lang/templates.ts` is the server and web expander (`expandCall`, `expandProgram`); iOS evaluates a
+template's body in its own scope. A component may take params after its record (StatsCard's `header`
+flag, MetricBars' `heading`); a null or missing param takes its default.
+
+The sports pack has 18 components: ClubTimeline, MatchCard, TeamDetail, StatBar, Leaderboard,
+FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, MetricBars,
+PlayerMetrics, PlayersMetric, SeasonPodium, RecordTable, InjuryReport and InjuryList. See
+`catalog/sports-parity.md` for source-design coverage and remaining visual differences.
 
 ```text
 root = Screen([pick1, pick2])
 d = Query("sports_dataset", {run: "…"}, {})
-pick1 = Section("Premier League table", [Stack("v", 8, @Each(d.answers.q1.table, "row", Row(...)))])
-pick2 = Card([Text(d.answers.q2.title, "headline"), ...])
+pick1 = Section(d.answers.q1.title, [MatchCard(d.answers.q1.match)])
+pick2 = Card([Text(d.answers.q2.title, "headline"), Stack("v", 8, @Each(d.answers.q2.rows, "row", Row(...)))])
 ```
+
+When no component fits, the writer composes primitives, and the two mix freely in one program.
 
 ### The component schema index
 
@@ -58,7 +76,8 @@ pick2 = Card([Text(d.answers.q2.title, "headline"), ...])
 
 - `catalog/openui/primitives.json`: every primitive with its positional props and roles, and a
   digest of the lang-core schema. The iOS app bundles it directly.
-- `catalog/openui/sports-components.json`: the sports template contracts and usage guidance.
+- `catalog/openui/sports-components.json`: each sports component's contract, `useWhen` and params,
+  and its template (`{name, params, body}`). Clients expand calls with these templates.
 - `catalog/openui/fixtures.json`: shared compiler fixtures, including full and sparse sports records.
 
 `--check` fails when it is stale.
@@ -69,8 +88,9 @@ pick2 = Card([Text(d.answers.q2.title, "headline"), ...])
 The writer writes lowercase statements (`peers = Section(...)`, `peers_cards = Rail(...)`). For each
 statement the compiler:
 
-- parses it and expands template calls into primitives;
-- checks components, child slots, data paths and types, SF Symbols and the pack's collection rule;
+- parses it, then expands template calls to check them, but admits the call as written;
+- checks components, child slots, data paths and types, SF Symbols and the pack's collection rule
+  against the real dataset values (an `@Each` template is checked once per real item);
 - links a part once every statement it references is admitted, renames it `pickN`, and records which
   questions it shows from the data it reads.
 
@@ -87,17 +107,23 @@ writer output.
 
 | Event | Payload |
 | --- | --- |
+| `templates` | `{templates}`: every component template the program may call, sent first |
 | `activity` | stage, status and detail for each step |
-| `data` | the dataset seed `{tool: "sports_dataset", args: {run}, result}` |
+| `usage` | one model or search call: its stage, model, tokens, cost and time |
+| `data` | the dataset seed `{tool: "sports_dataset", args: {run}, result, fields, asOf, source}` |
 | `skeleton` | frames for the planned parts, before content |
-| `openui` | `{text}`: complete statements to append; later assignments to an id replace earlier ones |
+| `openui` | `{text}`: complete statements to append; later assignments to an id replace earlier ones, so each finished part also re-sends `root` |
 | `issue` | a recoverable problem with its statement id |
-| `done` | `{program, issues, holes, timings, model, document: {id, revision: 1}}`, sent after the screen is saved |
+| `done` | `{program, templates, issues, holes, timings, model, document: {id, revision}}`, sent after the screen is saved; `templates` are the ones the program uses |
 | `failure` | `{error, message}` |
 
 The `data` event warms the client's tool provider. A client without the seed replays the query
 through `POST /tools/sports_dataset` with `{run}`. Snapshots live in memory (bounded) and under
 `DATA_DIR/openui-snapshots`.
+
+Outside production, `GET /lang/sports/live` streams every run from any client (the iOS app, the
+preview, `npm run ask`) as it happens, and `GET /lang/sports/runs` and `/runs/:documentId` replay saved
+screens with no model call.
 
 `@Each` output can contain nested child arrays, which renderers flatten before laying out rails, grids
 and segmented panels. Data arrays, such as chart points, stay data.
@@ -121,7 +147,8 @@ document id is the first run's id.
    Every other part is kept byte for byte. A base part whose reads no longer resolve is dropped unless
    rewritten, and its questions fall back.
 4. The next revision is committed atomically under a per-document lock. Only then does the stream send
-   `data`, `openui {text, replace: true}` and `done` with `document: {id, revision}`. A failure sends
+   `templates`, `data`, `openui {text, replace: true}` (the whole program) and `done` with
+   `document: {id, revision}`. Until then it sends only `activity` and `usage`. A failure sends
    `failure` and commits nothing. 404 for an unknown document, 409 `revision_conflict` when
    `baseRevision` is stale, 400 `unknown_target` for a target that names no part.
 
@@ -131,7 +158,9 @@ The app renders the same OpenUI program as the web. It keeps one set of view obj
 
 ### The compiler turns text into elements
 
-`OpenUICompiler` in `GenUI/Core/OpenUI` parses the program and evaluates it against the dataset seeds. The result is a scene: a list of root element ids and, for each element, its kind, evaluated properties, child slots, and the data path each property read.
+`OpenUICompiler` in `GenUI/Core/OpenUI` parses the program and evaluates it against the dataset seeds. The result is a scene: a list of root element ids and, for each element, its kind, evaluated properties and child slots. Arguments map to the catalog's positional args by index: `node` and `nodes` args become slots, the rest become properties.
+
+A call to a name that is not a primitive is a template call. The compiler looks it up in the run's templates (or the bundled `sports-components.json`), binds each argument to its param in a fresh scope, and evaluates the body there, mounted where the call sits. The element ids are the same as the expanded program's, and a caller's `@Each` item cannot collide with the template's own.
 
 ```text
 program text + seeds → OpenUICompiler → scene {roots, elements by id}
@@ -151,13 +180,13 @@ program text + seeds → OpenUICompiler → scene
                      root handle · slot handles · element handles
 ```
 
-There are three kinds of handle. `OpenUIRootHandle` holds the top-level children. `OpenUISlotHandle` holds the children of one slot, such as a card's `children`. `OpenUIElementHandle` holds one element's properties and calculator bindings, plus a fixed set of slot handles.
+There are three kinds of handle. `OpenUIRootHandle` holds the top-level children. `OpenUISlotHandle` holds the children of one slot, such as a card's `children`. `OpenUIElementHandle` holds one element's properties, plus a fixed set of slot handles.
 
 Each compile ends in one commit on the main actor. For every element in the new scene the commit looks up the handle with the same id. If the kind and slot names match, it keeps that handle and writes `properties` only when the new value differs. Otherwise it makes a new handle. It then sets each slot's children, writing only when the list of handle objects differs. Handles whose ids are gone are dropped. Because a write happens only on a real difference, an element whose props did not change produces no observation event.
 
 ### The renderer draws handles
 
-`OpenUISceneView` in `GenUI/Renderer` draws the root handle's children. Each child view receives its handle directly. `PrimitiveProps(handle:)` reads the handle's prepared properties, and `PrimitiveVisual` sends the kind to the same design system views the old renderer used. A container reads its slot handle's children and draws each through the same path.
+`OpenUISceneView` in `GenUI/Renderer` draws the root handle's children. Each child view receives its handle directly. `PrimitiveProps(handle:)` reads the handle's prepared properties, and `PrimitiveVisual` switches on the kind string to pick the design system view. A kind with no case draws a red outline in debug builds and nothing in release builds. A container reads its slot handle's children and draws each through the same path.
 
 ```text
 scene → session.commit → handles → OpenUISceneView → design system views
@@ -181,10 +210,9 @@ AskView → AskModel → OpenUISession.ask → OpenUIStreamService → backend
 
 - The compiler evaluates the whole program on every commit. The savings are in view updates, not in evaluation work.
 - `@Each` items are identified by index. A reordered collection rewrites the moved rows' properties instead of moving their views.
-- Calculator edits stay with their calculator across follow-ups only while the calculator keeps its id. There is no conflict marker when the server changes an input the user edited.
 - The session can export an `OpenUIArchive`, but History does not store it yet.
-- The OpenUI Ask answer shows the progress checklist before content, not the skeleton.
 - The iOS follow-up path is covered by `OpenUISessionTests` against a fake stream, not yet against the live server.
+- The compiler checks only that each primitive exists and has no extra arguments. Token, style and copy values are not validated on the device: the server's compiler is the gate.
 
 The backend derives skeleton frames from the evaluated OpenUI frame; primitive skeleton
 descriptions remain strings.
