@@ -3,34 +3,33 @@ import { Fragment, type CSSProperties } from "react";
 import { SoccerBallIcon } from "@phosphor-icons/react/dist/ssr/SoccerBall";
 import { BasketballIcon } from "@phosphor-icons/react/dist/ssr/Basketball";
 import { FootballIcon } from "@phosphor-icons/react/dist/ssr/Football";
+import { GithubLogoIcon } from "@phosphor-icons/react/dist/ssr/GithubLogo";
 import { DesignSystemPrimitive, DesignSystemProvider } from "@/components/primitives/render";
 import type { Design } from "@/lib/primitives/design";
 
-/** The sports, white on a tone circle: soccer info, basketball good, football warn. */
-const SPORTS = [
-  { Glyph: SoccerBallIcon, tone: "bg-ds-tone-info-bg" },
-  { Glyph: BasketballIcon, tone: "bg-ds-tone-good-bg" },
-  { Glyph: FootballIcon, tone: "bg-ds-tone-warn-bg" },
-];
+/** The sports, white on a translucent secondary-ink circle. */
+const SPORTS = [SoccerBallIcon, BasketballIcon, FootballIcon];
 
 const LINKS = [
   { href: "/catalog", icon: "chart.bar", title: "Components", body: "Every sports component, drawn from its OpenUI program with soccer, NBA and NFL samples." },
   { href: "/how-to", icon: "book", title: "Docs", body: "How a question becomes data, how the writer picks components, and how SwiftUI renders the program." },
 ];
 
+const REPO = "https://github.com/mireabot/openui-gen";
+
 const text = (content: string, role: string, weight: string, ink: string) =>
   <DesignSystemPrimitive name="Text" props={{ content, role, weight, ink }} slots={{}} />;
 
 /**
  * The home page when the preview runs without a generation backend (NEXT_PUBLIC_PREVIEW_HOME=landing):
- * what the project is and links to the components and the docs. The link cards are design system
+ * what the project is, links to the components and the docs, and a footer crediting OpenUI and linking the repo. The link cards are design system
  * primitives, so they match the components they lead to.
  */
 export function Landing({ theme, specs }: { theme?: CSSProperties; specs?: Design["primitives"] }) {
-  return <main className="flex h-full overflow-y-auto bg-ds-surface-screen text-ds-ink-primary [color-scheme:dark]" style={theme}>
+  return <main className="flex h-full flex-col overflow-y-auto bg-ds-surface-screen text-ds-ink-primary [color-scheme:dark]" style={theme}>
     <DesignSystemProvider specs={specs}>
-      <div className="m-auto flex w-full max-w-[640px] flex-col items-center px-5 py-16 text-center">
-        <div className="flex gap-4">{SPORTS.map(({ Glyph, tone }, index) => <span key={index} className={`flex size-14 items-center justify-center rounded-full text-ds-ink-primary ${tone}`}><Glyph size={28} weight="fill" /></span>)}</div>
+      <div className="mx-auto my-auto flex w-full max-w-[640px] flex-col items-center px-5 py-16 text-center">
+        <div className="flex gap-4">{SPORTS.map((Glyph, index) => <span key={index} className="flex size-14 items-center justify-center rounded-full bg-ds-ink-secondary/20 text-ds-ink-primary"><Glyph size={28} weight="fill" /></span>)}</div>
         <h1 className="mt-8 text-[28px] leading-[34px] font-semibold tracking-[-0.5px]">OpenUI Sports</h1>
         <p className="mt-3 max-w-[520px] text-[15px] leading-[22px] text-ds-ink-secondary">
           Ask about a soccer, NBA or NFL team, league or player. The server gathers the data, a model writes the answer as an OpenUI Lang program, and the iOS app renders that program as SwiftUI views while it streams in.
@@ -47,6 +46,13 @@ export function Landing({ theme, specs }: { theme?: CSSProperties; specs?: Desig
           </Link>)}
         </div>
       </div>
+      <footer className="flex shrink-0 items-center justify-center gap-5 px-5 py-8 text-[13px] leading-[18px] text-ds-ink-secondary">
+        <a href="https://www.openui.com" className="flex items-center gap-2 hover:text-ds-ink-primary">
+          Powered by <img src="/openui-logo.svg" alt="" width={30} height={24} /> <span className="font-medium text-ds-ink-primary">OpenUI</span>
+        </a>
+        <span className="h-4 w-px bg-ds-outline-subtle" />
+        <a href={REPO} className="text-ds-ink-secondary hover:text-ds-ink-primary"><GithubLogoIcon size={20} weight="fill" /></a>
+      </footer>
     </DesignSystemProvider>
   </main>;
 }
