@@ -1,8 +1,8 @@
 # Sports catalog and rendering audit
 
-The 18 reusable sports components are indexed. Each expands into generic primitives before reaching either client. Component coverage does not establish visual equivalence with the source designs.
+The 18 reusable sports components are indexed. The program calls each one by name, and both clients expand the call into generic primitives with its template. Component coverage does not establish visual equivalence with the source designs.
 
-The index includes ClubTimeline, MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, MetricBars, PlayerMetrics, PlayersMetric, SeasonPodium, RecordTable, InjuryReport and InjuryList. The MatchResult showcase uses MatchCard with scores.
+The index includes ClubTimeline, MatchCard, TeamDetail, StatBar, Leaderboard, FixturesHeatmap, StatsCard, TeamPoints, LeagueStanding, MatchTopPlayers, PlayerValue, MetricBars, PlayerMetrics, PlayersMetric, SeasonPodium, RecordTable, InjuryReport and InjuryList. The Components page (`/catalog`) draws each one from its samples in `catalog/openui/fixtures.json`.
 
 ## Coverage checks
 
