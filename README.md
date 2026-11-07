@@ -17,6 +17,12 @@ The repo has three web parts:
 It also holds the generation server, the component library and its schema index, and the native iOS
 client. One service serves the API and the web pages.
 
+## Data sources
+
+This project calls the FotMob and ESPN APIs for demonstration only. It is not affiliated with either
+company and is not meant for commercial use. The data, logos and photos belong to their owners. If you
+build on this repo for a product, replace these sources with data you have the rights to use.
+
 ## Run it
 
 ```sh
