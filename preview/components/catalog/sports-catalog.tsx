@@ -18,8 +18,10 @@ function programOf(component: string, fixture: Fixture): string {
   return `root = Screen([pick1])\nd = Query("sports_dataset", {run: "${fixture.dataset.args.run}"}, {})\npick1 = ${component}(d.answers.q1.record)\n`;
 }
 
-/** "withStats" → "With stats". */
+/** "withStats" → "With stats"; league samples keep their name, "nba" → "NBA". */
+const LEAGUE_NAMES = new Set(["nba", "nfl"]);
 const label = (variant: string) => {
+  if (LEAGUE_NAMES.has(variant)) return variant.toUpperCase();
   const words = variant.replace(/([A-Z])/g, " $1").toLowerCase();
   return words.charAt(0).toUpperCase() + words.slice(1);
 };

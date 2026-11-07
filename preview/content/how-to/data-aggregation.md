@@ -128,6 +128,6 @@ The repository does not explain why `mixed` is the default or why the search lim
 
 ## Checks for this change
 
-`npm run check:all` includes `check:feeds`, `catalog:samples -- --check`, and `check:team-sports`. The feed checks compare 8 soccer cases and 24 NFL and NBA cases with saved outputs. The team-sports checks drive those 24 cases through saved datasets and compiled screens with recorded ESPN responses and scripted model replies. They also check that those runs never call FotMob.
+`npm run check:all` includes `check:feeds`, `check:team-sports`, and `openui:export -- --check`, whose parity fixtures include NBA and NFL component records built from the same recorded responses. The feed checks compare 8 soccer cases and 24 NFL and NBA cases with saved outputs. The team-sports checks drive those 24 cases through saved datasets and compiled screens with recorded ESPN responses and scripted model replies. They also check that those runs never call FotMob.
 
 These checks use no live provider or model calls. They verify the recorded cases and pipeline behavior. They do not establish current provider coverage or live model routing quality.
