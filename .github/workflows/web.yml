@@ -1,0 +1,37 @@
+name: Web
+# Builds the landing export for the portfolio (served at /projects/openui-gen) and publishes it
+# as the `web` release asset site.tar.gz. The portfolio downloads it when it builds.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: web
+  cancel-in-progress: true
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            preview/package-lock.json
+      - run: npm ci
+      - run: npm --prefix preview ci
+      - run: npm run preview:build:landing
+        env:
+          NEXT_PUBLIC_BASE_PATH: /projects/openui-gen
+      - run: tar -czf site.tar.gz -C preview/out .
+      - name: Upload to the web release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view web >/dev/null 2>&1 || gh release create web --title web --notes "Static landing build for the portfolio." --latest=false
+          gh release upload web site.tar.gz --clobber

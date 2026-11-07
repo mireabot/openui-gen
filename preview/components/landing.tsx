@@ -10,20 +10,22 @@ import type { Design } from "@/lib/primitives/design";
 /** The sports, white on a translucent secondary-ink circle. */
 const SPORTS = [SoccerBallIcon, BasketballIcon, FootballIcon];
 
+const REPO = "https://github.com/mireabot/openui-gen";
+
+/** The link cards; the repo card is full width and opens GitHub. */
 const LINKS = [
   { href: "/catalog", icon: "chart.bar", title: "Components", body: "Every sports component, drawn from its OpenUI program with soccer, NBA and NFL samples." },
   { href: "/how-to", icon: "book", title: "Docs", body: "How a question becomes data, how the writer picks components, and how SwiftUI renders the program." },
+  { href: REPO, icon: "arrow.up.right", title: "Build your own", body: "Fork or clone the repo to generate screens in your own app. The preview studio shows each run's data, program and screen as it streams, so you can debug a run." },
 ];
-
-const REPO = "https://github.com/mireabot/openui-gen";
 
 const text = (content: string, role: string, weight: string, ink: string) =>
   <DesignSystemPrimitive name="Text" props={{ content, role, weight, ink }} slots={{}} />;
 
 /**
  * The home page when the preview runs without a generation backend (NEXT_PUBLIC_PREVIEW_HOME=landing):
- * what the project is, links to the components and the docs, and a footer crediting OpenUI and linking the repo. The link cards are design system
- * primitives, so they match the components they lead to.
+ * what the project is, links to the components, the docs and the repo, and a footer crediting OpenUI.
+ * The link cards are design system primitives, so they match the components they lead to.
  */
 export function Landing({ theme, specs }: { theme?: CSSProperties; specs?: Design["primitives"] }) {
   return <main className="flex h-full flex-col overflow-y-auto bg-ds-surface-screen text-ds-ink-primary [color-scheme:dark]" style={theme}>
@@ -35,7 +37,7 @@ export function Landing({ theme, specs }: { theme?: CSSProperties; specs?: Desig
           Ask about a soccer, NBA or NFL team, league or player. The server gathers the data, a model writes the answer as an OpenUI Lang program, and the iOS app renders that program as SwiftUI views while it streams in.
         </p>
         <div className="mt-12 grid w-full grid-cols-1 gap-4 text-left sm:grid-cols-2">
-          {LINKS.map(link => <Link key={link.href} href={link.href} className="block rounded-[24px] transition-transform active:scale-[0.98] [&>div]:h-full">
+          {LINKS.map(link => <Link key={link.href} href={link.href} className={`block rounded-[24px] transition-transform active:scale-[0.98] [&>div]:h-full ${link.href === REPO ? "sm:col-span-2" : ""}`}>
             <DesignSystemPrimitive name="Card" props={{ surface: "card", padding: 20, gap: 16 }} slots={{ children: [
               <DesignSystemPrimitive key="icon" name="IconTile" props={{ icon: link.icon, style: "soft", size: 40 }} slots={{}} />,
               <DesignSystemPrimitive key="copy" name="Stack" props={{ axis: "v", gap: 4 }} slots={{ children: [
@@ -48,7 +50,7 @@ export function Landing({ theme, specs }: { theme?: CSSProperties; specs?: Desig
       </div>
       <footer className="flex shrink-0 items-center justify-center gap-5 px-5 py-8 text-[13px] leading-[18px] text-ds-ink-secondary">
         <a href="https://www.openui.com" className="flex items-center gap-2 hover:text-ds-ink-primary">
-          Powered by <img src="/openui-logo.svg" alt="" width={30} height={24} /> <span className="font-medium text-ds-ink-primary">OpenUI</span>
+          Powered by <img src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/openui-logo.svg`} alt="" width={30} height={24} /> <span className="font-medium text-ds-ink-primary">OpenUI</span>
         </a>
         <span className="h-4 w-px bg-ds-outline-subtle" />
         <a href={REPO} className="text-ds-ink-secondary hover:text-ds-ink-primary"><GithubLogoIcon size={20} weight="fill" /></a>
