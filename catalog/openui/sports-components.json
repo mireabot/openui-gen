@@ -226,7 +226,7 @@
     {
       "name": "Leaderboard",
       "intent": "A ranked list for one metric: a header naming the list and the metric, then rows of logo or monogram, name, a detail line and the value.",
-      "useWhen": "top scorers, top assisters, most clean sheets, the teams conceding most: any ranking where every row has one value",
+      "useWhen": "a plain ranked list of at most 10, where the order is the answer: who are the top scorers, the top assisters, most clean sheets; not when the request asks to compare the subjects, and not for more than 10 (use MetricBars)",
       "contract": [
         {
           "path": "title",
@@ -807,7 +807,7 @@
     {
       "name": "MetricBars",
       "intent": "One metric across any number of subjects: a club-colour value pill per column at the value's height, with an optional second line, then the subject's photo or crest, name and caption; more than five page sideways. No card.",
-      "useWhen": "one figure compared across players, clubs or seasons: points per game this season vs last, strikes of three players, a club's points per game by season with the coach under each",
+      "useWhen": "one figure compared across players, clubs or seasons, whenever the request asks to compare them (compare, vs, against each other, side by side), even when it also asks for the top N, and for any one-figure list of more than 10: the top 16 scorers compared, points per game this season vs last, strikes of three players, a club's points per game by season with the coach under each",
       "contract": [
         {
           "path": "title",
@@ -852,12 +852,12 @@
         {
           "path": "columns[].color",
           "kind": "color",
-          "note": "the subject's club colour \"#rrggbb\", readable on a dark screen"
+          "note": "the subject's club colour \"#rrggbb\", or \"\"; the server fills a player's from the club in caption"
         },
         {
-          "path": "columns[].image",
+          "path": "columns[].logo",
           "kind": "text",
-          "note": "photo or crest URL, or \"\""
+          "note": "photo or crest URL, or \"\"; the server fills a player's photo"
         },
         {
           "path": "columns[].kind",
@@ -870,7 +870,7 @@
     {
       "name": "PlayerMetrics",
       "intent": "One player over a season as stepped lines: one metric leads with its total and a scrub readout; two to four metrics get a legend grid of chips with each value at the scrub. The player row is optional. No card.",
-      "useWhen": "how one player's numbers built up over a season: goals, assists and chances by matchweek, triple-doubles by game; up to four metrics",
+      "useWhen": "one player's numbers over a season, period by period: goals, assists and chances by matchweek, triple-doubles by game, progress or progression; up to four metrics; for a single season total per subject use MetricBars",
       "contract": [
         {
           "path": "showPlayer",
@@ -883,19 +883,24 @@
           "note": "the player's name"
         },
         {
-          "path": "caption",
+          "path": "detail",
           "kind": "text",
-          "note": "under the name, e.g. \"Chelsea · Premier League 2025/26\""
+          "note": "under the name, club first, e.g. \"Chelsea · Premier League 2025/26\""
         },
         {
-          "path": "image",
+          "path": "logo",
           "kind": "text",
-          "note": "the player's photo URL, or \"\""
+          "note": "the player's photo URL, or \"\"; the server fills it"
+        },
+        {
+          "path": "kind",
+          "kind": "text",
+          "note": "\"player\""
         },
         {
           "path": "color",
           "kind": "color",
-          "note": "the club colour behind the photo"
+          "note": "the club colour behind the photo; the server fills it from detail"
         },
         {
           "path": "subtitle",
@@ -938,7 +943,7 @@
           "note": "e.g. \"Goals\""
         },
         {
-          "path": "metrics[].color",
+          "path": "metrics[].lineColor",
           "kind": "color",
           "note": "in order: the club colour, the club colour again, \"ink.primary\", \"ink.secondary\""
         },
@@ -963,7 +968,7 @@
     {
       "name": "PlayersMetric",
       "intent": "Several players on one metric over a season as a race: one row per player starting with the plain photo, sorted by the value at the scrub, over one stepped line each. No card.",
-      "useWhen": "two to four players compared on one metric over time: quarterbacks' interceptions by week, strikers' goals by matchweek",
+      "useWhen": "two to four players compared on one metric over time, period by period: quarterbacks' interceptions by week, strikers' goals by matchweek; for season totals only use MetricBars",
       "contract": [
         {
           "path": "title",
@@ -1001,27 +1006,32 @@
           "note": "two to four"
         },
         {
-          "path": "players[].label",
+          "path": "players[].name",
           "kind": "text",
-          "note": "the player's name"
+          "note": "the player's full name"
         },
         {
-          "path": "players[].note",
+          "path": "players[].team",
           "kind": "text",
-          "note": "under the name: the club"
+          "note": "the club, under the name"
         },
         {
-          "path": "players[].image",
+          "path": "players[].kind",
           "kind": "text",
-          "note": "the player's photo URL, or \"\""
+          "note": "\"player\""
         },
         {
-          "path": "players[].photoColor",
-          "kind": "color",
-          "note": "the club colour behind the photo"
+          "path": "players[].logo",
+          "kind": "text",
+          "note": "the player's photo URL, or \"\"; the server fills it"
         },
         {
           "path": "players[].color",
+          "kind": "color",
+          "note": "the club colour behind the photo; the server fills it from team"
+        },
+        {
+          "path": "players[].lineColor",
           "kind": "color",
           "note": "the line: the club colour; a second player from a club already shown takes \"ink.primary\", a third \"ink.secondary\", then the club colour at 0.6"
         },

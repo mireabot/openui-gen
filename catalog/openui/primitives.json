@@ -1,7 +1,7 @@
 {
   "version": 1,
   "langCore": "1.0.0",
-  "digest": "603c89b00d36d52d8fff3fc8652df7f88a9c399ff05862b38a7ea71decaf811f",
+  "digest": "0cef99b072b9c1095ef33078ae89ecc4f9e2326f69d6950c2860eff974dc3b5d",
   "primitives": [
     {
       "name": "Screen",
@@ -1152,6 +1152,15 @@
           "optional": false,
           "role": "data",
           "kind": "list"
+        },
+        {
+          "name": "marks",
+          "optional": true,
+          "role": "nodes",
+          "accepts": [
+            "Avatar"
+          ],
+          "note": "one Avatar per column, in column order, under the band"
         }
       ]
     },
@@ -1209,6 +1218,15 @@
           "role": "data",
           "kind": "list",
           "note": "player with one line: a line per period for the scrub, e.g. a box score; \"\" for none"
+        },
+        {
+          "name": "marks",
+          "optional": true,
+          "role": "nodes",
+          "accepts": [
+            "Avatar"
+          ],
+          "note": "race: one Avatar per line, in line order, leading each row"
         }
       ]
     },

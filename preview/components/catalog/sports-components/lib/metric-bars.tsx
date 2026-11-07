@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { dataFill } from "@/components/catalog/kino";
 import { cn } from "@/lib/utils";
 import { Crest, type CrestSize } from "./team-detail";
@@ -78,20 +78,14 @@ const reducedMotion = () => typeof window !== "undefined" && window.matchMedia("
 /**
  * A horizontal pager: CSS scroll snap with `chunkSize(count)` items per page, the web twin of a
  * SwiftUI ScrollView with `.scrollTargetLayout()` and `.containerRelativeFrame(.horizontal, count: n, spacing:)`.
- * Only the first item of each page snaps, so one swipe moves one page. Opens on the last page.
+ * Only the first item of each page snaps, so one swipe moves one page. Opens on the first page.
  */
 function usePager(count: number, gap: number) {
   const ref = useRef<HTMLDivElement>(null);
   const perPage = chunkSize(count);
   const pages = Math.ceil(count / perPage);
-  const [page, setPage] = useState(pages - 1);
+  const [page, setPage] = useState(0);
 
-  useEffect(() => {
-    const el = ref.current;
-    if (el && pages > 1) el.scrollLeft = (pages - 1) * (el.clientWidth + gap);
-    // Only on mount: later page changes come from scrolling.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const onScroll = () => {
     const el = ref.current;
@@ -113,12 +107,12 @@ const GAP = 8;
  * One metric across any number of subjects: a plot band with a guide line per column and a value
  * pill floating at the value's height (club colour on top, the optional secondary line below),
  * then the mark, the name and the caption. No card: it sits on the screen like PlayerValue.
- * Many subjects page sideways, `chunkSize` per page, opening on the latest page.
+ * Many subjects page sideways, `chunkSize` per page, from the first page.
  */
 export function MetricBars({ set }: { set: BarSet }) {
   const { subjects } = set;
   const top = topValue(subjects) || 1;
-  const { ref, pages, page, onScroll, goTo, itemStyle, snapClass } = usePager(subjects.length, GAP);
+  const { ref, onScroll, itemStyle, snapClass } = usePager(subjects.length, GAP);
   const hasSecondary = subjects.some((subject) => subject.secondary);
   const pill = hasSecondary ? PILL : 28;
 
@@ -138,12 +132,12 @@ export function MetricBars({ set }: { set: BarSet }) {
               <div key={subject.id} data-node-id="column" className={cn("flex flex-col items-center", snapClass(index))} style={itemStyle}>
                 <div className="relative w-full" style={{ height: PLOT }}>
                   <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-kino-outline-subtle" />
-                  <div data-node-id="value-pill" className="absolute left-1/2 flex w-[64px] -translate-x-1/2 flex-col overflow-hidden rounded-[8px]" style={{ bottom: 8 + lift }}>
-                    <span className={cn("grid h-7 place-items-center text-[15px] leading-[22px] font-semibold tabular-nums", inkOn(subject.color))} style={dataFill(subject.color)}>
+                  <div data-node-id="value-pill" className="absolute left-1/2 flex w-max min-w-[64px] max-w-[min(76px,100%)] -translate-x-1/2 flex-col overflow-hidden rounded-[8px]" style={{ bottom: 8 + lift }}>
+                    <span className={cn("line-clamp-2 px-2 py-0.5 text-center text-[15px] leading-[22px] font-semibold tabular-nums", inkOn(subject.color))} style={dataFill(subject.color)}>
                       {valueText(subject)}
                     </span>
                     {hasSecondary && (
-                      <span className="grid h-6 place-items-center bg-kino-ink-primary text-[13px] leading-[16px] font-medium text-kino-surface-screen tabular-nums">
+                      <span className="line-clamp-2 bg-kino-ink-primary px-2 py-0.5 text-center text-[13px] leading-[16px] font-medium text-kino-surface-screen tabular-nums">
                         {subject.secondary ?? "–"}
                       </span>
                     )}
@@ -151,23 +145,14 @@ export function MetricBars({ set }: { set: BarSet }) {
                 </div>
                 <div className="mt-3 flex w-full flex-col items-center gap-1">
                   <Mark subject={subject} size={40} />
-                  <span className={cn("line-clamp-1 w-full text-center text-[15px] leading-[22px]", leader ? "font-semibold" : "font-normal")}>{subject.name}</span>
-                  {subject.caption && <span className="line-clamp-1 w-full text-center text-[13px] leading-[16px] font-semibold text-kino-ink-secondary tabular-nums">{subject.caption}</span>}
+                  <span className={cn("line-clamp-2 w-full text-center text-[15px] leading-[22px]", leader ? "font-semibold" : "font-normal")}>{subject.name}</span>
+                  {subject.caption && <span className="line-clamp-2 w-full text-center text-[13px] leading-[16px] font-semibold text-kino-ink-secondary tabular-nums">{subject.caption}</span>}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-      {pages > 1 && (
-        <div data-node-id="page-dots" className="flex justify-center">
-          {Array.from({ length: pages }, (_, index) => (
-            <button key={index} type="button" onClick={() => goTo(index)} className="grid h-6 w-4 place-items-center">
-              <span className={cn("size-1.5 rounded-full", index === page ? "bg-kino-ink-primary" : "bg-kino-outline-control")} />
-            </button>
-          ))}
-        </div>
-      )}
     </section>
   );
 }

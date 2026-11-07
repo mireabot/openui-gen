@@ -9221,7 +9221,7 @@
     },
     {
       "key": "MetricBars/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MetricBars/full\"}, {})\npick1 = Stack(\"v\", 12, [Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(d.answers.q1.record.columns)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MetricBars/full\"}, {})\npick1 = Stack(\"v\", 12, [Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(d.answers.q1.record.columns, @Each(d.answers.q1.record.columns, \"c\", Avatar(c.name, 40, c.logo, null, null, c.color, c.kind)))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -9244,8 +9244,8 @@
                     "display": "10.3",
                     "secondary": "52 games",
                     "color": "#FFFFFF",
-                    "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-                    "kind": "player"
+                    "kind": "player",
+                    "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
                   },
                   {
                     "name": "Egor Demin",
@@ -9254,8 +9254,8 @@
                     "display": "7.8",
                     "secondary": "4 games",
                     "color": "#FFFFFF",
-                    "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-                    "kind": "player"
+                    "kind": "player",
+                    "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
                   }
                 ]
               }
@@ -9322,8 +9322,8 @@
                           "display": "10.3",
                           "secondary": "52 games",
                           "color": "#FFFFFF",
-                          "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-                          "kind": "player"
+                          "kind": "player",
+                          "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
                         },
                         {
                           "name": "Egor Demin",
@@ -9332,12 +9332,37 @@
                           "display": "7.8",
                           "secondary": "4 games",
                           "color": "#FFFFFF",
-                          "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-                          "kind": "player"
+                          "kind": "player",
+                          "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
                         }
                       ]
                     },
-                    "slots": {}
+                    "slots": {
+                      "marks": [
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Egor Demin",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
+                            "color": "#FFFFFF",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Egor Demin",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
+                            "color": "#FFFFFF",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -9348,7 +9373,7 @@
     },
     {
       "key": "MetricBars/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MetricBars/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(d.answers.q1.record.columns)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"MetricBars/sparse\"}, {})\npick1 = Stack(\"v\", 12, [Stack(\"h\", 12, [Text(d.answers.q1.record.title, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(d.answers.q1.record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(d.answers.q1.record.columns, @Each(d.answers.q1.record.columns, \"c\", Avatar(c.name, 40, c.logo, null, null, c.color, c.kind)))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -9371,8 +9396,8 @@
                     "display": "7.8",
                     "secondary": "4 games",
                     "color": "#FFFFFF",
-                    "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-                    "kind": "player"
+                    "kind": "player",
+                    "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
                   }
                 ]
               }
@@ -9439,12 +9464,26 @@
                           "display": "7.8",
                           "secondary": "4 games",
                           "color": "#FFFFFF",
-                          "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
-                          "kind": "player"
+                          "kind": "player",
+                          "logo": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png"
                         }
                       ]
                     },
-                    "slots": {}
+                    "slots": {
+                      "marks": [
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Egor Demin",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nba/players/full/5175643.png",
+                            "color": "#FFFFFF",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -9455,7 +9494,7 @@
     },
     {
       "key": "PlayerMetrics/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayerMetrics/full\"}, {})\npick1 = Stack(\"v\", 16, [Show(d.answers.q1.record.showPlayer, Row(d.answers.q1.record.name, d.answers.q1.record.caption, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.image, null, null, d.answers.q1.record.color, \"player\"))), MetricLines(d.answers.q1.record.metrics, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"player\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, d.answers.q1.record.details)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayerMetrics/full\"}, {})\npick1 = Stack(\"v\", 16, [Show(d.answers.q1.record.showPlayer, Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, \"player\"))), MetricLines(d.answers.q1.record.metrics, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"player\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, d.answers.q1.record.details)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -9470,11 +9509,9 @@
               "record": {
                 "showPlayer": true,
                 "name": "Cole Palmer",
-                "caption": "Chelsea · Premier League 2025/26",
-                "image": "https://images.fotmob.com/image_resources/playerimages/1096353.png",
                 "color": "#034694",
                 "subtitle": "",
-                "kind": "cumulative",
+                "kind": "player",
                 "periods": [
                   "Matchweek 1",
                   "Matchweek 2",
@@ -9521,7 +9558,6 @@
                 "metrics": [
                   {
                     "label": "Goals",
-                    "color": "#033cc1",
                     "opacity": 1,
                     "values": [
                       0,
@@ -9563,11 +9599,11 @@
                       9,
                       10
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "lineColor": "#033cc1"
                   },
                   {
                     "label": "Assists",
-                    "color": "#033cc1",
                     "opacity": 0.6,
                     "values": [
                       0,
@@ -9609,11 +9645,11 @@
                       1,
                       1
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "lineColor": "#033cc1"
                   },
                   {
                     "label": "Chances created",
-                    "color": "ink.primary",
                     "opacity": 1,
                     "values": [
                       1,
@@ -9655,9 +9691,12 @@
                       24,
                       24
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "lineColor": "ink.primary"
                   }
-                ]
+                ],
+                "detail": "Chelsea · Premier League 2025/26",
+                "logo": "https://images.fotmob.com/image_resources/playerimages/1096353.png"
               }
             }
           }
@@ -9714,7 +9753,6 @@
                       "lines": [
                         {
                           "label": "Goals",
-                          "color": "#033cc1",
                           "opacity": 1,
                           "values": [
                             0,
@@ -9756,11 +9794,11 @@
                             9,
                             10
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "lineColor": "#033cc1"
                         },
                         {
                           "label": "Assists",
-                          "color": "#033cc1",
                           "opacity": 0.6,
                           "values": [
                             0,
@@ -9802,11 +9840,11 @@
                             1,
                             1
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "lineColor": "#033cc1"
                         },
                         {
                           "label": "Chances created",
-                          "color": "ink.primary",
                           "opacity": 1,
                           "values": [
                             1,
@@ -9848,7 +9886,8 @@
                             24,
                             24
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "lineColor": "ink.primary"
                         }
                       ],
                       "periods": [
@@ -9894,7 +9933,7 @@
                       "from": "MW1",
                       "to": "MW38",
                       "style": "player",
-                      "kind": "cumulative",
+                      "kind": "player",
                       "caption": "",
                       "details": []
                     },
@@ -9909,7 +9948,7 @@
     },
     {
       "key": "PlayerMetrics/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayerMetrics/sparse\"}, {})\npick1 = Stack(\"v\", 16, [Show(d.answers.q1.record.showPlayer, Row(d.answers.q1.record.name, d.answers.q1.record.caption, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.image, null, null, d.answers.q1.record.color, \"player\"))), MetricLines(d.answers.q1.record.metrics, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"player\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, d.answers.q1.record.details)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayerMetrics/sparse\"}, {})\npick1 = Stack(\"v\", 16, [Show(d.answers.q1.record.showPlayer, Row(d.answers.q1.record.name, d.answers.q1.record.detail, Avatar(d.answers.q1.record.name, 40, d.answers.q1.record.logo, null, null, d.answers.q1.record.color, \"player\"))), MetricLines(d.answers.q1.record.metrics, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"player\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, d.answers.q1.record.details)])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -9924,11 +9963,9 @@
               "record": {
                 "showPlayer": false,
                 "name": "Cole Palmer",
-                "caption": "Chelsea · Premier League 2025/26",
-                "image": "https://images.fotmob.com/image_resources/playerimages/1096353.png",
                 "color": "#034694",
                 "subtitle": "Premier League goals · 2025/26",
-                "kind": "cumulative",
+                "kind": "player",
                 "periods": [
                   "Matchweek 1",
                   "Matchweek 2",
@@ -10014,7 +10051,6 @@
                 "metrics": [
                   {
                     "label": "Goals",
-                    "color": "#033cc1",
                     "opacity": 1,
                     "values": [
                       0,
@@ -10056,9 +10092,12 @@
                       9,
                       10
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "lineColor": "#033cc1"
                   }
-                ]
+                ],
+                "detail": "Chelsea · Premier League 2025/26",
+                "logo": "https://images.fotmob.com/image_resources/playerimages/1096353.png"
               }
             }
           }
@@ -10115,7 +10154,6 @@
                       "lines": [
                         {
                           "label": "Goals",
-                          "color": "#033cc1",
                           "opacity": 1,
                           "values": [
                             0,
@@ -10157,7 +10195,8 @@
                             9,
                             10
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "lineColor": "#033cc1"
                         }
                       ],
                       "periods": [
@@ -10203,7 +10242,7 @@
                       "from": "MW1",
                       "to": "MW38",
                       "style": "player",
-                      "kind": "cumulative",
+                      "kind": "player",
                       "caption": "Premier League goals · 2025/26",
                       "details": [
                         "Crystal Palace at Chelsea",
@@ -10257,7 +10296,7 @@
     },
     {
       "key": "PlayersMetric/full",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayersMetric/full\"}, {})\npick1 = Stack(\"v\", 16, [Text(d.answers.q1.record.title, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(d.answers.q1.record.players, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"race\", d.answers.q1.record.kind, d.answers.q1.record.subtitle)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayersMetric/full\"}, {})\npick1 = Stack(\"v\", 16, [Text(d.answers.q1.record.title, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(d.answers.q1.record.players, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"race\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, null, @Each(d.answers.q1.record.players, \"x\", Avatar(x.name, 40, x.logo, null, null, x.color, \"player\")))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -10287,11 +10326,6 @@
                 "to": "Wk 8",
                 "players": [
                   {
-                    "label": "Patrick Mahomes",
-                    "note": "Chiefs",
-                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
-                    "photoColor": "#E31837",
-                    "color": "#E31837",
                     "opacity": 1,
                     "values": [
                       1,
@@ -10303,14 +10337,15 @@
                       4,
                       4
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "name": "Patrick Mahomes",
+                    "team": "Chiefs",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+                    "color": "#E31837",
+                    "lineColor": "#E31837",
+                    "kind": "player"
                   },
                   {
-                    "label": "Josh Allen",
-                    "note": "Bills",
-                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png",
-                    "photoColor": "#00338D",
-                    "color": "#00338D",
                     "opacity": 1,
                     "values": [
                       0,
@@ -10322,14 +10357,15 @@
                       null,
                       5
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "name": "Josh Allen",
+                    "team": "Bills",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png",
+                    "color": "#00338D",
+                    "lineColor": "#00338D",
+                    "kind": "player"
                   },
                   {
-                    "label": "Joe Burrow",
-                    "note": "Bengals",
-                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png",
-                    "photoColor": "#FB4F14",
-                    "color": "#FB4F14",
                     "opacity": 1,
                     "values": [
                       1,
@@ -10341,14 +10377,15 @@
                       3,
                       6
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "name": "Joe Burrow",
+                    "team": "Bengals",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png",
+                    "color": "#FB4F14",
+                    "lineColor": "#FB4F14",
+                    "kind": "player"
                   },
                   {
-                    "label": "Justin Herbert",
-                    "note": "Chargers",
-                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png",
-                    "photoColor": "#0080C6",
-                    "color": "#0080C6",
                     "opacity": 1,
                     "values": [
                       1,
@@ -10360,7 +10397,13 @@
                       null,
                       10
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "name": "Justin Herbert",
+                    "team": "Chargers",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png",
+                    "color": "#0080C6",
+                    "lineColor": "#0080C6",
+                    "kind": "player"
                   }
                 ]
               }
@@ -10397,11 +10440,6 @@
                     "properties": {
                       "lines": [
                         {
-                          "label": "Patrick Mahomes",
-                          "note": "Chiefs",
-                          "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
-                          "photoColor": "#E31837",
-                          "color": "#E31837",
                           "opacity": 1,
                           "values": [
                             1,
@@ -10413,14 +10451,15 @@
                             4,
                             4
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "name": "Patrick Mahomes",
+                          "team": "Chiefs",
+                          "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+                          "color": "#E31837",
+                          "lineColor": "#E31837",
+                          "kind": "player"
                         },
                         {
-                          "label": "Josh Allen",
-                          "note": "Bills",
-                          "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png",
-                          "photoColor": "#00338D",
-                          "color": "#00338D",
                           "opacity": 1,
                           "values": [
                             0,
@@ -10432,14 +10471,15 @@
                             null,
                             5
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "name": "Josh Allen",
+                          "team": "Bills",
+                          "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png",
+                          "color": "#00338D",
+                          "lineColor": "#00338D",
+                          "kind": "player"
                         },
                         {
-                          "label": "Joe Burrow",
-                          "note": "Bengals",
-                          "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png",
-                          "photoColor": "#FB4F14",
-                          "color": "#FB4F14",
                           "opacity": 1,
                           "values": [
                             1,
@@ -10451,14 +10491,15 @@
                             3,
                             6
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "name": "Joe Burrow",
+                          "team": "Bengals",
+                          "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png",
+                          "color": "#FB4F14",
+                          "lineColor": "#FB4F14",
+                          "kind": "player"
                         },
                         {
-                          "label": "Justin Herbert",
-                          "note": "Chargers",
-                          "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png",
-                          "photoColor": "#0080C6",
-                          "color": "#0080C6",
                           "opacity": 1,
                           "values": [
                             1,
@@ -10470,7 +10511,13 @@
                             null,
                             10
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "name": "Justin Herbert",
+                          "team": "Chargers",
+                          "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png",
+                          "color": "#0080C6",
+                          "lineColor": "#0080C6",
+                          "kind": "player"
                         }
                       ],
                       "periods": [
@@ -10489,7 +10536,54 @@
                       "kind": "cumulative",
                       "caption": "AFC quarterbacks · 2026 season"
                     },
-                    "slots": {}
+                    "slots": {
+                      "marks": [
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Patrick Mahomes",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+                            "color": "#E31837",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Josh Allen",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3918298.png",
+                            "color": "#00338D",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Joe Burrow",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3915511.png",
+                            "color": "#FB4F14",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Justin Herbert",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4038941.png",
+                            "color": "#0080C6",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
                   }
                 ]
               }
@@ -10500,7 +10594,7 @@
     },
     {
       "key": "PlayersMetric/sparse",
-      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayersMetric/sparse\"}, {})\npick1 = Stack(\"v\", 16, [Text(d.answers.q1.record.title, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(d.answers.q1.record.players, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"race\", d.answers.q1.record.kind, d.answers.q1.record.subtitle)])\n",
+      "program": "root = Screen([pick1])\nd = Query(\"sports_dataset\", {run: \"PlayersMetric/sparse\"}, {})\npick1 = Stack(\"v\", 16, [Text(d.answers.q1.record.title, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(d.answers.q1.record.players, d.answers.q1.record.periods, d.answers.q1.record.from, d.answers.q1.record.to, \"race\", d.answers.q1.record.kind, d.answers.q1.record.subtitle, null, @Each(d.answers.q1.record.players, \"x\", Avatar(x.name, 40, x.logo, null, null, x.color, \"player\")))])\n",
       "dataset": {
         "tool": "sports_dataset",
         "args": {
@@ -10530,11 +10624,6 @@
                 "to": "Wk 8",
                 "players": [
                   {
-                    "label": "Patrick Mahomes",
-                    "note": "Chiefs",
-                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
-                    "photoColor": "#E31837",
-                    "color": "#E31837",
                     "opacity": 1,
                     "values": [
                       1,
@@ -10546,14 +10635,15 @@
                       4,
                       4
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "name": "Patrick Mahomes",
+                    "team": "Chiefs",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+                    "color": "#E31837",
+                    "lineColor": "#E31837",
+                    "kind": "player"
                   },
                   {
-                    "label": "Justin Fields",
-                    "note": "Chiefs",
-                    "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4362887.png",
-                    "photoColor": "#E31837",
-                    "color": "ink.primary",
                     "opacity": 1,
                     "values": [
                       0,
@@ -10565,7 +10655,13 @@
                       null,
                       null
                     ],
-                    "decimals": 0
+                    "decimals": 0,
+                    "name": "Justin Fields",
+                    "team": "Chiefs",
+                    "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4362887.png",
+                    "color": "#E31837",
+                    "lineColor": "ink.primary",
+                    "kind": "player"
                   }
                 ]
               }
@@ -10602,11 +10698,6 @@
                     "properties": {
                       "lines": [
                         {
-                          "label": "Patrick Mahomes",
-                          "note": "Chiefs",
-                          "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
-                          "photoColor": "#E31837",
-                          "color": "#E31837",
                           "opacity": 1,
                           "values": [
                             1,
@@ -10618,14 +10709,15 @@
                             4,
                             4
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "name": "Patrick Mahomes",
+                          "team": "Chiefs",
+                          "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+                          "color": "#E31837",
+                          "lineColor": "#E31837",
+                          "kind": "player"
                         },
                         {
-                          "label": "Justin Fields",
-                          "note": "Chiefs",
-                          "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4362887.png",
-                          "photoColor": "#E31837",
-                          "color": "ink.primary",
                           "opacity": 1,
                           "values": [
                             0,
@@ -10637,7 +10729,13 @@
                             null,
                             null
                           ],
-                          "decimals": 0
+                          "decimals": 0,
+                          "name": "Justin Fields",
+                          "team": "Chiefs",
+                          "logo": "https://a.espncdn.com/i/headshots/nfl/players/full/4362887.png",
+                          "color": "#E31837",
+                          "lineColor": "ink.primary",
+                          "kind": "player"
                         }
                       ],
                       "periods": [
@@ -10656,7 +10754,32 @@
                       "kind": "cumulative",
                       "caption": "Chiefs quarterbacks · 2026 season"
                     },
-                    "slots": {}
+                    "slots": {
+                      "marks": [
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Patrick Mahomes",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nfl/players/full/3139477.png",
+                            "color": "#E31837",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        },
+                        {
+                          "kind": "Avatar",
+                          "properties": {
+                            "name": "Justin Fields",
+                            "size": 40,
+                            "image": "https://a.espncdn.com/i/headshots/nfl/players/full/4362887.png",
+                            "color": "#E31837",
+                            "kind": "player"
+                          },
+                          "slots": {}
+                        }
+                      ]
+                    }
                   }
                 ]
               }
