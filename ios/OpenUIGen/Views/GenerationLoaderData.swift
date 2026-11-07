@@ -19,7 +19,7 @@ enum GenerationLoaderVariant: String, CaseIterable, Identifiable {
 
     /// `(column + |row − 1|) × 90ms`: a ">" sweeping left to right. The 650ms cycle is shorter than
     /// the sweep, so two fronts are always in flight.
-    private static let chevronDelays: [TimeInterval?] = (0..<9).map { (index: Int) -> TimeInterval? in
+    private static let chevronDelays: [TimeInterval?] = (0 ..< 9).map { (index: Int) -> TimeInterval? in
         let row = index / 3
         let column = index % 3
         let step: Int = column + abs(row - 1)
@@ -29,7 +29,7 @@ enum GenerationLoaderVariant: String, CaseIterable, Identifiable {
     /// Clockwise around the perimeter from the top-left. The centre is not in the order, so it rests.
     private static let orbitOrder = [0, 1, 2, 5, 8, 7, 6, 3]
 
-    private static let orbitDelays: [TimeInterval?] = (0..<9).map { index in
+    private static let orbitDelays: [TimeInterval?] = (0 ..< 9).map { index in
         orbitOrder.firstIndex(of: index).map { Double($0) * 0.11 }
     }
 }

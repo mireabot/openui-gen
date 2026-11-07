@@ -72,8 +72,9 @@ public struct OpenUIStreamService: OpenUIStreaming {
     public func stream(_ request: OpenUIStreamRequest) -> AsyncThrowingStream<OpenUIStreamEvent, any Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
-                do { try await run(request) { continuation.yield($0) }; continuation.finish() }
-                catch { continuation.finish(throwing: error) }
+                do { try await run(request) { continuation.yield($0) }; continuation.finish() } catch {
+                    continuation.finish(throwing: error)
+                }
             }
             continuation.onTermination = { _ in task.cancel() }
         }
@@ -131,8 +132,6 @@ public struct OpenUIStreamService: OpenUIStreaming {
     public static func decodeEvent(name: String, data: Data) throws -> OpenUIStreamEvent? {
         let decoder = JSONDecoder()
         switch name {
-        case "activity": return try .activity(decoder.decode(PValue.self, from: data))
-        case "usage": return try .usage(decoder.decode(PValue.self, from: data))
         case "templates":
             struct Body: Decodable { let templates: [OpenUITemplate] }
             return try .templates(decoder.decode(Body.self, from: data).templates)
@@ -142,12 +141,22 @@ public struct OpenUIStreamService: OpenUIStreaming {
             let value = try decoder.decode(PValue.self, from: data)
             guard let text = value["text"]?.stringValue else { throw OpenUIError.syntax("Missing OpenUI text") }
             return .openui(text: text, replace: value["replace"]?.boolValue ?? false)
+        case "done": return try .done(decoder.decode(OpenUIStreamDone.self, from: data))
+        default: return try decodeStatus(name: name, data: data)
+        }
+    }
+
+    /// Activity, usage, issues and failures: the events that report on a run rather than draw it.
+    private static func decodeStatus(name: String, data: Data) throws -> OpenUIStreamEvent? {
+        let decoder = JSONDecoder()
+        switch name {
+        case "activity": return try .activity(decoder.decode(PValue.self, from: data))
+        case "usage": return try .usage(decoder.decode(PValue.self, from: data))
         case "issue":
             let value = try decoder.decode(PValue.self, from: data); return .issue(value["issue"] ?? value)
-        case "done": return try .done(decoder.decode(OpenUIStreamDone.self, from: data))
         case "failure", "error":
             let value = try? decoder.decode(PValue.self, from: data)
-            throw OpenUIError.server(value?["message"]?.stringValue ?? String(decoding: data, as: UTF8.self))
+            throw OpenUIError.server(value?["message"]?.stringValue ?? String(bytes: data, encoding: .utf8) ?? "")
         default: return nil
         }
     }

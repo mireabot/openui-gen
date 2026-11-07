@@ -5,7 +5,7 @@ The program now calls Sports components by name, as OpenUI Lang intends. Before,
 ```
 pick1        = Section(d.answers.q1.title, [pick1_match, pick1_player], null, null, d.answers.q1.source)
 pick1_match  = MatchCard(d.answers.q1.latestGame.match)
-pick1_player = StatsCard(d.answers.q1.latestGame.player)
+pick1_player = StatsCard(d.answers.q1.latestGame.player, false)
 ```
 
 When no component fits, the writer still writes primitives, and the two kinds mix freely in one program.
@@ -17,7 +17,9 @@ When no component fits, the writer still writes primitives, and the two kinds mi
 - **Every client expands before it evaluates.** `src/lang/templates.ts` holds the shared expander (`expandCall`, `expandExpr`, `expandProgram`). `programTree` takes the templates as a third argument. The preview expands in `OpenUIPreview`. On iOS, `OpenUICompiler` evaluates a template's body in a fresh scope with each parameter bound to its argument, mounted where the call sits. Element ids are the same as the expanded program's, so view identity holds.
 - **Expansion can't capture an outer item.** The server and web expander renames a template's own `@Each` names to `<name><Template>` (`e` becomes `eLeaderboard`). Without that, `@Each(d.boards, "e", Leaderboard(e))` would read the wrong `e`. iOS gets the same result from the fresh scope.
 - **The run carries its templates.** The stream sends a `templates` event with every definition before any program text. `done`, the saved document (`templates` in `SportsDocumentSchema`) and `GET /lang/sports/runs/:id` carry the ones the program uses. A saved screen replays with the templates it was drawn with. A follow-up recompiles kept parts with the current ones. Clients fall back to their bundled copy when a program arrives without templates.
-- **Params, where they make sense.** A component may declare copy params after the record. A param is text or null, and null uses its `default`, an expression over `record`. The first one is `MetricBars(record, heading?)`. The writer sees params in the component signatures. Data stays a `d.` reference, and a number in a copy param is refused.
+- **Params, where they make sense.** A component may declare params after the record: text, or a boolean flag. Null or a missing argument uses the param's `default`, an expression over `record` or a literal. The writer sees params in the component signatures. Data stays a `d.` reference. A number in a text param, or a string in a flag, is refused.
+  - `MetricBars(record, heading?)`: a heading of the writer's own; null keeps the record's.
+  - `StatsCard(record, header?)`: `false` hides the header card (photo, name, detail and rating), so only the stat rail shows; null keeps it. The writer rule in `src/sports/screen.ts`: for one game's performance, show that game's `MatchCard` first when the data has its record, then `StatsCard(record, false)`. Keep the header when the rating is a requested stat or there is no game record. This flag replaces the server-set `showHeader` field in the game-card stash.
 
 ## Files touched
 
@@ -28,22 +30,34 @@ When no component fits, the writer still writes primitives, and the two kinds mi
 - `src/sports/ask.ts`, `src/sports/documents.ts`, `src/routes/sports.ts`: templates in results, documents, replays and the stream.
 - `preview/components/primitives/openui-render.tsx`, `sports-live.tsx`, `preview/lib/imported-screen.ts`, `preview/lib/demo-screens.ts`: expansion in the preview, the `templates` event, and a demo that calls `MatchCard` and `StatsCard` by name.
 - `ios/OpenUIGen/GenUI/Core/OpenUI/*`, `GenUIOpenUIRuntime.swift`, `OpenUIStreamService.swift`, `PasteScreenModel.swift`: template scopes, the `templates` event, archives and pasted screens.
-- `scripts/check-templates.ts` (new, in `check:all`) and `OpenUIFixtureTests.swift`: parity, scope, params and bad calls.
+- `scripts/check-templates.ts` (new, in `check:all`) and `OpenUIFixtureTests.swift`: parity, scope, params, the StatsCard header flag and bad calls.
 - `catalog/openui/fixtures.json`: expanded fixture programs now use the renamed `@Each` names.
 - `preview/next.config.ts`: resolves `./program.js`, which the preview now imports through `templates.ts`.
 - `src/lang/compiler.ts`, `scripts/check-compiler.ts`: the compiler skips markdown fence lines. Before, each fence was reported as a `bad-name` issue.
 
+## SwiftLint
+
+`mint run swiftlint --strict` reports no warnings, down from 31, and `make format-check` passes.
+
+- `.swiftlint.yml`: `opening_brace` ignores multi-line conditions. SwiftFormat puts their brace on its own line, so the two tools disagreed on every multi-line `if`.
+- `MetricLinesPrimitive.swift` and `SharePrimitives.swift` (new): MetricLines, ShareBar and SplitBar moved out of `MetricPrimitives.swift` and `DataPrimitives.swift`, which were over 500 lines.
+- `OpenUIParser.swift`: `expression` is now `primary`, `list`, `object` and `postfix`. The lexer's scanning moved into `scan`. Behaviour is unchanged, and the 56 parity fixtures still pass.
+- `DataPrimitives.swift`: the Bars chart's marks and its tap and drag overlay are their own functions. `MetricLinesPrimitive.swift`: the plot's dots and axis labels are their own functions.
+- `GenUIOpenUIRuntime.swift`, `OpenUIStreamService.swift`: the stream handlers and the status events (`activity`, `usage`, `issue`, `failure`) are their own functions.
+- Smaller fixes: one-letter names, long lines, `String(bytes:encoding:)`, `isEmpty`, a redundant `= nil`, a `catch` on its own line, and an unused `swiftlint:disable`.
+- SwiftFormat also re-indented a few modifier chains in files the change did not otherwise touch (`AskView.swift`, `ComponentGallery.swift`, and others). `format-check` needs those.
+
 ## Verification
 
 - `npm run check:all` passed, including the new `check:templates`. All 50 catalog samples, called by name, draw the same tree as their expanded programs.
-- iOS: `xcodebuild clean test` passed 24 tests. `compilesComponentCallsByName` ran all 50 samples with the same trees and element ids as the expanded programs.
+- iOS: `xcodebuild test` passed 25 tests, including `statsCardHeaderFlag`. `compilesComponentCallsByName` ran all 50 samples with the same trees and element ids as the expanded programs.
 - The nested-game demo draws the same 47 nodes from the call form as it did from the expanded form.
 - Live debug run of the Demin request (`e57dee37-4e4a-49eb-98e3-84517216d512`): 3 parts, no fallbacks, every question shown. The saved program reads `MatchCard(d.answers.q1.match)`, `MetricBars(d.answers.q2.bars, null)` and `StatsCard(d.answers.q3.card)`, and the document stores those three templates. The only issues were the two fence lines, fixed above.
 
 ## Still open
 
 - Copy params exist only on MetricBars. Other components get them one at a time, when a request needs one.
-- The writer still types source lines as Section copy (`"Source: ESPN · …"`) instead of reading `d.answers.<id>.source`. That predates this change.
+- The Demin gamelog answer has no record of the game itself, so the writer keeps StatsCard's header there. Adding that record in the ESPN gamelog adapter is the remaining part of the game-card stash.
 
 # Writer relevance changes
 

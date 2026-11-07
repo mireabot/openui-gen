@@ -229,7 +229,8 @@ private struct Evaluator {
         context: Context,
         stack: Set<String>
     ) throws -> Evaluated {
-        guard args.count <= template.params.count else { throw OpenUIError.syntax("Too many \(template.name) arguments") }
+        guard args.count <= template.params.count
+        else { throw OpenUIError.syntax("Too many \(template.name) arguments") }
         var scope = Context()
         for (index, param) in template.params.enumerated() {
             let given = index < args

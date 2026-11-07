@@ -169,19 +169,11 @@ public final class OpenUISession {
                 if observe(event) { continue }
                 switch event {
                 case let .templates(value): try use(value)
-                case let .data(dataset):
-                    datasets.append(dataset)
-                    if case let .string(run)? = dataset.args["run"], documentKey == "draft" { documentKey = run }
+                case let .data(dataset): adopt(dataset)
                 case let .skeleton(value): skeleton = value
-                case let .openui(text, replace):
-                    program = replace ? text : program + text
-                    // A prefix can reference a seed that has not arrived; the next statement retries.
-                    do { try recompile(allowIncomplete: true) } catch { trace("compile (partial)", error) }
+                case let .openui(text, replace): receive(text, replace: replace)
                 case let .done(done):
-                    program = done.program
-                    if let version = done.document { documentKey = version.id; document = version }
-                    try recompile(allowIncomplete: false)
-                    finish()
+                    try complete(done)
                     return
                 case .activity, .usage, .issue: continue
                 }
@@ -192,6 +184,25 @@ public final class OpenUISession {
             if hasContent { finish() } else { phase = .idle; finishedAt = .now }
             throw error
         }
+    }
+
+    /// The first dataset names the document until `done` confirms it.
+    private func adopt(_ dataset: OpenUIDataset) {
+        datasets.append(dataset)
+        if case let .string(run)? = dataset.args["run"], documentKey == "draft" { documentKey = run }
+    }
+
+    private func receive(_ text: String, replace: Bool) {
+        program = replace ? text : program + text
+        // A prefix can reference a seed that has not arrived; the next statement retries.
+        do { try recompile(allowIncomplete: true) } catch { trace("compile (partial)", error) }
+    }
+
+    private func complete(_ done: OpenUIStreamDone) throws {
+        program = done.program
+        if let version = done.document { documentKey = version.id; document = version }
+        try recompile(allowIncomplete: false)
+        finish()
     }
 
     /// Activity, cost and issues, handled alike in a new run and a follow-up. False for content.
@@ -323,7 +334,7 @@ public final class OpenUISession {
     private func trace(_ label: String, _ value: some Encodable) {
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
-        let body = (try? encoder.encode(value)).map { String(decoding: $0, as: UTF8.self) } ?? "\(value)"
+        let body = (try? encoder.encode(value)).flatMap { String(bytes: $0, encoding: .utf8) } ?? "\(value)"
         append(label, body)
     }
 

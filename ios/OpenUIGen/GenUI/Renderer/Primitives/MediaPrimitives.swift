@@ -98,15 +98,16 @@ struct AvatarPrimitive: View {
     @Environment(\.primitivePalette) private var palette
     @Environment(\.primitiveMediaBaseURL) private var base
 
-    /// A photo sits on its club's colour. With no club known it sits on a neutral fill, not a colour that reads as a club's.
+    /// A photo sits on its club's colour. With no club known it sits on a neutral fill, not a colour that reads as a
+    /// club's.
     private func photoDisc(_ tint: Color?) -> Color {
         tint ?? palette.color(token: "surface.filled")
     }
 
     var body: some View {
         // A player with no photo draws nothing: a monogram for a person is noise. A club keeps its monogram.
-        if props.string("kind") != "club",
-           PrimitiveImages.url(props.string("image"), base: base) == nil || failedImage == PrimitiveImages.url(props.string("image"), base: base) {
+        let image = PrimitiveImages.url(props.string("image"), base: base)
+        if props.string("kind") != "club", image == nil || failedImage == image {
             EmptyView()
         } else {
             avatar

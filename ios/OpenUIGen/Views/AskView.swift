@@ -49,7 +49,7 @@ struct AskView: View {
                                 setRunOpen(false)
                                 model.reset()
                             }
-                                .disabled(model.isBusy)
+                            .disabled(model.isBusy)
                         }
                     }
                 }
@@ -62,7 +62,7 @@ struct AskView: View {
     private var content: some View {
         if let session = model.session, session.hasContent || !session.pendingBlocks.isEmpty {
             OpenUISceneView(root: session.root, theme: theme, pending: session.pendingBlocks)
-            .primitiveMediaBaseURL(baseURL)
+                .primitiveMediaBaseURL(baseURL)
         } else if let session = model.session, model.isBusy {
             GenerationLoader(label: session.activities.last?.title ?? "Starting", startedAt: session.startedAt)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)

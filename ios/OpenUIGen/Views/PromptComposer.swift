@@ -104,7 +104,7 @@ struct PromptComposer: View {
     private var field: some View {
         HStack(alignment: .bottom, spacing: 12) {
             TextField(placeholder, text: $text, axis: .vertical)
-                .lineLimit(1...5)
+                .lineLimit(1 ... 5)
                 .primitiveFont(.body)
                 .focused($focused)
                 .submitLabel(.send)
