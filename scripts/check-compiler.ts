@@ -207,4 +207,14 @@ calls = Card([Text(d.answers.q2.summary, "body")])
 }
 
 function printed(expr: Expr): string { return printExpr(expr); }
+
+// A fenced answer: the fence lines are skipped, not reported.
+{
+  const reported: string[] = [];
+  const screen = await compileScreen(source(), pack, scripted("```\nrounds = Stack(\"v\", 12, @Each(d.answers.q1.periods, \"p\", MatchRow(p)))\ncalls = Card([Text(d.answers.q2.summary, \"body\")])\n```\n"), { issue: issue => reported.push(issue.code) });
+  assert.equal(screen.stats.written, 2);
+  assert.equal(screen.stats.admitted, 2);
+  assert.deepEqual(reported, []);
+}
+
 console.log("check:compiler ok");

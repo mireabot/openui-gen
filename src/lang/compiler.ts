@@ -154,7 +154,8 @@ export async function compileScreen(source: ScreenSource, pack: ScreenPack, writ
   const run = async (messages: readonly Message[], attempt: number) => {
     hooks.request?.(messages, attempt);
     const stream = new StatementStream();
-    const take = (raw: string) => { written++; screen.admit(raw); };
+    // A model may wrap its answer in a markdown fence: the fence lines are not statements.
+    const take = (raw: string) => { if (raw.startsWith("```")) return; written++; screen.admit(raw); };
     try {
       const response = await writer(messages, delta => stream.push(delta).forEach(take));
       stream.end().forEach(take);
