@@ -10,6 +10,7 @@ import { BE_URL } from "@/lib/be-url";
 import { DEMO_SCREENS } from "@/lib/demo-screens";
 import { parseImportedScreen, type ImportedScreen } from "@/lib/imported-screen";
 import { OpenUIPreview, type DatasetSeed } from "./openui-render";
+import { TemplateDefSchema, type TemplateDef } from "../../../src/lang/templates";
 
 interface Issue { code: string; statementId?: string; message: string }
 interface DocumentVersion { id: string; revision: number }
@@ -77,6 +78,8 @@ export function SportsLive({ theme, specs, appearance }: {
   theme: CSSProperties | undefined; specs: Record<string, Record<string, unknown>> | undefined; appearance: "light" | "dark";
 }) {
   const [program, setProgram] = useState("");
+  /** The run's component templates, from its `templates` event or saved screen; null uses the bundled set. */
+  const [templates, setTemplates] = useState<readonly TemplateDef[] | null>(null);
   const [seed, setSeed] = useState<DatasetSeed | null>(null);
   const [prompt, setPrompt] = useState("Premier League table this season");
   const [issues, setIssues] = useState<Issue[]>([]);
@@ -107,7 +110,7 @@ export function SportsLive({ theme, specs, appearance }: {
   function replay(screen: ImportedScreen) {
     abort.current?.abort(); abort.current = null;
     reset(); setDocument(null); setSteps([]); setSaved("idle");
-    setPrompt(screen.prompt || prompt); setSeed(screen.seed); setProgram(screen.program);
+    setPrompt(screen.prompt || prompt); setSeed(screen.seed); setProgram(screen.program); setTemplates(screen.templates ?? null);
     setReplayed(true); setState("done");
   }
 
@@ -132,7 +135,7 @@ export function SportsLive({ theme, specs, appearance }: {
   }
 
   function exportScreen() {
-    const blob = new Blob([JSON.stringify({ prompt, program, snapshot: seed }, null, 2)], { type: "application/json" });
+    const blob = new Blob([JSON.stringify({ prompt, program, ...(templates ? { templates } : {}), snapshot: seed }, null, 2)], { type: "application/json" });
     const link = window.document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `screen-${seed?.args.run ?? "draft"}.json`;
@@ -160,7 +163,7 @@ export function SportsLive({ theme, specs, appearance }: {
   }
 
   function reset() {
-    setIssues([]); setActivity([]); setSkeleton(null); setProgram(""); setSeed(null);
+    setIssues([]); setActivity([]); setSkeleton(null); setProgram(""); setTemplates(null); setSeed(null);
   }
 
   function newScreen() {
@@ -182,6 +185,7 @@ export function SportsLive({ theme, specs, appearance }: {
       if (abort.current !== controller || controller.signal.aborted) return;
       if (event === "activity") { setActivity((a) => [...a, String(body.detail ?? body.stage)]); setSteps(list => stepWith(list, body)); }
       else if (event === "usage") setSteps(list => stepCost(list, String(body.stage), Number(body.costUSD ?? 0)));
+      else if (event === "templates") setTemplates(z.array(TemplateDefSchema).parse(body.templates));
       else if (event === "data") { if (base) staged.seed = Seed.parse(body); else setSeed(Seed.parse(body)); }
       else if (event === "skeleton") { if (!base) setSkeleton(body as unknown as Skeleton); }
       else if (event === "openui") {
@@ -296,7 +300,7 @@ export function SportsLive({ theme, specs, appearance }: {
           <div style={{ zoom: scale }}>
             <IPhoneFrame appearance={appearance} className="border border-kino-outline-control">
               {program ? (
-                <OpenUIPreview key={seed?.args.run ?? "loading"} program={program} seed={seed} theme={theme} specs={specs} isStreaming={state === "running"} skeleton={view === "skeleton"} pending={state === "running" && skeleton ? pendingFrames(skeleton, program).map((f, i) => <Frame key={i} f={f} />) : null} />
+                <OpenUIPreview key={seed?.args.run ?? "loading"} program={program} templates={templates} seed={seed} theme={theme} specs={specs} isStreaming={state === "running"} skeleton={view === "skeleton"} pending={state === "running" && skeleton ? pendingFrames(skeleton, program).map((f, i) => <Frame key={i} f={f} />) : null} />
               ) : skeleton ? (
                 // Before the program: the planned parts as shapes.
                 <div className="flex min-h-[874px] flex-col px-6 pt-(--safe-top) pb-(--safe-bottom)" style={{ ...theme, gap: skeleton.gap, background: "var(--ds-surface-screen)" }}>

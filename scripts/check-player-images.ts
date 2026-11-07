@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { SPORTS_TEMPLATES } from "../src/sports/components.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -262,7 +263,7 @@ try {
   assert.equal(body.answers.q1.player.imageUrl, IMAGE);
   assert.equal(body.answers.q1.player.logo, IMAGE, "authoritative imagery replaces a model's guessed logo");
   assert.ok(result.snapshot.fields.some(field => field.path === "answers.q1.passAccuracy" && field.format === "percent"), "enrichment preserves numeric field formats");
-  assert.ok(programTree(result.program, result.snapshot.result).nodes.some(node => node.primitive === "Avatar" && node.props.image === IMAGE), "the compiled StatsCard uses the portrait");
+  assert.ok(programTree(result.program, result.snapshot.result, SPORTS_TEMPLATES).nodes.some(node => node.primitive === "Avatar" && node.props.image === IMAGE), "the compiled StatsCard uses the portrait");
 
   const saved = nextRevision(null, result.run, "Cole Palmer season stats", result);
   let keptLookups = 0;
@@ -273,7 +274,7 @@ try {
   assert.deepEqual(kept.snapshot.result.players, result.snapshot.result.players);
   assert.deepEqual(kept.snapshot.result.answers, result.snapshot.result.answers);
   assert.equal(keptLookups, 0, "kept player profiles need no lookup");
-  assert.deepEqual(programTree(kept.program, kept.snapshot.result), programTree(result.program, result.snapshot.result), "a kept part renders the same data and portrait from the new snapshot");
+  assert.deepEqual(programTree(kept.program, kept.snapshot.result, SPORTS_TEMPLATES), programTree(result.program, result.snapshot.result, SPORTS_TEMPLATES), "a kept part renders the same data and portrait from the new snapshot");
 
   let freshLookups = 0;
   const fresh = await editSports(saved, { prompt: "Also show his recent ratings" }, store, {}, "players-fresh", {
@@ -286,7 +287,7 @@ try {
   });
   assert.equal(freshLookups, 0, "new questions about a known player reuse the saved profile");
   assert.deepEqual(fresh.snapshot.result.players, [PROFILE]);
-  assert.equal(programTree(fresh.program, fresh.snapshot.result).nodes.filter(node => node.primitive === "Avatar" && node.props.image === IMAGE).length, 2, "kept and newly composed parts receive the same saved portrait");
+  assert.equal(programTree(fresh.program, fresh.snapshot.result, SPORTS_TEMPLATES).nodes.filter(node => node.primitive === "Avatar" && node.props.image === IMAGE).length, 2, "kept and newly composed parts receive the same saved portrait");
 
   const fallback = await askSports({ prompt: "Cole Palmer season stats" }, store, {}, "players-fallback", deps(lookup, async () => completion({ answers: [] })));
   assert.deepEqual(fallback.snapshot.result.players, [PROFILE], "raw fallback still returns the verified player object");
@@ -300,14 +301,14 @@ try {
   };
   const ranked = await askSports({ prompt: "Chelsea top scorers" }, store, {}, "players-leaderboard", boardDeps);
   assert.deepEqual(ranked.snapshot.result.players, [PROFILE], "player names introduced by component shaping are resolved");
-  assert.ok(programTree(ranked.program, ranked.snapshot.result).nodes.some(node => node.primitive === "Avatar" && node.props.image === IMAGE), "Leaderboard entries use their verified player portrait");
+  assert.ok(programTree(ranked.program, ranked.snapshot.result, SPORTS_TEMPLATES).nodes.some(node => node.primitive === "Avatar" && node.props.image === IMAGE), "Leaderboard entries use their verified player portrait");
 
   const clubRanking = await askSports({ prompt: "Premier League points leaders" }, store, {}, "players-club-ranking", {
     ...deps(async () => null, async () => completion({ answers: [{ id: "q1", title: "League table", fields: inferFields(clubAnswers.q1, ""), valuesJson: JSON.stringify(clubAnswers.q1) }] })),
     plan: async () => ({ ...plan, subject: { ...plan.subject, kind: "league", name: "Premier League" } }),
     write: writer("clubs = Leaderboard(d.answers.q1.board)\n"),
   });
-  assert.ok(programTree(clubRanking.program, clubRanking.snapshot.result).nodes.some(node => node.primitive === "Avatar" && node.props.image === "https://example.test/arsenal.png"), "failed player enrichment preserves a club leaderboard's existing crest through the full pipeline");
+  assert.ok(programTree(clubRanking.program, clubRanking.snapshot.result, SPORTS_TEMPLATES).nodes.some(node => node.primitive === "Avatar" && node.props.image === "https://example.test/arsenal.png"), "failed player enrichment preserves a club leaderboard's existing crest through the full pipeline");
 
   let missingLookups = 0;
   const withoutImages = await askSports({ prompt: "Cole Palmer season stats" }, store, {}, "players-unavailable", deps(async () => { missingLookups++; return null; }, async () => completion({ answers: [{
@@ -315,7 +316,7 @@ try {
   }] })));
   assert.ok(withoutImages.program.length > 0, "missing portraits cannot prevent the screen from being returned");
   assert.equal(missingLookups, 1, "schema shaping does not retry a missing identity within the same request");
-  assert.ok(programTree(withoutImages.program, withoutImages.snapshot.result).nodes.some(node => node.primitive === "Avatar" && node.props.image === ""), "unresolved players keep the initials fallback");
+  assert.ok(programTree(withoutImages.program, withoutImages.snapshot.result, SPORTS_TEMPLATES).nodes.some(node => node.primitive === "Avatar" && node.props.image === ""), "unresolved players keep the initials fallback");
 } finally {
   rmSync(directory, { recursive: true, force: true });
 }

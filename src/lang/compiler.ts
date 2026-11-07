@@ -6,13 +6,15 @@ import { TOKEN_IDS, TOKEN_SCHEMA } from "./props.js";
 import { PRIMITIVES, PRIMITIVE_BY_NAME, type PrimitiveDef, type PrimitiveName } from "./primitives.js";
 import { printExpr, printStatement, type Expr } from "./program.js";
 import { programSkeleton, programTree } from "./tree.js";
+import { expandCall, expandExpr, type Templates } from "./templates.js";
 
 /**
  * The screen compiler. The writer authors the whole screen body as named statements: a part is a
  * lowercase label (`quarters = Section(...)`) and its sub-statements are `label_x`. The compiler admits
- * each statement as it streams, expands template macros to primitives, links a part once every
- * sibling it references is admitted, renames it to `pickN`, and derives what the part answers from
- * the data it reads. Coverage is checked after admission; questions no part shows get the pack's
+ * each statement as it streams, checks it with its template calls expanded to primitives, links a
+ * part once every sibling it references is admitted, renames it to `pickN`, and derives what the part
+ * answers from the data it reads. The program keeps the template calls: clients expand them with the
+ * pack's definitions. Coverage is checked after admission; questions no part shows get the pack's
  * fallback part. Generic: everything about a domain comes through `ScreenPack`.
  */
 
@@ -30,8 +32,8 @@ export type DatasetValues = Readonly<Record<string, unknown>>;
 
 /** Domain knowledge the compiler consults; all pure. */
 export interface ScreenPack {
-  /** A template call as primitives, or null when `call` is not a template. Throws a message the writer sees for a bad call. */
-  expand(call: Extract<Expr, { k: "Comp" }>): Expr | null;
+  /** The pack's templates: the writer calls them by name, the compiler checks their expansion, clients expand them. */
+  readonly definitions: Templates;
   /** The question a dataset path is evidence for, and the path relative to its answer. */
   evidenceOf(path: DataPath): { readonly question: QuestionId; readonly rest: DataPath } | null;
   /** Whether these reads (relative to the answer) show the question. */
@@ -145,7 +147,7 @@ export async function compileScreen(source: ScreenSource, pack: ScreenPack, writ
   const usage = { promptTokens: 0, completionTokens: 0, cost: 0 as number | undefined };
   source = { ...source, required: source.required.filter((q, i) => source.required.findIndex(other => other.id === q.id) === i) };
   const screen = new Screen(source, pack, report, hooks);
-  hooks.skeleton?.(programSkeleton(screen.preview(source.required.map(q => q.id)), source.values));
+  hooks.skeleton?.(programSkeleton(screen.preview(source.required.map(q => q.id)), source.values, pack.definitions));
   hooks.program?.(screen.opening());
 
   let written = 0, repairRounds = 0, writerFailed = false;
@@ -195,7 +197,7 @@ export function basePart(id: PartId, statements: Readonly<Record<string, string>
 /** Evidence of a stored or compiled part, recomputed from its statements, never trusted from storage. */
 export function evidenceOf(statements: Iterable<Expr>, values: DatasetValues, pack: ScreenPack): Evidence {
   const reads: DataPath[] = [];
-  for (const expr of statements) reads.push(...readsOf(expr));
+  for (const expr of statements) reads.push(...readsOf(expanded(expr, pack)));
   return groupEvidence(reads, pack);
 }
 
@@ -231,7 +233,7 @@ class Screen {
 
   constructor(private readonly source: ScreenSource, private readonly pack: ScreenPack, private readonly report: (issue: ProgramIssue) => void, private readonly hooks: CompileHooks) {
     this.nextId = Math.max(0, ...source.base.map(part => Number(part.id.slice(4)))) + 1;
-    this.stale = new Set(source.base.filter(part => [...part.statements.values()].some(expr => readsOf(expr).some(path => !present(source.values, path)))).map(part => part.id));
+    this.stale = new Set(source.base.filter(part => [...part.statements.values()].some(expr => readsOf(expanded(expr, pack)).some(path => !present(source.values, path)))).map(part => part.id));
   }
 
   /** Base parts that stay on screen unless rewritten. */
@@ -329,7 +331,7 @@ class Screen {
     for (const id of this.stale) if (!this.finished().some(p => p.id === id)) this.report({ source: "coverage", code: "stale-part", message: `${id} read data this turn no longer has and was not rewritten; it was dropped`, statementId: id });
     const parts = this.parts();
     const program = [this.root(parts), printStatement("d", query(this.source.run, this.pack.tool)), ...parts.flatMap(p => [...p.statements].map(([name, expr]) => printStatement(name, expr)))].join("\n") + "\n";
-    programTree(program, this.source.values);
+    programTree(program, this.source.values, this.pack.definitions);
     const coverage = new Map<QuestionId, PartId[]>();
     for (const q of this.source.required) coverage.set(q.id, parts.filter(p => p.evidence.has(q.id)).map(p => p.id));
     return { program, parts, coverage, issues: [], stats: { written: run.written, admitted: this.admitted, parts: parts.length, fallbacks: this.fallbacks.length, repairRounds: run.repairRounds }, usage, writerCalled: run.writerCalled };
@@ -495,8 +497,13 @@ function literal(e: Expr): unknown {
   }
 }
 
+/** A statement with its template calls expanded, for its reads; a call that cannot expand reads its arguments. */
+function expanded(expr: Expr, pack: ScreenPack): Expr {
+  try { return expandExpr(expr, pack.definitions); } catch { return expr; }
+}
+
 /**
- * Template macros as primitives. The writer's own components must be writer primitives.
+ * Template calls as primitives, for checking. The writer's own components must be writer primitives.
  */
 function expandTemplates(e: Expr, pack: ScreenPack): Expr {
   switch (e.k) {
@@ -508,9 +515,9 @@ function expandTemplates(e: Expr, pack: ScreenPack): Expr {
       }
       if (e.fn) throw new Error(`@${e.name} is not available to the writer`);
       {
-        const expanded = pack.expand(e);
-        if (!expanded) throw new Error(`${e.name} is neither a primitive nor a template`);
-        return expanded;
+        const body = expandCall(e, pack.definitions);
+        if (!body) throw new Error(`${e.name} is neither a primitive nor a template`);
+        return expandTemplates(body, pack);
       }
     case "Arr": return { ...e, els: e.els.map(el => expandTemplates(el, pack)) };
     case "Obj": return { ...e, entries: e.entries.map(([k, v]) => [k, expandTemplates(v, pack)] as [string, Expr]) };
@@ -521,7 +528,7 @@ function expandTemplates(e: Expr, pack: ScreenPack): Expr {
 /**
  * One writer statement: templates expanded, then every node checked against the primitive library
  * per @Each item. Data props are dataset references; a bare Ref in a node position names a sibling
- * of the same part.
+ * of the same part. The statement is admitted as written, with its template calls.
  */
 function validate(raw: Expr, owner: string, source: ScreenSource, pack: ScreenPack, name: string): Admitted | { issues: ProgramIssue[] } {
   const issues: ProgramIssue[] = [];
@@ -610,7 +617,7 @@ function validate(raw: Expr, owner: string, source: ScreenSource, pack: ScreenPa
   if (parsed.queryStatements.length || parsed.mutationStatements.length || Object.keys(parsed.stateDeclarations).length) report("forbidden-runtime", "Generated content cannot declare queries, mutations, or state");
   visit(top, new Map([["d", { value: source.values, path: [] }]]), "any", null);
   if (issues.length) return { issues };
-  return { expr, siblings, nodes: visited, reads: [...reads.values()] };
+  return { expr: raw, siblings, nodes: visited, reads: [...reads.values()] };
 }
 
 /** Every data read in an expression, as dataset paths (null for each item of an @Each). */

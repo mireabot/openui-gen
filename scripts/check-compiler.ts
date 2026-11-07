@@ -3,6 +3,7 @@ import { PARSER } from "../src/lang/library.js";
 import { basePart, compileScreen, StatementStream, WRITER_PRIMITIVES, type CompileHooks, type DataPath, type ProgramWriter, type QuestionId, type ScreenPack, type ScreenSource } from "../src/lang/compiler.js";
 import { printExpr, printStatement, type Expr } from "../src/lang/program.js";
 import { programTree } from "../src/lang/tree.js";
+import { expandProgram, templateSet } from "../src/lang/templates.js";
 
 /** The screen compiler against a fake two-question pack and scripted writers; no network. */
 
@@ -20,15 +21,9 @@ const path = (...keys: (string | number)[]): Expr => keys.reduce<Expr>((obj, key
 const card = (...children: Expr[]): Expr => ({ k: "Comp", name: "Card", args: [{ k: "Arr", els: children }] });
 
 const has = (reads: readonly DataPath[], ...wanted: DataPath[]) => wanted.every(w => reads.some(r => JSON.stringify(r) === JSON.stringify(w)));
+const definitions = templateSet([{ name: "MatchRow", params: [{ name: "record", role: "data" }], body: `Card([Text(record.label, "footnote"), Text(record.goals, "headline")])` }]);
 const pack: ScreenPack = {
-  expand(call) {
-    if (call.name === "MatchRow") {
-      const [item] = call.args;
-      if (!item) throw new Error("MatchRow(item) needs a period");
-      return card(T({ k: "Member", obj: item, field: "label" }, "footnote"), T({ k: "Member", obj: item, field: "goals" }, "headline"));
-    }
-    return null;
-  },
+  definitions,
   evidenceOf: p => p[0] === "answers" && typeof p[1] === "string" && /^q\d+$/.test(p[1]) ? { question: p[1] as QuestionId, rest: p.slice(2) } : null,
   shows: (q, reads) => q === "q1" ? has(reads, ["periods", null, "goals"]) : has(reads, ["summary"]),
   listProblem: () => null,
@@ -60,7 +55,7 @@ const wire = () => {
   let text = "";
   const hooks: CompileHooks = { program: chunk => {
     text += chunk;
-    const parsed = PARSER.parse(text);
+    const parsed = PARSER.parse(expandProgram(text, definitions));
     assert.deepEqual([parsed.meta.errors, parsed.meta.unresolved, parsed.meta.incomplete], [[], [], false], `invalid wire after:\n${chunk}`);
   } };
   return { hooks, text: () => text };
@@ -78,8 +73,8 @@ calls = Card([Text(d.answers.q2.summary, "body")])
   assert.equal(screen.stats.fallbacks, 0);
   assert.equal(screen.stats.repairRounds, 0);
   assert.match(screen.program, /^root = Screen\(\[pick1, pick2\]\)\nd = Query/);
-  assert.doesNotMatch(screen.program, /MatchRow\(/, "templates expand to primitives");
-  assert.equal(programTree(screen.program, values).nodes.filter(n => n.primitive === "Card").length, 9);
+  assert.match(screen.program, /@Each\(d\.answers\.q1\.periods, "p", MatchRow\(p\)\)/, "the program keeps the template call");
+  assert.equal(programTree(screen.program, values, definitions).nodes.filter(n => n.primitive === "Card").length, 9);
   assert.doesNotMatch(live.text(), /Show\(false/, "no placeholders on the wire");
   assert.ok(live.text().indexOf("pick1_list =") < live.text().indexOf("root = Screen([pick1])"), "a part reaches the root only once all of it is there");
 }

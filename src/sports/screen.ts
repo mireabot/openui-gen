@@ -1,12 +1,12 @@
 import type { DataPath, DatasetValues, QuestionId, ScreenPack, ScreenSource } from "../lang/compiler.js";
-import { each, refAt, ui, type Expr, type Node } from "../lang/program.js";
-import { COMPONENT_BY_NAME, COMPONENT_SIGNATURES, placementCall, placements } from "./components.js";
+import { each, exprOfRef, nodeOf, refAt, ui, type Expr, type Node } from "../lang/program.js";
+import { COMPONENT_SIGNATURES, placementCall, placements, SPORTS_TEMPLATES, type SportsComponent } from "./components.js";
 import { isFrameName, LABEL_NAMES, ROOT_NAMES } from "./names.js";
 
 /**
  * The sports screen pack: answers live at `d.answers.<id>`; a question is shown when a part reads
  * its content (or its note, when unavailable); the default part is a generic card built from the
- * answer's own shape. No templates yet: the writer composes from primitives.
+ * answer's own shape, or the component call its record fits.
  */
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -40,6 +40,8 @@ function find(item: Record<string, unknown>, test: (v: unknown) => boolean): str
   return null;
 }
 const member = (base: AnyRef, path: readonly string[]): AnyRef => path.reduce((r, key) => r[key], base);
+/** A component called by name, as the writer would: `MatchCard(d.answers.q1.match)`. */
+const callOf = (component: SportsComponent, data: AnyRef): Node => nodeOf({ k: "Comp", name: component.name, args: [exprOfRef(data)] });
 const humanize = (key: string) => key.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/^./, c => c.toUpperCase());
 
 /** The default part: title, summary, scalar facts as rows, the first list as rows, and the source. */
@@ -53,7 +55,7 @@ function fallback(q: QuestionId, values: DatasetValues): Expr {
   const placed = placements(answer).find(p => !(hasContent && p.keys[0] === "team"));
   if (placed) {
     const data = ref(q, ...placed.keys);
-    const body = placed.list ? ui.Stack({ axis: "v", gap: 12, children: each(data, "x", (x: AnyRef) => placed.component.build(x, [])) }) : placed.component.build(data, []);
+    const body = placed.list ? ui.Stack({ axis: "v", gap: 12, children: each(data, "x", (x: AnyRef) => callOf(placed.component, x)) }) : callOf(placed.component, data);
     return ui.Stack({ axis: "v", gap: 12, children: [ui.Text({ content: ref(q, "title"), role: "headline", weight: "semibold" }), body, ...footnote] }).expr;
   }
   const children: Node[] = [ui.Text({ content: ref(q, "title"), role: "headline", weight: "semibold" })];
@@ -132,15 +134,8 @@ function refuses(statement: Expr, values: DatasetValues): string | null {
 
 export const SPORTS_SCREEN: ScreenPack = {
   tool: "sports_dataset",
-  /** A Sports component call (MatchCard(d.answers.q1.match), …) as primitives. */
-  expand: call => {
-    const component = COMPONENT_BY_NAME.get(call.name);
-    if (!component) return null;
-    const [data, ...rest] = call.args;
-    if (!data || !["Ref", "RuntimeRef", "Member", "Index"].includes(data.k)) throw new Error(`${call.name} takes a data reference first (d.<path> or an @Each item)`);
-    if (rest.length > component.params.length) throw new Error(`${call.name} takes only its data record`);
-    return component.build(refAt(data), []).expr;
-  },
+  /** The Sports components (MatchCard(d.answers.q1.match), …) as templates. */
+  definitions: SPORTS_TEMPLATES,
   evidenceOf: path => path[0] === "answers" && typeof path[1] === "string" && /^q\d+$/.test(path[1]) ? { question: path[1] as QuestionId, rest: path.slice(2) } : null,
   shows,
   refuses,

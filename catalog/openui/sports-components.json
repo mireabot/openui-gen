@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "components": [
     {
       "name": "ClubTimeline",
@@ -876,7 +876,13 @@
           "note": "\"player\" for a photo on the colour, \"club\" for a crest"
         }
       ],
-      "params": []
+      "params": [
+        {
+          "name": "heading",
+          "note": "the heading to show instead of the record's, e.g. \"Points per game · this vs last season\"; null keeps the record's",
+          "default": "record.heading"
+        }
+      ]
     },
     {
       "name": "PlayerMetrics",
@@ -1444,6 +1450,194 @@
         }
       ],
       "params": []
+    }
+  ],
+  "templates": [
+    {
+      "name": "ClubTimeline",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "YearTimeline(record.clubs, record.initial)"
+    },
+    {
+      "name": "MatchCard",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Card([Stack(\"h\", 16, [Stack(\"v\", 12, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(record.home.name, 20, record.home.logo, null, null, record.home.color, \"club\"), Text(record.home.name, \"body\", \"medium\", null, 2, \"start\")], \"center\"), Text(record.home.score, \"headline\", \"semibold\", record.home.ink)], \"center\", \"between\"), Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(record.away.name, 20, record.away.logo, null, null, record.away.color, \"club\"), Text(record.away.name, \"body\", \"medium\", null, 2, \"start\")], \"center\"), Text(record.away.score, \"headline\", \"semibold\", record.away.ink)], \"center\", \"between\")]), Stack(\"v\", 4, [Text(record.label, \"footnote\", null, \"secondary\", null, \"end\"), Text(record.value, \"headline\", \"semibold\", null, null, \"end\")], \"end\")], \"center\"), Text(record.details, \"footnote\", null, \"secondary\", 2, \"start\")])"
+    },
+    {
+      "name": "TeamDetail",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Row(record.name, record.detail, Avatar(record.name, 40, record.logo, null, null, record.color, \"club\"))"
+    },
+    {
+      "name": "StatBar",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Stack(\"v\", 8, [ZStack([Stack(\"h\", 12, [Text(record.homeDisplay, \"body\", \"semibold\"), Text(record.awayDisplay, \"body\", \"semibold\", null, null, \"end\")], \"center\", \"between\"), Text(record.label, \"footnote\", null, \"secondary\", null, \"center\")], \"center\"), SplitBar(record.sides)])"
+    },
+    {
+      "name": "Leaderboard",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Card([Stack(\"h\", 12, [Text(record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(record.entries, \"e\", Row(e.name, e.detail, Avatar(e.name, 40, e.logo, null, null, e.color, e.kind), Text(e.value, \"body\", \"semibold\"))), null, null, null, true)])"
+    },
+    {
+      "name": "FixturesHeatmap",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Card([Stack(\"v\", 8, [Text(record.value, \"display\", \"semibold\", null, null, \"center\"), Text(record.caption, \"body\", null, \"secondary\", null, \"center\")], \"center\"), Grid(record.columns, 4, @Each(record.results, \"r\", ColorCell(r.label, r.fill))), Text(record.tally, \"footnote\", null, \"secondary\", null, \"center\")])"
+    },
+    {
+      "name": "StatsCard",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Stack(\"v\", 12, [Card([Stack(\"h\", 12, [Avatar(record.name, 40, record.logo, null, null, record.color, record.kind), Stack(\"v\", 0, [Text(record.name, \"headline\", \"semibold\", null, 2, \"start\"), Text(record.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\", null, null, null, 16, 12), Show(record.rating.show, Stack(\"v\", 0, [Divider(), Stack(\"h\", 16, [Badge(record.rating.value, record.rating.tone, null, \"large\", record.rating.fill, record.rating.ink), Stack(\"v\", 0, [Text(record.rating.label, \"body\", \"medium\"), Text(record.rating.caption, \"footnote\", null, \"secondary\")])], \"center\", null, null, null, 16, 16)]))], null, null, 0, null, 0), Show(record.showStats, Rail(12, @Each(record.stats, \"s\", Card([Text(s.value, \"headline\", \"semibold\", null, null, \"start\"), Text(s.label, \"footnote\", null, \"secondary\", null, \"start\")], null, null, null, null, 4)), null, 124))])"
+    },
+    {
+      "name": "TeamPoints",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Card([Stack(\"h\", 16, [Stack(\"v\", 0, [Text(record.heading, \"headline\", \"semibold\", null, 2, \"start\"), Text(record.subtitle, \"footnote\", null, \"secondary\", 2, \"start\")]), Text(record.points, \"title1\", \"semibold\", null, null, \"end\")], \"start\", \"between\"), Stack(\"v\", 12, [Grid(\"8\", 0, [Spacer(0), Text(\"Pld\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"W\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"D\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"L\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"+/-\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"GD\", \"footnote\", null, \"secondary\", null, \"end\"), Text(\"PTS\", \"footnote\", null, \"secondary\", null, \"end\")]), Stack(\"v\", 12, [Grid(\"8\", 0, [Text(\"Home\", \"footnote\", \"medium\", null, 1, \"start\"), Text(record.home.played, \"footnote\", null, null, null, \"end\"), Text(record.home.won, \"footnote\", null, null, null, \"end\"), Text(record.home.drawn, \"footnote\", null, null, null, \"end\"), Text(record.home.lost, \"footnote\", null, null, null, \"end\"), Text(record.home.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(record.home.goalDifference, \"footnote\", null, null, null, \"end\", record.home.goalDifferenceTone), Text(record.home.points, \"footnote\", \"semibold\", null, null, \"end\")]), Grid(\"8\", 0, [Text(\"Away\", \"footnote\", \"medium\", null, 1, \"start\"), Text(record.away.played, \"footnote\", null, null, null, \"end\"), Text(record.away.won, \"footnote\", null, null, null, \"end\"), Text(record.away.drawn, \"footnote\", null, null, null, \"end\"), Text(record.away.lost, \"footnote\", null, null, null, \"end\"), Text(record.away.goals, \"footnote\", null, \"secondary\", null, \"end\"), Text(record.away.goalDifference, \"footnote\", null, null, null, \"end\", record.away.goalDifferenceTone), Text(record.away.points, \"footnote\", \"semibold\", null, null, \"end\")])], null, null, null, true)])])"
+    },
+    {
+      "name": "LeagueStanding",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Card([Stack(\"v\", 8, [Text(record.place, \"display\", \"semibold\"), Text(record.gaps, \"body\", null, \"secondary\", 2, \"start\")]), Stack(\"v\", 0, @Each(record.rows, \"r\", Card([Stack(\"h\", 12, [Text(r.rank, \"footnote\", r.weight, r.ink), Stack(\"v\", 0, [Text(r.name, \"footnote\", r.weight, r.ink, 2, \"start\")]), Text(r.points, \"footnote\", r.weight, r.ink)], \"center\")], r.surface, \"control\", 8))), Show(record.showVenues, Stack(\"v\", 16, [Divider(), Grid(\"2\", 16, [Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"house\", 16, \"secondary\"), Text(\"Home\", \"body\", \"medium\")], \"center\"), Text(record.home.detail, \"footnote\", null, \"secondary\")]), Stack(\"v\", 4, [Stack(\"h\", 8, [Icon(\"airplane\", 16, \"secondary\"), Text(\"Away\", \"body\", \"medium\")], \"center\"), Text(record.away.detail, \"footnote\", null, \"secondary\")])])]))])"
+    },
+    {
+      "name": "MatchTopPlayers",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Card([Stack(\"h\", 12, [Text(record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), Stack(\"v\", 12, @Each(record.rows, \"r\", Grid(\"2\", 16, [Stack(\"v\", 0, [Show(r.home.present, Stack(\"h\", 8, [ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.home.name, 40, r.home.logo, null, null, r.home.color, r.home.kind)], null, null, null, null, 8, 8), Avatar(r.home.club.name, 20, r.home.club.logo, null, null, r.home.club.color, \"club\")], \"bottom-leading\"), Badge(r.home.value, \"neutral\", null, \"small\", r.home.fill, r.home.ink)], \"top-trailing\"), Stack(\"v\", 0, [Text(r.home.name, \"body\", \"medium\", null, 2, \"start\"), Text(r.home.detail, \"footnote\", null, \"secondary\", 2, \"start\")])], \"center\"))]), Stack(\"v\", 0, [Show(r.away.present, Stack(\"h\", 8, [Stack(\"v\", 0, [Text(r.away.name, \"body\", \"medium\", null, 2, \"end\"), Text(r.away.detail, \"footnote\", null, \"secondary\", 2, \"end\")]), ZStack([ZStack([Stack(\"h\", 0, [Avatar(r.away.name, 40, r.away.logo, null, null, r.away.color, r.away.kind)], null, null, null, null, 8, 8), Avatar(r.away.club.name, 20, r.away.club.logo, null, null, r.away.club.color, \"club\")], \"bottom-trailing\"), Badge(r.away.value, \"neutral\", null, \"small\", r.away.fill, r.away.ink)], \"top-trailing\")], \"center\"))], \"end\")])), null, null, null, true)])"
+    },
+    {
+      "name": "PlayerValue",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "StepTimeline(record.value, record.segments, record.ticks, record.caption)"
+    },
+    {
+      "name": "MetricBars",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        },
+        {
+          "name": "heading",
+          "role": "copy",
+          "default": "record.heading",
+          "note": "the heading to show instead of the record's, e.g. \"Points per game · this vs last season\"; null keeps the record's"
+        }
+      ],
+      "body": "Stack(\"v\", 12, [Stack(\"h\", 12, [Text(heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\"), Text(record.metric, \"footnote\", \"medium\", \"secondary\")], \"center\", \"between\"), ValueColumns(record.columns, @Each(record.columns, \"c\", Avatar(c.name, 40, c.logo, null, null, c.color, c.kind)))])"
+    },
+    {
+      "name": "PlayerMetrics",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Stack(\"v\", 16, [Show(record.showPlayer, Row(record.name, record.detail, Avatar(record.name, 40, record.logo, null, null, record.color, \"player\"))), MetricLines(record.metrics, record.periods, record.from, record.to, \"player\", record.seriesKind, record.subtitle, record.details)])"
+    },
+    {
+      "name": "PlayersMetric",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Stack(\"v\", 16, [Text(record.heading, \"title2\", \"semibold\", null, 2, \"start\"), MetricLines(record.players, record.periods, record.from, record.to, \"race\", record.seriesKind, record.subtitle, null, @Each(record.players, \"x\", Avatar(x.name, 40, x.logo, null, null, x.color, \"player\")))])"
+    },
+    {
+      "name": "SeasonPodium",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Stack(\"h\", 12, [Stack(\"v\", 8, [Text(\"2\", \"title2\", \"semibold\", null, null, null, null, null, record.second.medal), Avatar(record.second.name, 56, record.second.logo, null, null, record.second.color, \"club\"), Text(record.second.name, \"footnote\", \"regular\", \"secondary\", 2, \"center\", null, true)], \"center\"), Stack(\"v\", 8, [Text(\"1\", \"title1\", \"semibold\", null, null, null, null, null, record.first.medal), Avatar(record.first.name, 80, record.first.logo, null, null, record.first.color, \"club\"), Text(record.first.name, \"footnote\", \"semibold\", \"primary\", 2, \"center\", null, true)], \"center\"), Stack(\"v\", 8, [Text(\"3\", \"title2\", \"semibold\", null, null, null, null, null, record.third.medal), Avatar(record.third.name, 40, record.third.logo, null, null, record.third.color, \"club\"), Text(record.third.name, \"footnote\", \"regular\", \"secondary\", 2, \"center\", null, true)], \"center\")], \"end\")"
+    },
+    {
+      "name": "RecordTable",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Card([Text(record.heading, \"headline\", \"semibold\"), Stack(\"v\", 12, [Grid(record.columnCount, 4, [Spacer(0), @Each(record.columns, \"c\", Text(c.label, \"footnote\", null, \"secondary\", 1))], null, \"3\"), Stack(\"v\", 12, @Each(record.rows, \"r\", Grid(record.columnCount, 4, [Text(r.label, \"footnote\", \"medium\", null, 2, \"start\"), @Each(r.cells, \"v\", Text(v.value, \"footnote\", null, null, 1))], null, \"3\")), null, null, null, true)])])"
+    },
+    {
+      "name": "InjuryReport",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Card([Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(record.name, 56, record.logo, null, null, record.color, record.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(record.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(record.position, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(record.badge.show, Badge(record.badge.label, record.badge.tone))], \"center\", \"between\"), Divider(), Stack(\"h\", 12, [Stack(\"v\", 0, [Show(record.wait.dated, Stack(\"v\", 0, [Text(record.wait.label, \"footnote\", null, \"secondary\"), Text(record.wait.value, \"headline\", \"semibold\")])), Show(record.wait.undated, Text(record.wait.value, \"footnote\", null, \"secondary\"))]), Stack(\"v\", 0, [Text(record.wait.day, \"footnote\", null, \"secondary\", null, \"end\"), Text(record.reportedBy, \"footnote\", null, \"secondary\", 1, \"end\")], \"end\")], \"end\", \"between\")], null, null, null, null, 12)"
+    },
+    {
+      "name": "InjuryList",
+      "params": [
+        {
+          "name": "record",
+          "role": "data"
+        }
+      ],
+      "body": "Stack(\"v\", 12, [Show(record.showHeading, Text(record.heading, \"footnote\", \"medium\", \"secondary\", 2, \"start\")), Stack(\"v\", 12, @Each(record.players, \"p\", Stack(\"v\", 4, [Stack(\"h\", 12, [Stack(\"h\", 12, [Avatar(p.name, 40, p.logo, null, null, p.color, p.kind, \"bandage.fill\", \"bad\"), Stack(\"v\", 0, [Text(p.name, \"headline\", \"semibold\", null, 1, \"start\"), Text(p.detail, \"footnote\", null, \"secondary\", 1, \"start\")])], \"center\"), Show(p.badge.show, Badge(p.badge.label, p.badge.tone))], \"center\", \"between\"), Stack(\"h\", 12, [Spacer(40), Stack(\"h\", 4, [Text(p.line, \"footnote\", \"medium\", null, 1), Text(p.sourceLine, \"footnote\", null, \"secondary\", 1, \"start\")])])])), null, null, null, true)])"
     }
   ]
 }

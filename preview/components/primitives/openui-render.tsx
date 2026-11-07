@@ -3,6 +3,8 @@
 import { Children, Component, createContext, useContext, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { createLibrary, Renderer, useRendererQuery, type ComponentRenderProps, type OpenUIError } from "@openuidev/react-lang";
 import { LIBRARY } from "../../../src/lang/library";
+import { expandProgram, templateSet, type TemplateDef } from "../../../src/lang/templates";
+import SPORTS_INDEX from "../../../catalog/openui/sports-components.json";
 import { PRIMITIVES, type PrimitiveDef } from "../../../src/lang/primitives";
 import { BE_URL } from "@/lib/be-url";
 import type { Value } from "@/lib/primitives/data";
@@ -102,7 +104,16 @@ function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton, pending, l
   </RuntimeCtx></KinoProvider>;
 }
 
-/** `pending` draws under the finished parts: the skeleton of the ones still being written. */
-export function OpenUIPreview({ program, seed, theme, specs, isStreaming, skeleton = false, pending = null, layout = "screen" }: { program: string; seed: DatasetSeed | null; theme?: CSSProperties; specs?: Record<string, Record<string, unknown>>; isStreaming: boolean; skeleton?: boolean; pending?: ReactNode; layout?: "screen" | "inline" }) {
-  return <div style={{ ...theme, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif' }}><RenderBoundary program={program}><OpenUIRuntime program={program} seed={seed} specs={specs} isStreaming={isStreaming} skeleton={skeleton} pending={pending} layout={layout} /></RenderBoundary></div>;
+/** The component templates bundled with the preview, for programs that arrive without their own. */
+const BUNDLED_TEMPLATES = (SPORTS_INDEX as { templates: TemplateDef[] }).templates;
+
+/**
+ * `pending` draws under the finished parts: the skeleton of the ones still being written. The program
+ * calls Sports components by name; they expand with `templates` (the run's own, else the bundled set)
+ * before the renderer sees them, the way every client draws primitives only.
+ */
+export function OpenUIPreview({ program, templates = null, seed, theme, specs, isStreaming, skeleton = false, pending = null, layout = "screen" }: { program: string; templates?: readonly TemplateDef[] | null; seed: DatasetSeed | null; theme?: CSSProperties; specs?: Record<string, Record<string, unknown>>; isStreaming: boolean; skeleton?: boolean; pending?: ReactNode; layout?: "screen" | "inline" }) {
+  const definitions = useMemo(() => templateSet(templates ?? BUNDLED_TEMPLATES), [templates]);
+  const expanded = useMemo(() => expandProgram(program, definitions), [program, definitions]);
+  return <div style={{ ...theme, fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", system-ui, sans-serif' }}><RenderBoundary program={expanded}><OpenUIRuntime program={expanded} seed={seed} specs={specs} isStreaming={isStreaming} skeleton={skeleton} pending={pending} layout={layout} /></RenderBoundary></div>;
 }

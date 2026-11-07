@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { SPORTS_TEMPLATES } from "./components.js";
+import { definitionsFor, type TemplateDef } from "../lang/templates.js";
 import { config } from "../config.js";
 import { basePart, compileScreen, type CompiledScreen, type ProgramIssue, type ProgramWriter, type QuestionId, type ScreenSource } from "../lang/compiler.js";
 import { printStatement } from "../lang/program.js";
@@ -56,7 +58,9 @@ export interface SportsResult {
   readonly plan: SportsPlan;
   readonly snapshot: DatasetSnapshot;
   readonly screen: CompiledScreen;
+  /** Calls Sports components by name; `templates` holds the definitions it uses. */
   readonly program: string;
+  readonly templates: readonly TemplateDef[];
   /** The parts as a document saves them. */
   readonly parts: readonly DocumentPart[];
   readonly issues: readonly ProgramIssue[];
@@ -224,7 +228,7 @@ async function compose(source: ScreenSource, plan: SportsPlan, snapshot: Dataset
   hooks.progress?.({ stage: "compose", status: "completed", detail: `${screen.stats.parts} parts · ${screen.stats.fallbacks} defaults added · ${screen.stats.admitted}/${screen.stats.written} statements admitted` });
 
   hooks.progress?.({ stage: "validate", status: "started", detail: "Checking the program" });
-  const tree = programTree(screen.program, source.values);
+  const tree = programTree(screen.program, source.values, SPORTS_TEMPLATES);
   clock.mark("validate");
   hooks.content?.({ stage: "validate", id: "coverage", label: "Questions → parts", format: "json", data: Object.fromEntries(screen.coverage) });
   hooks.progress?.({ stage: "validate", status: "completed", detail: `${tree.nodes.length} primitives · every question shown${screen.stats.fallbacks ? `, ${screen.stats.fallbacks} by default parts` : ""}` });
@@ -234,7 +238,7 @@ async function compose(source: ScreenSource, plan: SportsPlan, snapshot: Dataset
     questions: [...part.evidence.keys()].filter((q): q is QuestionId => plan.questions.some(p => p.id === q)),
   }));
   return {
-    run: source.run, model, plan, snapshot, screen, program: screen.program, parts, issues,
+    run: source.run, model, plan, snapshot, screen, program: screen.program, templates: definitionsFor(screen.program, SPORTS_TEMPLATES), parts, issues,
     holes: { total: screen.stats.parts, filled: screen.parts.filter(p => p.origin.kind === "writer").length, fallback: screen.stats.fallbacks, repairRounds: screen.stats.repairRounds },
     timings: clock.timings, nodes: tree.nodes.length,
   };

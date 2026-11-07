@@ -1,4 +1,5 @@
-import { each, ui, type Node } from "../lang/program.js";
+import { each, printExpr, refAt, ui, type Node } from "../lang/program.js";
+import { templateSet, type TemplateDef } from "../lang/templates.js";
 import { NEST_DEPTH, ROOT_NAMES } from "./names.js";
 
 /**
@@ -30,9 +31,10 @@ export interface SportsComponent {
   readonly intent: string;
   readonly useWhen: string;
   readonly contract: readonly ContractField[];
-  /** Optional copy arguments after the data reference. */
-  readonly params: readonly { readonly name: string; readonly note: string }[];
-  readonly build: (data: AnyRef, args: readonly (string | null)[]) => Node;
+  /** Optional copy arguments after the record: text the writer passes, or null for `default` (an expression over `record`). */
+  readonly params: readonly { readonly name: string; readonly note: string; readonly default: string }[];
+  /** The primitives, over a reference to the record and one to each param. */
+  readonly build: (data: AnyRef, args: readonly AnyRef[]) => Node;
 }
 
 const f = (path: string, kind: ContractField["kind"], note: string): ContractField => ({ path, kind, note });
@@ -503,10 +505,10 @@ export const SPORTS_COMPONENTS: readonly SportsComponent[] = [
       f("columns[].logo", "text", "photo or crest URL, or \"\"; the server fills a player's photo"),
       f("columns[].kind", "text", "\"player\" for a photo on the colour, \"club\" for a crest"),
     ],
-    params: [],
-    build: b => ui.Stack({ axis: "v", gap: 12, children: [
+    params: [{ name: "heading", note: "the heading to show instead of the record's, e.g. \"Points per game · this vs last season\"; null keeps the record's", default: "record.heading" }],
+    build: (b, [heading]) => ui.Stack({ axis: "v", gap: 12, children: [
       ui.Stack({ axis: "h", gap: 12, align: "center", justify: "between", children: [
-        ui.Text({ content: b.heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
+        ui.Text({ content: heading, role: "footnote", weight: "medium", ink: "secondary", lines: 2, align: "start" }),
         ui.Text({ content: b.metric, role: "footnote", weight: "medium", ink: "secondary" }),
       ] }),
       ui.ValueColumns({ columns: b.columns, marks: each(b.columns, "c", (c: AnyRef) => ui.Avatar({ name: c.name, size: 40, image: c.logo, color: c.color, kind: c.kind })) }),
@@ -995,15 +997,28 @@ const TEAM_SPORT_ONLY = new Set(["RecordTable"]);
 
 /** The writer's view: one signature line per component. */
 export const COMPONENT_SIGNATURES = SPORTS_COMPONENTS.map(c =>
-  `${c.name}(record) · ${c.intent} Use for ${c.useWhen}. Reads: ${c.contract.map(x => x.path).join(", ")}.`).join("\n");
+  `${c.name}(record${c.params.map(p => `, ${p.name}?`).join("")}) · ${c.intent} Use for ${c.useWhen}. Reads: ${c.contract.map(x => x.path).join(", ")}.${c.params.map(p => ` ${p.name}: ${p.note}.`).join("")}`).join("\n");
 
 /** The schema stage's view: each contract with its notes. */
 export const contractsFor = (hasSoccer: boolean, hasTeamSports: boolean) => SPORTS_COMPONENTS
   .filter(c => (hasSoccer || !SOCCER_ONLY.has(c.name)) && (hasTeamSports || !TEAM_SPORT_ONLY.has(c.name)))
   .map(c => `${c.name}: ${c.intent} Use for ${c.useWhen}.\n${c.contract.map(x => `  ${x.path} (${x.kind}): ${x.note}`).join("\n")}`).join("\n\n");
 
+/**
+ * Each component as a template: its build printed once over a `record` parameter and one per param.
+ * Clients expand calls with these, so build stays the only definition.
+ */
+export const SPORTS_TEMPLATE_DEFS: readonly TemplateDef[] = SPORTS_COMPONENTS.map(c => ({
+  name: c.name,
+  params: [{ name: "record", role: "data" as const }, ...c.params.map(p => ({ name: p.name, role: "copy" as const, default: p.default, note: p.note }))],
+  body: printExpr(c.build(refAt({ k: "Ref", n: "record" }), c.params.map(p => refAt({ k: "Ref", n: p.name }))).expr),
+}));
+
+export const SPORTS_TEMPLATES = templateSet(SPORTS_TEMPLATE_DEFS);
+
 /** The index as clients and reviewers read it (catalog/openui/sports-components.json). */
 export const componentIndex = () => ({
-  version: 1,
+  version: 2,
   components: SPORTS_COMPONENTS.map(({ build: _build, ...entry }) => entry),
+  templates: SPORTS_TEMPLATE_DEFS,
 });

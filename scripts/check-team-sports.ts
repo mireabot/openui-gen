@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { SPORTS_TEMPLATES } from "../src/sports/components.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -127,7 +128,7 @@ try {
     const answer = (result.snapshot.result as { answers: Record<string, Record<string, unknown>> }).answers.q1!;
     assert.deepEqual(problems, [], `${name}'s raw answer validates`);
     assert.equal(answer.status, "complete", `${name} is complete`);
-    const tree = programTree(result.program, result.snapshot.result as never);
+    const tree = programTree(result.program, result.snapshot.result as never, SPORTS_TEMPLATES);
     assert.ok(tree.nodes.length > 1, `${name} draws something`);
     chart.push(`${name}: ${tree.nodes.length} primitives`);
   }

@@ -4,12 +4,14 @@ import type { PNode, ProgramTree, Value } from "./nodes.js";
 import { skeletonOf } from "./skeleton.js";
 import { LIBRARY, PARSER } from "./library.js";
 import { PRIMITIVE_BY_NAME } from "./primitives.js";
+import { expandProgram, NO_TEMPLATES, type Templates } from "./templates.js";
 
 export const isElement = (value: unknown): value is ElementNode => typeof value === "object" && value !== null && "type" in value && value.type === "element" && "typeName" in value && typeof value.typeName === "string" && "props" in value && typeof value.props === "object" && value.props !== null;
 const elements = (value: unknown): ElementNode[] => Array.isArray(value) ? value.flatMap(elements) : isElement(value) ? [value] : [];
 
-export function programTree(program: string, values: unknown): ProgramTree {
-  const parsed = PARSER.parse(program);
+/** A program as primitive nodes; template calls expand with `templates` first. */
+export function programTree(program: string, values: unknown, templates: Templates = NO_TEMPLATES): ProgramTree {
+  const parsed = PARSER.parse(expandProgram(program, templates));
   if (parsed.meta.errors.length || parsed.meta.unresolved.length || parsed.meta.incomplete) throw new Error(`Invalid server OpenUI program: ${JSON.stringify(parsed.meta)}`);
   const root = evaluateRoot(parsed, { ctx: { getState: () => undefined, resolveRef: (name) => name === "d" ? values : undefined }, library: LIBRARY, store: null });
   if (!isElement(root) || root.typeName !== "Screen") throw new Error("OpenUI program has no Screen");
@@ -32,4 +34,4 @@ export function programTree(program: string, values: unknown): ProgramTree {
   return { placement: { children, where: "screen", anchor: null }, nodes };
 }
 
-export const programSkeleton = (program: string, values: unknown) => skeletonOf(programTree(program, values));
+export const programSkeleton = (program: string, values: unknown, templates: Templates = NO_TEMPLATES) => skeletonOf(programTree(program, values, templates));

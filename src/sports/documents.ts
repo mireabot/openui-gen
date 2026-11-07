@@ -3,12 +3,14 @@ import { mkdir, readdir, readFile, rename, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { z } from "zod";
 import { SnapshotArgs, SnapshotSchema } from "../lang/snapshots.js";
+import { TemplateDefSchema } from "../lang/templates.js";
 import type { SportsResult } from "./ask.js";
 import { SportsQuestionSchema, SportsSubjectSchema } from "./plan.js";
 
 /**
  * A sports screen as the conversation left it: the program, the snapshot it reads, the plan it
- * answers, and each part with the questions it shows. A follow-up reads one revision and commits
+ * answers, each part with the questions it shows, and the component templates the program calls,
+ * so a saved screen replays as it was drawn. A follow-up reads one revision and commits
  * the next; the document id is the first run's id.
  */
 
@@ -23,6 +25,7 @@ export const SportsDocumentSchema = z.object({
   id: SnapshotArgs.shape.run,
   revision: z.number().int().positive(),
   program: z.string(),
+  templates: z.array(TemplateDefSchema).default([]),
   snapshot: SnapshotSchema,
   subject: SportsSubjectSchema,
   questions: z.array(SportsQuestionSchema).min(1),
@@ -36,11 +39,11 @@ export type DocumentPart = z.infer<typeof DocumentPartSchema>;
 export type Turn = z.infer<typeof TurnSchema>;
 
 /** The revision a turn commits: the result's screen and plan, with the prompt and what each part now shows appended to the turns. */
-export function nextRevision(previous: SportsDocument | null, id: string, prompt: string, result: Pick<SportsResult, "program" | "snapshot" | "plan" | "parts" | "model">, now = new Date()): SportsDocument {
+export function nextRevision(previous: SportsDocument | null, id: string, prompt: string, result: Pick<SportsResult, "program" | "templates" | "snapshot" | "plan" | "parts" | "model">, now = new Date()): SportsDocument {
   const { plan } = result;
   const shown = result.parts.map(part => ({ part: part.id, shows: part.questions.map(q => plan.questions.find(question => question.id === q)?.text ?? q) }));
   return {
-    id, revision: (previous?.revision ?? 0) + 1, program: result.program, snapshot: result.snapshot,
+    id, revision: (previous?.revision ?? 0) + 1, program: result.program, templates: result.templates.map(t => ({ ...t, params: t.params.map(p => ({ ...p })) })), snapshot: result.snapshot,
     subject: plan.subject, questions: [...plan.questions], parts: [...result.parts],
     turns: [...(previous?.turns ?? []), { role: "user", content: prompt }, { role: "assistant", content: JSON.stringify({ subject: plan.subject.name, parts: shown }) }],
     model: result.model, updatedAt: now.toISOString(),

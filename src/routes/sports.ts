@@ -10,6 +10,7 @@ import { SnapshotArgs, SnapshotStore } from "../lang/snapshots.js";
 import { PROJECT_ROOT } from "../paths.js";
 import { RunRecorder, writeRunEvents } from "../run/recorder.js";
 import { askSports, editSports } from "../sports/ask.js";
+import { SPORTS_TEMPLATE_DEFS } from "../sports/components.js";
 import { DocumentConflict, DocumentStore, nextRevision, saveGeneration, type SportsDocument } from "../sports/documents.js";
 
 const TimeZone = z.string().max(100).refine(zone => { try { new Intl.DateTimeFormat("en", { timeZone: zone }); return true; } catch { return false; } });
@@ -19,11 +20,12 @@ const SaveRequest = z.object({ revision: z.number().int().positive() });
 const STAGES = ["summarize", "search", "data", "compose", "validate"] as const;
 
 /**
- * POST /lang/sports/stream — a new sports screen as SSE: `activity`, `data` (the dataset
- * snapshot), `skeleton`, `openui` (program text), `issue`, then `done` with `document {id, revision: 1}`
- * once the screen is saved, or `failure`.
+ * POST /lang/sports/stream — a new sports screen as SSE: `templates` (every component definition the
+ * program may call), `activity`, `data` (the dataset snapshot), `skeleton`, `openui` (program text),
+ * `issue`, then `done` with `document {id, revision: 1}` and the `templates` the program uses once the
+ * screen is saved, or `failure`.
  * POST /lang/sports/:documentId/follow-up — `{prompt, baseRevision, targets?}` edits a saved screen:
- * `activity` while it works, then `data`, `openui {text, replace: true}` (the whole program) and
+ * `activity` while it works, then `templates`, `data`, `openui {text, replace: true}` (the whole program) and
  * `done` with the next revision, all after the revision is committed. 404 for an unknown document,
  * 409 when `baseRevision` is not the current one. A failed follow-up commits nothing.
  * Both also send `usage` per model or search call: its stage, model, tokens, cost and time.
@@ -73,6 +75,7 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
     return streamSSE(c, async stream => {
       const { send, abort, flush } = channel(stream);
       const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui" });
+      send("templates", { templates: SPORTS_TEMPLATE_DEFS });
       try {
         const result = await ask({ prompt, timeZone }, store, {
           progress: progress => { observer.step(progress); send("activity", progress); },
@@ -81,7 +84,7 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
           program: text => send("openui", { text }), issue: issue => send("issue", { issue }),
         }, observer.runId);
         await commit(nextRevision(null, result.run, prompt, result), 0, abort.signal);
-        send("done", { generation: "openui", run: result.run, program: result.program, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model, document: { id: result.run, revision: 1 } });
+        send("done", { generation: "openui", run: result.run, program: result.program, templates: result.templates, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model, document: { id: result.run, revision: 1 } });
         observer.finish({ status: finishedStatus(result.issues), retries: result.holes.repairRounds, nodes: result.nodes });
         log.info("sports openui streamed", { run: result.run, subject: result.plan.subject.name, questions: result.plan.questions.length, nodes: result.nodes, issues: result.issues.length, holes: result.holes, ms: result.timings.validate });
       } catch (error) {
@@ -103,7 +106,7 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
     if (!replayable || !identity.success) return c.json({ error: "not_found" }, 404);
     const document = await documents.get(identity.data.run);
     if (!document) return c.json({ error: "document_not_found" }, 404);
-    return c.json({ prompt: document.turns.find(turn => turn.role === "user")?.content ?? "", program: document.program, snapshot: document.snapshot });
+    return c.json({ prompt: document.turns.find(turn => turn.role === "user")?.content ?? "", program: document.program, templates: document.templates, snapshot: document.snapshot });
   });
 
   app.post("/lang/sports/:documentId/save", async c => {
@@ -148,9 +151,10 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
         abort.signal.throwIfAborted();
         const revision = saved.revision + 1;
         await commit(nextRevision(saved, id, prompt, result), saved.revision, abort.signal);
+        send("templates", { templates: SPORTS_TEMPLATE_DEFS });
         send("data", result.snapshot);
         send("openui", { text: result.program, replace: true });
-        send("done", { generation: "openui", run: result.run, program: result.program, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model, document: { id, revision } });
+        send("done", { generation: "openui", run: result.run, program: result.program, templates: result.templates, issues: result.issues, holes: result.holes, timings: result.timings, model: result.model, document: { id, revision } });
         observer.content({ stage: "validate", id: "follow-up", label: "Follow-up merge", format: "json", data: { questions: result.followUp.questions.map(q => `${q.id} ${q.change}`), removed: result.followUp.removed, parts: result.screen.parts.map(p => `${p.id} ${p.origin.kind}`), revision } });
         observer.finish({ status: finishedStatus(result.issues), retries: result.holes.repairRounds, nodes: result.nodes });
         log.info("sports follow-up committed", { document: id, revision, run: result.run, questions: result.followUp.questions.map(q => `${q.id} ${q.change}`), removed: result.followUp.removed, parts: result.screen.parts.map(p => `${p.id} ${p.origin.kind}`) });
