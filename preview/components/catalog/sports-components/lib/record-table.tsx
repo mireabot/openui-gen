@@ -13,13 +13,13 @@ export type RecordTableProps = {
 export function RecordTable({ title, columns, rows, className }: RecordTableProps) {
   const grid = { gridTemplateColumns: `repeat(${columns.length || 1}, minmax(0, 1fr))` };
   return (
-    <section data-node-id="record-table" className={cn("flex flex-col gap-4 rounded-[24px] bg-kino-surface-card p-4", className)}>
+    <section data-node-id="record-table" className={cn("flex flex-col gap-4 rounded-[24px] bg-ds-surface-card p-4", className)}>
       <h4 className="text-[17px] leading-[22px] font-semibold">{title}</h4>
       <div className="flex flex-col gap-3">
-        <div className="grid gap-1 text-[13px] leading-[18px] text-kino-ink-secondary" style={grid}>
+        <div className="grid gap-1 text-[13px] leading-[18px] text-ds-ink-secondary" style={grid}>
           {columns.map((column, index) => <span key={index} className="truncate">{column}</span>)}
         </div>
-        <div className="flex flex-col divide-y divide-kino-outline-subtle">
+        <div className="flex flex-col divide-y divide-ds-outline-subtle">
           {rows.map((row, index) => (
             <div key={index} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
               <span className="line-clamp-2 text-[15px] leading-[22px] font-medium">{row.label}</span>

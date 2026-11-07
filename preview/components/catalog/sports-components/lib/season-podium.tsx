@@ -1,4 +1,4 @@
-import { dataPaint } from "@/components/catalog/kino";
+import { dataPaint } from "@/components/catalog/design-system";
 import { cn } from "@/lib/utils";
 import { Crest, type CrestSize, type Team } from "./team-detail";
 
@@ -17,8 +17,8 @@ export type SeasonPodiumProps = {
   className?: string;
 };
 
-/** Figma Elevation/2, in Kino's shadow tokens. */
-const ELEVATION = "shadow-[inset_0_1px_0_var(--color-kino-shadow-highlight-med),0_2px_6px_var(--color-kino-shadow-low),0_16px_40px_var(--color-kino-shadow-high)]";
+/** Elevation/2, in the design system's shadow tokens. */
+const ELEVATION = "shadow-[inset_0_1px_0_var(--color-ds-shadow-highlight-med),0_2px_6px_var(--color-ds-shadow-low),0_16px_40px_var(--color-ds-shadow-high)]";
 
 const NUMERAL = {
   1: { width: 24, height: 45, fontSize: 36 },
@@ -57,7 +57,7 @@ function Column({ rank, place, size }: { rank: 1 | 2 | 3; place: PodiumPlace; si
         data-node-id="club-name"
         className={cn(
           "line-clamp-2 min-h-9 w-full text-center text-[13px] leading-[18px]",
-          rank === 1 ? "font-semibold text-kino-ink-primary" : "text-kino-ink-secondary",
+          rank === 1 ? "font-semibold text-ds-ink-primary" : "text-ds-ink-secondary",
         )}
       >
         {place.team.name}
@@ -67,7 +67,7 @@ function Column({ rank, place, size }: { rank: 1 | 2 | 3; place: PodiumPlace; si
 }
 
 /**
- * How a league's season ended, from Figma Kino Screens 225:2579: three columns in podium order 2, 1,
+ * How a league's season ended: three columns in podium order 2, 1,
  * 3, each a place numeral, an avatar and a centred name. Club crests with no fill replace
  * the reference's posters, scaled by place (80, 56, 40), and the numerals take the place's colour. The avatars' bottoms and the
  * names line up across the columns; no card.

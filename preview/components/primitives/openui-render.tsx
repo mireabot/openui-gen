@@ -8,7 +8,7 @@ import SPORTS_INDEX from "../../../catalog/openui/sports-components.json";
 import { PRIMITIVES, type PrimitiveDef } from "../../../src/lang/primitives";
 import { BE_URL } from "@/lib/be-url";
 import type { Value } from "@/lib/primitives/data";
-import { KinoPrimitive, KinoProvider } from "./render";
+import { DesignSystemPrimitive, DesignSystemProvider } from "./render";
 
 export interface DatasetSeed {
   tool: "sports_dataset";
@@ -50,7 +50,7 @@ function rendererFor(name: string) {
     if (name === "Screen") {
       return <OpenUIScreen placement={values.placement}>{slots.children}</OpenUIScreen>;
     }
-    return <KinoPrimitive name={name} props={values} slots={slots} />;
+    return <DesignSystemPrimitive name={name} props={values} slots={slots} />;
   };
 }
 
@@ -98,10 +98,10 @@ function OpenUIRuntime({ program, seed, isStreaming, specs, skeleton, pending, l
       return result;
     } };
   }, [seed]);
-  return <KinoProvider specs={specs} skeleton={skeleton}><RuntimeCtx value={{ pending, layout }}>
+  return <DesignSystemProvider specs={specs} skeleton={skeleton}><RuntimeCtx value={{ pending, layout }}>
     <Renderer response={program} library={OPENUI_LIBRARY} isStreaming={isStreaming} toolProvider={toolProvider} onError={setErrors} publishObservability={false} />
     {errors.length > 0 && <ul role="alert" className="m-6 list-disc rounded-lg border border-destructive/40 p-3 pl-7 text-sm text-destructive">{errors.map((error, index) => <li key={index}>{error.message}</li>)}</ul>}
-  </RuntimeCtx></KinoProvider>;
+  </RuntimeCtx></DesignSystemProvider>;
 }
 
 /** The component templates bundled with the preview, for programs that arrive without their own. */

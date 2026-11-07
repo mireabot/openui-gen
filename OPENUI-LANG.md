@@ -36,9 +36,9 @@ allowed tokens).
 gives the JSON schema, the prompt signatures and the parser. Clients attach their own renderers by
 primitive name:
 
-- web: `preview/components/primitives/openui-render.tsx` maps every name to `KinoPrimitive`
+- web: `preview/components/primitives/openui-render.tsx` maps every name to `DesignSystemPrimitive`
   using `@openuidev/react-lang`'s `Renderer`;
-- SwiftUI: `OpenUICompiler` and the Kino views (see below).
+- SwiftUI: `OpenUICompiler` and the design system views (see below).
 
 Templates are server-side compositions the writer may call, as typed builders (`ui.Card(...)`) that
 expand to primitives when admitted, so clients never learn a template, only primitives. The
@@ -157,10 +157,10 @@ Each compile ends in one commit on the main actor. For every element in the new 
 
 ### The renderer draws handles
 
-`OpenUISceneView` in `GenUI/Renderer` draws the root handle's children. Each child view receives its handle directly. `PrimitiveProps(handle:)` reads the handle's prepared properties, and `PrimitiveVisual` sends the kind to the same Kino views the old renderer used. A container reads its slot handle's children and draws each through the same path.
+`OpenUISceneView` in `GenUI/Renderer` draws the root handle's children. Each child view receives its handle directly. `PrimitiveProps(handle:)` reads the handle's prepared properties, and `PrimitiveVisual` sends the kind to the same design system views the old renderer used. A container reads its slot handle's children and draws each through the same path.
 
 ```text
-scene → session.commit → handles → OpenUISceneView → Kino views
+scene → session.commit → handles → OpenUISceneView → design system views
 ```
 
 No view reads a whole tree or a whole dataset from the environment. A text view observes only its own element handle. A card observes only its own slots. When `pick2`'s summary changes, the commit writes one element handle, and only that text view's body runs again. Its parents keep their state.

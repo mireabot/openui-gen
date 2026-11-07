@@ -3,10 +3,10 @@ import { cn } from "@/lib/utils";
 export type FixtureResult = "win" | "draw" | "loss" | "upcoming";
 
 const SQUARE: Record<FixtureResult, string> = {
-  win: "bg-kino-tone-good-fg",
-  loss: "bg-kino-tone-bad-fg",
-  draw: "bg-kino-outline-control",
-  upcoming: "bg-kino-surface-filled",
+  win: "bg-ds-tone-good-fg",
+  loss: "bg-ds-tone-bad-fg",
+  draw: "bg-ds-outline-control",
+  upcoming: "bg-ds-surface-filled",
 };
 
 const OVERVIEW: { result: Exclude<FixtureResult, "upcoming">; label: string }[] = [
@@ -42,10 +42,10 @@ export type FixturesHeatmapProps = {
  */
 export function FixturesHeatmap({ value, caption, results, columns = heatmapColumns(results.length), overview = true, drawLabel = "Drawn", className }: FixturesHeatmapProps) {
   return (
-    <section data-node-id="fixtures-heatmap" className={cn("flex flex-col items-center gap-4 rounded-[24px] bg-kino-surface-card p-4 text-center", className)}>
+    <section data-node-id="fixtures-heatmap" className={cn("flex flex-col items-center gap-4 rounded-[24px] bg-ds-surface-card p-4 text-center", className)}>
       <div className="flex flex-col items-center">
         <span data-node-id="value" className="text-[56px] leading-[56px] font-semibold tabular-nums">{value}</span>
-        <span data-node-id="caption" className="mt-2 text-[15px] leading-[22px] text-kino-ink-secondary">{caption}</span>
+        <span data-node-id="caption" className="mt-2 text-[15px] leading-[22px] text-ds-ink-secondary">{caption}</span>
       </div>
       <div data-node-id="heatmap" className="grid w-full gap-1" style={{ gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` }}>
         {results.map((result, index) => (
@@ -53,11 +53,11 @@ export function FixturesHeatmap({ value, caption, results, columns = heatmapColu
         ))}
       </div>
       {overview && (
-        <div data-node-id="overview" className="flex items-center justify-center gap-4 text-[13px] leading-[18px] text-kino-ink-secondary tabular-nums">
+        <div data-node-id="overview" className="flex items-center justify-center gap-4 text-[13px] leading-[18px] text-ds-ink-secondary tabular-nums">
           {OVERVIEW.filter(({ result }) => result !== "draw" || drawLabel !== null).map(({ result, label }) => (
             <span key={result} className="flex items-center gap-2">
               <span className={cn("size-3 rounded-[4px]", SQUARE[result])} />
-              <span><span className="font-semibold text-kino-ink-primary">{results.filter((r) => r === result).length}</span> {result === "draw" ? drawLabel : label}</span>
+              <span><span className="font-semibold text-ds-ink-primary">{results.filter((r) => r === result).length}</span> {result === "draw" ? drawLabel : label}</span>
             </span>
           ))}
         </div>

@@ -20,7 +20,7 @@ const ThemeContext = createContext<ExampleTheme>({});
 
 const scorers = { answers: { q1: { title: "Top scorers", rows: [{ name: "Haaland", goals: 24 }, { name: "Salah", goals: 19 }, { name: "Palmer", goals: 15 }] } } };
 
-function Kino({ program, result = scorers, skeleton = false }: { program: string; result?: Record<string, unknown>; skeleton?: boolean }) {
+function DesignSystemPreview({ program, result = scorers, skeleton = false }: { program: string; result?: Record<string, unknown>; skeleton?: boolean }) {
   const theme = useContext(ThemeContext);
   return <OpenUIPreview program={program} seed={{ tool: "sports_dataset", args: { run: "r1" }, result }} theme={theme.theme} specs={theme.specs} isStreaming={false} skeleton={skeleton} layout="inline" />;
 }
@@ -156,7 +156,7 @@ function BridgeWalkthrough() {
           <CodeNode label={code.from[0]}>{code.from[1]}</CodeNode>
           <Connector label={code.link} />
           <CodeNode label={code.to[0]} brand>{code.to[1]}</CodeNode>
-          {step === 4 && <><Connector label="Drawn with Kino" /><div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><Kino key={primitive} program={primitive === "Text" ? `root = Screen([pick1_title])\n${QUERY}\npick1_title = Text(d.answers.q1.title, "title2", "semibold")` : `root = Screen([pick1])\n${QUERY}\n${headerStatements}`} /></div></div></>}
+          {step === 4 && <><Connector label="Drawn with the design system" /><div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><DesignSystemPreview key={primitive} program={primitive === "Text" ? `root = Screen([pick1_title])\n${QUERY}\npick1_title = Text(d.answers.q1.title, "title2", "semibold")` : `root = Screen([pick1])\n${QUERY}\n${headerStatements}`} /></div></div></>}
         </div>
         <Annotation step={step} title={stage.title} text={stage.text} note={stage.note}><Source file={stage.file} line={stage.line}>Read this stage in the code</Source></Annotation>
       </div>
@@ -266,13 +266,13 @@ function Layout() {
     <div className={styles.sectionHeading}><div><span className={styles.sectionIndex}>03 / LAYOUT COMPOSITION</span><h2>Props choose the container.</h2></div></div>
     <p className={styles.sectionIntro}>A layout is a tree of primitives that hold slots. StackPrimitive reads axis, gap and justify, then chooses a SwiftUI container. Nothing in the program describes a frame or a position.</p>
     <div className={styles.researchDemo}>
-      <div className={styles.demoToolbar}><span className={styles.demoTitle}>Stack explorer</span><span className={styles.quiet}>Rendered with Kino primitives</span></div>
+      <div className={styles.demoToolbar}><span className={styles.demoTitle}>Stack explorer</span><span className={styles.quiet}>Rendered with design system primitives</span></div>
       <div className={styles.searchScene}>
         <CodeNode label="OPENUI LANG">{statement}</CodeNode>
         <Connector label="StackPrimitive selects" />
         <div className={styles.twoColumns}>
           <CodeNode label="SWIFTUI" brand>{swiftForStack(axis, gap, between)}</CodeNode>
-          <div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><Kino key={statement} program={`root = Screen([pick2])\n${QUERY}\n${statement}`} /></div></div>
+          <div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><DesignSystemPreview key={statement} program={`root = Screen([pick2])\n${QUERY}\n${statement}`} /></div></div>
         </div>
       </div>
       <div className={styles.demoFooter}><div className={styles.layoutControls}>
@@ -406,7 +406,7 @@ function ComplexElements() {
           <CodeNode label={stage.from[0]}>{stage.from[1]}</CodeNode>
           <Connector label={stage.link} />
           <CodeNode label={stage.to[0]} brand>{stage.to[1]}</CodeNode>
-          {step === complexStages.length - 1 && <><Connector label="Drawn with Kino" /><div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><Kino program={`root = Screen([pick1])\n${QUERY}\npick1 = PlayerValue(${CHART})`} result={{ answers: { q1: { chart: palmerChart } } }} /></div></div></>}
+          {step === complexStages.length - 1 && <><Connector label="Drawn with the design system" /><div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><DesignSystemPreview program={`root = Screen([pick1])\n${QUERY}\npick1 = PlayerValue(${CHART})`} result={{ answers: { q1: { chart: palmerChart } } }} /></div></div></>}
         </div>
         <Annotation step={step} title={stage.title} text={stage.text} note={stage.note}><Source file={stage.file} line={stage.line}>Read this stage in the code</Source></Annotation>
       </div>
@@ -482,8 +482,8 @@ function programAt(steps: readonly StreamStep[], index: number) {
 function ScreenAt({ blocks, pending }: { blocks: number; pending: number }) {
   const program = blocks === 1 ? `root = Screen([pick1])\n${QUERY}\n${partOne.slice(0, 3).join("\n")}` : finalProgram.join("\n");
   return <div className={styles.previewBody}>
-    {blocks > 0 && <Kino key={blocks} program={program} />}
-    {Array.from({ length: pending }, (_, index) => <div key={index} className={blocks > 0 || index > 0 ? styles.pendingBlock : undefined}><Kino program={pendingProgram} skeleton /></div>)}
+    {blocks > 0 && <DesignSystemPreview key={blocks} program={program} />}
+    {Array.from({ length: pending }, (_, index) => <div key={index} className={blocks > 0 || index > 0 ? styles.pendingBlock : undefined}><DesignSystemPreview program={pendingProgram} skeleton /></div>)}
     {blocks === 0 && pending === 0 && <p className={styles.emptyPreview}>No blocks yet.</p>}
   </div>;
 }
@@ -620,7 +620,7 @@ function FollowUp() {
     <div className={styles.searchScene}>
       <div className={styles.searchBranches}>
         <CodeNode label={updated ? "DATASET · RUN R2" : "DATASET · RUN R1"}>{`rows: [\n  { name: "Haaland", goals: ${goals} },\n  { name: "Salah", goals: 19 }\n]`}</CodeNode>
-        <div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><Kino key={goals} program={scoreProgram} result={result} /></div></div>
+        <div className={styles.previewNode}><span className={styles.nodeOverline}>RESULT · WEB PRIMITIVE RENDERER</span><div className={styles.previewBody}><DesignSystemPreview key={goals} program={scoreProgram} result={result} /></div></div>
       </div>
       <Connector label={updated ? "commit: updated 1" : "Waiting for a follow-up"} />
       <div className={styles.questionGroup}>

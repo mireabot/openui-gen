@@ -39,8 +39,8 @@ function VenueRow({ label, record }: { label: ReactNode; record: VenueRecord }) 
       <span>{record.won}</span>
       <span>{record.drawn}</span>
       <span>{record.lost}</span>
-      <span className="text-kino-ink-secondary">{`${record.goalsFor}-${record.goalsAgainst}`}</span>
-      <span className={difference < 0 ? "text-kino-tone-bad-fg" : "text-kino-ink-primary"}>{signed(difference)}</span>
+      <span className="text-ds-ink-secondary">{`${record.goalsFor}-${record.goalsAgainst}`}</span>
+      <span className={difference < 0 ? "text-ds-tone-bad-fg" : "text-ds-ink-primary"}>{signed(difference)}</span>
       <span className="font-semibold">{record.points}</span>
     </div>
   );
@@ -61,11 +61,11 @@ function Venue({ icon, children }: { icon: ReactNode; children: ReactNode }) {
  */
 export function TeamPoints({ title = "Home and away", rank, home, away, className }: TeamPointsProps) {
   return (
-    <section data-node-id="team-points" className={cn("rounded-[24px] bg-kino-surface-card p-4", className)}>
+    <section data-node-id="team-points" className={cn("rounded-[24px] bg-ds-surface-card p-4", className)}>
       <header className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-[17px] leading-[22px] font-semibold">{title}</h2>
-          <p className="text-[13px] leading-[18px] text-kino-ink-secondary">
+          <p className="text-[13px] leading-[18px] text-ds-ink-secondary">
             Rank {rank} · {home.played + away.played} played
           </p>
         </div>
@@ -74,7 +74,7 @@ export function TeamPoints({ title = "Home and away", rank, home, away, classNam
         </span>
       </header>
       <div className="mt-4">
-        <div className={cn(COLUMNS, "text-[13px] leading-[16px] text-kino-ink-secondary")}>
+        <div className={cn(COLUMNS, "text-[13px] leading-[16px] text-ds-ink-secondary")}>
           <span />
           <span>Pld</span>
           <span>W</span>
@@ -84,9 +84,9 @@ export function TeamPoints({ title = "Home and away", rank, home, away, classNam
           <span>GD</span>
           <span>PTS</span>
         </div>
-        <div className="mt-1 divide-y divide-kino-outline-subtle">
-          <VenueRow label={<Venue icon={<HouseLineIcon className="size-4 shrink-0 text-kino-ink-secondary" />}>Home</Venue>} record={home} />
-          <VenueRow label={<Venue icon={<AirplaneTiltIcon className="size-4 shrink-0 text-kino-ink-secondary" />}>Away</Venue>} record={away} />
+        <div className="mt-1 divide-y divide-ds-outline-subtle">
+          <VenueRow label={<Venue icon={<HouseLineIcon className="size-4 shrink-0 text-ds-ink-secondary" />}>Home</Venue>} record={home} />
+          <VenueRow label={<Venue icon={<AirplaneTiltIcon className="size-4 shrink-0 text-ds-ink-secondary" />}>Away</Venue>} record={away} />
         </div>
       </div>
     </section>

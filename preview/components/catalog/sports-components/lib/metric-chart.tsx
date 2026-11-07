@@ -5,10 +5,10 @@
  * and the player mark. A line is one value per period; a missing period is a gap, never zero.
  */
 import { useLayoutEffect, useRef, useState, type CSSProperties, type PointerEvent } from "react";
-import { dataFill, dataPaint } from "@/components/catalog/kino";
+import { dataFill, dataPaint } from "@/components/catalog/design-system";
 import { cn } from "@/lib/utils";
 
-/** How a line is painted: a data colour or a Kino ink var, and its opacity. */
+/** How a line is painted: a data colour or a design system ink var, and its opacity. */
 export type Paint = { color: string; opacity: number };
 
 /** One value per period. `null` is a missing point (bye, injury, did not play): skipped, never zero. */
@@ -21,8 +21,8 @@ export type Line = { id: string; label: string; paint: Paint; values: Values; pe
 /** Cumulative lines carry the last total through a gap; period lines show nothing there. */
 export type LineKind = "cumulative" | "period";
 
-const INK_PRIMARY = "var(--color-kino-ink-primary)";
-const INK_SECONDARY = "var(--color-kino-ink-secondary)";
+const INK_PRIMARY = "var(--color-ds-ink-primary)";
+const INK_SECONDARY = "var(--color-ds-ink-secondary)";
 
 /** Both MetricsComparison line modes stop at four lines. */
 export const MAX_LINES = 4;
@@ -262,7 +262,7 @@ export function Plot({ lines: given, kind, height, scrub, onScrub, max, axis = "
           onPointerLeave={() => onScrub(null)}
         >
           {scrubX !== null && (
-            <span data-node-id="scrub-line" className="pointer-events-none absolute inset-y-0 border-l border-dotted border-kino-ink-secondary" style={{ left: scrubX }} />
+            <span data-node-id="scrub-line" className="pointer-events-none absolute inset-y-0 border-l border-dotted border-ds-ink-secondary" style={{ left: scrubX }} />
           )}
           <div ref={draw} className="pointer-events-none absolute inset-0">
             {/* Dim copy under the bright one; the bright copy is cut at the finger. */}
@@ -272,17 +272,17 @@ export function Plot({ lines: given, kind, height, scrub, onScrub, max, axis = "
               <span
                 key={dot.id}
                 data-node-id="scrub-dot"
-                className="pointer-events-none absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-kino-surface-screen"
+                className="pointer-events-none absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-ds-surface-screen"
                 style={{ left: dot.left, top: dot.top, ...cssPaint(dot.paint), opacity: dot.paint.opacity * dot.opacity }}
               >
                 {/* Hollow when the total is carried through a missing point. */}
-                {!dot.present && <span className="absolute inset-[2px] rounded-full bg-kino-surface-screen" />}
+                {!dot.present && <span className="absolute inset-[2px] rounded-full bg-ds-surface-screen" />}
               </span>
             ))}
           </div>
         </div>
         {axis === "right" && (
-          <div data-node-id="y-axis" className={cn(LABEL, "relative w-8 shrink-0 text-kino-ink-tertiary tabular-nums")} style={{ height }}>
+          <div data-node-id="y-axis" className={cn(LABEL, "relative w-8 shrink-0 text-ds-ink-tertiary tabular-nums")} style={{ height }}>
             {ticks.map((tick) => (
               <span key={tick} className="absolute right-0 -translate-y-1/2 whitespace-nowrap" style={{ top: y(tick) }}>{numberText(tick, tick % 1 ? 1 : 0)}</span>
             ))}
@@ -290,7 +290,7 @@ export function Plot({ lines: given, kind, height, scrub, onScrub, max, axis = "
         )}
       </div>
       {ends && (
-        <div data-node-id="x-axis" className={cn(LABEL, "flex justify-between text-kino-ink-tertiary", axis === "right" && "pr-10")}>
+        <div data-node-id="x-axis" className={cn(LABEL, "flex justify-between text-ds-ink-tertiary", axis === "right" && "pr-10")}>
           <span>{ends[0]}</span>
           <span>{ends[1]}</span>
         </div>
@@ -315,14 +315,14 @@ export function Mark({ person, paint, size = 32 }: { person: Person; paint?: Pai
     <span className="flex size-full items-center justify-center overflow-hidden rounded-full" style={dataFill(person.clubColor)}>
       {person.photo
         ? <img src={person.photo} alt="" className="size-full object-cover object-top" />
-        : <span className={cn(LABEL, "font-semibold text-kino-ink-on-brand")}>{initials(person.name)}</span>}
+        : <span className={cn(LABEL, "font-semibold text-ds-ink-on-brand")}>{initials(person.name)}</span>}
     </span>
   );
   if (!paint) return <span data-node-id="avatar" className="block shrink-0" style={{ width: size, height: size }}>{photo}</span>;
   return (
     <span data-node-id="avatar" className="relative block shrink-0" style={{ width: size, height: size }}>
       <span className="absolute inset-0 rounded-full" style={cssPaint(paint)} />
-      <span className="absolute inset-[2px] rounded-full bg-kino-surface-screen p-[1px]">{photo}</span>
+      <span className="absolute inset-[2px] rounded-full bg-ds-surface-screen p-[1px]">{photo}</span>
     </span>
   );
 }

@@ -1,0 +1,41 @@
+/* Design system tokens, from the default theme in design/design_system.json. */
+@theme {
+  --color-ds-ink-primary: #f3eee6;
+  --color-ds-ink-secondary: #a19b92;
+  --color-ds-ink-tertiary: #a19b92;
+  --color-ds-ink-on-brand: #f3eee6;
+  --color-ds-ink-brand: #ff6a3d;
+  --color-ds-ink-brand-strong: #cf421d;
+  --color-ds-surface-screen: #121110;
+  --color-ds-surface-card: #1b1a17;
+  --color-ds-surface-filled: #24221f;
+  --color-ds-surface-grouped: #1b1a17;
+  --color-ds-surface-glass: #1b1a17b8;
+  --color-ds-surface-control: #24221f;
+  --color-ds-surface-brand: #cf421d;
+  --color-ds-surface-brand-soft: #cf421d1f;
+  --color-ds-surface-skeleton: #24221f;
+  --color-ds-surface-skeleton-highlight: #302e2a;
+  --color-ds-outline-subtle: #302e2a;
+  --color-ds-outline-control: #45423c;
+  --color-ds-outline-control-bottom: #45423c;
+  --color-ds-tone-good-fg: #5cc95b;
+  --color-ds-tone-good-bg: #409b3f2e;
+  --color-ds-tone-warn-fg: #ffc30a;
+  --color-ds-tone-warn-bg: #ffc30a2e;
+  --color-ds-tone-bad-fg: #ff6a3d;
+  --color-ds-tone-bad-bg: #ff6a3d2e;
+  --color-ds-tone-info-fg: #33c3ff;
+  --color-ds-tone-info-bg: #06b1f12e;
+  --color-ds-tone-neutral-fg: #a19b92;
+  --color-ds-tone-neutral-bg: #24221f;
+  --color-ds-shadow-base: #0504070a;
+  --color-ds-shadow-low: #05040373;
+  --color-ds-shadow-high: #05040399;
+  --color-ds-shadow-highlight-low: #ffffff0a;
+  --color-ds-shadow-highlight-med: #ffffff0a;
+}
+
+@utility bg-ds-surface-brand-gradient {
+  background-image: linear-gradient(180deg, #ff6a3d, #cf421d);
+}

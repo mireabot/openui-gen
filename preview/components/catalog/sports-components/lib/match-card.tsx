@@ -35,7 +35,7 @@ function TeamRow({ team, score, against }: { team: Team; score?: number; against
     <div className="flex items-center gap-3">
       <TeamDetail team={team} />
       <span className="flex-1" />
-      <span data-node-id="score" className={cn("text-[17px] leading-[22px] font-semibold tabular-nums", lost ? "text-kino-ink-secondary" : "text-kino-ink-primary")}>
+      <span data-node-id="score" className={cn("text-[17px] leading-[22px] font-semibold tabular-nums", lost ? "text-ds-ink-secondary" : "text-ds-ink-primary")}>
         {score}
       </span>
     </div>
@@ -63,7 +63,7 @@ export function MatchCard({ home, away, label, value, details = [], score, past 
       onClick={onPress}
       onKeyDown={press}
       className={cn(
-        "flex flex-col rounded-[24px] bg-kino-surface-card px-4 pt-4",
+        "flex flex-col rounded-[24px] bg-ds-surface-card px-4 pt-4",
         footer ? "pb-1" : "pb-4",
         onPress && "cursor-pointer transition-transform duration-150 ease-[cubic-bezier(0.23,1,0.32,1)] select-none active:scale-[0.97] has-[button:active]:scale-100 motion-reduce:active:scale-100",
         className,
@@ -75,15 +75,15 @@ export function MatchCard({ home, away, label, value, details = [], score, past 
           <TeamRow team={away} score={score?.away} against={score?.home} />
         </div>
         {side && (
-          <div data-node-id="side" className="flex w-24 shrink-0 flex-col items-end justify-center border-l border-kino-outline-subtle pl-4">
-            {label !== undefined && <span className="text-[13px] leading-[18px] text-kino-ink-secondary">{label}</span>}
+          <div data-node-id="side" className="flex w-24 shrink-0 flex-col items-end justify-center border-l border-ds-outline-subtle pl-4">
+            {label !== undefined && <span className="text-[13px] leading-[18px] text-ds-ink-secondary">{label}</span>}
             {value !== undefined && <span className="text-[17px] leading-[22px] font-semibold">{value}</span>}
           </div>
         )}
       </div>
       {footer && (
-        <div data-node-id="details" className="mt-3 flex min-h-11 items-center gap-3 border-t border-kino-outline-subtle">
-          <span className="line-clamp-2 min-w-0 flex-1 text-[13px] leading-[18px] text-kino-ink-secondary">{details.join(" · ")}</span>
+        <div data-node-id="details" className="mt-3 flex min-h-11 items-center gap-3 border-t border-ds-outline-subtle">
+          <span className="line-clamp-2 min-w-0 flex-1 text-[13px] leading-[18px] text-ds-ink-secondary">{details.join(" · ")}</span>
           {bell && (
             <button
               type="button"
@@ -92,7 +92,7 @@ export function MatchCard({ home, away, label, value, details = [], score, past 
               onKeyDown={(event) => event.stopPropagation()}
               className={cn(
                 "flex size-11 shrink-0 items-center justify-center rounded-full transition-colors duration-150",
-                reminded ? "bg-kino-surface-brand text-kino-ink-on-brand" : "text-kino-ink-secondary",
+                reminded ? "bg-ds-surface-brand text-ds-ink-on-brand" : "text-ds-ink-secondary",
               )}
             >
               {reminded ? <BellRingingIcon className="size-6" weight="fill" /> : <BellIcon className="size-6" />}

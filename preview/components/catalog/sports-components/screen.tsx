@@ -9,7 +9,7 @@ export function Showcase({ children }: { title: string; children: ReactNode }) {
   return <div className="flex min-w-0 flex-col gap-6">
     <div className="flex flex-wrap gap-2">{examples.map((example, index) => {
       const label = isValidElement<{ label: string }>(example) ? example.props.label : `Variation ${index + 1}`;
-      return <button key={index} type="button" aria-pressed={index === selected} onClick={() => setSelected(index)} className={`rounded-full border px-3 py-1.5 text-[11px] leading-4 transition-colors ${index === selected ? "border-kino-outline-control bg-kino-surface-filled text-kino-ink-primary" : "border-kino-outline-subtle text-kino-ink-secondary hover:text-kino-ink-primary"}`}>{label}</button>;
+      return <button key={index} type="button" aria-pressed={index === selected} onClick={() => setSelected(index)} className={`rounded-full border px-3 py-1.5 text-[11px] leading-4 transition-colors ${index === selected ? "border-ds-outline-control bg-ds-surface-filled text-ds-ink-primary" : "border-ds-outline-subtle text-ds-ink-secondary hover:text-ds-ink-primary"}`}>{label}</button>;
     })}</div>
     <div key={selected} className="min-w-0">{examples[selected]}</div>
   </div>;

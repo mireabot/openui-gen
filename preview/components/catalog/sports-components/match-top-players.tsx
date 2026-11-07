@@ -3,8 +3,8 @@ import { MatchTopPlayers, type MatchPlayer } from "./lib/match-top-players";
 import { Example, Showcase } from "./screen";
 
 const [, saka, palmer, joao, rice] = PLAYERS;
-const RATING_HIGH = "bg-kino-tone-good-fg text-kino-surface-screen";
-const RATING_MID = "bg-kino-ink-brand text-kino-surface-screen";
+const RATING_HIGH = "bg-ds-tone-good-fg text-ds-surface-screen";
+const RATING_MID = "bg-ds-ink-brand text-ds-surface-screen";
 const player = (who: (typeof PLAYERS)[number], value: string, valueClass?: string): MatchPlayer => ({ ...who!, value, valueClass });
 
 /** MatchTopPlayers with three rows, one row, and a side with fewer players. Figures are illustrative. */

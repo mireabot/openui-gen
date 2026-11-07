@@ -17,7 +17,7 @@ import { YearTimelineItemsSchema } from "../../../src/primitives/year-timeline";
  * (design/design_system.json): colours, surfaces, outlines and effects come from the brand
  * theme's CSS variables (`--ds-*`, set by the page) and from each primitive's spec; sizes,
  * spacing and type are the ground rules, baked in here as they will be in SwiftUI.
- * OpenUI programs render through `KinoPrimitive`; `$data` values resolve
+ * OpenUI programs render through `DesignSystemPrimitive`; `$data` values resolve
  * against the dataset, or to dummies while it loads.
  */
 
@@ -783,7 +783,7 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
       return <AvatarFace key={String(image)} name={String(p("name") ?? "?")} size={size} rounded={p("shape") === "rounded"} disc={disc} photoFill={photoFill} image={image} player={p("kind") !== "club"} mark={mark} />;
     }
     case "AvatarStack": {
-      // Initials on soft tints, overlapping by 8, then a +N disc (Kino taste-match / consensus voters).
+      // Initials on soft tints, overlapping by 8, then a +N disc.
       const size = Number(p("size") ?? 20);
       const raw = p("people");
       const people = (Array.isArray(raw) ? raw : ["A", "B", "C"]).map((x) => String(x ?? ""));
@@ -1115,12 +1115,12 @@ function PrimitiveBody({ node: n, axis }: { node: PNode; axis: "v" | "h" }) {
  * surface, with no horizontal padding of its own, a 16 inset on each block and 28 between blocks. `theme` is the brand's CSS
  * variables (lib/primitives/design.ts themeVars); `specs` the primitive specs of design_system.json.
  */
-/** Resolved OpenUI values use the same Kino presentation and native React child slots. */
-export function KinoProvider({ children, specs = {}, skeleton = false }: { children: ReactNode; specs?: Record<string, Spec>; skeleton?: boolean }) {
+/** Resolved OpenUI values use the same design system presentation and native React child slots. */
+export function DesignSystemProvider({ children, specs = {}, skeleton = false }: { children: ReactNode; specs?: Record<string, Spec>; skeleton?: boolean }) {
   return <TreeCtx value={{ byId: new Map(), item: null, specs, data: undefined, skeleton, strictData: true }}>{children}</TreeCtx>;
 }
 
-export function KinoPrimitive({ name, props, slots }: { name: string; props: Readonly<Record<string, Value>>; slots: Readonly<Record<string, readonly ReactNode[]>> }) {
+export function DesignSystemPrimitive({ name, props, slots }: { name: string; props: Readonly<Record<string, Value>>; slots: Readonly<Record<string, readonly ReactNode[]>> }) {
   const children: Record<string, string[]> = {};
   const rendered = new Map<string, ReactNode>();
   for (const [slot, values] of Object.entries(slots)) children[slot] = values.map((value, index) => {

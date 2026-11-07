@@ -2,7 +2,7 @@
 
 import { CurrencyDollarIcon } from "@phosphor-icons/react/dist/csr/CurrencyDollar";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { dataFill } from "@/components/catalog/kino";
+import { dataFill } from "@/components/catalog/design-system";
 import type { ClubSpell } from "../data";
 import { smooth, stops, toLeft, toProgress, useDragScroll } from "./timeline";
 
@@ -82,25 +82,25 @@ function useYearAnchor(clubs: ClubStop[], initial: number) {
 function Card({ club }: { club: ClubStop }) {
   const stats = (club.stats ?? []).slice(0, STATS_MAX);
   return (
-    <article data-node-id="card" className="flex h-full flex-col items-start rounded-[24px] bg-kino-surface-card p-5">
+    <article data-node-id="card" className="flex h-full flex-col items-start rounded-[24px] bg-ds-surface-card p-5">
       <span data-node-id="crest" className="block size-14 shrink-0">
         {club.logo
           ? <img src={club.logo} alt="" draggable={false} className="size-full object-contain" />
-          : <span className="flex size-full items-center justify-center rounded-full text-[17px] leading-[22px] font-semibold text-kino-ink-on-brand" style={dataFill(club.color)}>{club.name.charAt(0)}</span>}
+          : <span className="flex size-full items-center justify-center rounded-full text-[17px] leading-[22px] font-semibold text-ds-ink-on-brand" style={dataFill(club.color)}>{club.name.charAt(0)}</span>}
       </span>
       <h3 data-node-id="name" className="mt-4 text-[17px] leading-[22px] font-semibold">
         {club.name}
-        {club.loan && <CurrencyDollarIcon data-node-id="loan" size={16} weight="bold" className="ml-1 inline-block -translate-y-px align-middle text-kino-tone-good-fg" />}
+        {club.loan && <CurrencyDollarIcon data-node-id="loan" size={16} weight="bold" className="ml-1 inline-block -translate-y-px align-middle text-ds-tone-good-fg" />}
       </h3>
       <p data-node-id="dates" className="mt-1 text-[15px] leading-[22px] font-medium">{club.dates}</p>
-      {club.location && <p data-node-id="location" className="mt-1 text-[13px] leading-[18px] text-kino-ink-secondary">{club.location}</p>}
+      {club.location && <p data-node-id="location" className="mt-1 text-[13px] leading-[18px] text-ds-ink-secondary">{club.location}</p>}
       {stats.length > 0 && (
         <dl data-node-id="stats" className="mt-auto flex w-full gap-4 pt-4">
-          <div className="flex w-full gap-4 border-t border-kino-outline-subtle pt-3">
+          <div className="flex w-full gap-4 border-t border-ds-outline-subtle pt-3">
             {stats.map((stat) => (
               <div key={stat.label} className="flex min-w-0 flex-1 flex-col">
                 <dd className="text-[15px] leading-[22px] font-semibold tabular-nums">{stat.value}</dd>
-                <dt className="text-[13px] leading-[18px] text-kino-ink-secondary">{stat.label}</dt>
+                <dt className="text-[13px] leading-[18px] text-ds-ink-secondary">{stat.label}</dt>
               </div>
             ))}
           </div>
@@ -127,7 +127,7 @@ export function ClubTimeline({ clubs, initial = 0 }: { clubs: ClubStop[]; initia
           className="relative flex cursor-grab snap-x snap-mandatory overflow-x-auto px-[calc(50%-48px)] active:cursor-grabbing [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {years.map((year, index) => (
-            <button key={year} type="button" onClick={() => hopTo(index)} className="flex h-10 w-24 shrink-0 snap-center items-center justify-center text-[22px] leading-[28px] font-semibold tabular-nums text-kino-ink-primary" style={{ opacity: Math.max(0.28, 1 - Math.abs(index - railAt) * 0.62) }}>
+            <button key={year} type="button" onClick={() => hopTo(index)} className="flex h-10 w-24 shrink-0 snap-center items-center justify-center text-[22px] leading-[28px] font-semibold tabular-nums text-ds-ink-primary" style={{ opacity: Math.max(0.28, 1 - Math.abs(index - railAt) * 0.62) }}>
               {year}
             </button>
           ))}

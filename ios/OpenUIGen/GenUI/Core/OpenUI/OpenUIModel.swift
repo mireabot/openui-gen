@@ -77,7 +77,7 @@ public struct OpenUIArchive: Codable, Sendable {
         program: String,
         datasets: [OpenUIDataset],
         templates: [OpenUITemplate]? = nil,
-        theme: String = "kino",
+        theme: String = "default",
         version: Int = 1
     ) {
         self.version = version; self.documentID = documentID; self.revision = revision; self.origin = origin

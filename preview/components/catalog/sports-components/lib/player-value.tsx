@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type PointerEvent } from "react";
-import { dataFill, dataPaint } from "@/components/catalog/kino";
+import { dataFill, dataPaint } from "@/components/catalog/design-system";
 import { Crest } from "./team-detail";
 
 /** One unbroken spell at a club. `lineColor` draws the line and the club's name; `tagColor` sits behind the white value. */
@@ -92,12 +92,12 @@ export function PlayerValue({ caption, stretches }: PlayerValueProps) {
       <header className="flex min-h-[68px] items-start justify-between gap-3">
         <div className="flex min-w-0 flex-col gap-1">
           <span data-node-id="current-value" className="text-[28px] leading-[34px] font-semibold tabular-nums">{valueText(all.at(-1)!.value)}</span>
-          <span className="text-[13px] leading-[16px] text-kino-ink-secondary">{caption}</span>
+          <span className="text-[13px] leading-[16px] text-ds-ink-secondary">{caption}</span>
         </div>
         {hover && (
           <div data-node-id="selection" className="flex shrink-0 flex-col items-end gap-1.5">
             <span className="text-[13px] leading-[16px] font-semibold" style={{ color: dataPaint(stretch.lineColor) }}>{stretch.name}</span>
-            <span className="text-[13px] leading-[16px] text-kino-ink-secondary">{dateText(point.date)}</span>
+            <span className="text-[13px] leading-[16px] text-ds-ink-secondary">{dateText(point.date)}</span>
             <span data-node-id="value-tag" className="inline-flex h-5 items-center rounded-[4px] px-2 text-[13px] leading-[16px] font-semibold text-white tabular-nums" style={dataFill(stretch.tagColor)}>
               {valueText(point.value)}
             </span>
@@ -111,7 +111,7 @@ export function PlayerValue({ caption, stretches }: PlayerValueProps) {
             <path key={index} d={path} fill="none" stroke={dataPaint(stretches[index]!.lineColor)} strokeWidth={2} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           ))}
         </svg>
-        {hover && <span className="absolute inset-y-0 w-px -translate-x-1/2 bg-kino-outline-control" style={{ left: `${fx(point.date) * 100}%` }} />}
+        {hover && <span className="absolute inset-y-0 w-px -translate-x-1/2 bg-ds-outline-control" style={{ left: `${fx(point.date) * 100}%` }} />}
         <span className="absolute size-2 -translate-x-1/2 -translate-y-1/2 rounded-full" style={{ left: `${fx(point.date) * 100}%`, top: fy(point.value), ...dataFill(stretch.lineColor) }} />
         {crests.map((crest, index) => stretches[index]!.logo && crest.width * 300 >= CREST && (
           <span key={index} className="pointer-events-none absolute -translate-x-1/2" style={{ left: `${crest.left * 100}%`, top: crest.top }}>
@@ -119,7 +119,7 @@ export function PlayerValue({ caption, stretches }: PlayerValueProps) {
           </span>
         ))}
       </div>
-      <div data-node-id="y-axis" className="relative w-11 shrink-0 text-[13px] leading-[16px] text-kino-ink-tertiary tabular-nums" style={{ height: HEIGHT }}>
+      <div data-node-id="y-axis" className="relative w-11 shrink-0 text-[13px] leading-[16px] text-ds-ink-tertiary tabular-nums" style={{ height: HEIGHT }}>
         {valueTicks(top).map((tick) => (
           <span key={tick} className="absolute right-0 -translate-y-1/2 whitespace-nowrap" style={{ top: fy(tick) }}>{valueText(tick)}</span>
         ))}

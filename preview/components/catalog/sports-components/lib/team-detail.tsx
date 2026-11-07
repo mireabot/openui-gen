@@ -1,4 +1,4 @@
-import { dataFill, dataPaint } from "@/components/catalog/kino";
+import { dataFill, dataPaint } from "@/components/catalog/design-system";
 import { cn } from "@/lib/utils";
 
 /** A team as the Sports components show it. `color` is the team's own colour, from the data. */
@@ -34,7 +34,7 @@ export function Crest({ team, size = 20 }: { team: Team; size?: CrestSize }) {
     <svg data-node-id="crest" width={size} height={size} viewBox="0 0 40 40" className="shrink-0">
       <circle cx="20" cy="20" r="20" fill={dataPaint(team.color)} />
       {size >= 40 && (
-        <text x="20" y="20" dominantBaseline="central" textAnchor="middle" fontSize="13" fontWeight="600" fill="var(--color-kino-ink-on-brand)">
+        <text x="20" y="20" dominantBaseline="central" textAnchor="middle" fontSize="13" fontWeight="600" fill="var(--color-ds-ink-on-brand)">
           {team.monogram ?? team.name.charAt(0)}
         </text>
       )}
@@ -51,7 +51,7 @@ export function TeamDetail({ team, type = "inline", className }: { team: Team; t
     <div data-node-id="team-detail" data-type={type} className={cn("flex min-w-0 items-center gap-3", className)}>
       <Crest team={team} size={20} />
       <span className="line-clamp-2 text-[15px] leading-[22px] font-medium">{team.name}</span>
-      {team.nickname && <span className="shrink-0 text-[13px] leading-[16px] text-kino-ink-secondary">{team.nickname}</span>}
+      {team.nickname && <span className="shrink-0 text-[13px] leading-[16px] text-ds-ink-secondary">{team.nickname}</span>}
     </div>
   );
 }

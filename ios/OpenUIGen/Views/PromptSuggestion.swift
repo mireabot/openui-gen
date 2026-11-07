@@ -8,7 +8,7 @@ struct PromptSuggestion: Identifiable, Hashable {
     let league: League?
 
     /// A league with a mark on ESPN's CDN, the source the server's data already comes from. These are
-    /// ESPN's dark-background marks (`500-dark`), because Kino is dark only.
+    /// ESPN's dark-background marks (`500-dark`), because the default theme is dark only.
     enum League: String {
         case premierLeague
         case laLiga

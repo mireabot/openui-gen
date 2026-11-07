@@ -2,12 +2,12 @@
   "version": 0,
   "notes": {
     "precedence": "Ground rules decide sizes, spacing, type and radii (SF Pro, 44 controls, 8-grid). This file decides colour, surfaces, outlines, blur and component anatomy. No shadows: containers separate from the screen by fill (Radix gray neutrals), and controls by fill or outline.",
-    "kino": "Kino is the default theme and is dark only. Its colours and type come from Figma file YWV3qqUmg6HRNb2UINk7wt, nodes 89:261 and 89:276. It uses the same semantic keys as the other themes (ink, surface, outline, tone, shadow).",
+    "theme": "The default theme is dark only. It uses the same semantic keys as the other themes (ink, surface, outline, tone, shadow).",
     "unverified": "Keys with no clear source value. Each value is the closest colour, or a derived or fallback value, as listed."
   },
-  "defaultTheme": "kino",
+  "defaultTheme": "default",
   "themes": {
-    "kino": {
+    "default": {
       "appearance": "dark",
       "ink": {
         "primary": "#f3eee6",
@@ -344,8 +344,8 @@
     }
   },
   "type": {
-    "_note": "Kino style names keyed to [size, lineHeight, weight]. Weights are Figma names. Bold and ExtraBold have no match in our WEIGHT set and are mapped to semibold below.",
-    "kinoStyles": {
+    "_note": "Design system style names keyed to [size, lineHeight, weight]. Weights are Figma names. Bold and ExtraBold have no match in our WEIGHT set and are mapped to semibold below.",
+    "designStyles": {
       "Display / Greeting": [
         56,
         56,
@@ -406,62 +406,62 @@
       "footnote": {
         "size": 14,
         "lineHeight": 18,
-        "kinoStyle": "Body / S",
-        "kinoSize": 13,
+        "designStyle": "Body / S",
+        "designSize": 13,
         "diff": "-1 pt, Label / M (13, Medium) also fits",
         "weight": "regular"
       },
       "body": {
         "size": 16,
         "lineHeight": 20,
-        "kinoStyle": "Body / M",
-        "kinoSize": 15,
+        "designStyle": "Body / M",
+        "designSize": 15,
         "diff": "-1 pt",
         "weight": "regular"
       },
       "headline": {
         "size": 18,
         "lineHeight": 22,
-        "kinoStyle": "Title / L",
-        "kinoSize": 17,
+        "designStyle": "Title / L",
+        "designSize": 17,
         "diff": "-1 pt, weight SemiBold mapped to semibold",
         "weight": "semibold"
       },
       "title3": {
         "size": 20,
         "lineHeight": 25,
-        "kinoStyle": null,
-        "kinoSize": null,
-        "diff": "No Kino style at 20. Closest is Title / L (17), 3 pt off. Kino has no 20 role.",
+        "designStyle": null,
+        "designSize": null,
+        "diff": "No design system style at 20. Closest is Title / L (17), 3 pt off. The design system has no 20 role.",
         "weight": "semibold"
       },
       "title2": {
         "size": 22,
         "lineHeight": 28,
-        "kinoStyle": "Display / M",
-        "kinoSize": 22,
+        "designStyle": "Display / M",
+        "designSize": 22,
         "diff": "exact size and line height, Bold mapped to semibold",
         "weight": "semibold"
       },
       "display": {
         "size": 24,
         "lineHeight": 28,
-        "kinoStyle": null,
-        "kinoSize": null,
-        "diff": "No Kino style at 24. Closest is Display / L (28), 4 pt off.",
+        "designStyle": null,
+        "designSize": null,
+        "diff": "No design system style at 24. Closest is Display / L (28), 4 pt off.",
         "weight": "semibold"
       },
       "title1": {
         "size": 28,
         "lineHeight": 34,
-        "kinoStyle": "Display / L",
-        "kinoSize": 28,
+        "designStyle": "Display / L",
+        "designSize": 28,
         "diff": "exact size and line height, Bold mapped to semibold",
         "weight": "semibold"
       }
     },
     "outsideCurrentScale": {
-      "_note": "Kino sizes with no role in our TYPE set. Not added here; the ground rules are closed.",
+      "_note": "Design system sizes with no role in our TYPE set. Not added here; the ground rules are closed.",
       "sizes": [
         13,
         15,
@@ -470,45 +470,45 @@
         48,
         56
       ],
-      "tracking": "Kino display styles use negative tracking (-4.5% to -1%). We have no tracking token."
+      "tracking": "Design system display styles use negative tracking (-4.5% to -1%). We have no tracking token."
     },
     "scale": {
-      "_note": "Kino's own sizes per role, decided 2026-10-11 (new size set for this design system; SF Pro stays; weights stay regular/medium/semibold). The DSL keeps the role names; the theme sets --ds-type-<role>-size/line. title3 takes Score / List (prices in cards); display is the largest role here (Display / XL). display moved to Display / Greeting 56/56 (2026-10-11) for hero scores (consensus card anchor).",
+      "_note": "The design system's own sizes per role, decided 2026-10-11 (new size set for this design system; SF Pro stays; weights stay regular/medium/semibold). The DSL keeps the role names; the theme sets --ds-type-<role>-size/line. title3 takes Score / List (prices in cards); display is the largest role here (Display / XL). display moved to Display / Greeting 56/56 (2026-10-11) for hero scores (consensus card anchor).",
       "roles": {
         "footnote": {
           "size": 13,
           "lineHeight": 18,
-          "kinoStyle": "Body / S"
+          "designStyle": "Body / S"
         },
         "body": {
           "size": 15,
           "lineHeight": 22,
-          "kinoStyle": "Body / M"
+          "designStyle": "Body / M"
         },
         "headline": {
           "size": 17,
           "lineHeight": 22,
-          "kinoStyle": "Title / L"
+          "designStyle": "Title / L"
         },
         "title3": {
           "size": 17,
           "lineHeight": 20,
-          "kinoStyle": "Score / List"
+          "designStyle": "Score / List"
         },
         "title2": {
           "size": 22,
           "lineHeight": 28,
-          "kinoStyle": "Display / M"
+          "designStyle": "Display / M"
         },
         "title1": {
           "size": 28,
           "lineHeight": 34,
-          "kinoStyle": "Display / L"
+          "designStyle": "Display / L"
         },
         "display": {
           "size": 56,
           "lineHeight": 56,
-          "kinoStyle": "Display / Greeting"
+          "designStyle": "Display / Greeting"
         }
       }
     }
@@ -987,41 +987,41 @@
     }
   },
   "unverified": {
-    "kino": [
+    "default": [
       {
         "key": "ink.tertiary",
         "value": "#a19b92",
-        "reason": "Kino has no tertiary text colour. Used text/secondary, which is the closest Kino colour."
+        "reason": "The design system has no tertiary text colour. Used text/secondary, which is the closest design system colour."
       },
       {
         "key": "ink.onBrand",
         "value": "#f3eee6",
-        "reason": "Kino has no text-on-accent token. Used text/primary, the closest light text colour."
+        "reason": "The design system has no text-on-accent token. Used text/primary, the closest light text colour."
       },
       {
         "key": "ink.brand",
         "value": "#ff6a3d",
-        "reason": "Kino has no brand text colour. Used signal/you, which is the only bright accent. It is a signal colour, not a brand one."
+        "reason": "The design system has no brand text colour. Used signal/you, which is the only bright accent. It is a signal colour, not a brand one."
       },
       {
         "key": "surface.glass",
         "value": "#1b1a17b8",
-        "reason": "No glass token in Kino. Derived from bg/surface at 72% alpha, the same alpha the dark theme uses."
+        "reason": "No glass token in the design system. Derived from bg/surface at 72% alpha, the same alpha the dark theme uses."
       },
       {
         "key": "surface.filled",
         "value": "#24221f",
-        "reason": "Kino's Fill swatch is labelled bg/fill but renders as bg/disabled. The value is the same either way."
+        "reason": "The design system's Fill swatch is labelled bg/fill but renders as bg/disabled. The value is the same either way."
       },
       {
         "key": "surface.control",
         "value": "#24221f",
-        "reason": "No control surface token in Kino. Used the fill colour."
+        "reason": "No control surface token in the design system. Used the fill colour."
       },
       {
         "key": "surface.brandSoft",
         "value": "#cf421d1f",
-        "reason": "No soft brand token in Kino. Derived from bg/accent at 12% alpha, the same alpha the other themes use."
+        "reason": "No soft brand token in the design system. Derived from bg/accent at 12% alpha, the same alpha the other themes use."
       },
       {
         "key": "surface.brandGradient",
@@ -1029,22 +1029,22 @@
           "#ff6a3d",
           "#cf421d"
         ],
-        "reason": "No gradient in Kino. Built from signal/you and bg/accent."
+        "reason": "No gradient in the design system. Built from signal/you and bg/accent."
       },
       {
         "key": "surface.skeleton",
         "value": "#24221f",
-        "reason": "No skeleton token in Kino. Used the fill colour."
+        "reason": "No skeleton token in the design system. Used the fill colour."
       },
       {
         "key": "surface.skeletonHighlight",
         "value": "#302e2a",
-        "reason": "No skeleton token in Kino. Used border/subtle."
+        "reason": "No skeleton token in the design system. Used border/subtle."
       },
       {
         "key": "outline.control",
         "value": "#45423c",
-        "reason": "Kino border/strong, the closest match."
+        "reason": "The design system's border/strong, the closest match."
       },
       {
         "key": "outline.controlBottom",
@@ -1057,7 +1057,7 @@
           "fg": "#5cc95b",
           "bg": "#409b3f2e"
         },
-        "reason": "Kino has no success colour. Copied the dark theme's values."
+        "reason": "The design system has no success colour. Copied the dark theme's values."
       },
       {
         "key": "tone.warn",
@@ -1065,7 +1065,7 @@
           "fg": "#ffc30a",
           "bg": "#ffc30a2e"
         },
-        "reason": "Kino has no warning colour. Copied the dark theme's values."
+        "reason": "The design system has no warning colour. Copied the dark theme's values."
       },
       {
         "key": "tone.info",
@@ -1073,7 +1073,7 @@
           "fg": "#33c3ff",
           "bg": "#06b1f12e"
         },
-        "reason": "Kino has no info colour. Copied the dark theme's values."
+        "reason": "The design system has no info colour. Copied the dark theme's values."
       },
       {
         "key": "tone.bad",
@@ -1081,7 +1081,7 @@
           "fg": "#ff6a3d",
           "bg": "#ff6a3d2e"
         },
-        "reason": "No error token in Kino. Used signal/you, the closest warm alert colour."
+        "reason": "No error token in the design system. Used signal/you, the closest warm alert colour."
       },
       {
         "key": "tone.neutral",
@@ -1089,12 +1089,12 @@
           "fg": "#a19b92",
           "bg": "#24221f"
         },
-        "reason": "Kino text/secondary and bg/disabled, the closest neutral pair."
+        "reason": "The design system's text/secondary and bg/disabled, the closest neutral pair."
       },
       {
         "key": "shadow.*",
         "value": "see theme",
-        "reason": "Kino gives drop shadows as rgba(5,4,3,0.45) and rgba(5,4,3,0.6) plus an inset highlight rgba(255,255,255,0.04). Mapped to low, high and highlight. base and highlightMed are estimated."
+        "reason": "The design system gives drop shadows as rgba(5,4,3,0.45) and rgba(5,4,3,0.6) plus an inset highlight rgba(255,255,255,0.04). Mapped to low, high and highlight. base and highlightMed are estimated."
       },
       {
         "key": "colour.unread",
