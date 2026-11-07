@@ -235,9 +235,9 @@ function ValueColumns({ columns, marks }: { columns: ValueColumn[]; marks: reado
               <div key={`${c.name}-${i}`} className={cn("flex flex-col items-center", i % perPage === 0 && "snap-start snap-always")} style={{ width: `calc((100% - ${(perPage - 1) * GAP}px) / ${perPage})`, flexShrink: 0 }}>
                 <div className="relative w-full" style={{ height: PLOT }}>
                   <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2" style={{ background: tv("outline.subtle") }} />
-                  <div className="absolute left-1/2 flex w-max min-w-16 max-w-[min(76px,100%)] -translate-x-1/2 flex-col overflow-hidden rounded-[8px]" style={{ bottom: 8 + lift }}>
-                    <span className="line-clamp-2 px-2 py-0.5 text-center tabular-nums" style={{ ...textStyle("body", "semibold", inkOnColor(c.color)), background: tv(c.color) }}>{c.display}</span>
-                    {hasSecondary && <span className="line-clamp-2 px-2 py-0.5 text-center tabular-nums" style={{ ...textStyle("footnote", "medium", tv("surface.screen")), background: tv("ink.primary") }}>{c.secondary || "–"}</span>}
+                  <div className="absolute left-1/2 flex w-max min-w-16 max-w-[min(86px,100%)] -translate-x-1/2 flex-col overflow-hidden rounded-[8px]" style={{ bottom: 8 + lift }}>
+                    <span className="line-clamp-2 px-2 py-[3px] text-center tabular-nums" style={{ ...textStyle("body", "semibold", inkOnColor(c.color)), background: tv(c.color) }}>{c.display}</span>
+                    {hasSecondary && <span className="line-clamp-2 px-2 py-[3px] text-center tabular-nums" style={{ ...textStyle("footnote", "medium", tv("surface.screen")), background: tv("ink.primary") }}>{c.secondary || "–"}</span>}
                   </div>
                 </div>
                 <div className="mt-3 flex w-full flex-col items-center gap-1">

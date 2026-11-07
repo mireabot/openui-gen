@@ -1,6 +1,6 @@
 "use client";
 
-import { Children, Component, createContext, useContext, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { Children, Component, createContext, Fragment, useContext, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { createLibrary, Renderer, useRendererQuery, type ComponentRenderProps, type OpenUIError } from "@openuidev/react-lang";
 import { LIBRARY } from "../../../src/lang/library";
 import { expandProgram, templateSet, type TemplateDef } from "../../../src/lang/templates";
@@ -44,7 +44,7 @@ function rendererFor(name: string) {
     const values: Record<string, Value> = {};
     for (const [key, value] of Object.entries(props)) {
       const role = def?.props[key]?.meta.role;
-      if (role === "node" || role === "nodes") slots[key] = flattenOpenUIChildren(value).map((child, index) => <span key={index} className="contents">{renderNode(child)}</span>);
+      if (role === "node" || role === "nodes") slots[key] = flattenOpenUIChildren(value).map((child, index) => <Fragment key={index}>{renderNode(child)}</Fragment>);
       else values[key] = literal(value);
     }
     if (name === "Screen") {
