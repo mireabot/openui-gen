@@ -10,6 +10,8 @@ final class AskModel {
     private(set) var session: OpenUISession?
     private(set) var errorMessage: String?
     private(set) var saveState = SaveState.idle
+    /// The prompt of the run in progress or last finished, when it edits a screen; nil for a new screen.
+    private(set) var followUp: String?
 
     enum SaveState: Equatable { case idle, saving, saved, failed }
 
@@ -29,6 +31,7 @@ final class AskModel {
         prompt = ""
         errorMessage = nil
         saveState = .idle
+        followUp = session == nil ? nil : text
         do {
             let session = try session ?? OpenUISession(service: service)
             self.session = session
@@ -57,6 +60,7 @@ final class AskModel {
         session = nil
         errorMessage = nil
         saveState = .idle
+        followUp = nil
     }
 
     private static func message(for error: any Error) -> String {

@@ -8,13 +8,15 @@ import { allowedOrigin, config } from "../config.js";
 import { log } from "../log.js";
 import { SnapshotArgs, SnapshotStore } from "../lang/snapshots.js";
 import { PROJECT_ROOT } from "../paths.js";
+import { LiveHub, liveFrom } from "../run/live.js";
 import { RunRecorder, writeRunEvents } from "../run/recorder.js";
 import { askSports, editSports } from "../sports/ask.js";
 import { SPORTS_TEMPLATE_DEFS } from "../sports/components.js";
 import { DocumentConflict, DocumentStore, nextRevision, saveGeneration, type SportsDocument } from "../sports/documents.js";
 
 const TimeZone = z.string().max(100).refine(zone => { try { new Intl.DateTimeFormat("en", { timeZone: zone }); return true; } catch { return false; } });
-const Request = z.object({ prompt: z.string().min(1).max(500), timeZone: TimeZone.optional() });
+/** `client` names the preview tab that sent it, so the live feed can tell that tab its own run. */
+const Request = z.object({ prompt: z.string().min(1).max(500), timeZone: TimeZone.optional(), client: z.string().max(64).optional() });
 const FollowUpRequest = Request.extend({ baseRevision: z.number().int().positive(), targets: z.array(z.string().regex(/^[A-Za-z][A-Za-z0-9_/-]*$/)).max(30).optional() });
 const SaveRequest = z.object({ revision: z.number().int().positive() });
 const STAGES = ["summarize", "search", "data", "compose", "validate"] as const;
@@ -32,11 +34,13 @@ const STAGES = ["summarize", "search", "data", "compose", "validate"] as const;
  * POST /lang/sports/:documentId/save — `{revision}` keeps a copy of that revision under
  * DATA_DIR/saved-generations: the program, dataset, plan and prompts. 404 unknown, 409 not current.
  * GET /lang/sports/runs, /lang/sports/runs/:documentId — saved screens to replay with no model call; off in production.
+ * GET /lang/sports/live — every run from any client as it happens, as SSE `message`s of LiveMessage JSON;
+ * runs in progress are replayed first. Off in production.
  * POST /tools/sports_dataset — a run's snapshot, for the program's `Query("sports_dataset", …)`.
  */
 const finishedStatus = (issues: readonly { readonly code: string }[]) => issues.some(issue => issue.code === "part-incomplete") ? "partial" as const : "ok" as const;
 
-export function sportsRoutes(options: { store?: SnapshotStore; documents?: DocumentStore; savedDirectory?: string; ask?: typeof askSports; edit?: typeof editSports } = {}) {
+export function sportsRoutes(options: { store?: SnapshotStore; documents?: DocumentStore; savedDirectory?: string; ask?: typeof askSports; edit?: typeof editSports; live?: LiveHub } = {}) {
   const cfg = config();
   const dataDir = path.resolve(fileURLToPath(PROJECT_ROOT), cfg.DATA_DIR);
   const store = options.store ?? new SnapshotStore(path.join(dataDir, "openui-snapshots"));
@@ -44,6 +48,9 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
   const savedDirectory = options.savedDirectory ?? path.join(dataDir, "saved-generations");
   const ask = options.ask ?? askSports;
   const edit = options.edit ?? editSports;
+  const live = options.live ?? new LiveHub();
+  // Saved screens and live runs carry prompts and data, which are private, so neither is served in production.
+  const replayable = process.env.NODE_ENV !== "production";
   /** Commits a revision. In debug mode each one also gets its own file, which a later follow-up can't overwrite. */
   const commit = async (document: SportsDocument, baseRevision: number, signal: AbortSignal) => {
     await documents.put(document, baseRevision, signal);
@@ -70,11 +77,13 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
   app.post("/lang/sports/stream", async c => {
     const parsed = Request.safeParse(await c.req.json().catch(() => null));
     if (!parsed.success) return c.json({ error: "bad_request", issues: parsed.error.issues.map(issue => ({ path: issue.path.join("."), message: issue.message })) }, 400);
-    const { prompt, timeZone } = parsed.data;
+    const { prompt, timeZone, client } = parsed.data;
+    const from = liveFrom(c.req.header("user-agent"));
     log.info("sports openui started", { prompt, timeZone: timeZone ?? null, origin: c.req.header("origin") ?? null });
     return streamSSE(c, async stream => {
-      const { send, abort, flush } = channel(stream);
       const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui" });
+      const mirror = live.start({ run: observer.runId, prompt, from, client, startedAt: new Date().toISOString() });
+      const { send, abort, flush } = channel(stream, mirror.send);
       send("templates", { templates: SPORTS_TEMPLATE_DEFS });
       try {
         const result = await ask({ prompt, timeZone }, store, {
@@ -93,13 +102,26 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
         log.error("sports openui failed", { message });
         send("failure", { error: "generation_failed", message });
       }
+      mirror.end();
       try { await flush(); }
       finally { if (cfg.TRACE_ENABLED) await writeRunEvents(cfg.TRACE_DIR, observer.recorded()); }
     });
   });
 
-  // Replay for the preview: a saved screen with no model call. Prompts and data are private, so never in production.
-  const replayable = process.env.NODE_ENV !== "production";
+  app.get("/lang/sports/live", c => {
+    if (!replayable) return c.json({ error: "not_found" }, 404);
+    return streamSSE(c, async stream => {
+      let chain = Promise.resolve();
+      const stop = live.subscribe(message => { chain = chain.then(() => stream.writeSSE({ data: JSON.stringify(message) })).catch(() => {}); });
+      // A comment line now and then keeps idle proxies from closing the feed.
+      const ping = setInterval(() => { chain = chain.then(() => stream.write(": ping\n\n")).then(() => {}).catch(() => {}); }, 15_000);
+      await new Promise<void>(resolve => stream.onAbort(resolve));
+      clearInterval(ping);
+      stop();
+    });
+  });
+
+  // Replay for the preview: a saved screen with no model call.
   app.get("/lang/sports/runs", async c => replayable ? c.json({ runs: await documents.list() }) : c.json({ error: "not_found" }, 404));
   app.get("/lang/sports/runs/:documentId", async c => {
     const identity = SnapshotArgs.safeParse({ run: c.req.param("documentId") });
@@ -126,7 +148,8 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
     const identity = SnapshotArgs.safeParse({ run: c.req.param("documentId") });
     if (!parsed.success || !identity.success) return c.json({ error: "bad_request" }, 400);
     const id = identity.data.run;
-    const { prompt, baseRevision, targets, timeZone } = parsed.data;
+    const { prompt, baseRevision, targets, timeZone, client } = parsed.data;
+    const from = liveFrom(c.req.header("user-agent"));
     // Held until this follow-up commits or fails, so a concurrent one sees the new revision and gets 409.
     const release = await documents.lock(id);
     let previous;
@@ -139,9 +162,10 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
     const saved = previous;
     log.info("sports follow-up started", { document: id, baseRevision, prompt });
     return streamSSE(c, async stream => {
-      const { send, abort, flush } = channel(stream);
       // A follow-up is recorded as its own run, tagged with the document and base revision.
       const observer = new RunRecorder(prompt, cfg.SPORTS_MODEL, { stages: [...STAGES], summaryModel: cfg.SPORTS_PLAN_MODEL, pack: "sports", generation: "openui", followUp: { document: id, baseRevision } });
+      const mirror = live.start({ run: observer.runId, prompt, from, client, startedAt: new Date().toISOString(), followUp: { document: id, baseRevision } });
+      const { send, abort, flush } = channel(stream, mirror.send);
       try {
         // Content stays staged: the client keeps its screen until the revision is committed.
         const result = await edit(saved, { prompt, targets, timeZone }, store, {
@@ -165,6 +189,7 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
         send("failure", { error: error instanceof DocumentConflict ? "revision_conflict" : "generation_failed", message });
       } finally {
         release();
+        mirror.end();
         try { await flush(); }
         finally { if (cfg.TRACE_ENABLED) await writeRunEvents(cfg.TRACE_DIR, observer.recorded()); }
       }
@@ -173,11 +198,11 @@ export function sportsRoutes(options: { store?: SnapshotStore; documents?: Docum
   return app;
 }
 
-/** Ordered SSE writes, and an abort signal for a client that went away before the commit. */
-function channel(stream: SSEStreamingApi) {
+/** Ordered SSE writes, each also mirrored to the live feed, and an abort signal for a client that went away before the commit. */
+function channel(stream: SSEStreamingApi, mirror: (event: string, data: unknown) => void) {
   const abort = new AbortController();
   stream.onAbort(() => abort.abort());
   let chain = Promise.resolve();
-  const send = (event: string, data: unknown) => { chain = chain.then(() => stream.writeSSE({ event, data: JSON.stringify(data) })); };
+  const send = (event: string, data: unknown) => { mirror(event, data); chain = chain.then(() => stream.writeSSE({ event, data: JSON.stringify(data) })); };
   return { send, abort, flush: () => chain };
 }
