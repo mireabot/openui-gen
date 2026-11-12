@@ -1,6 +1,6 @@
 # OpenUI Sports
 
-An interactive registry of sports components for soccer, NFL and NBA. It's powered by
+An interactive [registry](https://naivesolution.dev/projects/openui-sports) of sports components for soccer, NFL and NBA. It's powered by
 [OpenUI Lang](https://www.openui.com) and a custom SwiftUI rendering engine. A user asks a question.
 The server gathers the data, a model writes the answer as an OpenUI Lang program, and the iOS app
 renders that program as native SwiftUI views while it streams in.
